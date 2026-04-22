@@ -1,0 +1,486 @@
+{
+	"configurations" : 
+	[
+		{
+			"abstractTargets" : 
+			[
+				{
+					"directoryIndex" : 8,
+					"id" : "Git::Git::@c3970584aff34cfa0167",
+					"jsonFile" : "target-Git__Git-Debug-d2fa4d951f3fcde7ea8d.json",
+					"name" : "Git::Git",
+					"projectIndex" : 5
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "OpenGL::GL::@b1d4f153e8b3bf85333b",
+					"jsonFile" : "target-OpenGL__GL-Debug-8491b664eb475306a4df.json",
+					"name" : "OpenGL::GL",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "OpenGL::GLU::@b1d4f153e8b3bf85333b",
+					"jsonFile" : "target-OpenGL__GLU-Debug-f20dc2c93fba645d11d5.json",
+					"name" : "OpenGL::GLU",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "Threads::Threads::@a249f06e97ef7a088e2b",
+					"jsonFile" : "target-Threads__Threads-Debug-373849386636d12ea304.json",
+					"name" : "Threads::Threads",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 11,
+					"id" : "nlohmann_json::@0a90b0e941ed583d4cb5",
+					"jsonFile" : "target-nlohmann_json-Debug-a7570e914e071cdd0f28.json",
+					"name" : "nlohmann_json",
+					"projectIndex" : 7
+				}
+			],
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						5,
+						6,
+						7,
+						11
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-f6f22219c74102c3da70.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "4.0"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "thirdparty/raylib",
+					"childIndexes" : 
+					[
+						2
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-thirdparty.raylib-Debug-81ac39853687f52b903d.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "thirdparty/raylib",
+					"targetIndexes" : 
+					[
+						8
+					]
+				},
+				{
+					"abstractTargetIndexes" : 
+					[
+						1,
+						2
+					],
+					"build" : "thirdparty/raylib/raylib",
+					"childIndexes" : 
+					[
+						3
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-thirdparty.raylib.raylib-Debug-7c7714702520ea394672.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "thirdparty/raylib/src",
+					"targetIndexes" : 
+					[
+						6
+					]
+				},
+				{
+					"abstractTargetIndexes" : 
+					[
+						3
+					],
+					"build" : "thirdparty/raylib/raylib/external/glfw",
+					"childIndexes" : 
+					[
+						4
+					],
+					"jsonFile" : "directory-thirdparty.raylib.raylib.external.glfw-Debug-50d21371862468887f04.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4"
+					},
+					"parentIndex" : 2,
+					"projectIndex" : 2,
+					"source" : "thirdparty/raylib/src/external/glfw"
+				},
+				{
+					"build" : "thirdparty/raylib/raylib/external/glfw/src",
+					"jsonFile" : "directory-thirdparty.raylib.raylib.external.glfw.src-Debug-1b62d4ca8821d10f4947.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4"
+					},
+					"parentIndex" : 3,
+					"projectIndex" : 2,
+					"source" : "thirdparty/raylib/src/external/glfw/src",
+					"targetIndexes" : 
+					[
+						4,
+						9
+					]
+				},
+				{
+					"build" : "thirdparty/imgui-docking",
+					"jsonFile" : "directory-thirdparty.imgui-docking-Debug-f548860cb72cfb721a57.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "4.2"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 3,
+					"source" : "thirdparty/imgui-docking",
+					"targetIndexes" : 
+					[
+						5
+					]
+				},
+				{
+					"build" : "thirdparty/rlImgui",
+					"jsonFile" : "directory-thirdparty.rlImgui-Debug-d8c4cf7d97556ffefe64.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "4.2"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 4,
+					"source" : "thirdparty/rlImgui",
+					"targetIndexes" : 
+					[
+						7
+					]
+				},
+				{
+					"build" : "thirdparty/FastNoise2-1.1.1",
+					"childIndexes" : 
+					[
+						8
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-thirdparty.FastNoise2-1.1.1-Debug-fabddd09990d8975af62.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.14"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 5,
+					"source" : "thirdparty/FastNoise2-1.1.1"
+				},
+				{
+					"abstractTargetIndexes" : 
+					[
+						0
+					],
+					"build" : "thirdparty/FastNoise2-1.1.1/src",
+					"childIndexes" : 
+					[
+						9
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-thirdparty.FastNoise2-1.1.1.src-Debug-53e954598898c6542f16.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.14"
+					},
+					"parentIndex" : 7,
+					"projectIndex" : 5,
+					"source" : "thirdparty/FastNoise2-1.1.1/src",
+					"targetIndexes" : 
+					[
+						0,
+						2
+					]
+				},
+				{
+					"build" : "_deps/fastsimd-build",
+					"childIndexes" : 
+					[
+						10
+					],
+					"jsonFile" : "directory-_deps.fastsimd-build-Debug-d52c04a8e56e773112e3.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 8,
+					"projectIndex" : 6,
+					"source" : "out/build/x64-Debug/_deps/fastsimd-src",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "_deps/fastsimd-build/dispatch",
+					"jsonFile" : "directory-_deps.fastsimd-build.dispatch-Debug-aad407b43c5e55a00eeb.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 9,
+					"projectIndex" : 6,
+					"source" : "out/build/x64-Debug/_deps/fastsimd-src/dispatch"
+				},
+				{
+					"abstractTargetIndexes" : 
+					[
+						4
+					],
+					"build" : "thirdparty/json-3.12.0",
+					"jsonFile" : "directory-thirdparty.json-3.12.0-Debug-9322548ffcc9b95ea3d3.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.5"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 7,
+					"source" : "thirdparty/json-3.12.0"
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1,
+						3,
+						4,
+						5,
+						7
+					],
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "ProjectVeil",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"abstractTargetIndexes" : 
+					[
+						1,
+						2
+					],
+					"childIndexes" : 
+					[
+						2
+					],
+					"directoryIndexes" : 
+					[
+						1,
+						2
+					],
+					"name" : "raylib",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						6,
+						8
+					]
+				},
+				{
+					"abstractTargetIndexes" : 
+					[
+						3
+					],
+					"directoryIndexes" : 
+					[
+						3,
+						4
+					],
+					"name" : "GLFW",
+					"parentIndex" : 1,
+					"targetIndexes" : 
+					[
+						4,
+						9
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						5
+					],
+					"name" : "imgui",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						5
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						6
+					],
+					"name" : "rlimgui",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						7
+					]
+				},
+				{
+					"abstractTargetIndexes" : 
+					[
+						0
+					],
+					"childIndexes" : 
+					[
+						6
+					],
+					"directoryIndexes" : 
+					[
+						7,
+						8
+					],
+					"name" : "FastNoise2",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						0,
+						2
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						9,
+						10
+					],
+					"name" : "FastSIMD",
+					"parentIndex" : 5,
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"abstractTargetIndexes" : 
+					[
+						4
+					],
+					"directoryIndexes" : 
+					[
+						11
+					],
+					"name" : "nlohmann_json",
+					"parentIndex" : 0
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 8,
+					"id" : "FastNoise::@c3970584aff34cfa0167",
+					"jsonFile" : "target-FastNoise-Debug-70d09c5872499bb8af84.json",
+					"name" : "FastNoise",
+					"projectIndex" : 5
+				},
+				{
+					"directoryIndex" : 9,
+					"id" : "FastSIMD::@6a824029d8a23c0cb0e8",
+					"jsonFile" : "target-FastSIMD-Debug-966563cd47a272da15bc.json",
+					"name" : "FastSIMD",
+					"projectIndex" : 6
+				},
+				{
+					"directoryIndex" : 8,
+					"id" : "FastSIMD_FastNoise::@c3970584aff34cfa0167",
+					"jsonFile" : "target-FastSIMD_FastNoise-Debug-fa2f7c88df8c25f3d2ef.json",
+					"name" : "FastSIMD_FastNoise",
+					"projectIndex" : 5
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ProjectVeil::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ProjectVeil-Debug-83ac7e6e4549fe6f6bec.json",
+					"name" : "ProjectVeil",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "glfw::@332ee23b620a5fac1236",
+					"jsonFile" : "target-glfw-Debug-aec8020ddd4812f7c215.json",
+					"name" : "glfw",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "imgui::@0e4bebfa6e0abb85058b",
+					"jsonFile" : "target-imgui-Debug-92af8eac446cfe8e9461.json",
+					"name" : "imgui",
+					"projectIndex" : 3
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "raylib::@b1d4f153e8b3bf85333b",
+					"jsonFile" : "target-raylib-Debug-825b0627a35d324fc318.json",
+					"name" : "raylib",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "rlimgui::@84f52d3d81dad75e9dc3",
+					"jsonFile" : "target-rlimgui-Debug-c9c3488e9d1ca9787c2d.json",
+					"name" : "rlimgui",
+					"projectIndex" : 4
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "uninstall::@fc0ad9ec331c78bb0223",
+					"jsonFile" : "target-uninstall-Debug-6aecba341169a60ac258.json",
+					"name" : "uninstall",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "update_mappings::@332ee23b620a5fac1236",
+					"jsonFile" : "target-update_mappings-Debug-0296c24955f4d1745857.json",
+					"name" : "update_mappings",
+					"projectIndex" : 2
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "D:/GitHub/ProjectVeil/out/build/x64-Debug",
+		"source" : "D:/GitHub/ProjectVeil"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 9
+	}
+}

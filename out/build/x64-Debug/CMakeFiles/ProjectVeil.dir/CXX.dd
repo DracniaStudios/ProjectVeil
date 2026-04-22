@@ -1,0 +1,17 @@
+ninja_dyndep_version = 1.0
+build CMakeFiles\ProjectVeil.dir\src\gameLayer\ParticleSystem.cpp.obj: dyndep
+
+build CMakeFiles\ProjectVeil.dir\src\gameLayer\Scene.cpp.obj: dyndep
+
+build CMakeFiles\ProjectVeil.dir\src\gameLayer\SceneManager.cpp.obj: dyndep
+
+build CMakeFiles\ProjectVeil.dir\src\gameLayer\Transition.cpp.obj: dyndep
+
+build CMakeFiles\ProjectVeil.dir\src\gameLayer\gameMain.cpp.obj: dyndep
+
+build CMakeFiles\ProjectVeil.dir\src\gameLayer\scenes\mainMenu.cpp.obj: dyndep
+
+build CMakeFiles\ProjectVeil.dir\src\platform\ProjectVeil.cpp.obj: dyndep
+
+build CMakeFiles\ProjectVeil.dir\src\platform\asserts.cpp.obj: dyndep
+

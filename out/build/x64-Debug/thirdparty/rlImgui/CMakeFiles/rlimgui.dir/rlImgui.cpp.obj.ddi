@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "thirdparty\\rlImgui\\CMakeFiles\\rlimgui.dir\\rlImgui.cpp.obj",
+            "outputs": [
+                "D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\vc140.pdb",
+                "thirdparty\\rlImgui\\CMakeFiles\\rlimgui.dir\\rlImgui.cpp.obj.ddi"
+            ],
+            "requires": []
+        }
+    ]
+}

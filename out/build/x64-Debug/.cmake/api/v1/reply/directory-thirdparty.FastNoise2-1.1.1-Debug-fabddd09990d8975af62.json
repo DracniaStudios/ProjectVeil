@@ -1,0 +1,118 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"thirdparty/FastNoise2-1.1.1/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 111,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 124,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 131,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 153,
+				"parent" : 0
+			}
+		]
+	},
+	"codemodelVersion" : 
+	{
+		"major" : 2,
+		"minor" : 9
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"thirdparty/FastNoise2-1.1.1/src/FastNoiseD.lib"
+			],
+			"targetId" : "FastNoise::@c3970584aff34cfa0167",
+			"targetIndex" : 0,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 2,
+			"component" : "Unspecified",
+			"destination" : "lib/cmake/FastNoise2",
+			"paths" : 
+			[
+				"out/build/x64-Debug/thirdparty/FastNoise2-1.1.1/generated/FastNoise2Config.cmake",
+				"out/build/x64-Debug/thirdparty/FastNoise2-1.1.1/generated/FastNoise2ConfigVersion.cmake"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 3,
+			"component" : "Unspecified",
+			"destination" : "lib/cmake/FastNoise2",
+			"exportName" : "FastNoise2Targets",
+			"exportTargets" : 
+			[
+				{
+					"id" : "FastNoise::@c3970584aff34cfa0167",
+					"index" : 0
+				},
+				{
+					"id" : "FastSIMD::@6a824029d8a23c0cb0e8",
+					"index" : 1
+				},
+				{
+					"id" : "FastSIMD_FastNoise::@c3970584aff34cfa0167",
+					"index" : 2
+				}
+			],
+			"paths" : 
+			[
+				"thirdparty/FastNoise2-1.1.1/CMakeFiles/Export/685b7b2fe36c8f3a2e6ec6f0a6279b14/FastNoise2Targets.cmake"
+			],
+			"type" : "export"
+		},
+		{
+			"backtrace" : 4,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				{
+					"from" : "out/build/x64-Debug/thirdparty/FastNoise2-1.1.1/pdb-files/",
+					"to" : "."
+				}
+			],
+			"type" : "directory"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "thirdparty/FastNoise2-1.1.1",
+		"source" : "thirdparty/FastNoise2-1.1.1"
+	}
+}

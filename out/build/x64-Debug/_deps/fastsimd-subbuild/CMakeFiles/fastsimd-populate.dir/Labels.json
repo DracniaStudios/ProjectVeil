@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "D:/GitHub/ProjectVeil/out/build/x64-Debug/_deps/fastsimd-subbuild/CMakeFiles/fastsimd-populate"
+		},
+		{
+			"file" : "D:/GitHub/ProjectVeil/out/build/x64-Debug/_deps/fastsimd-subbuild/CMakeFiles/fastsimd-populate.rule"
+		},
+		{
+			"file" : "D:/GitHub/ProjectVeil/out/build/x64-Debug/_deps/fastsimd-subbuild/CMakeFiles/fastsimd-populate-complete.rule"
+		},
+		{
+			"file" : "D:/GitHub/ProjectVeil/out/build/x64-Debug/_deps/fastsimd-subbuild/fastsimd-populate-prefix/src/fastsimd-populate-stamp/fastsimd-populate-build.rule"
+		},
+		{
+			"file" : "D:/GitHub/ProjectVeil/out/build/x64-Debug/_deps/fastsimd-subbuild/fastsimd-populate-prefix/src/fastsimd-populate-stamp/fastsimd-populate-configure.rule"
+		},
+		{
+			"file" : "D:/GitHub/ProjectVeil/out/build/x64-Debug/_deps/fastsimd-subbuild/fastsimd-populate-prefix/src/fastsimd-populate-stamp/fastsimd-populate-download.rule"
+		},
+		{
+			"file" : "D:/GitHub/ProjectVeil/out/build/x64-Debug/_deps/fastsimd-subbuild/fastsimd-populate-prefix/src/fastsimd-populate-stamp/fastsimd-populate-install.rule"
+		},
+		{
+			"file" : "D:/GitHub/ProjectVeil/out/build/x64-Debug/_deps/fastsimd-subbuild/fastsimd-populate-prefix/src/fastsimd-populate-stamp/fastsimd-populate-mkdir.rule"
+		},
+		{
+			"file" : "D:/GitHub/ProjectVeil/out/build/x64-Debug/_deps/fastsimd-subbuild/fastsimd-populate-prefix/src/fastsimd-populate-stamp/fastsimd-populate-patch.rule"
+		},
+		{
+			"file" : "D:/GitHub/ProjectVeil/out/build/x64-Debug/_deps/fastsimd-subbuild/fastsimd-populate-prefix/src/fastsimd-populate-stamp/fastsimd-populate-test.rule"
+		},
+		{
+			"file" : "D:/GitHub/ProjectVeil/out/build/x64-Debug/_deps/fastsimd-subbuild/fastsimd-populate-prefix/src/fastsimd-populate-stamp/fastsimd-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"fastsimd-populate"
+		],
+		"name" : "fastsimd-populate"
+	}
+}

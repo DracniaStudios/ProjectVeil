@@ -1,0 +1,88 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "tools",
+      "displayName": "Tools",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "cacheVariables": {
+        "CPM_SOURCE_CACHE": {
+          "value": "${sourceDir}/out/cpm-cache",
+          "type": "PATH"
+        },
+        "BUILD_SHARED_LIBS": {
+          "value": "True",
+          "type": "BOOL"
+        }
+      }
+    },
+    {
+      "name": "minimal",
+      "displayName": "Minimal",
+      "inherits": "tools",
+      "cacheVariables": {
+        "FASTNOISE2_TOOLS": {
+          "value": "False",
+          "type": "BOOL"
+        },
+        "FASTNOISE2_TESTS": {
+          "value": "False",
+          "type": "BOOL"
+        }
+      }
+    },
+    {
+      "name": "all",
+      "displayName": "All",
+      "inherits": "tools",
+      "cacheVariables": {
+        "FASTNOISE2_TOOLS": {
+          "value": "True",
+          "type": "BOOL"
+        },
+        "FASTNOISE2_TESTS": {
+          "value": "True",
+          "type": "BOOL"
+        }
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "tools-debug",
+      "displayName": "tools Debug",
+      "configurePreset": "tools"
+    },
+    {
+      "name": "tools-release",
+      "displayName": "tools Release",
+      "configurePreset": "tools",
+      "configuration": "Release"
+    },
+    {
+      "name": "minimal-debug",
+      "displayName": "Minimal Debug",
+      "configurePreset": "minimal"
+    },
+    {
+      "name": "minimal-release",
+      "displayName": "Minimal Release",
+      "configurePreset": "minimal",
+      "configuration": "Release"
+    },
+    {
+      "name": "all-debug",
+      "displayName": "All Debug",
+      "configurePreset": "all",
+      "configuration": "Debug"
+    },
+    {
+      "name": "all-release",
+      "displayName": "All Release",
+      "configurePreset": "all",
+      "configuration": "Release"
+    }
+  ]
+}
