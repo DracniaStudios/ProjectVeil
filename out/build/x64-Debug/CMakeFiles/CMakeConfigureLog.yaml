@@ -2964,3 +2964,493 @@ events:
         
       exitCode: -1
 ...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/cmake/ArchDetect.cmake:15 (try_compile)"
+      - "out/build/x64-Debug/_deps/fastsimd-src/CMakeLists.txt:22 (target_architecture)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_f01d3
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_f01d3.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_f01d3.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        FAILED: [code=2] CMakeFiles/cmTC_f01d3.dir/ArchDetect.cpp.obj 
+        C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_f01d3.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_f01d3.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(15): error C2338: static assertion failed: 'FASTSIMD_ARCH<X86=SSE2>'
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(18): error C2059: syntax error: 'string'
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/dispatch/cmake/ClassSIMD.cmake:145 (try_compile)"
+      - "thirdparty/FastNoise2-1.1.1/src/CMakeLists.txt:69 (fastsimd_create_dispatch_library)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_f4c67
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=SSE2 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_f4c67.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_f4c67.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        FAILED: [code=2] CMakeFiles/cmTC_f4c67.dir/ArchDetect.cpp.obj 
+        C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=SSE2 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_f4c67.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_f4c67.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(15): error C2338: static assertion failed: 'FASTSIMD_ARCH<X86=SSE2>'
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(18): error C2059: syntax error: 'string'
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/dispatch/cmake/ClassSIMD.cmake:145 (try_compile)"
+      - "thirdparty/FastNoise2-1.1.1/src/CMakeLists.txt:69 (fastsimd_create_dispatch_library)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_a7159
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=SSE41 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_a7159.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_a7159.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        FAILED: [code=2] CMakeFiles/cmTC_a7159.dir/ArchDetect.cpp.obj 
+        C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=SSE41 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_a7159.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_a7159.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(15): error C2338: static assertion failed: 'FASTSIMD_ARCH<X86=SSE2>'
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(18): error C2059: syntax error: 'string'
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/dispatch/cmake/ClassSIMD.cmake:145 (try_compile)"
+      - "thirdparty/FastNoise2-1.1.1/src/CMakeLists.txt:69 (fastsimd_create_dispatch_library)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_46cab
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=AVX2 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_46cab.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_46cab.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        FAILED: [code=2] CMakeFiles/cmTC_46cab.dir/ArchDetect.cpp.obj 
+        C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=AVX2 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_46cab.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_46cab.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(15): error C2338: static assertion failed: 'FASTSIMD_ARCH<X86=SSE2>'
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(18): error C2059: syntax error: 'string'
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/dispatch/cmake/ClassSIMD.cmake:145 (try_compile)"
+      - "thirdparty/FastNoise2-1.1.1/src/CMakeLists.txt:69 (fastsimd_create_dispatch_library)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_c1ee9
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=AVX512 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_c1ee9.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_c1ee9.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        FAILED: [code=2] CMakeFiles/cmTC_c1ee9.dir/ArchDetect.cpp.obj 
+        C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=AVX512 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_c1ee9.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_c1ee9.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(15): error C2338: static assertion failed: 'FASTSIMD_ARCH<X86=SSE2>'
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(18): error C2059: syntax error: 'string'
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/dispatch/cmake/ClassSIMD.cmake:145 (try_compile)"
+      - "thirdparty/FastNoise2-1.1.1/src/CMakeLists.txt:69 (fastsimd_create_dispatch_library)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_3c251
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=NEON -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_3c251.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_3c251.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(9): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1951 --intdir=CMakeFiles\\cmTC_3c251.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\mt.exe --manifests  -- C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_3c251.dir\\ArchDetect.cpp.obj  /out:cmTC_3c251.exe /implib:cmTC_3c251.lib /pdb:cmTC_3c251.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+        FAILED: [code=4294967295] cmTC_3c251.exe 
+        C:\\WINDOWS\\system32\\cmd.exe /C "cd . && "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1951 --intdir=CMakeFiles\\cmTC_3c251.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\mt.exe --manifests  -- C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_3c251.dir\\ArchDetect.cpp.obj  /out:cmTC_3c251.exe /implib:cmTC_3c251.lib /pdb:cmTC_3c251.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+        LINK Pass 1: command "C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_3c251.dir\\ArchDetect.cpp.obj /out:cmTC_3c251.exe /implib:cmTC_3c251.lib /pdb:cmTC_3c251.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_3c251.dir/intermediate.manifest CMakeFiles\\cmTC_3c251.dir/manifest.res" failed (exit code 1120) with the following output:
+        MSVCRTD.lib(exe_main.obj) : error LNK2019: unresolved external symbol main referenced in function "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ)\x0d
+        cmTC_3c251.exe : fatal error LNK1120: 1 unresolved externals\x0d
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: -1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/dispatch/cmake/ClassSIMD.cmake:145 (try_compile)"
+      - "thirdparty/FastNoise2-1.1.1/src/CMakeLists.txt:69 (fastsimd_create_dispatch_library)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_4164d
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=AARCH64 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_4164d.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_4164d.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(9): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1951 --intdir=CMakeFiles\\cmTC_4164d.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\mt.exe --manifests  -- C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_4164d.dir\\ArchDetect.cpp.obj  /out:cmTC_4164d.exe /implib:cmTC_4164d.lib /pdb:cmTC_4164d.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+        FAILED: [code=4294967295] cmTC_4164d.exe 
+        C:\\WINDOWS\\system32\\cmd.exe /C "cd . && "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1951 --intdir=CMakeFiles\\cmTC_4164d.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\mt.exe --manifests  -- C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_4164d.dir\\ArchDetect.cpp.obj  /out:cmTC_4164d.exe /implib:cmTC_4164d.lib /pdb:cmTC_4164d.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+        LINK Pass 1: command "C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_4164d.dir\\ArchDetect.cpp.obj /out:cmTC_4164d.exe /implib:cmTC_4164d.lib /pdb:cmTC_4164d.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_4164d.dir/intermediate.manifest CMakeFiles\\cmTC_4164d.dir/manifest.res" failed (exit code 1120) with the following output:
+        MSVCRTD.lib(exe_main.obj) : error LNK2019: unresolved external symbol main referenced in function "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ)\x0d
+        cmTC_4164d.exe : fatal error LNK1120: 1 unresolved externals\x0d
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: -1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/dispatch/cmake/ClassSIMD.cmake:145 (try_compile)"
+      - "thirdparty/FastNoise2-1.1.1/src/CMakeLists.txt:69 (fastsimd_create_dispatch_library)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_26c6f
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=WASM -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_26c6f.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_26c6f.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(9): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1951 --intdir=CMakeFiles\\cmTC_26c6f.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\mt.exe --manifests  -- C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_26c6f.dir\\ArchDetect.cpp.obj  /out:cmTC_26c6f.exe /implib:cmTC_26c6f.lib /pdb:cmTC_26c6f.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+        FAILED: [code=4294967295] cmTC_26c6f.exe 
+        C:\\WINDOWS\\system32\\cmd.exe /C "cd . && "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1951 --intdir=CMakeFiles\\cmTC_26c6f.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\mt.exe --manifests  -- C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_26c6f.dir\\ArchDetect.cpp.obj  /out:cmTC_26c6f.exe /implib:cmTC_26c6f.lib /pdb:cmTC_26c6f.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+        LINK Pass 1: command "C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_26c6f.dir\\ArchDetect.cpp.obj /out:cmTC_26c6f.exe /implib:cmTC_26c6f.lib /pdb:cmTC_26c6f.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_26c6f.dir/intermediate.manifest CMakeFiles\\cmTC_26c6f.dir/manifest.res" failed (exit code 1120) with the following output:
+        MSVCRTD.lib(exe_main.obj) : error LNK2019: unresolved external symbol main referenced in function "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ)\x0d
+        cmTC_26c6f.exe : fatal error LNK1120: 1 unresolved externals\x0d
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: -1
+...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/cmake/ArchDetect.cmake:15 (try_compile)"
+      - "out/build/x64-Debug/_deps/fastsimd-src/CMakeLists.txt:22 (target_architecture)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_62425
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_62425.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_62425.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        FAILED: [code=2] CMakeFiles/cmTC_62425.dir/ArchDetect.cpp.obj 
+        C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_62425.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_62425.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(15): error C2338: static assertion failed: 'FASTSIMD_ARCH<X86=SSE2>'
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(18): error C2059: syntax error: 'string'
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/dispatch/cmake/ClassSIMD.cmake:145 (try_compile)"
+      - "thirdparty/FastNoise2-1.1.1/src/CMakeLists.txt:69 (fastsimd_create_dispatch_library)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_bcdc8
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=SSE2 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_bcdc8.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_bcdc8.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        FAILED: [code=2] CMakeFiles/cmTC_bcdc8.dir/ArchDetect.cpp.obj 
+        C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=SSE2 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_bcdc8.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_bcdc8.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(15): error C2338: static assertion failed: 'FASTSIMD_ARCH<X86=SSE2>'
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(18): error C2059: syntax error: 'string'
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/dispatch/cmake/ClassSIMD.cmake:145 (try_compile)"
+      - "thirdparty/FastNoise2-1.1.1/src/CMakeLists.txt:69 (fastsimd_create_dispatch_library)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_84424
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=SSE41 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_84424.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_84424.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        FAILED: [code=2] CMakeFiles/cmTC_84424.dir/ArchDetect.cpp.obj 
+        C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=SSE41 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_84424.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_84424.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(15): error C2338: static assertion failed: 'FASTSIMD_ARCH<X86=SSE2>'
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(18): error C2059: syntax error: 'string'
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/dispatch/cmake/ClassSIMD.cmake:145 (try_compile)"
+      - "thirdparty/FastNoise2-1.1.1/src/CMakeLists.txt:69 (fastsimd_create_dispatch_library)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_4cca4
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=AVX2 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_4cca4.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_4cca4.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        FAILED: [code=2] CMakeFiles/cmTC_4cca4.dir/ArchDetect.cpp.obj 
+        C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=AVX2 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_4cca4.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_4cca4.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(15): error C2338: static assertion failed: 'FASTSIMD_ARCH<X86=SSE2>'
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(18): error C2059: syntax error: 'string'
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/dispatch/cmake/ClassSIMD.cmake:145 (try_compile)"
+      - "thirdparty/FastNoise2-1.1.1/src/CMakeLists.txt:69 (fastsimd_create_dispatch_library)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_ef2bd
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=AVX512 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_ef2bd.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_ef2bd.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        FAILED: [code=2] CMakeFiles/cmTC_ef2bd.dir/ArchDetect.cpp.obj 
+        C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=AVX512 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_ef2bd.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_ef2bd.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(15): error C2338: static assertion failed: 'FASTSIMD_ARCH<X86=SSE2>'
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(18): error C2059: syntax error: 'string'
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/dispatch/cmake/ClassSIMD.cmake:145 (try_compile)"
+      - "thirdparty/FastNoise2-1.1.1/src/CMakeLists.txt:69 (fastsimd_create_dispatch_library)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_4abf4
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=NEON -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_4abf4.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_4abf4.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(9): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1951 --intdir=CMakeFiles\\cmTC_4abf4.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\mt.exe --manifests  -- C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_4abf4.dir\\ArchDetect.cpp.obj  /out:cmTC_4abf4.exe /implib:cmTC_4abf4.lib /pdb:cmTC_4abf4.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+        FAILED: [code=4294967295] cmTC_4abf4.exe 
+        C:\\WINDOWS\\system32\\cmd.exe /C "cd . && "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1951 --intdir=CMakeFiles\\cmTC_4abf4.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\mt.exe --manifests  -- C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_4abf4.dir\\ArchDetect.cpp.obj  /out:cmTC_4abf4.exe /implib:cmTC_4abf4.lib /pdb:cmTC_4abf4.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+        LINK Pass 1: command "C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_4abf4.dir\\ArchDetect.cpp.obj /out:cmTC_4abf4.exe /implib:cmTC_4abf4.lib /pdb:cmTC_4abf4.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_4abf4.dir/intermediate.manifest CMakeFiles\\cmTC_4abf4.dir/manifest.res" failed (exit code 1120) with the following output:
+        MSVCRTD.lib(exe_main.obj) : error LNK2019: unresolved external symbol main referenced in function "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ)\x0d
+        cmTC_4abf4.exe : fatal error LNK1120: 1 unresolved externals\x0d
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: -1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/dispatch/cmake/ClassSIMD.cmake:145 (try_compile)"
+      - "thirdparty/FastNoise2-1.1.1/src/CMakeLists.txt:69 (fastsimd_create_dispatch_library)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_24311
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=AARCH64 -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_24311.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_24311.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(9): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1951 --intdir=CMakeFiles\\cmTC_24311.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\mt.exe --manifests  -- C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_24311.dir\\ArchDetect.cpp.obj  /out:cmTC_24311.exe /implib:cmTC_24311.lib /pdb:cmTC_24311.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+        FAILED: [code=4294967295] cmTC_24311.exe 
+        C:\\WINDOWS\\system32\\cmd.exe /C "cd . && "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1951 --intdir=CMakeFiles\\cmTC_24311.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\mt.exe --manifests  -- C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_24311.dir\\ArchDetect.cpp.obj  /out:cmTC_24311.exe /implib:cmTC_24311.lib /pdb:cmTC_24311.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+        LINK Pass 1: command "C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_24311.dir\\ArchDetect.cpp.obj /out:cmTC_24311.exe /implib:cmTC_24311.lib /pdb:cmTC_24311.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_24311.dir/intermediate.manifest CMakeFiles\\cmTC_24311.dir/manifest.res" failed (exit code 1120) with the following output:
+        MSVCRTD.lib(exe_main.obj) : error LNK2019: unresolved external symbol main referenced in function "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ)\x0d
+        cmTC_24311.exe : fatal error LNK1120: 1 unresolved externals\x0d
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: -1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "out/build/x64-Debug/_deps/fastsimd-src/dispatch/cmake/ClassSIMD.cmake:145 (try_compile)"
+      - "thirdparty/FastNoise2-1.1.1/src/CMakeLists.txt:69 (fastsimd_create_dispatch_library)"
+    directories:
+      source: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+      binary: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
+      CMAKE_CXX_FLAGS_DEBUG: "/Ob0 /Od"
+      CMAKE_EXE_LINKER_FLAGS: "/machine:x64"
+      CMAKE_MODULE_PATH: "D:/GitHub/ProjectVeil/out/build/x64-Debug/CPM_modules;"
+      CMAKE_MSVC_DEBUG_INFORMATION_FORMAT: "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>"
+    buildResult:
+      variable: "compile_result_unused"
+      cached: true
+      stdout: |
+        Change Dir: 'D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe -v cmTC_09d00
+        [1/2] C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DTEST_FEATURE_SET_ACTIVE=WASM -D_MBCS  /DWIN32 /D_WINDOWS /EHsc  /Ob0 /Od -std:c++17 -MDd -RTC1 -Zi /showIncludes /FoCMakeFiles\\cmTC_09d00.dir\\ArchDetect.cpp.obj /FdCMakeFiles\\cmTC_09d00.dir\\ /FS -c D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp
+        D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\_deps\\fastsimd-src\\cmake\\ArchDetect.cpp(9): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+        [2/2] C:\\WINDOWS\\system32\\cmd.exe /C "cd . && "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1951 --intdir=CMakeFiles\\cmTC_09d00.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\mt.exe --manifests  -- C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_09d00.dir\\ArchDetect.cpp.obj  /out:cmTC_09d00.exe /implib:cmTC_09d00.lib /pdb:cmTC_09d00.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+        FAILED: [code=4294967295] cmTC_09d00.exe 
+        C:\\WINDOWS\\system32\\cmd.exe /C "cd . && "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin\\cmake.exe" -E vs_link_exe --msvc-ver=1951 --intdir=CMakeFiles\\cmTC_09d00.dir --rc=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\rc.exe --mt=C:\\PROGRA~2\\WI3CF2~1\\10\\bin\\10.0.26100.0\\x64\\mt.exe --manifests  -- C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_09d00.dir\\ArchDetect.cpp.obj  /out:cmTC_09d00.exe /implib:cmTC_09d00.lib /pdb:cmTC_09d00.pdb /version:0.0 /machine:x64  /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib && cd ."
+        LINK Pass 1: command "C:\\PROGRA~1\\MICROS~3\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64\\link.exe /nologo CMakeFiles\\cmTC_09d00.dir\\ArchDetect.cpp.obj /out:cmTC_09d00.exe /implib:cmTC_09d00.lib /pdb:cmTC_09d00.pdb /version:0.0 /machine:x64 /debug /INCREMENTAL /subsystem:console kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTFILE:CMakeFiles\\cmTC_09d00.dir/intermediate.manifest CMakeFiles\\cmTC_09d00.dir/manifest.res" failed (exit code 1120) with the following output:
+        MSVCRTD.lib(exe_main.obj) : error LNK2019: unresolved external symbol main referenced in function "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ)\x0d
+        cmTC_09d00.exe : fatal error LNK1120: 1 unresolved externals\x0d
+        ninja: build stopped: subcommand failed.
+        
+      exitCode: -1
+...

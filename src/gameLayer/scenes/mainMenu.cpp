@@ -1,68 +1,58 @@
 #include "mainMenu.h"
 
 
-struct Player
-{
-	Vector3 position3D;
-	Vector2 position2D;
-} player;
-
-// Clamp 2D position to the game map boundaries (pos.x / 1920) ( pos.y / 1080) to get percentage of screen, then multiply by map size to get world position 
-
-/*
-MainMenu* new_MainMenu()
-{
-	MainMenu* menu = new MainMenu();
-	menu->name = "Main Menu";
-	menu->gameMap.create(1920, 5, 1080);
-
-	return menu;
-}
-*/
 bool lockOn = false;
 bool isImGuiEnabled = false;
-Vector2 cubePosition = Vector2{0, 0};
+
+int cameraMode = CAMERA_THIRD_PERSON;
+
+Player player;
 
 void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float delta)
 {
 	auto manager = static_cast<SceneManager*>(manager_ptr);
 	auto scene = static_cast<Scene*>(manager->currentScene->object_ptr);
-	UpdateCamera(&manager->camera3D, CAMERA_FREE);
 
-	if (IsKeyDown(KEY_W)) player.position3D.z -= 5.0f * delta;
-	if (IsKeyDown(KEY_S)) player.position3D.z += 5.0f * delta;
-	if (IsKeyDown(KEY_A)) player.position3D.x -= 5.0f * delta;
-	if (IsKeyDown(KEY_D)) player.position3D.x += 5.0f * delta;
-
-	// Clamp 2D to position from game map size to screen size
+	// Camera Logic
 	{
-		int screenX = GetScreenWidth();
-		int screenY = GetScreenHeight();
+		auto& cam = manager->camera3D;
+		cam.target = player.getPosition();
+		//cam.target.x += 1; // Right
+		//cam.target.z += 1; // Back
+		cam.target.z -= 1; // Forward
 
-		player.position2D.x = screenX / 2 + player.position3D.x;
-		player.position2D.y = screenY / 2 + player.position3D.z;
+		// Clamp Camera Close To Player
+		int camMinDistance = 0;
+		int camMaxDistance = 5;
+		cam.position.x = Clamp(cam.position.x, player.getPosition().x + camMinDistance, player.getPosition().x + camMaxDistance);
+		cam.position.y = Clamp(cam.position.y, player.getPosition().y + camMinDistance, player.getPosition().y + camMaxDistance);
+		cam.position.z = Clamp(cam.position.z, player.getPosition().z + camMinDistance, player.getPosition().z + camMaxDistance);
 
-		player.position3D.x = Clamp(player.position3D.x, -(screenX / 2), screenX / 2);
-		player.position3D.z = Clamp(player.position3D.z, -(screenY / 2), screenY / 2);
-
-		player.position2D.x = Clamp(player.position2D.x, 0, screenX);
-		player.position2D.y = Clamp(player.position2D.y, 0, screenY);
-
+		cameraMode = Clamp(cameraMode, 0, 4);
 	}
 
+	UpdateCamera(&manager->camera3D, cameraMode);
+	player.update(delta);
 
 #pragma region ImGui
 	
 	if (IsKeyPressed(KEY_F10)) { isImGuiEnabled = !isImGuiEnabled; }
-	
+
 	if (isImGuiEnabled) {
 		ImGui::Begin("Game Data");
-		ImGui::Checkbox("Lock On Camera", &lockOn);
-		ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", player.position3D.x, player.position3D.y, player.position3D.z);
+		
+		ImGui::BeginChild("Player Data");
+		ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", player.rigidBody3D.translation.x, player.rigidBody3D.translation.y, player.rigidBody3D.translation.z);
 		ImGui::Text("Player Position 2D: (%.2f, %.2f)", player.position2D.x, player.position2D.y);
-		ImGui::SliderFloat2("Cube Position", &cubePosition.x, -1920, 1920);
 		ImGui::Text("Mouse Position: (%.2f, %.2f)", GetMousePosition().x, GetMousePosition().y);
+		ImGui::EndChild();
 
+		ImGui::BeginChild("Camera Data");
+		ImGui::InputInt("Camera Mode", &cameraMode);
+		ImGui::Checkbox("Lock On Camera", &lockOn);
+		ImGui::EndChild();
+		
+		
 		ImGui::End();
 	}
 #pragma endregion
@@ -71,7 +61,9 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float delta)
 void Scene_MainMenuDraw2D(void* manager_ptr, void* object_ptr)
 {
 	auto manager = static_cast<SceneManager*>(manager_ptr);
-	DrawRectangle(player.position2D.x, player.position2D.y, 32, 32, BLUE);
+
+	//player.render2D();
+	
 }
 void Scene_MainMenuDraw3D(void* manager_ptr, void* object_ptr)
 {
@@ -79,7 +71,7 @@ void Scene_MainMenuDraw3D(void* manager_ptr, void* object_ptr)
 
 	DrawGrid(10.0f, 1.0f);
 
-	DrawSphere(player.position3D, 0.5f, BLUE);
+	player.render3D();
 
 }
 

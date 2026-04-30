@@ -7,6 +7,7 @@
 #include <raymath.h>
 #include <gameMap.h>
 #include <imgui.h>
+#include <Player.h>
 
 #include <stdlib.h>
 #include <iostream>

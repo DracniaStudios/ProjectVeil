@@ -1,0 +1,497 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "ProjectVeil.exe"
+		},
+		{
+			"path" : "ProjectVeil.pdb"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_executable",
+			"target_link_libraries",
+			"target_compile_definitions",
+			"target_include_directories",
+			"target_sources",
+			"enable_segment_heap",
+			"target_scan_and_enable_segment_heap"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt",
+			"thirdparty/raylib/src/CMakeLists.txt",
+			"C:/Program Files/Microsoft Visual Studio/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/cmake/Microsoft/SegmentHeap.cmake"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 46,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 94,
+				"parent" : 0
+			},
+			{
+				"file" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 93,
+				"parent" : 3
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 61,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 60,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 70,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 91,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 92,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 65,
+				"parent" : 0
+			},
+			{
+				"file" : 0,
+				"line" : -1,
+				"parent" : 0
+			},
+			{
+				"command" : 6,
+				"file" : 2,
+				"line" : 121,
+				"parent" : 11
+			},
+			{
+				"command" : 5,
+				"file" : 2,
+				"line" : 114,
+				"parent" : 12
+			},
+			{
+				"command" : 4,
+				"file" : 2,
+				"line" : 69,
+				"parent" : 13
+			}
+		]
+	},
+	"codemodelVersion" : 
+	{
+		"major" : 2,
+		"minor" : 9
+	},
+	"compileDependencies" : 
+	[
+		{
+			"backtrace" : 2,
+			"id" : "raylib::@b1d4f153e8b3bf85333b"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "imgui::@0e4bebfa6e0abb85058b"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "rlimgui::@84f52d3d81dad75e9dc3"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "FastNoise::@c3970584aff34cfa0167"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "nlohmann_json::@0a90b0e941ed583d4cb5"
+		}
+	],
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "/DWIN32 /D_WINDOWS /EHsc /Ob0 /Od -std:c++latest -MDd -RTC1 -ZI"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 2,
+					"define" : "FASTNOISE2_VERSION=\"1.1.1\""
+				},
+				{
+					"backtrace" : 2,
+					"define" : "FASTNOISE_STATIC_LIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "FASTSIMD_IS_RELAXED=1"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "FASTSIMD_STATIC_LIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "GRAPHICS_API_OPENGL_33"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "PLATFORM_DESKTOP"
+				},
+				{
+					"backtrace" : 5,
+					"define" : "PRODUCTION_BUILD=0"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "RESOURCES_PATH=\"D:/GitHub/ProjectVeil/resources/\""
+				},
+				{
+					"backtrace" : 7,
+					"define" : "_CRT_SECURE_NO_WARNINGS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 8,
+					"path" : "D:/GitHub/ProjectVeil/src/gameLayer"
+				},
+				{
+					"backtrace" : 9,
+					"path" : "D:/GitHub/ProjectVeil/src/platform"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "D:/GitHub/ProjectVeil/thirdparty/raylib/src"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "D:/GitHub/ProjectVeil/thirdparty/raylib/src/external/glfw/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "D:/GitHub/ProjectVeil/thirdparty/imgui-docking/imgui"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "D:/GitHub/ProjectVeil/thirdparty/rlImgui"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "D:/GitHub/ProjectVeil/thirdparty/FastNoise2-1.1.1/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "D:/GitHub/ProjectVeil/out/build/x64-Debug/_deps/fastsimd-src/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/FastNoise2-1.1.1/src/fastsimd/FastSIMD_FastNoise/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "D:/GitHub/ProjectVeil/thirdparty/json-3.12.0/include"
+				}
+			],
+			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					2
+				],
+				"standard" : "23"
+			},
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 2,
+			"id" : "raylib::@b1d4f153e8b3bf85333b"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "glfw::@332ee23b620a5fac1236"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "imgui::@0e4bebfa6e0abb85058b"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "rlimgui::@84f52d3d81dad75e9dc3"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "FastNoise::@c3970584aff34cfa0167"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "FastSIMD_FastNoise::@c3970584aff34cfa0167"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "FastSIMD::@6a824029d8a23c0cb0e8"
+		}
+	],
+	"id" : "ProjectVeil::@6890427a1f51a3e7e1df",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "/DWIN32 /D_WINDOWS /EHsc /Ob0 /Od -MDd -RTC1 -ZI",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "/machine:x64 /debug /INCREMENTAL",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "/subsystem:console",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "thirdparty\\raylib\\raylib\\raylib.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "thirdparty\\imgui-docking\\imgui.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "thirdparty\\rlImgui\\rlimgui.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "thirdparty\\FastNoise2-1.1.1\\src\\FastNoiseD.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "opengl32.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "glu32.lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "winmm.lib",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"linkLibraries" : 
+	[
+		{
+			"backtrace" : 2,
+			"id" : "raylib::@b1d4f153e8b3bf85333b"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "imgui::@0e4bebfa6e0abb85058b"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "rlimgui::@84f52d3d81dad75e9dc3"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "FastNoise::@c3970584aff34cfa0167"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "nlohmann_json::@0a90b0e941ed583d4cb5"
+		}
+	],
+	"name" : "ProjectVeil",
+	"nameOnDisk" : "ProjectVeil.exe",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11
+			]
+		},
+		{
+			"name" : "",
+			"sourceIndexes" : 
+			[
+				12,
+				13
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 10,
+			"compileGroupIndex" : 0,
+			"path" : "src/gameLayer/GameObject.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 10,
+			"compileGroupIndex" : 0,
+			"path" : "src/gameLayer/ParticleSystem.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 10,
+			"compileGroupIndex" : 0,
+			"path" : "src/gameLayer/Physics.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 10,
+			"compileGroupIndex" : 0,
+			"path" : "src/gameLayer/Player.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 10,
+			"compileGroupIndex" : 0,
+			"path" : "src/gameLayer/Scene.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 10,
+			"compileGroupIndex" : 0,
+			"path" : "src/gameLayer/SceneManager.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 10,
+			"compileGroupIndex" : 0,
+			"path" : "src/gameLayer/Transition.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 10,
+			"compileGroupIndex" : 0,
+			"path" : "src/gameLayer/gameMain.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 10,
+			"compileGroupIndex" : 0,
+			"path" : "src/gameLayer/gameMap.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 10,
+			"compileGroupIndex" : 0,
+			"path" : "src/gameLayer/scenes/mainMenu.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 10,
+			"compileGroupIndex" : 0,
+			"path" : "src/platform/ProjectVeil.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 10,
+			"compileGroupIndex" : 0,
+			"path" : "src/platform/asserts.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 14,
+			"path" : "C:/Program Files/Microsoft Visual Studio/18/Insiders/VC/Tools/MSVC/14.51.36231/include/manifest/segmentheap.manifest",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 2,
+			"path" : "thirdparty/json-3.12.0/nlohmann_json.natvis",
+			"sourceGroupIndex" : 1
+		}
+	],
+	"type" : "EXECUTABLE"
+}

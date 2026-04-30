@@ -40,6 +40,16 @@
 			"language" : "CXX",
 			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/ParticleSystem.cpp"
 		},
+		"CMakeFiles/ProjectVeil.dir/src/gameLayer/Physics.cpp.obj" : 
+		{
+			"language" : "CXX",
+			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/Physics.cpp"
+		},
+		"CMakeFiles/ProjectVeil.dir/src/gameLayer/Player.cpp.obj" : 
+		{
+			"language" : "CXX",
+			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/Player.cpp"
+		},
 		"CMakeFiles/ProjectVeil.dir/src/gameLayer/Scene.cpp.obj" : 
 		{
 			"language" : "CXX",

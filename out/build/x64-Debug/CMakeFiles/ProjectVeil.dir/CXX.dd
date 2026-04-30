@@ -3,6 +3,10 @@ build CMakeFiles\ProjectVeil.dir\src\gameLayer\GameObject.cpp.obj: dyndep
 
 build CMakeFiles\ProjectVeil.dir\src\gameLayer\ParticleSystem.cpp.obj: dyndep
 
+build CMakeFiles\ProjectVeil.dir\src\gameLayer\Physics.cpp.obj: dyndep
+
+build CMakeFiles\ProjectVeil.dir\src\gameLayer\Player.cpp.obj: dyndep
+
 build CMakeFiles\ProjectVeil.dir\src\gameLayer\Scene.cpp.obj: dyndep
 
 build CMakeFiles\ProjectVeil.dir\src\gameLayer\SceneManager.cpp.obj: dyndep
