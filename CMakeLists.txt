@@ -5,7 +5,7 @@ cmake_minimum_required (VERSION 4.0)
 
 set(CMAKE_CXX_STANDARD 23)#Soon to be 26
 
-set(PRODUCTION_BUILD OFF CACHE BOOL "Produciton Build" FORCE)
+set(PRODUCTION_BUILD OFF CACHE BOOL "Production Build" FORCE)
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
@@ -14,8 +14,8 @@ if (POLICY CMP0141)
 endif()
 
 if (MSVC)
-	set(CMAKE_MSVC_RUNTINE_LIBRARY "<ultiThreaded$<$<CONFIG:Debug>:Debug>")
-	set(CMAKE_MSVC_RUNTINE_LIBRARY "<ultiThreaded$<$<CONFIG:Release>:Release>")
+	set(CMAKE_MSVC_RUNTINE_LIBRARY "<MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set(CMAKE_MSVC_RUNTINE_LIBRARY "<MultiThreaded$<$<CONFIG:Release>:Release>")
 	add_compile_options(arch/AVX2)
 else()
 	#add_compile_options(0mavx2 -CMakeFindDependencyMacro)
@@ -46,12 +46,12 @@ file (GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src
 add_executable("${PROJECT_NAME}")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET "${PROJECT_NAME}" PROPERTY CXX_STANDARD 20)
+  set_property(TARGET "${PROJECT_NAME}" PROPERTY CXX_STANDARD 23)
 endif()
 
 # Define Absolute Project Path
 if (PRODUCTION_BUILD)
-	
+
 	# Setup the ASSETS_PATH macro to the final assets directory when you share the project
 	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="./resources/")
 	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC PRODUCTION_BUILD=1)
@@ -93,4 +93,3 @@ target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURC
 
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE raylib_static imgui rlimgui FastNoise2 nlohmann_json)
 # TODO: Add tests and install targets if needed.
-

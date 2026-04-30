@@ -30,6 +30,11 @@
 	"module-dir" : "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/ProjectVeil.dir",
 	"sources" : 
 	{
+		"CMakeFiles/ProjectVeil.dir/src/gameLayer/GameObject.cpp.obj" : 
+		{
+			"language" : "CXX",
+			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/GameObject.cpp"
+		},
 		"CMakeFiles/ProjectVeil.dir/src/gameLayer/ParticleSystem.cpp.obj" : 
 		{
 			"language" : "CXX",
@@ -54,6 +59,11 @@
 		{
 			"language" : "CXX",
 			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/gameMain.cpp"
+		},
+		"CMakeFiles/ProjectVeil.dir/src/gameLayer/gameMap.cpp.obj" : 
+		{
+			"language" : "CXX",
+			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/gameMap.cpp"
 		},
 		"CMakeFiles/ProjectVeil.dir/src/gameLayer/scenes/mainMenu.cpp.obj" : 
 		{

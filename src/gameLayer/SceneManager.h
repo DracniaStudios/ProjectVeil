@@ -13,6 +13,10 @@ typedef struct SceneManager {
 	Scene* currentScene; /**< The current Scene active */
 	Scene* nextScene; /**< The next Scene to activate */
 	Transition* transition; /**< The Transition between two Scene */
+
+	Camera3D camera3D;
+	Camera2D camera2D;
+
 } SceneManager;
 
 /**

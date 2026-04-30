@@ -4,11 +4,13 @@
 # MY_SOURCES at CMakeLists.txt:43 (file)
 file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "D:/GitHub/ProjectVeil/src/*.cpp")
 set(OLD_GLOB
+  "D:/GitHub/ProjectVeil/src/gameLayer/GameObject.cpp"
   "D:/GitHub/ProjectVeil/src/gameLayer/ParticleSystem.cpp"
   "D:/GitHub/ProjectVeil/src/gameLayer/Scene.cpp"
   "D:/GitHub/ProjectVeil/src/gameLayer/SceneManager.cpp"
   "D:/GitHub/ProjectVeil/src/gameLayer/Transition.cpp"
   "D:/GitHub/ProjectVeil/src/gameLayer/gameMain.cpp"
+  "D:/GitHub/ProjectVeil/src/gameLayer/gameMap.cpp"
   "D:/GitHub/ProjectVeil/src/gameLayer/scenes/mainMenu.cpp"
   "D:/GitHub/ProjectVeil/src/platform/ProjectVeil.cpp"
   "D:/GitHub/ProjectVeil/src/platform/asserts.cpp"

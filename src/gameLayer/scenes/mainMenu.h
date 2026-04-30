@@ -1,17 +1,21 @@
 #ifndef SCENE_MAINMENU_H
 #define SCENE_MAINMENU_H
 
+#include <SceneManager.h>
 #include <Scene.h>
 #include <string>
 
-struct MainMenu
+Scene& loadScene(Scene& scene);
+
+struct MainMenu : Scene
 {
-	std::string name;
+	const char* name;
 };
 
-MainMenu* new_MainMenu();
+//MainMenu* new_MainMenu();
 
 void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float delta);
-void Scene_MainMenuDraw(void* manager_ptr, void* object_ptr);
+void Scene_MainMenuDraw2D(void* manager_ptr, void* object_ptr);
+void Scene_MainMenuDraw3D(void* manager_ptr, void* object_ptr);
 
 #endif

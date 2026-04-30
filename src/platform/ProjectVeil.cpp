@@ -4,14 +4,12 @@
 #include "ProjectVeil.h"
 
 using namespace std;
-SceneManager manager = {};
-Camera3D camera = {};
 
 int main()
 {
 #if PRODUCTION_BUILD == 1
 	std::cout << "Production Build \n";
-	SetTraceLogLevel
+	SetTraceLogLevel(LOG_FATAL);
 #endif
 
 	SetConfigFlags(FLAG_WINDOW_MAXIMIZED);
@@ -39,36 +37,35 @@ int main()
 
 	while (!WindowShouldClose())
 	{
-		
-		BeginDrawing();
-		BeginMode3D(camera);
-		ClearBackground(BLACK);
 
 #pragma region ImGui
+		BeginDrawing();
+
 		rlImGuiBegin();
 
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, {});
 		ImGui::PushStyleColor(ImGuiCol_DockingEmptyBg, {});
 		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID);
-		ImGui::PopStyleColor(3);
-#pragma endregion
+		ImGui::PopStyleColor(2);
 
-		SceneManager_draw(&manager);
+#pragma endregion
 
 		if (!update_game())
 		{
+			close_game();
+
 			CloseWindow();
 		}
-		EndMode3D();
+
 		rlImGuiEnd();
 		EndDrawing();
 	}
 
 	rlImGuiShutdown();
 
-	CloseWindow();
-
 	close_game();
+
+	CloseWindow();
 
 	return 0;
 }

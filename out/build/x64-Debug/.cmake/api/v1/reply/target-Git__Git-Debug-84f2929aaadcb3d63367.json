@@ -1,0 +1,118 @@
+{
+	"abstract" : true,
+	"artifacts" : 
+	[
+		{
+			"path" : "C:/Program Files/Git/cmd/git.exe"
+		}
+	],
+	"backtrace" : 11,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_executable",
+			"find_package",
+			"__FetchContent_populateSubbuild",
+			"__FetchContent_doPopulation",
+			"cmake_language",
+			"__FetchContent_Populate",
+			"FetchContent_MakeAvailable",
+			"cpm_fetch_package",
+			"CPMAddPackage"
+		],
+		"files" : 
+		[
+			"C:/Program Files/Microsoft Visual Studio/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-4.2/Modules/FindGit.cmake",
+			"C:/Program Files/Microsoft Visual Studio/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-4.2/Modules/FetchContent.cmake",
+			"C:/Program Files/Microsoft Visual Studio/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-4.2/Modules/FetchContent.cmake:2155:EVAL",
+			"thirdparty/FastNoise2-1.1.1/cmake/CPM.cmake",
+			"thirdparty/FastNoise2-1.1.1/src/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 4
+			},
+			{
+				"command" : 8,
+				"file" : 4,
+				"line" : 2,
+				"parent" : 0
+			},
+			{
+				"command" : 7,
+				"file" : 3,
+				"line" : 895,
+				"parent" : 1
+			},
+			{
+				"command" : 6,
+				"file" : 3,
+				"line" : 1114,
+				"parent" : 2
+			},
+			{
+				"command" : 5,
+				"file" : 1,
+				"line" : 2394,
+				"parent" : 3
+			},
+			{
+				"command" : 4,
+				"file" : 1,
+				"line" : 2155,
+				"parent" : 4
+			},
+			{
+				"file" : 2,
+				"parent" : 5
+			},
+			{
+				"command" : 3,
+				"file" : 2,
+				"line" : 2,
+				"parent" : 6
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 1619,
+				"parent" : 7
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 1884,
+				"parent" : 8
+			},
+			{
+				"file" : 0,
+				"parent" : 9
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 179,
+				"parent" : 10
+			}
+		]
+	},
+	"codemodelVersion" : 
+	{
+		"major" : 2,
+		"minor" : 9
+	},
+	"id" : "Git::Git::@c3970584aff34cfa0167",
+	"imported" : true,
+	"local" : true,
+	"name" : "Git::Git",
+	"nameOnDisk" : "git.exe",
+	"paths" : 
+	{
+		"build" : "thirdparty/FastNoise2-1.1.1/src",
+		"source" : "thirdparty/FastNoise2-1.1.1/src"
+	},
+	"sources" : [],
+	"type" : "EXECUTABLE"
+}
