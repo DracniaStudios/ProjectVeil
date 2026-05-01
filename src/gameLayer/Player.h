@@ -22,7 +22,7 @@ struct Player
 	Vector2 position2D;
 	Color defaultColor = Color(0, 115, 0, 255);
 
-	float speed = 5.0f;
+	float speed = 1.0f;
 
 	void render2D();
 	void render3D();

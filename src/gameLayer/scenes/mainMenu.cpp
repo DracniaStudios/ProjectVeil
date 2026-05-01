@@ -3,10 +3,18 @@
 
 bool lockOn = false;
 bool isImGuiEnabled = false;
+int cameraMode = CAMERA_FIRST_PERSON;
 
-int cameraMode = CAMERA_THIRD_PERSON;
+int sensitivityX = 0.5f;
+int sensitivityY = 0.5f;
 
 Player player;
+struct CameraData
+{
+	Vector3 position = {};
+	Vector3 rotation = {};
+	float zoom = 0.0f;
+}cameraData;
 
 void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float delta)
 {
@@ -16,22 +24,12 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float delta)
 	// Camera Logic
 	{
 		auto& cam = manager->camera3D;
-		cam.target = player.getPosition();
-		//cam.target.x += 1; // Right
-		//cam.target.z += 1; // Back
-		cam.target.z -= 1; // Forward
-
-		// Clamp Camera Close To Player
-		int camMinDistance = 0;
-		int camMaxDistance = 5;
-		cam.position.x = Clamp(cam.position.x, player.getPosition().x + camMinDistance, player.getPosition().x + camMaxDistance);
-		cam.position.y = Clamp(cam.position.y, player.getPosition().y + camMinDistance, player.getPosition().y + camMaxDistance);
-		cam.position.z = Clamp(cam.position.z, player.getPosition().z + camMinDistance, player.getPosition().z + camMaxDistance);
-
-		cameraMode = Clamp(cameraMode, 0, 4);
+		cam.position = player.rigidBody3D.translation + Vector3(0, 2, -5);
+		cam.target = player.rigidBody3D.front + player.rigidBody3D.translation;
+		UpdateCamera(&manager->camera3D, cameraMode);
+		//UpdateCameraPro(&manager->camera3D, cameraData.position, cameraData.rotation, cameraData.zoom);
 	}
 
-	UpdateCamera(&manager->camera3D, cameraMode);
 	player.update(delta);
 
 #pragma region ImGui
@@ -42,15 +40,22 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float delta)
 		ImGui::Begin("Game Data");
 		
 		ImGui::BeginChild("Player Data");
+		//ImGui::Text("Mouse Position: (%.2f, %.2f)", GetMousePosition().x, GetMousePosition().y);
+		
 		ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", player.rigidBody3D.translation.x, player.rigidBody3D.translation.y, player.rigidBody3D.translation.z);
+		ImGui::Text("Player Scale: (%.2f, %.2f, %.2f)", player.rigidBody3D.scale.x, player.rigidBody3D.scale.y, player.rigidBody3D.scale.z);
 		ImGui::Text("Player Position 2D: (%.2f, %.2f)", player.position2D.x, player.position2D.y);
-		ImGui::Text("Mouse Position: (%.2f, %.2f)", GetMousePosition().x, GetMousePosition().y);
-		ImGui::EndChild();
 
+		ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player.rigidBody3D.front.x, player.rigidBody3D.front.y, player.rigidBody3D.front.z);
+		ImGui::Text("Player Backward: (%.2f, %.2f, %.2f)", player.rigidBody3D.back.x, player.rigidBody3D.back.y, player.rigidBody3D.back.z);
+		
+		ImGui::EndChild();
+		/*
 		ImGui::BeginChild("Camera Data");
 		ImGui::InputInt("Camera Mode", &cameraMode);
 		ImGui::Checkbox("Lock On Camera", &lockOn);
 		ImGui::EndChild();
+		*/
 		
 		
 		ImGui::End();

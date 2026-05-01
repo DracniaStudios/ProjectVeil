@@ -242,7 +242,25 @@ struct Transform3D : public Transform
 	Vector3 getBottomRight()  const { return { translation.x + scale.x * 0.5f, translation.y + scale.y * 0.5f, translation.z }; }
 
 	Cube getAABB() const { return { translation.x - scale.x * 0.5f, translation.y - scale.y * 0.5f, scale.x, scale.y }; }
-
+	
+	// Z+ is Forward
+	// X+ is Right
+	/*
+	Vector3 getForward() const { return Vector3(translation.x, translation.y, translation.z + scale.z * 2.0f); };
+	Vector3 getBackward() const { return Vector3(translation.x, translation.y, translation.z - scale.z * 2.0f); };
+	Vector3 getRight() const { return Vector3(translation.x + scale.x * 2.0f, translation.y, translation.z); };
+	Vector3 getLeft() const { return Vector3(translation.x - scale.x * 2.0f, translation.y, translation.z); };
+	Vector3 getUp() const { return Vector3(translation.x, translation.y + scale.y * 2.0f, translation.z); };
+	Vector3 getDown() const { return Vector3(translation.x, translation.y - scale.y * 2.0f, translation.z); };
+	*/
+	
+	Vector3 front = Vector3(0, 0, 1); 
+	Vector3 back = Vector3(0, 0, -1); 
+	Vector3 right = Vector3(-1, 0, 0); 
+	Vector3 left = Vector3(1, 0, 0); 
+	Vector3 up = Vector3(0, 1, 0); 
+	Vector3 down = Vector3(0, -1, 0); 
+	
 };
 
 
