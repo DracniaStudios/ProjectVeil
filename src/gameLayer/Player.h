@@ -16,17 +16,20 @@ struct Player
 	// This allows us to have a consistent player representation in both 2D and 3D space,
 	// while still maintaining the core logic and physics in the 3D player structure.
 
+
+	bool isCrouching = false;
+
 	RigidBody3D rigidBody3D;
-	//RigidBody2D rigidBody2D;
-	//Vector3 position3D;
-	Vector2 position2D;
+	RigidBody2D rigidBody2D;
+
+
 	Color defaultColor = Color(0, 115, 0, 255);
 
-	float speed = 1.0f;
+	float baseSpeed = 0.01f;
 
 	void render2D();
 	void render3D();
-	void update(float deltaTime);
+	void update(Camera* camera, float deltaTime);
 
 	Vector3& getPosition() { return rigidBody3D.getPosition(); }
 };

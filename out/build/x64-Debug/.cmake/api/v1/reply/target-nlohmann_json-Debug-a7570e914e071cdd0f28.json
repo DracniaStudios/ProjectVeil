@@ -1,0 +1,49 @@
+{
+	"abstract" : true,
+	"backtrace" : 2,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"_add_library",
+			"add_library"
+		],
+		"files" : 
+		[
+			"C:/Users/soner/Documents/vcpkg/vcpkg-master/scripts/buildsystems/vcpkg.cmake",
+			"thirdparty/json-3.12.0/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 116,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 649,
+				"parent" : 1
+			}
+		]
+	},
+	"codemodelVersion" : 
+	{
+		"major" : 2,
+		"minor" : 9
+	},
+	"id" : "nlohmann_json::@0a90b0e941ed583d4cb5",
+	"name" : "nlohmann_json",
+	"paths" : 
+	{
+		"build" : "thirdparty/json-3.12.0",
+		"source" : "thirdparty/json-3.12.0"
+	},
+	"sources" : [],
+	"type" : "INTERFACE_LIBRARY"
+}

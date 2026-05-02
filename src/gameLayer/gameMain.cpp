@@ -2,6 +2,10 @@
 
 SceneManager manager = {};
 
+bool lockMouse = false;
+
+static void UpdateCameraFPS(Camera* camera);
+
 bool init_game()
 {
 	InitAudioDevice();
@@ -13,8 +17,6 @@ bool init_game()
 	manager.camera3D.up = Vector3(0.0f, 1.0f, 0.0f);
 	manager.camera3D.fovy = 90;
 	manager.camera3D.projection = CAMERA_PERSPECTIVE;
-
-	DisableCursor(); // Limit cursor to relative movement inside the window
 
 	manager.camera2D.zoom = 1.0f;// Scale Screen To World (1 pixel = 1 unit)
 	manager.camera2D.rotation = 0.0f;
@@ -37,7 +39,17 @@ bool update_game()
 	SceneManager_update(&manager, deltaTime);
 
 	SceneManager_draw(&manager);
-
+	/*
+	if (lockMouse)
+	{
+		DisableCursor();
+		//GetMouseDelta() = Vector2{ 0, 0 };
+	}
+	else
+	{
+		EnableCursor();
+	}
+	*/
 	DrawFPS(10, 10);
 	return true;
 }

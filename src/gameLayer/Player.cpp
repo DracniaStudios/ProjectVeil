@@ -6,13 +6,20 @@
 
 void Player::render2D()
 {
-	DrawRectangle(position2D.x, position2D.y, 32, 32, BLUE);
+	DrawRectangle(rigidBody2D.translation.x, rigidBody2D.translation.y, 32, 32, BLUE);
 
 }
 
 void Player::render3D()
 {
-	DrawSphere(rigidBody3D.translation, rigidBody3D.scale.x, BLUE);
+	//DrawSphere(rigidBody3D.translation, rigidBody3D.scale.x, BLUE);
+
+	DrawCapsule(rigidBody3D.getPosition(), 
+		Vector3(rigidBody3D.getPosition().x, rigidBody3D.getPosition().y + rigidBody3D.scale.y, rigidBody3D.getPosition().z), 
+		1, 8, 8, BLUE);
+	DrawCapsuleWires(rigidBody3D.getPosition(), 
+		Vector3(rigidBody3D.getPosition().x, rigidBody3D.getPosition().y + rigidBody3D.scale.y, rigidBody3D.getPosition().z), 
+		1, 8, 8, BLUE);
 
 	/// Show Directions
 	DrawSphere(rigidBody3D.front + rigidBody3D.translation, 0.1f, RED);
@@ -24,14 +31,30 @@ void Player::render3D()
 
 }
 
-void Player::update(float deltaTime)
+void Player::update(Camera* camera, float deltaTime)
 {
-	rigidBody3D.scale = Vector3(1, 1, 1);
+	/// Player Flags
+	isCrouching = IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_LEFT_SHIFT);
 
-	if (IsKeyDown(KEY_W)) rigidBody3D.translation += Vector3(rigidBody3D.front.x + (speed * deltaTime), 0, rigidBody3D.front.z + (speed * deltaTime));
-	if (IsKeyDown(KEY_S)) rigidBody3D.translation += Vector3(rigidBody3D.back.x + (speed * deltaTime), 0, rigidBody3D.back.z + (speed * deltaTime));
-	if (IsKeyDown(KEY_A)) rigidBody3D.translation += Vector3(rigidBody3D.left.x + (speed * deltaTime), 0, rigidBody3D.left.z + (speed * deltaTime));
-	if (IsKeyDown(KEY_D)) rigidBody3D.translation += Vector3(rigidBody3D.right.x + (speed * deltaTime), 0, rigidBody3D.right.z + (speed * deltaTime));
+	/// Player Scale
+	rigidBody3D.scale = Vector3(1, 2, 1);
+
+	/// Player Movement
+	auto speed = baseSpeed * deltaTime;
+
+
+	if (IsKeyDown(KEY_W)) { 
+		rigidBody3D.translation += rigidBody3D.front;
+	}
+	if (IsKeyDown(KEY_S)) { 
+		rigidBody3D.translation += rigidBody3D.back;
+	}
+	if (IsKeyDown(KEY_A)) { 
+		rigidBody3D.translation += rigidBody3D.left;
+	}
+	if (IsKeyDown(KEY_D)) {
+		rigidBody3D.translation += rigidBody3D.right;
+	}
 
 	if (IsKeyPressed(KEY_SPACE)) rigidBody3D.jump(20);
 
@@ -43,14 +66,14 @@ void Player::update(float deltaTime)
 		const float screenX = static_cast<float>(GetScreenWidth());
 		const float screenY = static_cast<float>(GetScreenHeight());
 
-		position2D.x = screenX / 2 + rigidBody3D.translation.x;
-		position2D.y = screenY / 2 + rigidBody3D.translation.z;
+		rigidBody2D.translation.x = screenX / 2 + rigidBody3D.translation.x;
+		rigidBody2D.translation.y = screenY / 2 + rigidBody3D.translation.z;
 
 		//position3D.x = Clamp(position3D.x, -(screenX / 2), screenX / 2);
 		//position3D.z = Clamp(position3D.z, -(screenY / 2), screenY / 2);
 
-		position2D.x = Clamp(position2D.x, 0, screenX);
-		position2D.y = Clamp(position2D.y, 0, screenY);
+		rigidBody2D.translation.x = Clamp(rigidBody2D.translation.x, 0, screenX);
+		rigidBody2D.translation.y = Clamp(rigidBody2D.translation.y, 0, screenY);
 
 	}
 

@@ -340,6 +340,11 @@ struct RigidBody3D : public Transform3D
 
 	void jump(float force){	if (downTouch) { velocity.y = force; }}
 
+	void addForce(Vector3 forceDirection, float force)
+	{
+		
+	}
+
 	// Collision Detection
 	void resolveConstrains();
 	void checkCollisionOnce(Vector3 position);
