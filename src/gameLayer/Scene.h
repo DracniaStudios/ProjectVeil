@@ -7,7 +7,10 @@
 #include <raymath.h>
 #include <gameMap.h>
 #include <imgui.h>
+#include <randomStuff.h>
+
 #include <Player.h>
+#include <PlayerCamera.h>
 
 #include <stdlib.h>
 #include <iostream>

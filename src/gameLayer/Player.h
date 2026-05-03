@@ -22,7 +22,6 @@ struct Player
 	RigidBody3D rigidBody3D;
 	RigidBody2D rigidBody2D;
 
-
 	Color defaultColor = Color(0, 115, 0, 255);
 
 	float baseSpeed = 0.01f;

@@ -10,10 +10,14 @@
 struct GameMap {
 
 	std::vector<GameObject> gameObjects = {};
-	
+	std::vector<RigidBody3D> rigidBodies3D = {};
+	//std::vector<RigidBody2D> rigidBodies2D = {};
+
 	int mapX = 5;
 	int mapY = 5;
 	int mapZ = 5;
+
+	int objectID = 0;
 
 	void create(int x, int y, int z);
 	void create(Vector3 size);

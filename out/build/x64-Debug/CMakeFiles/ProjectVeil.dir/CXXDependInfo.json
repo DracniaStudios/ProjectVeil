@@ -80,6 +80,11 @@
 			"language" : "CXX",
 			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/gameMap.cpp"
 		},
+		"CMakeFiles/ProjectVeil.dir/src/gameLayer/randomStuff.cpp.obj" : 
+		{
+			"language" : "CXX",
+			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/randomStuff.cpp"
+		},
 		"CMakeFiles/ProjectVeil.dir/src/gameLayer/scenes/mainMenu.cpp.obj" : 
 		{
 			"language" : "CXX",

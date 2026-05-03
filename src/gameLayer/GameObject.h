@@ -3,21 +3,31 @@
 #define GAMEOBJECT_H
 
 #include <raylib.h>
+#include <Physics.h>
 
 
-
-struct GameObject {
-
+struct GameObject 
+{
+	bool isEnabled = true;
 	int id = 0;
-	Transform transform;
+	
+	/// Physics
+	RigidBody3D rigidBody3D;
+	RigidBody2D rigidBody2D;
 
-	Vector3 getPosition() { return transform.translation; }
-	Quaternion getRotation() { return transform.rotation; }
-	Vector3 getSize() { return transform.scale; }
+	/// Renderer
+	Model model;
+	Mesh mesh;
+
+	Vector3 getPosition() { return rigidBody3D.translation; }
+	Quaternion getRotation() { return rigidBody3D.rotation; }
+	Vector3 getSize() { return rigidBody3D.scale; }
 
 	virtual void update(float deltaTime);
-	virtual void render();
-
+	virtual void render2D();
+	virtual void render3D();
+	virtual void onEnable();
+	virtual void onDisable();
 
 	/// Add a child to the GameObject
 	/// Add Component to the GameObject

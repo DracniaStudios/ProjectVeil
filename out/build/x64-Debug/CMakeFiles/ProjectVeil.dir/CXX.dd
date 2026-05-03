@@ -19,6 +19,8 @@ build CMakeFiles\ProjectVeil.dir\src\gameLayer\gameMain.cpp.obj: dyndep
 
 build CMakeFiles\ProjectVeil.dir\src\gameLayer\gameMap.cpp.obj: dyndep
 
+build CMakeFiles\ProjectVeil.dir\src\gameLayer\randomStuff.cpp.obj: dyndep
+
 build CMakeFiles\ProjectVeil.dir\src\gameLayer\scenes\mainMenu.cpp.obj: dyndep
 
 build CMakeFiles\ProjectVeil.dir\src\platform\ProjectVeil.cpp.obj: dyndep

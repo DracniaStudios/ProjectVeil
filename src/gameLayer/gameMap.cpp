@@ -18,11 +18,13 @@ void GameMap::create(int x, int y, int z)
 
 GameObject* GameMap::getObjectAt(Vector3 position)
 {
+	/*
 	for (auto& o : gameObjects)
 	{
-		if (o.transform.translation.x == position.x && o.transform.translation.y == position.y && o.transform.translation.z == position.z)
+		if (o.rigidBody3D.translation.x == position.x && o.rigidBody3D.translation.y == position.y && o.rigidBody3D.translation.z == position.z)
 			return &o;
 	}
+	*/
 	return nullptr;
 }
 
@@ -33,16 +35,28 @@ GameObject* GameMap::getObjectAt(int x, int y, int z)
 
 GameObject& GameMap::saveObjectAt(Vector3 position, GameObject object)
 {
+	object.rigidBody3D.translation = position;
+	object.rigidBody3D.scale = Vector3{ 1, 1, 1 };
+	object.id = objectID++;
+	if (object.id == 0) { std::cout << "Object ID is 0, this may cause issues with object management. Consider starting objectID at 1. \n"; }
+	
+	/*
 	for (auto& o : gameObjects)
 	{
-		if (o.transform.translation.x == position.x && o.transform.translation.y == position.y && o.transform.translation.z == position.z)
+		if (o.rigidBody3D.translation.x == position.x && o.rigidBody3D.translation.y == position.y && o.rigidBody3D.translation.z == position.z)
 		{
 			o = object;
+			o.onEnable();
 			std::cout << "Replace Object \n";
 			return o;
 
 		}
 	}
+	*/
+
+	object.onEnable();
+	std::cout << "Added Object \n";
+	rigidBodies3D.push_back(object.rigidBody3D);
 	gameObjects.push_back(object);
 	return gameObjects.back();
 }

@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "CMakeFiles\\ProjectVeil.dir\\src\\gameLayer\\randomStuff.cpp.obj",
+            "outputs": [
+                "D:\\GitHub\\ProjectVeil\\out\\build\\x64-Debug\\vc140.pdb",
+                "CMakeFiles\\ProjectVeil.dir\\src\\gameLayer\\randomStuff.cpp.obj.ddi"
+            ],
+            "requires": []
+        }
+    ]
+}

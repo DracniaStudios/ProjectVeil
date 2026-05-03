@@ -1,0 +1,336 @@
+/** * Check collision between two RigidBody3D objects using AABB (Axis-Aligned Bounding Box) method.
+ * This is a simple and efficient way to check for collisions between rectangular prisms.
+ * It checks if the bounding boxes of the two objects overlap on all three axes (X, Y, Z).
+ *
+ * @param a The first RigidBody3D object.
+ * @param b The second RigidBody3D object.
+ * @return True if the objects are colliding, false otherwise.
+ 
+inline bool CheckCollisionAABB(const RigidBody3D& a, const RigidBody3D& b)
+{
+	const Cube aabbA = a.getAABB();
+	const Cube aabbB = b.getAABB();
+
+	return (aabbA.position.x < aabbB.position.x + aabbB.size.x &&
+		aabbA.position.x + aabbA.size.x > aabbB.position.x &&
+		aabbA.position.y < aabbB.position.y + aabbB.size.y &&
+		aabbA.position.y + aabbA.size.y > aabbB.position.y &&
+		aabbA.position.z < aabbB.position.z + aabbB.size.z &&
+		aabbA.position.z + aabbA.size.z > aabbB.position.z);
+}
+
+void RigidBody3D::resolveConstrains(RigidBody3D* otherObjects, int objectCount)
+{
+	if (otherObjects == nullptr || objectCount <= 0)
+		return;
+
+	// Check collisions against all other objects
+	for (int i = 0; i < objectCount; ++i)
+	{
+		if (&otherObjects[i] == this)
+			continue; // Skip self
+
+		if (isCollidingWith(otherObjects[i]))
+		{
+			resolveCollision(otherObjects[i]);
+		}
+	}
+}
+
+
+
+Vector3 RigidBody3D::performCollisionOnAxis(Vector3 position, Vector3 axis)
+{
+	return Vector3{ 0, 0, 0 };
+}
+
+// Object-to-Object Collision Methods
+
+bool RigidBody3D::isCollidingWith(const RigidBody3D& other) const
+{
+	return CheckCollisionAABB(*this, other);
+}
+
+Vector3 RigidBody3D::getCollisionNormal(const RigidBody3D& other) const
+{
+	Vector3 centerA = getCenter();
+	Vector3 centerB = other.getCenter();
+	Vector3 delta = centerB - centerA;
+
+	// Determine which axis has the smallest overlap
+	Vector3 halfSizeA = scale * 0.5f;
+	Vector3 halfSizeB = other.scale * 0.5f;
+
+	float overlapX = (halfSizeA.x + halfSizeB.x) - std::abs(delta.x);
+	float overlapY = (halfSizeA.y + halfSizeB.y) - std::abs(delta.y);
+	float overlapZ = (halfSizeA.z + halfSizeB.z) - std::abs(delta.z);
+
+	// Find the axis with smallest overlap
+	if (overlapX <= overlapY && overlapX <= overlapZ)
+	{
+		return delta.x > 0 ? Vector3{ 1, 0, 0 } : Vector3{ -1, 0, 0 };
+	}
+	else if (overlapY <= overlapZ)
+	{
+		return delta.y > 0 ? Vector3{ 0, 1, 0 } : Vector3{ 0, -1, 0 };
+	}
+	else
+	{
+		return delta.z > 0 ? Vector3{ 0, 0, 1 } : Vector3{ 0, 0, -1 };
+	}
+}
+
+float RigidBody3D::getPenetrationDepth(const RigidBody3D& other) const
+{
+	Vector3 centerA = getCenter();
+	Vector3 centerB = other.getCenter();
+	Vector3 delta = centerB - centerA;
+
+	Vector3 halfSizeA = scale * 0.5f;
+	Vector3 halfSizeB = other.scale * 0.5f;
+
+	float overlapX = (halfSizeA.x + halfSizeB.x) - std::abs(delta.x);
+	float overlapY = (halfSizeA.y + halfSizeB.y) - std::abs(delta.y);
+	float overlapZ = (halfSizeA.z + halfSizeB.z) - std::abs(delta.z);
+
+	return std::min({ overlapX, overlapY, overlapZ });
+}
+
+void RigidBody3D::resolveCollision(RigidBody3D& other)
+{
+	if (!isCollidingWith(other))
+		return;
+
+	Vector3 normal = getCollisionNormal(other);
+	float penetration = getPenetrationDepth(other);
+
+	// Use a small bias to prevent floating point errors from causing re-collision
+	const float separationBias = 0.0015f;
+	float separationAmount = penetration + separationBias;
+
+	// Separate objects based on their static/dynamic properties
+	if (!isStatic && !other.isStatic)
+	{
+		// Both dynamic - separate equally
+		translation -= normal * (separationAmount * 0.5f);
+		other.translation += normal * (separationAmount * 0.5f);
+	}
+	else if (!isStatic)
+	{
+		// Only this is dynamic - move it fully away
+		translation -= normal * separationAmount;
+	}
+	else if (!other.isStatic)
+	{
+		// Only other is dynamic - move it fully away
+		other.translation += normal * separationAmount;
+	}
+	// If both are static, do nothing
+
+	// Handle velocity response to prevent re-penetration
+	if (!isStatic || !other.isStatic)
+	{
+		// Get relative velocity
+		Vector3 relativeVelocity = velocity - other.velocity;
+		float velocityAlongNormal = Vector3DotProduct(relativeVelocity, normal);
+
+		// Only resolve if velocities are moving toward each other
+		if (velocityAlongNormal < 0)
+		{
+			// Restitution coefficient (0 = no bounce, 1 = full bounce)
+			// Use lower value for less bouncy collisions
+			const float restitution = 0.0f; // No bounce - objects stop
+
+			// Calculate impulse scalar
+			float impulseScalar = -(1.0f + restitution) * velocityAlongNormal;
+
+			if (!isStatic && !other.isStatic)
+			{
+				// Distribute impulse equally between two dynamic bodies
+				float halfImpulse = impulseScalar * 0.5f;
+				velocity += normal * halfImpulse;
+				other.velocity -= normal * halfImpulse;
+			}
+			else if (!isStatic)
+			{
+				// Transfer all impulse to this object
+				velocity += normal * impulseScalar;
+			}
+			else if (!other.isStatic)
+			{
+				// Transfer all impulse to other object
+				other.velocity -= normal * impulseScalar;
+			}
+		}
+
+		// Additional damping perpendicular to collision to prevent sliding
+		Vector3 tangent = relativeVelocity - (normal * Vector3DotProduct(relativeVelocity, normal));
+		float tangentLength = Vector3Length(tangent);
+
+		if (tangentLength > 0.001f)
+		{
+			Vector3 tangentNormal = Vector3Normalize(tangent);
+			const float frictionCoefficient = 0.1f; // Friction damping
+			float frictionImpulse = tangentLength * frictionCoefficient;
+
+			if (!isStatic && !other.isStatic)
+			{
+				velocity -= tangentNormal * (frictionImpulse * 0.5f);
+				other.velocity += tangentNormal * (frictionImpulse * 0.5f);
+			}
+			else if (!isStatic)
+			{
+				velocity -= tangentNormal * frictionImpulse;
+			}
+			else if (!other.isStatic)
+			{
+				other.velocity += tangentNormal * frictionImpulse;
+			}
+		}
+	}
+}
+
+/*
+void RigidBody2D::resolveConstrains(GameMap& mapData)
+{
+	upTouch = downTouch = leftTouch = rightTouch = false;
+
+	Vector2& pos = { translation.x, translation.y };
+
+	float distance = Vector2Distance(lastPosition, pos);
+
+
+	if (distance <= 0.01f)
+	{
+		return;
+	}
+
+
+	float GRANULARITY = 0.8f; // Adjust this value to increase/decrease the number of collision checks
+
+	if (distance <= GRANULARITY)
+	{
+		checkCollisionOnce(pos, mapData);
+	}
+	else
+	{
+		Vector2 newPos = lastPosition;
+		Vector2 delta = pos - lastPosition;
+		delta = Vector2Normalize(delta);
+		delta *= GRANULARITY * 0.99f;
+
+		do
+		{
+			newPos += delta;
+			Vector2 posText = newPos;
+			checkCollisionOnce(newPos, mapData);
+
+			// Check if checkCollisionOnce is changed
+			if (newPos != posText)
+			{
+				pos = newPos;
+				goto end;
+			}
+		} while (Vector2Length((newPos + delta) - pos) > GRANULARITY);
+
+		checkCollisionOnce(pos, mapData);
+	}
+end:
+
+	// End World Limits
+	if (pos.x - scale.x / 2.f < 0) { pos.x = scale.x / 2.f; }
+	if (pos.x + scale.x / 2.f > mapData.w) { pos.x = mapData.w - scale.x / 2.f; }
+	if (pos.y + scale.y / 2.f > mapData.h) { pos.y = mapData.h - scale.y / 2.f; }
+
+	if (leftTouch && velocity.x < 0) { velocity.x = 0; }
+	if (rightTouch && velocity.x > 0) { velocity.x = 0; }
+
+	if (upTouch && velocity.y < 0) { velocity.y = 0; }
+	if (downTouch && velocity.y > 0) { velocity.y = 0; }
+
+}
+
+void RigidBody2D::checkCollisionOnce(Vector2& position, GameMap& mapData)
+{
+	Vector2 delta = position - lastPosition;
+
+	Vector2 newPos = performCollisionOnOneAxis(mapData, { position.x, lastPosition.y }, Vector2{ delta.x, 0 });
+
+	position = performCollisionOnOneAxis(mapData, { newPos.x, position.y }, Vector2{ 0, delta.y });
+}
+
+Vector2 RigidBody2D::performCollisionOnOneAxis(GameMap& mapData, Vector2 position, Vector2 delta)
+{
+	if (delta.x == 0 && delta.y == 0)
+	{
+		return position;
+	}
+
+	Vector2 dimensions = { scale.x, scale.y };
+
+	int minX = floor(position.x - dimensions.x / 2.f - 1);
+	int maxX = ceil(position.x + dimensions.x / 2.f + 1);
+
+	int minY = floor(position.y - dimensions.y / 2.f - 1);
+	int maxY = ceil(position.y + dimensions.y / 2.f + 1);
+
+	minX = std::max(0, minX);
+	minY = std::max(0, minY);
+	maxX = std::min(mapData.w, maxX);
+	maxY = std::min(mapData.h, maxY);
+
+	for (int y = minY; y < maxY; y++)
+	{
+		for (int x = minX; x < maxX; x++)
+		{
+			if (mapData.getBlockUnsave(x, y).isCollidable())
+			{
+				Transform2D entity;
+				entity.position = position;
+				entity.w = dimensions.x;
+				entity.h = dimensions.y;
+
+				Transform2D block;
+				block.position = Vector2{ x + 0.5f, y + 0.5f };
+				block.w = 1;
+				block.h = 1;
+
+				if (entity.intersectTransform(block, -0.00005f))
+				{
+					if (delta.x != 0)
+					{
+						if (delta.x < 0) // Moving Left
+						{
+							leftTouch = true;
+							position.x = x + 1.f + dimensions.x / 2.f;
+							return position;
+						}
+						else
+						{
+							rightTouch = true;
+							position.x = x - dimensions.x / 2.f;
+							return position;
+						}
+					}
+					else if (delta.y != 0)\
+					{
+						if (delta.y < 0) // Moving Up
+						{
+							upTouch = true;
+							position.y = y + 1.f + dimensions.y / 2.f;
+							return position;
+						}
+						else
+						{
+							downTouch = true;
+							position.y = y - dimensions.y / 2.f;
+							return position;
+						}
+					}
+				}
+			}
+		}
+	}
+	return position;
+}
+**/

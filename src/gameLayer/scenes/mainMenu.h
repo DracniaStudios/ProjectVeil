@@ -3,7 +3,6 @@
 
 #include <SceneManager.h>
 #include <Scene.h>
-#include <string>
 
 Scene& loadScene(Scene& scene);
 

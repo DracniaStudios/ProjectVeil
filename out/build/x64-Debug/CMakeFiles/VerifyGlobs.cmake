@@ -14,6 +14,7 @@ set(OLD_GLOB
   "D:/GitHub/ProjectVeil/src/gameLayer/Transition.cpp"
   "D:/GitHub/ProjectVeil/src/gameLayer/gameMain.cpp"
   "D:/GitHub/ProjectVeil/src/gameLayer/gameMap.cpp"
+  "D:/GitHub/ProjectVeil/src/gameLayer/randomStuff.cpp"
   "D:/GitHub/ProjectVeil/src/gameLayer/scenes/mainMenu.cpp"
   "D:/GitHub/ProjectVeil/src/platform/ProjectVeil.cpp"
   "D:/GitHub/ProjectVeil/src/platform/asserts.cpp"

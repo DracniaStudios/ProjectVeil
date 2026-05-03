@@ -4,30 +4,38 @@
 
 #include <SceneManager.h>
 
+bool displayBody2D = false;
+bool displayBody3D = false;
+bool displayDirection = false;
+
 void Player::render2D()
 {
-	DrawRectangle(rigidBody2D.translation.x, rigidBody2D.translation.y, 32, 32, BLUE);
-
+	if (displayBody2D) {
+		DrawRectangle(rigidBody2D.translation.x, rigidBody2D.translation.y, 32, 32, BLUE);
+	}
 }
 
 void Player::render3D()
 {
 	//DrawSphere(rigidBody3D.translation, rigidBody3D.scale.x, BLUE);
 
-	DrawCapsule(rigidBody3D.getPosition(), 
-		Vector3(rigidBody3D.getPosition().x, rigidBody3D.getPosition().y + rigidBody3D.scale.y, rigidBody3D.getPosition().z), 
-		1, 8, 8, BLUE);
-	DrawCapsuleWires(rigidBody3D.getPosition(), 
-		Vector3(rigidBody3D.getPosition().x, rigidBody3D.getPosition().y + rigidBody3D.scale.y, rigidBody3D.getPosition().z), 
-		1, 8, 8, BLUE);
-
-	/// Show Directions
-	DrawSphere(rigidBody3D.front + rigidBody3D.translation, 0.1f, RED);
-	DrawSphere(rigidBody3D.back + rigidBody3D.translation, 0.1f, ORANGE);
-	DrawSphere(rigidBody3D.left + rigidBody3D.translation, 0.1f, YELLOW);
-	DrawSphere(rigidBody3D.right + rigidBody3D.translation, 0.1f, GREEN);
-	DrawSphere(rigidBody3D.up + rigidBody3D.translation, 0.1f, BLUE);
-	DrawSphere(rigidBody3D.down + rigidBody3D.translation, 0.1f, PURPLE);
+	if (displayBody3D) {
+		DrawCapsule(rigidBody3D.getPosition(),
+			Vector3(rigidBody3D.getPosition().x, rigidBody3D.getPosition().y + rigidBody3D.scale.y, rigidBody3D.getPosition().z),
+			1, 8, 8, BLUE);
+		DrawCapsuleWires(rigidBody3D.getPosition(),
+			Vector3(rigidBody3D.getPosition().x, rigidBody3D.getPosition().y + rigidBody3D.scale.y, rigidBody3D.getPosition().z),
+			1.1f, 8, 8, BLUE);
+	}
+	if (displayDirection) {
+		/// Show Directions
+		DrawSphere(rigidBody3D.front + rigidBody3D.translation, 0.1f, RED);
+		DrawSphere(rigidBody3D.back + rigidBody3D.translation, 0.1f, ORANGE);
+		DrawSphere(rigidBody3D.left + rigidBody3D.translation, 0.1f, YELLOW);
+		DrawSphere(rigidBody3D.right + rigidBody3D.translation, 0.1f, GREEN);
+		DrawSphere(rigidBody3D.up + rigidBody3D.translation, 0.1f, BLUE);
+		DrawSphere(rigidBody3D.down + rigidBody3D.translation, 0.1f, PURPLE);
+	}
 
 }
 
@@ -44,16 +52,16 @@ void Player::update(Camera* camera, float deltaTime)
 
 
 	if (IsKeyDown(KEY_W)) { 
-		rigidBody3D.translation += rigidBody3D.front;
+		rigidBody3D.translation += (rigidBody3D.front * 0.1f);// * speed;
 	}
 	if (IsKeyDown(KEY_S)) { 
-		rigidBody3D.translation += rigidBody3D.back;
+		rigidBody3D.translation += (rigidBody3D.back * 0.1f);// * speed;
 	}
 	if (IsKeyDown(KEY_A)) { 
-		rigidBody3D.translation += rigidBody3D.left;
+		rigidBody3D.translation += (rigidBody3D.left * 0.1f);// * speed;
 	}
 	if (IsKeyDown(KEY_D)) {
-		rigidBody3D.translation += rigidBody3D.right;
+		rigidBody3D.translation += (rigidBody3D.right * 0.1f);// * speed;
 	}
 
 	if (IsKeyPressed(KEY_SPACE)) rigidBody3D.jump(20);

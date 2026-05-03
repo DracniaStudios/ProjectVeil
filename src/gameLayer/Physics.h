@@ -199,20 +199,6 @@ struct Cube {
 	Vector3 position;
 	Vector3 size;
 };
-/*
-inline bool CheckCollisionAABB(const RigidBody3D& a, const RigidBody3D& b)
-{
-	const Cube aabbA = a.getAABB();
-	const Cube aabbB = b.getAABB();
-
-	return (aabbA.position.x < aabbB.position.x + aabbB.size.x &&
-		aabbA.position.x + aabbA.size.x > aabbB.position.x &&
-		aabbA.position.y < aabbB.position.y + aabbB.size.y &&
-		aabbA.position.y + aabbA.size.y > aabbB.position.y &&
-		aabbA.position.z < aabbB.position.z + aabbB.size.z &&
-		aabbA.position.z + aabbA.size.z > aabbB.position.z);
-}
-*/
 
 struct Transform3D : public Transform
 {
@@ -220,17 +206,10 @@ struct Transform3D : public Transform
 	// rotation
 	// Scale
 
+	BoundingBox collisionBox = {};
+
 	Vector3& getPosition() { return translation; }
 	Vector3 getCenter()		  const { return { translation.x, translation.y, translation.z }; }
-
-	// Back Bottom Left Corner
-	// Back Bottom Right Corner
-	// Back Top Left Corner
-	// Back Top Right Corner
-	// Front Bottom Left Corner
-	// Front Bottom Right Corner
-	// Front Top Left Corner
-	// Front Top Right Corner
 
 	Vector3 getTop()          const { return { translation.x, translation.y - scale.y * 0.5f, translation.z }; }
 	Vector3 getBottom()       const { return { translation.x, translation.y + scale.y * 0.5f, translation.z }; }
@@ -245,14 +224,6 @@ struct Transform3D : public Transform
 	
 	// Z+ is Forward
 	// X+ is Right
-	/*
-	Vector3 getForward() const { return Vector3(translation.x, translation.y, translation.z + scale.z * 2.0f); };
-	Vector3 getBackward() const { return Vector3(translation.x, translation.y, translation.z - scale.z * 2.0f); };
-	Vector3 getRight() const { return Vector3(translation.x + scale.x * 2.0f, translation.y, translation.z); };
-	Vector3 getLeft() const { return Vector3(translation.x - scale.x * 2.0f, translation.y, translation.z); };
-	Vector3 getUp() const { return Vector3(translation.x, translation.y + scale.y * 2.0f, translation.z); };
-	Vector3 getDown() const { return Vector3(translation.x, translation.y - scale.y * 2.0f, translation.z); };
-	*/
 	
 	Vector3 front = Vector3(0, 0, 1); 
 	Vector3 back = Vector3(0, 0, -1); 
@@ -270,11 +241,13 @@ struct RigidBody3D : public Transform3D
 	Vector3 lastPosition = {};
 	Vector3 velocity = {};
 	Vector3 acceleration = {};
+	BoundingBox collisionBox = {};
 
 	float maxSpeed = 200.0f;
 	float drag = 0.9f;
 	
 	bool useGravity = true;
+	bool isStatic = false;
 
 	bool upTouch = false;
 	bool downTouch = false; // isGrounded
@@ -297,7 +270,6 @@ struct RigidBody3D : public Transform3D
 
 	void updateForce(float deltaTime)
 	{
-
 		if (airTime > 0)
 		{
 			velocity.y += deltaTime;
@@ -317,9 +289,9 @@ struct RigidBody3D : public Transform3D
 		// Reset acceleration for the next frame
 		acceleration = { 0, 0 };
 
-		if (translation.y < 0.0f)
+		if (translation.y < 0.0f + scale.y / 2)
 		{
-			translation.y = 0.0f;
+			translation.y = 0.0f + scale.y / 2;
 			velocity.y = 0.0f;
 			downTouch = true;
 		}
@@ -333,8 +305,10 @@ struct RigidBody3D : public Transform3D
 
 	void update(float deltaTime)
 	{
-		if (useGravity) applyGravity();
-		updateForce(deltaTime);
+		if (!isStatic) {
+			if (useGravity) applyGravity();
+			updateForce(deltaTime);
+		}
 		lastPosition = translation;
 	}
 
@@ -342,13 +316,17 @@ struct RigidBody3D : public Transform3D
 
 	void addForce(Vector3 forceDirection, float force)
 	{
-		
+		acceleration += Vector3Scale(forceDirection, force);
 	}
 
+	
 	// Collision Detection
-	void resolveConstrains();
-	void checkCollisionOnce(Vector3 position);
-	Vector3 performCollisionOnAxis(Vector3 position, Vector3 axis);
+	/// Resolve constraints with other dynamic and static objects
+	/// Pass an array of other RigidBody3D objects to check collisions against
+	void resolveConstrains(RigidBody3D* otherObjects = nullptr, int objectCount = 0);
+
+	/// Resolve collision with another RigidBody3D (separation and velocity response)
+	void resolveCollision(RigidBody3D& other);
 };
 
 struct Transform2D : public Transform

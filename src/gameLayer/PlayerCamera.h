@@ -9,9 +9,6 @@ struct Player;
 
 struct PlayerCamera
 {
-	Camera3D camera3D;
-	Camera2D camera2D;
-
 	Vector2 sensitivity = Vector2{ 0.01f, 0.01f };
 	Vector2 lookRotation = Vector2{0, 0};
 	Vector2 lean = Vector2{ 0, 0};
@@ -19,7 +16,7 @@ struct PlayerCamera
 	float walkLerp;
 	float headTimer;
 
-	void UpdateCameraFPS(Player* player);
+	void UpdateCameraFPS(Camera* camera, Player* player);
 
 };
 
