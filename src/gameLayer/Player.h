@@ -4,9 +4,9 @@
 
 #include <raylib.h>
 
-#include <Physics.h>
+#include <GameObject.h>
 
-struct Player
+struct Player : public GameObject	
 {
 	// Player2D is replicated from Player3D, but only for rendering and input purposes.
 	
@@ -19,18 +19,15 @@ struct Player
 
 	bool isCrouching = false;
 
-	RigidBody3D rigidBody3D;
-	RigidBody2D rigidBody2D;
-
 	Color defaultColor = Color(0, 115, 0, 255);
 
 	float baseSpeed = 0.01f;
 
-	void render2D();
-	void render3D();
+	void render2D() override;
+	void render3D() override;
+	//void onEnable() override;
+	//void onDisable() override;
 	void update(Camera* camera, float deltaTime);
-
-	Vector3& getPosition() { return rigidBody3D.getPosition(); }
 };
 
 #endif

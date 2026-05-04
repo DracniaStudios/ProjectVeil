@@ -1,15 +1,16 @@
 #include "Player.h"
 
 #include <raymath.h>
-
 #include <SceneManager.h>
 
-bool displayBody2D = false;
+bool displayBody2D = true;
 bool displayBody3D = false;
-bool displayDirection = false;
+bool displayDirection = true;
 
 void Player::render2D()
 {
+	if (!isEnabled) return;
+
 	if (displayBody2D) {
 		DrawRectangle(rigidBody2D.translation.x, rigidBody2D.translation.y, 32, 32, BLUE);
 	}
@@ -17,15 +18,13 @@ void Player::render2D()
 
 void Player::render3D()
 {
+	if (!isEnabled) return;
 	//DrawSphere(rigidBody3D.translation, rigidBody3D.scale.x, BLUE);
 
 	if (displayBody3D) {
-		DrawCapsule(rigidBody3D.getPosition(),
-			Vector3(rigidBody3D.getPosition().x, rigidBody3D.getPosition().y + rigidBody3D.scale.y, rigidBody3D.getPosition().z),
-			1, 8, 8, BLUE);
-		DrawCapsuleWires(rigidBody3D.getPosition(),
-			Vector3(rigidBody3D.getPosition().x, rigidBody3D.getPosition().y + rigidBody3D.scale.y, rigidBody3D.getPosition().z),
-			1.1f, 8, 8, BLUE);
+		DrawBoundingBox(rigidBody3D.collisionBox, WHITE);
+		DrawModel(model, rigidBody3D.translation, 1.0f, Color{ 20, 30, 30, 255 });
+		DrawModelWires(model, rigidBody3D.translation, 1.0f, BLACK);
 	}
 	if (displayDirection) {
 		/// Show Directions
@@ -41,6 +40,7 @@ void Player::render3D()
 
 void Player::update(Camera* camera, float deltaTime)
 {
+	if (!isEnabled) return;
 	/// Player Flags
 	isCrouching = IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_LEFT_SHIFT);
 

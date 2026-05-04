@@ -1,7 +1,7 @@
 #include "scene.h"
 
 Scene* Scene_new() {
-	Scene* scene = new Scene;//(Scene*)malloc(sizeof(Scene));
+	Scene* scene = new Scene;
 	return scene;
 }
 

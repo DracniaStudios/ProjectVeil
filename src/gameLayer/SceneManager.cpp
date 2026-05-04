@@ -43,6 +43,7 @@ void SceneManager_draw(SceneManager* manager) {
 	BeginMode2D(manager->camera2D);
 	if (manager->currentScene) Scene_drawScene2D(manager, manager->currentScene);
 	EndMode2D();
+	
 	// Draw Scene 3D
 	BeginMode3D(manager->camera3D);
 	if (manager->currentScene) Scene_drawScene3D(manager, manager->currentScene);

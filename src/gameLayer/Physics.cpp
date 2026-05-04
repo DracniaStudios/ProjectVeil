@@ -24,7 +24,6 @@ void checkCollision(std::string axis)
 	if (axis == "x")
 	{
 		std::cout << "Collided on X axis!" << std::endl;
-		if (for)
 	}
 	else if (axis == "y")
 	{

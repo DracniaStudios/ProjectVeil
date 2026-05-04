@@ -3,7 +3,6 @@
 #define PLAYERCAMERA_H
 
 #include <raylib.h>
-#include <raymath.h>
 
 struct Player;
 
