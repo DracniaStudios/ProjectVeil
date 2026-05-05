@@ -1,11 +1,11 @@
 #include "mainMenu.h"
 
-bool lockOn = false;
 bool isImGuiEnabled = false;
-int cameraMode = CAMERA_FIRST_PERSON;
 
 Player player;
 PlayerCamera playerCamera;
+
+GameObject selectedObject;
 
 Vector3 cubePosition = { 0, 0, 0 };
 
@@ -18,6 +18,14 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 	playerCamera.UpdateCameraFPS(&cam, &player);
 	player.update(&cam, deltaTime);
 
+
+	if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+	{
+		Ray selectRay;
+		selectRay.position = player.getPosition() + Vector3(0, 1, 0); // Adjust the ray's origin to be at the player's head height
+		selectRay.direction = playerCamera.forward;
+	}
+
 #pragma region ImGui
 
 	if (IsKeyPressed(KEY_F10)) { isImGuiEnabled = !isImGuiEnabled; }
@@ -28,21 +36,25 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 		ImGui::BeginChild("Player Data");
 
 		ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", player.rigidBody3D.translation.x, player.rigidBody3D.translation.y, player.rigidBody3D.translation.z);
-		ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", cam.target.x, cam.target.y, cam.target.z);
+		ImGui::Text("Player Position 2D: (%.2f, %.2f, %.2f)", player.rigidBody2D.translation.x, player.rigidBody2D.translation.y, player.rigidBody2D	.translation.z);
+		ImGui::Text("Camera Target: (%.2f, %.2f, %.2f)", cam.target.x, cam.target.y, cam.target.z);
 
 		ImGui::Separator();
 
 		ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player.rigidBody3D.front.x, player.rigidBody3D.front.y, player.rigidBody3D.front.z);
 		ImGui::Text("Player Backward: (%.2f, %.2f, %.2f)", player.rigidBody3D.back.x, player.rigidBody3D.back.y, player.rigidBody3D.back.z);
 
-		ImGui::InputFloat3("Cube Position", &cubePosition.x);
 
+		ImGui::Separator();
 		if (ImGui::Button("Add Game Object"))
 		{
 			GameObject newObject;
 			newObject.rigidBody3D.translation = cubePosition;
+			newObject.rigidBody3D.scale = Vector3(1, 1, 1);
+			newObject.rigidBody2D.scale = Vector3(1, 1, 1);
 			scene->gameMap.saveObjectAt(cubePosition, newObject);
 		}
+		ImGui::InputFloat3("Cube Position", &cubePosition.x);
 
 		ImGui::EndChild();
 
@@ -78,5 +90,6 @@ Scene* Scene_MainMenuConstruct()
 
 	//scene->gameMap.create(1920, 5, 1080);
 	scene->gameMap.create(10, 1, 5);
+
 	return scene;
 }

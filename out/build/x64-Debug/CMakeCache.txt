@@ -26,8 +26,8 @@ CMAKE_AR:FILEPATH=C:/Program Files/Microsoft Visual Studio/18/Insiders/VC/Tools/
 //No help, variable specified on the command line.
 CMAKE_BUILD_TYPE:STRING=Debug
 
-//CXX compiler
-CMAKE_CXX_COMPILER:STRING=C:/Program Files/Microsoft Visual Studio/18/Insiders/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe
+//No help, variable specified on the command line.
+CMAKE_CXX_COMPILER:STRING=cl.exe
 
 //Flags used by the CXX compiler during all build types.
 CMAKE_CXX_FLAGS:STRING=/DWIN32 /D_WINDOWS /EHsc
@@ -47,8 +47,8 @@ CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=/O2 /Ob1 /DNDEBUG
 //Libraries linked by default with all C++ applications.
 CMAKE_CXX_STANDARD_LIBRARIES:STRING=kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
 
-//C compiler
-CMAKE_C_COMPILER:STRING=C:/Program Files/Microsoft Visual Studio/18/Insiders/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe
+//No help, variable specified on the command line.
+CMAKE_C_COMPILER:STRING=cl.exe
 
 //Flags used by the C compiler during all build types.
 CMAKE_C_FLAGS:STRING=/DWIN32 /D_WINDOWS
@@ -147,7 +147,7 @@ CMAKE_INSTALL_SYSCONFDIR:PATH=etc
 CMAKE_LINKER:FILEPATH=C:/Program Files/Microsoft Visual Studio/18/Insiders/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/link.exe
 
 //make program
-CMAKE_MAKE_PROGRAM:FILEPATH=C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe
+CMAKE_MAKE_PROGRAM:FILEPATH=C:/Program Files/Microsoft Visual Studio/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe
 
 //Flags used by the linker during the creation of modules during
 // all build types.
@@ -384,7 +384,7 @@ FastSIMD_SOURCE_DIR:STATIC=D:/GitHub/ProjectVeil/out/build/x64-Debug/_deps/fasts
 GIT_EXECUTABLE:FILEPATH=C:/Program Files/Git/cmd/git.exe
 
 //Value Computed by CMake
-GLFW_BINARY_DIR:STATIC=D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/raylib/raylib/external/glfw
+GLFW_BINARY_DIR:STATIC=D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/raylib-6.0/raylib/external/glfw
 
 //Build the GLFW documentation
 GLFW_BUILD_DOCS:BOOL=OFF
@@ -407,12 +407,12 @@ GLFW_IS_TOP_LEVEL:STATIC=OFF
 GLFW_LIBRARY_TYPE:STRING=OBJECT
 
 //Value Computed by CMake
-GLFW_SOURCE_DIR:STATIC=D:/GitHub/ProjectVeil/thirdparty/raylib/src/external/glfw
+GLFW_SOURCE_DIR:STATIC=D:/GitHub/ProjectVeil/thirdparty/raylib-6.0/src/external/glfw
 
 //Force use of high-performance GPU on hybrid systems
 GLFW_USE_HYBRID_HPG:BOOL=OFF
 
-//Include everything disabled by default (for CI usage
+//Include everything disabled by default (for CI usage)
 INCLUDE_EVERYTHING:BOOL=OFF
 
 //Build the unit tests when BUILD_TESTING is enabled.
@@ -503,16 +503,13 @@ nlohmann_json_IS_TOP_LEVEL:STATIC=OFF
 nlohmann_json_SOURCE_DIR:STATIC=D:/GitHub/ProjectVeil/thirdparty/json-3.12.0
 
 //Value Computed by CMake
-raylib_BINARY_DIR:STATIC=D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/raylib/raylib
+raylib_BINARY_DIR:STATIC=D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/raylib-6.0/raylib
 
 //Value Computed by CMake
 raylib_IS_TOP_LEVEL:STATIC=OFF
 
-//Dependencies for the target
-raylib_LIB_DEPENDS:STATIC=general;opengl32;glu32;winmm;glfw;
-
 //Value Computed by CMake
-raylib_SOURCE_DIR:STATIC=D:/GitHub/ProjectVeil/thirdparty/raylib/src
+raylib_SOURCE_DIR:STATIC=D:/GitHub/ProjectVeil/thirdparty/raylib-6.0/src
 
 //Value Computed by CMake
 rlimgui_BINARY_DIR:STATIC=D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/rlImgui
@@ -737,13 +734,13 @@ NLOHMANN_JSON_CONFIG_INSTALL_DIR:INTERNAL=share/cmake/nlohmann_json
 // this option
 OFF:INTERNAL=OFF
 //STRINGS property for variable: OPENGL_VERSION
-OPENGL_VERSION-STRINGS:INTERNAL=OFF;4.3;3.3;2.1;1.1;ES 2.0;ES 3.0
+OPENGL_VERSION-STRINGS:INTERNAL=OFF;4.3;3.3;2.1;1.1;ES 2.0;ES 3.0;Software
 //ADVANCED property for variable: OPENGL_gl_LIBRARY
 OPENGL_gl_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: OPENGL_glu_LIBRARY
 OPENGL_glu_LIBRARY-ADVANCED:INTERNAL=1
 //STRINGS property for variable: PLATFORM
-PLATFORM-STRINGS:INTERNAL=Desktop;Web;Android;Raspberry Pi;DRM;SDL
+PLATFORM-STRINGS:INTERNAL=Desktop;Web;WebRGFW;Android;Raspberry Pi;DRM;SDL;RGFW;Memory
 SUPPORT_FILEFORMAT_BMP:INTERNAL=OFF
 SUPPORT_FILEFORMAT_JPG:INTERNAL=OFF
 SUPPORT_FILEFORMAT_PNG:INTERNAL=ON

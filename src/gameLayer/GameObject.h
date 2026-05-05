@@ -9,6 +9,10 @@
 struct GameObject 
 {
 	bool isEnabled = true;
+	bool displayDirection = true;
+	bool display2DModel = true;
+	bool display3DModel = true;
+	bool displayCollider = false;
 	int id = 0;
 	
 	/// Physics
@@ -18,6 +22,7 @@ struct GameObject
 	/// Renderer
 	Model model;
 	Mesh mesh;
+	Color defaultColor = BLUE;
 
 	Vector3 getPosition() { return rigidBody3D.translation; }
 	Quaternion getRotation() { return rigidBody3D.rotation; }

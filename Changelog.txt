@@ -3,26 +3,20 @@
 // Date: 2026-06-06 (First Video Release)
 // Date: 2026-04-30 (Current Development Date)
 
-// Core Functions
+[ Issues ]
 
-1. Have Player Move Left And Right On Map
+- Collision is detected but not updating rigidBodies to prevent objects from passing through each other
 
-2. Player3D Physics
-2.1 PLayer3D is a rigidBody3D and can use gravity
-2.2 Player3D can jump with a force applied to the rigidBody3D
-2.3 Player3D can't move past position Y 0.0f (floor)
+[ Added ]
 
-3. Player Camera
-3.1 Player Camera orbits and follows player
-3.2
+- GameObjects are now displayed on 2D space
 
-// Order Of Operations:
+[ Updated ]
 
-5. Move Player
+- Raylib 6.0 added to project
 
-4. Resolve Collisions
+[ Fixed ]
 
-2. Draw Map
+- Collision Boxes now updated on Scene update
 
-// Current Issues:
-
+[ Removed ]

@@ -12,8 +12,8 @@ int main()
 	SetTraceLogLevel(LOG_FATAL);
 #endif
 
-	SetConfigFlags(FLAG_WINDOW_MAXIMIZED);
-	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	//SetConfigFlags(FLAG_WINDOW_MAXIMIZED);
+	//SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	SetExitKey(KEY_F10);
 	SetTargetFPS(60);
 

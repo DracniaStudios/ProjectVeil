@@ -34,7 +34,7 @@ set (BUILD_SHARED_LIBS OFF CACHE BOOL "Build Libraries As Static" FORCE)
 project ("ProjectVeil")
 
 #Add sub directories
-add_subdirectory(thirdparty/raylib)
+add_subdirectory(thirdparty/raylib-6.0)
 add_subdirectory(thirdparty/imgui-docking)
 add_subdirectory(thirdparty/rlImgui)
 add_subdirectory(thirdparty/FastNoise2-1.1.1)

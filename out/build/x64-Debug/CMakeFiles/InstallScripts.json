@@ -2,10 +2,10 @@
 	"InstallScripts" : 
 	[
 		"D:/GitHub/ProjectVeil/out/build/x64-Debug/cmake_install.cmake",
-		"D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/raylib/cmake_install.cmake",
-		"D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/raylib/raylib/cmake_install.cmake",
-		"D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/raylib/raylib/external/glfw/cmake_install.cmake",
-		"D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/raylib/raylib/external/glfw/src/cmake_install.cmake",
+		"D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/raylib-6.0/cmake_install.cmake",
+		"D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/raylib-6.0/raylib/cmake_install.cmake",
+		"D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/raylib-6.0/raylib/external/glfw/cmake_install.cmake",
+		"D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/raylib-6.0/raylib/external/glfw/src/cmake_install.cmake",
 		"D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/imgui-docking/cmake_install.cmake",
 		"D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/rlImgui/cmake_install.cmake",
 		"D:/GitHub/ProjectVeil/out/build/x64-Debug/thirdparty/FastNoise2-1.1.1/cmake_install.cmake",

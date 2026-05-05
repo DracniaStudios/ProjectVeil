@@ -16,8 +16,7 @@
 	[
 		"D:\\GitHub\\ProjectVeil\\src\\gameLayer",
 		"D:\\GitHub\\ProjectVeil\\src\\platform",
-		"D:\\GitHub\\ProjectVeil\\thirdparty\\raylib\\src",
-		"D:\\GitHub\\ProjectVeil\\thirdparty\\raylib\\src\\external\\glfw\\include",
+		"D:\\GitHub\\ProjectVeil\\thirdparty\\raylib-6.0\\src",
 		"D:\\GitHub\\ProjectVeil\\thirdparty\\imgui-docking\\imgui",
 		"D:\\GitHub\\ProjectVeil\\thirdparty\\rlImgui",
 		"D:\\GitHub\\ProjectVeil\\thirdparty\\FastNoise2-1.1.1\\include",

@@ -15,6 +15,8 @@ struct PlayerCamera
 	float walkLerp;
 	float headTimer;
 
+	Vector3 forward;
+
 	void UpdateCameraFPS(Camera* camera, Player* player);
 
 };

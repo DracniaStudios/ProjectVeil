@@ -5,6 +5,7 @@
 #include <raylib.h>
 #include <raymath.h>
 #include <cmath>
+#include <string>
 
 #if defined(RAYMATH_DISABLE_CPP_OPERATORS)
 // Vector2 operator overloads (only defined when raymath C++ operators are disabled)
@@ -195,11 +196,6 @@ inline Vector3& operator/=(Vector3& a, const Vector3& b)
 
 struct GameMap;
 
-struct Cube {
-	Vector3 position;
-	Vector3 size;
-};
-
 struct Transform3D : public Transform
 {
 	// translation
@@ -220,7 +216,7 @@ struct Transform3D : public Transform
 	Vector3 getBottomLeft()   const { return { translation.x - scale.x * 0.5f, translation.y + scale.y * 0.5f, translation.z }; }
 	Vector3 getBottomRight()  const { return { translation.x + scale.x * 0.5f, translation.y + scale.y * 0.5f, translation.z }; }
 
-	Cube getAABB() const { return { translation.x - scale.x * 0.5f, translation.y - scale.y * 0.5f, scale.x, scale.y }; }
+	Rectangle getAABB() const { return { translation.x - scale.x * 0.5f, translation.y - scale.y * 0.5f, scale.x, scale.y }; }
 	
 	// Z+ is Forward
 	// X+ is Right
@@ -310,6 +306,10 @@ struct RigidBody3D : public Transform3D
 			updateForce(deltaTime);
 		}
 		lastPosition = translation;
+
+		// Update collision box to match current position and scale
+		collisionBox.min = { translation.x - scale.x / 2, translation.y - scale.y / 2, translation.z - scale.z / 2 };
+		collisionBox.max = { translation.x + scale.x / 2, translation.y + scale.y / 2, translation.z + scale.z / 2 };
 	}
 
 	void jump(float force){	if (downTouch) { velocity.y = force; }}
@@ -319,14 +319,13 @@ struct RigidBody3D : public Transform3D
 		acceleration += Vector3Scale(forceDirection, force);
 	}
 
-	
+
 	// Collision Detection
 	/// Resolve constraints with other dynamic and static objects
 	/// Pass an array of other RigidBody3D objects to check collisions against
 	void resolveConstrains(RigidBody3D* otherObjects = nullptr, int objectCount = 0);
 
-	/// Resolve collision with another RigidBody3D (separation and velocity response)
-	void resolveCollision(RigidBody3D& other);
+	bool checkCollision(RigidBody3D& collider);
 };
 
 struct Transform2D : public Transform
