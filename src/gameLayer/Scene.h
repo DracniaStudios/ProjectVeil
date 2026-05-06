@@ -40,9 +40,11 @@ typedef void (*drawSceneMethod3D)(void* manager_ptr, void* object_ptr);
 typedef struct Scene {
 	const char* name = {};
 	void* object_ptr; // Reference Scene
+	bool is2DActive = false;
 	updateSceneMethod update;
 	drawSceneMethod2D draw2D;
 	drawSceneMethod3D draw3D;
+
 	GameMap gameMap; // The GameMap of the Scene
 } Scene;
 

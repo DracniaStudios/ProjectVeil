@@ -6,7 +6,6 @@ Player player;
 PlayerCamera playerCamera;
 
 GameObject selectedObject;
-
 Vector3 cubePosition = { 0, 0, 0 };
 
 void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
@@ -24,6 +23,7 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 		Ray selectRay;
 		selectRay.position = player.getPosition() + Vector3(0, 1, 0); // Adjust the ray's origin to be at the player's head height
 		selectRay.direction = playerCamera.forward;
+		std::cout << "Ray Position: (" << selectRay.position.x << ", " << selectRay.position.y << ", " << selectRay.position.z << ")\n";
 	}
 
 #pragma region ImGui
@@ -66,8 +66,7 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 void Scene_MainMenuDraw2D(void* manager_ptr, void* object_ptr)
 {
 	auto manager = static_cast<SceneManager*>(manager_ptr);
-
-	player.render2D();
+	//player.render2D();
 	
 };
 

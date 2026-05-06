@@ -1,12 +1,14 @@
 // Game Name: Subject Veil
 // Version: 0.1.1
 // Date: 2026-06-06 (First Video Release)
-// Date: 2026-04-30 (Current Development Date)
+// Date: 2026-05-6 (Current Development Date)
+
+Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity instead of the velocity itself.
+
 
 [ Issues ]
 
-- Collision is detected but not updating rigidBodies to prevent objects from passing through each other
-
+- Object Collision is working but objects can go within each other and jitter when stacked.
 [ Added ]
 
 - GameObjects are now displayed on 2D space
@@ -14,6 +16,7 @@
 [ Updated ]
 
 - Raylib 6.0 added to project
+- Physics System now has basic collision detection and resolution methods implemented
 
 [ Fixed ]
 

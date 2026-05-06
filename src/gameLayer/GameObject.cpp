@@ -75,8 +75,8 @@ void GameObject::update(float deltaTime)
 {
 	if (!isEnabled) { return; }
 	// Update Data
+	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
 	rigidBody3D.update(deltaTime);
-	rigidBody3D.collisionBox = getBoundingBox(model, rigidBody3D.translation);
 
 	// Clamp 2D to position from game map size to screen size
 	{

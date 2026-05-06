@@ -39,7 +39,7 @@ struct Player : public GameObject
 
 	bool isCrouching = false;
 
-	float baseSpeed = 0.01f;
+	float baseSpeed = 1;
 
 	void render2D();
 	void render3D();

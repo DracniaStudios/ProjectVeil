@@ -33,7 +33,7 @@ GameObject* GameMap::getObjectAt(int x, int y, int z)
 	return getObjectAt(Vector3(x, y, z));
 }
 
-GameObject& GameMap::saveObjectAt(Vector3 position, GameObject object)
+GameObject& GameMap::saveObjectAt(Vector3 position, GameObject& object)
 {
 	object.rigidBody3D.translation = position;
 	object.rigidBody3D.scale = Vector3{ 1, 1, 1 };
@@ -56,12 +56,11 @@ GameObject& GameMap::saveObjectAt(Vector3 position, GameObject object)
 
 	object.onEnable();
 	std::cout << "Added Object \n";
-	rigidBodies3D.push_back(object.rigidBody3D);
 	gameObjects.push_back(object);
 	return gameObjects.back();
 }
 
-GameObject& GameMap::saveObjectAt(int x, int y, int z, GameObject object)
+GameObject& GameMap::saveObjectAt(int x, int y, int z, GameObject& object)
 {
 	return saveObjectAt(Vector3(x, y, z), object);
 }

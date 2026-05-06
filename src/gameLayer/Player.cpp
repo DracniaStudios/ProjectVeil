@@ -6,6 +6,8 @@
 
 void Player::onEnable()
 {
+	GameObject::onEnable();
+	/*
 	isEnabled = true;
 	rigidBody2D.scale = Vector3(1, 1, 1);
 	rigidBody3D.scale = Vector3(1, 1, 1);
@@ -18,23 +20,40 @@ void Player::onEnable()
 
 	// Set Initial Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
+	*/
 }
 
 void Player::onDisable()
 {
+	GameObject::onDisable();
+	/*
 	isEnabled = false;
 	UnloadModel(model);
 	UnloadMesh(mesh);
+	*/
 }
 
 void Player::render2D()
 {
-	GameObject::render2D();
+	if (!isEnabled) { return; }
+	Rectangle pos2D = { rigidBody2D.translation.x - rigidBody2D.scale.x / 2,
+		rigidBody2D.translation.y - rigidBody2D.scale.y / 2,
+		rigidBody3D.scale.x * 32,
+		rigidBody3D.scale.y * 32 };
+
+	pos2D.y -= rigidBody3D.scale.y * 32;
+
+	if (display2DModel) {
+		DrawRectangle(pos2D.x, pos2D.y, pos2D.width, pos2D.height, defaultColor);
+	}
 }
 
 void Player::render3D()
 {
 	if (!isEnabled) { return; }
+
+	DrawSphere(rigidBody2D.translation, 0.5f, RED);
+
 
 	if (displayCollider) { DrawBoundingBox(rigidBody3D.collisionBox, WHITE); }
 
@@ -51,6 +70,7 @@ void Player::render3D()
 		DrawSphere(rigidBody3D.up + rigidBody3D.translation, 0.1f, BLUE);
 		DrawSphere(rigidBody3D.down + rigidBody3D.translation, 0.1f, PURPLE);
 	}
+	
 }
 
 void Player::update(Camera* camera, float deltaTime)
@@ -64,28 +84,27 @@ void Player::update(Camera* camera, float deltaTime)
 	rigidBody3D.scale = Vector3(1, 2, 1);
 
 	/// Player Movement
-	auto speed = baseSpeed * deltaTime;
+	auto speed = IsKeyDown(KEY_LEFT_SHIFT) ? baseSpeed * 2 : baseSpeed;
 
 	if (IsKeyDown(KEY_W)) { 
-		rigidBody3D.translation += (rigidBody3D.front * 0.1f);// * speed;
+		rigidBody3D.translation += (rigidBody3D.front * speed) * 0.1f;
 	}
 	if (IsKeyDown(KEY_S)) { 
-		rigidBody3D.translation += (rigidBody3D.back * 0.1f);// * speed;
+		rigidBody3D.translation += (rigidBody3D.back * speed) * 0.1f;
 	}
 	if (IsKeyDown(KEY_A)) { 
-		rigidBody3D.translation += (rigidBody3D.left * 0.1f);// * speed;
+		rigidBody3D.translation += (rigidBody3D.left * speed) * 0.1f;
 	}
 	if (IsKeyDown(KEY_D)) {
-		rigidBody3D.translation += (rigidBody3D.right * 0.1f);// * speed;
+		rigidBody3D.translation += (rigidBody3D.right * speed) * 0.1f;
 	}
 
 	if (IsKeyPressed(KEY_SPACE)) rigidBody3D.jump(20);
 
-	//GameObject::update(deltaTime);
-	
+	GameObject::update(deltaTime);
+	/*
 	rigidBody3D.update(deltaTime);
-
-
+	
 	// Clamp 2D to position from game map size to screen size
 	{
 		const float screenX = static_cast<float>(GetScreenWidth());
@@ -101,5 +120,5 @@ void Player::update(Camera* camera, float deltaTime)
 		rigidBody2D.translation.y = Clamp(rigidBody2D.translation.y, 0, screenY);
 
 	}
-	
+	*/
 }

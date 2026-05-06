@@ -10,8 +10,6 @@
 struct GameMap {
 
 	std::vector<GameObject> gameObjects = {};
-	std::vector<RigidBody3D> rigidBodies3D = {};
-	//std::vector<RigidBody2D> rigidBodies2D = {};
 
 	int mapX = 5;
 	int mapY = 5;
@@ -27,8 +25,8 @@ struct GameMap {
 	GameObject* getObjectAt(int x, int y, int z);
 
 	// Alter Data
-	GameObject& saveObjectAt(Vector3 position, GameObject object);
-	GameObject& saveObjectAt(int x, int y, int z, GameObject object);
+	GameObject& saveObjectAt(Vector3 position, GameObject& object);
+	GameObject& saveObjectAt(int x, int y, int z, GameObject& object);
 
 	// Return Data
 	Vector3 getMapSize() {	return Vector3(mapX, mapY, mapZ);}

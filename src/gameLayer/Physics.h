@@ -195,6 +195,7 @@ inline Vector3& operator/=(Vector3& a, const Vector3& b)
 #endif // RAYMATH_DISABLE_CPP_OPERATORS
 
 struct GameMap;
+struct GameObject;
 
 struct Transform3D : public Transform
 {
@@ -320,12 +321,16 @@ struct RigidBody3D : public Transform3D
 	}
 
 
-	// Collision Detection
-	/// Resolve constraints with other dynamic and static objects
-	/// Pass an array of other RigidBody3D objects to check collisions against
-	void resolveConstrains(RigidBody3D* otherObjects = nullptr, int objectCount = 0);
+	/// Collision Detection
+	bool isCollidingWith(const RigidBody3D& other) const;
+	Vector3 getCollisionNormal(const RigidBody3D& other) const;
+	float getPenetrationDepth(const RigidBody3D& other) const;
 
-	bool checkCollision(RigidBody3D& collider);
+	/// Constraint Resolution
+	void resolveConstrains(RigidBody3D* otherObjects, int objectCount);
+	void resolveCollision(RigidBody3D& other);
+
+
 };
 
 struct Transform2D : public Transform
