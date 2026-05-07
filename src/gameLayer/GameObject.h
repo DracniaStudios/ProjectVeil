@@ -10,14 +10,12 @@ struct GameObject
 {
 	bool isEnabled = true;
 	bool displayDirection = true;
-	bool display2DModel = true;
 	bool display3DModel = true;
 	bool displayCollider = false;
 	int id = 0;
 	
 	/// Physics
 	RigidBody3D rigidBody3D;
-	RigidBody2D rigidBody2D;
 
 	/// Renderer
 	Model model;

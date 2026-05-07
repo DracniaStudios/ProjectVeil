@@ -1,5 +1,6 @@
 #include "scene.h"
 
+
 Scene* Scene_new() {
 	Scene* scene = new Scene;
 	return scene;
@@ -48,11 +49,6 @@ void Scene_updateScene(void* manager_ptr, Scene* scene, float delta) {
 
 void Scene_drawScene2D(void* manager_ptr, Scene* scene) {
 	scene->draw2D(manager_ptr, scene->object_ptr);
-	/*
-	for (auto& object : scene->gameMap.gameObjects) {
-		object.render2D();
-	}
-	*/
 }
 
 void Scene_drawScene3D(void* manager_ptr, Scene* scene) {

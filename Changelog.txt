@@ -12,6 +12,7 @@ Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity 
 [ Added ]
 
 - GameObjects are now displayed on 2D space
+- Added Player collision with game Objects
 
 [ Updated ]
 

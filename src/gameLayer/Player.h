@@ -5,6 +5,7 @@
 #include <raylib.h>
 
 #include <GameObject.h>
+struct SceneManager;
 
 struct Player : public GameObject
 {
@@ -45,7 +46,7 @@ struct Player : public GameObject
 	void render3D();
 	void onEnable();
 	void onDisable();
-	void update(Camera* camera, float deltaTime);
+	void update(SceneManager* manager, float deltaTime);
 };
 
 #endif

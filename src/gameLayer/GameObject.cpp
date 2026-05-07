@@ -14,7 +14,7 @@ BoundingBox getBoundingBox(Model mdl, Vector3 pos)
 void GameObject::onEnable()
 {
 	isEnabled = true;
-	rigidBody2D.scale = Vector3(1, 1, 1);
+	//rigidBody2D.scale = Vector3(1, 1, 1);
 	rigidBody3D.scale = Vector3(1, 1, 1);
 	
 	// Generate 3D Model
@@ -37,6 +37,7 @@ void GameObject::onDisable()
 void GameObject::render2D()
 {
 	if (!isEnabled) { return; }
+	/*
 	Rectangle pos2D = { rigidBody2D.translation.x - rigidBody2D.scale.x / 2,
 		rigidBody2D.translation.y - rigidBody2D.scale.y / 2,
 		rigidBody3D.scale.x * 32,
@@ -47,6 +48,7 @@ void GameObject::render2D()
 	if (display2DModel) {
 		DrawRectangle(pos2D.x, pos2D.y, pos2D.width, pos2D.height, defaultColor);
 	}
+	*/
 }
 void GameObject::render3D()
 {
@@ -55,7 +57,7 @@ void GameObject::render3D()
 	if (displayCollider) { DrawBoundingBox(rigidBody3D.collisionBox, WHITE); }
 
 	if (display3DModel) {
-		DrawModel(model, rigidBody3D.translation, 1.0f, Color{ 20, 30, 30, 255 });
+		DrawModel(model, rigidBody3D.translation, 1.0f, defaultColor);
 		DrawModelWires(model, rigidBody3D.translation, 1.0f, BLACK);
 	}
 	if (displayDirection) {
@@ -77,7 +79,7 @@ void GameObject::update(float deltaTime)
 	// Update Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
 	rigidBody3D.update(deltaTime);
-
+	/*
 	// Clamp 2D to position from game map size to screen size
 	{
 		const float screenX = static_cast<float>(GetScreenWidth());
@@ -95,6 +97,6 @@ void GameObject::update(float deltaTime)
 		rigidBody2D.translation.y = Clamp(rigidBody2D.translation.y, 0, screenY);
 
 	}
-
+	*/
 }
 

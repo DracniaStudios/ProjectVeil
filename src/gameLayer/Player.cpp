@@ -73,7 +73,7 @@ void Player::render3D()
 	
 }
 
-void Player::update(Camera* camera, float deltaTime)
+void Player::update(SceneManager* manager, float deltaTime)
 {
 	if (!isEnabled) return;
 
@@ -101,8 +101,8 @@ void Player::update(Camera* camera, float deltaTime)
 
 	if (IsKeyPressed(KEY_SPACE)) rigidBody3D.jump(20);
 
-	GameObject::update(deltaTime);
-	/*
+	//GameObject::update(deltaTime);
+	
 	rigidBody3D.update(deltaTime);
 	
 	// Clamp 2D to position from game map size to screen size
@@ -120,5 +120,17 @@ void Player::update(Camera* camera, float deltaTime)
 		rigidBody2D.translation.y = Clamp(rigidBody2D.translation.y, 0, screenY);
 
 	}
-	*/
+	
+	for (size_t i = 0; i < manager->currentScene->gameMap.gameObjects.size(); i++)
+	{
+		auto& object = manager->currentScene->gameMap.gameObjects[i];
+		if (&object != this)
+		{
+			if (CheckCollisionBoxes(rigidBody3D.collisionBox, object.rigidBody3D.collisionBox))
+			{
+				rigidBody3D.resolveCollision(object.rigidBody3D);
+			}
+		}
+	}
+
 }

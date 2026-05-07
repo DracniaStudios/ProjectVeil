@@ -252,6 +252,8 @@ struct RigidBody3D : public Transform3D
 	bool backTouch = false; // X-1
 	bool leftTouch = false; // Z-1
 	bool rightTouch = false; // Z+1
+	void resetFlags();
+
 
 	void teleport(Vector3 newPosition)
 	{
@@ -309,8 +311,8 @@ struct RigidBody3D : public Transform3D
 		lastPosition = translation;
 
 		// Update collision box to match current position and scale
-		collisionBox.min = { translation.x - scale.x / 2, translation.y - scale.y / 2, translation.z - scale.z / 2 };
-		collisionBox.max = { translation.x + scale.x / 2, translation.y + scale.y / 2, translation.z + scale.z / 2 };
+		collisionBox.min = { translation.x - scale.x * 0.5f, translation.y - scale.y * 0.5f, translation.z - scale.z * 0.5f };
+		collisionBox.max = { translation.x + scale.x * 0.5f, translation.y + scale.y * 0.5f, translation.z + scale.z * 0.5f };
 	}
 
 	void jump(float force){	if (downTouch) { velocity.y = force; }}

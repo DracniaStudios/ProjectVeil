@@ -1,11 +1,11 @@
 #include "Physics.h"
-
-#include <iostream>
+ 
 #include <gameMap.h>
-#include <asserts.h>
-#include <GameObject.h>
 
-
+void RigidBody3D::resetFlags()
+{
+	upTouch = downTouch = frontTouch = backTouch = leftTouch =  rightTouch = false;
+}
 
 bool RigidBody3D::isCollidingWith(const RigidBody3D& other) const
 {
@@ -58,7 +58,25 @@ void RigidBody3D::resolveConstrains(RigidBody3D* otherObjects, int objectCount)
 		if (&otherObjects[i] == this) continue;
 
 		if (isCollidingWith(otherObjects[i]))
+		{
 			resolveCollision(otherObjects[i]);
+			if (collisionBox.max.x > otherObjects[i].collisionBox.min.x && collisionBox.min.x < otherObjects[i].collisionBox.min.x)
+				rightTouch = true;
+			if (collisionBox.min.x < otherObjects[i].collisionBox.max.x && collisionBox.max.x > otherObjects[i].collisionBox.max.x)
+				leftTouch = true;
+			if (collisionBox.max.y > otherObjects[i].collisionBox.min.y && collisionBox.min.y < otherObjects[i].collisionBox.min.y)
+				upTouch = true;
+			if (collisionBox.min.y < otherObjects[i].collisionBox.max.y && collisionBox.max.y > otherObjects[i].collisionBox.max.y)
+				downTouch = true;
+			if (collisionBox.max.z > otherObjects[i].collisionBox.min.z && collisionBox.min.z < otherObjects[i].collisionBox.min.z)
+				frontTouch = true;
+			if (collisionBox.min.z < otherObjects[i].collisionBox.max.z && collisionBox.max.z > otherObjects[i].collisionBox.max.z)
+				backTouch = true;
+		}
+		else
+		{
+			resetFlags();
+		}
 	}
 }
 
