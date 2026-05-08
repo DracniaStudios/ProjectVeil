@@ -9,6 +9,14 @@ void GameMap::create(Vector3 size)
 	mapY = size.y;
 	mapZ = size.z;
 
+	static GameObject floor;
+	floor.rigidBody3D.isStatic = true;
+	floor.rigidBody3D.translation = Vector3(0, -1, 0);
+	floor.defaultColor = BLACK;
+	floor.rigidBody3D.scale = size;
+
+	saveObjectAt(floor.getPosition(), floor);
+
 }
 
 void GameMap::create(int x, int y, int z)

@@ -11,6 +11,7 @@
 
 #include <Player.h>
 #include <PlayerCamera.h>
+#include <AssetManager.h>
 
 #include <stdlib.h>
 #include <iostream>

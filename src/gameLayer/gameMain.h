@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <SceneManager.h>
+#include <AssetManager.h>
 
 bool init_game();
 bool update_game();

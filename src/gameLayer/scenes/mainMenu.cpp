@@ -4,9 +4,12 @@ bool isImGuiEnabled = false;
 
 Player player;
 PlayerCamera playerCamera;
+AssetManager assetManager;
 
 Vector3 cubePosition = { 0, 0, 0 };
 int currentObjectID = 0;
+
+GameObject selectedObject;
 
 void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 {
@@ -25,9 +28,35 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 	if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
 	{
 		Ray selectRay;
-		selectRay.position = player.getPosition() + Vector3(0, 1, 0); // Adjust the ray's origin to be at the player's head height
+		selectRay.position = cam.position + Vector3(0, 1, 0); // Adjust the ray's origin to be at the player's head height
 		selectRay.direction = playerCamera.forward;
-		std::cout << "Ray Position: (" << selectRay.position.x << ", " << selectRay.position.y << ", " << selectRay.position.z << ")\n";
+		
+		// Place Object At Mouse Positon
+		static GameObject newObject;
+		
+		
+		/*
+		if (scene->gameMap.gameObjects.size() > 0)
+		{
+			for (auto& object : scene->gameMap.gameObjects)
+			{
+				if (object.isEnabled)
+				{
+					BoundingBox objectBox = {
+						object.getPosition() - object.getSize() / 2,
+						object.getPosition() + object.getSize() / 2
+					};
+					if (GetRayCollisionBox(selectRay, objectBox).hit)
+					{
+						selectedObject = object;
+						std::cout << "Selected Object ID: " << selectedObject.id << "\n";
+						std::cout << "Selected Object Position: (" << selectedObject.getPosition().x << ", " << selectedObject.getPosition().y << ", " << selectedObject.getPosition().z << ")\n";
+						break; // Stop checking after the first hit
+					}
+				}
+			}
+		}
+		*/
 	}
 
 #pragma region ImGui
@@ -93,7 +122,12 @@ void Scene_MainMenuDraw2D(void* manager_ptr, void* object_ptr)
 {
 	auto manager = static_cast<SceneManager*>(manager_ptr);
 	//player.render2D();
-	
+	DrawTexturePro(assetManager.magicSphere,
+		Rectangle{ 0, 0, static_cast<float>(assetManager.magicSphere.width), static_cast<float>(assetManager.magicSphere.height) },
+		Rectangle{static_cast<float>(GetScreenWidth() * 0.5f), static_cast<float>(GetScreenHeight() * 0.5f), static_cast<float>(GetScreenWidth() * 0.5f), static_cast<float>(GetScreenHeight() * 0.5f) },
+		Vector2{ 0, 0 },
+		0,
+		WHITE);
 };
 
 void Scene_MainMenuDraw3D(void* manager_ptr, void* object_ptr)
@@ -102,7 +136,7 @@ void Scene_MainMenuDraw3D(void* manager_ptr, void* object_ptr)
 	auto scene = static_cast<Scene*>(object_ptr);
 	DrawGrid(100.0f, 1.0f);
 	player.render3D();
-
+	DrawRay(Ray{manager->camera3D.position, manager->camera3D.target}, RED);
 }
 
 Scene* Scene_MainMenuConstruct()
@@ -114,7 +148,7 @@ Scene* Scene_MainMenuConstruct()
 	scene->object_ptr = scene;
 
 	//scene->gameMap.create(1920, 5, 1080);
-	scene->gameMap.create(10, 1, 5);
+	scene->gameMap.create(100, 1, 100);
 	scene->gameMap.gameObjects.push_back(player);
 
 	return scene;

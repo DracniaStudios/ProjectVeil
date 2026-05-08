@@ -29,6 +29,11 @@
 	"module-dir" : "D:/GitHub/ProjectVeil/out/build/x64-Debug/CMakeFiles/ProjectVeil.dir",
 	"sources" : 
 	{
+		"CMakeFiles/ProjectVeil.dir/src/gameLayer/AssetManager.cpp.obj" : 
+		{
+			"language" : "CXX",
+			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/AssetManager.cpp"
+		},
 		"CMakeFiles/ProjectVeil.dir/src/gameLayer/GameObject.cpp.obj" : 
 		{
 			"language" : "CXX",

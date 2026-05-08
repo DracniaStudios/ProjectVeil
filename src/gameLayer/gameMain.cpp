@@ -1,7 +1,6 @@
 #include "gameMain.h"
 
 SceneManager manager = {};
-
 bool lockMouse = false;
 
 static void UpdateCameraFPS(Camera* camera);
@@ -10,6 +9,8 @@ bool init_game()
 {
 	InitAudioDevice();
 	SceneManager_init(&manager);
+	AssetManager assetManager = {};
+	assetManager.loadAll();
 	
 	// Camera
 	manager.camera3D.position = Vector3{ 0, 10, 10 };
