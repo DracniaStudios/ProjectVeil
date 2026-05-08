@@ -245,6 +245,7 @@ struct RigidBody3D : public Transform3D
 	
 	bool useGravity = true;
 	bool isStatic = false;
+	bool isColliding = false;
 
 	bool upTouch = false;
 	bool downTouch = false; // isGrounded
@@ -252,8 +253,6 @@ struct RigidBody3D : public Transform3D
 	bool backTouch = false; // X-1
 	bool leftTouch = false; // Z-1
 	bool rightTouch = false; // Z+1
-	void resetFlags();
-
 
 	void teleport(Vector3 newPosition)
 	{
@@ -267,40 +266,7 @@ struct RigidBody3D : public Transform3D
 		acceleration -= Vector3{ 0, 20, 0 }; //Vector3{ 0, 9.81f, 0 };
 	}
 
-	void updateForce(float deltaTime)
-	{
-		if (airTime > 0)
-		{
-			velocity.y += deltaTime;
-		}
-
-		// Apply acceleration to velocity
-		velocity += acceleration * deltaTime;
-		// Limit velocity to max speed
-		if (Vector3Length(velocity) > maxSpeed)
-		{
-			velocity = Vector3Scale(Vector3Normalize(velocity), maxSpeed);
-		}
-		// Apply velocity to position
-		translation += velocity * deltaTime;
-		// Apply drag to velocity
-		velocity *= drag;
-		// Reset acceleration for the next frame
-		acceleration = { 0, 0 };
-
-		if (translation.y < 0.0f + scale.y / 2)
-		{
-			translation.y = 0.0f + scale.y / 2;
-			velocity.y = 0.0f;
-			downTouch = true;
-		}
-		else
-		{
-			downTouch = false;
-			airTime += deltaTime;
-		}
-
-	}
+	void updateForce(float deltaTime);
 
 	void update(float deltaTime)
 	{
@@ -327,6 +293,7 @@ struct RigidBody3D : public Transform3D
 	bool isCollidingWith(const RigidBody3D& other) const;
 	Vector3 getCollisionNormal(const RigidBody3D& other) const;
 	float getPenetrationDepth(const RigidBody3D& other) const;
+	void checkRayCollision(const RigidBody3D& other);
 
 	/// Constraint Resolution
 	void resolveConstrains(RigidBody3D* otherObjects, int objectCount);

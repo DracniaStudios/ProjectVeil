@@ -1,7 +1,7 @@
-prefix=D:/GitHub/ProjectVeil/out/install/x64-debug
+prefix=D:/GitHub/ProjectVeil/out/install/x64-Debug
 exec_prefix=${prefix}
-includedir=D:/GitHub/ProjectVeil/out/install/x64-debug/include
-libdir=D:/GitHub/ProjectVeil/out/install/x64-debug/lib
+includedir=D:/GitHub/ProjectVeil/out/install/x64-Debug/include
+libdir=D:/GitHub/ProjectVeil/out/install/x64-Debug/lib
 
 Name: GLFW
 Description: A multi-platform library for OpenGL, window and input

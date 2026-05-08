@@ -39,7 +39,7 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 		ImGui::BeginChild("Player Data");
 
 		ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", player.rigidBody3D.translation.x, player.rigidBody3D.translation.y, player.rigidBody3D.translation.z);
-		ImGui::Text("Player Position 2D: (%.2f, %.2f, %.2f)", player.rigidBody2D.translation.x, player.rigidBody2D.translation.y, player.rigidBody2D	.translation.z);
+		ImGui::Text("Player Velocity 3D: (%.2f, %.2f, %.2f)", player.rigidBody3D.velocity.x, player.rigidBody3D.velocity.y, player.rigidBody3D.velocity.z);
 		ImGui::Text("Camera Target: (%.2f, %.2f, %.2f)", cam.target.x, cam.target.y, cam.target.z);
 
 		ImGui::Separator();
@@ -65,19 +65,21 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 		if (&scene->gameMap.gameObjects[currentObjectID] != nullptr)
 		{
 			auto& currentObject = scene->gameMap.gameObjects[currentObjectID];
-			DrawCubeWires(currentObject.rigidBody3D.translation, currentObject.rigidBody3D.scale.x, currentObject.rigidBody3D.scale.y, currentObject.rigidBody3D.scale.z, WHITE);
-			ImGui::Text("Selected Object Position: (%.2f, %.2f, %.2f)", currentObject.rigidBody3D.translation.x, currentObject.rigidBody3D.translation.y, currentObject.rigidBody3D.translation.z);
-			ImGui::Text("Selected Object Scale: (%.2f, %.2f, %.2f)", currentObject.rigidBody3D.scale.x, currentObject.rigidBody3D.scale.y, currentObject.rigidBody3D.scale.z);
-			ImGui::Text("Selected Object Velocity: (%.2f, %.2f, %.2f)", currentObject.rigidBody3D.velocity.x, currentObject.rigidBody3D.velocity.y, currentObject.rigidBody3D.velocity.z);
 			ImGui::Checkbox("Selected Object Enabled", &currentObject.isEnabled);
-			ImGui::Checkbox("Selected Object Visible", &currentObject.display3DModel);
-			ImGui::Checkbox("Selected Object Collider", &currentObject.displayCollider);
-			ImGui::Checkbox("Selected Object Up Touch", &currentObject.rigidBody3D.upTouch);
-			ImGui::Checkbox("Selected Object Down Touch", &currentObject.rigidBody3D.downTouch);
-			ImGui::Checkbox("Selected Object Left Touch", &currentObject.rigidBody3D.leftTouch);
-			ImGui::Checkbox("Selected Object Right Touch", &currentObject.rigidBody3D.rightTouch);
-			ImGui::Checkbox("Selected Object Front Touch", &currentObject.rigidBody3D.frontTouch);
-			ImGui::Checkbox("Selected Object Back Touch", &currentObject.rigidBody3D.backTouch);
+			if(currentObject.isEnabled) {
+				DrawCubeWires(currentObject.rigidBody3D.translation, currentObject.rigidBody3D.scale.x, currentObject.rigidBody3D.scale.y, currentObject.rigidBody3D.scale.z, WHITE);
+				ImGui::Text("Selected Object Position: (%.2f, %.2f, %.2f)", currentObject.rigidBody3D.translation.x, currentObject.rigidBody3D.translation.y, currentObject.rigidBody3D.translation.z);
+				ImGui::Text("Selected Object Scale: (%.2f, %.2f, %.2f)", currentObject.rigidBody3D.scale.x, currentObject.rigidBody3D.scale.y, currentObject.rigidBody3D.scale.z);
+				ImGui::Text("Selected Object Velocity: (%.2f, %.2f, %.2f)", currentObject.rigidBody3D.velocity.x, currentObject.rigidBody3D.velocity.y, currentObject.rigidBody3D.velocity.z);
+				ImGui::Checkbox("Selected Object Visible", &currentObject.display3DModel);
+				ImGui::Checkbox("Selected Object Collider", &currentObject.displayCollider);
+				ImGui::Checkbox("Selected Object Up Touch", &currentObject.rigidBody3D.upTouch);
+				ImGui::Checkbox("Selected Object Down Touch", &currentObject.rigidBody3D.downTouch);
+				ImGui::Checkbox("Selected Object Left Touch", &currentObject.rigidBody3D.leftTouch);
+				ImGui::Checkbox("Selected Object Right Touch", &currentObject.rigidBody3D.rightTouch);
+				ImGui::Checkbox("Selected Object Front Touch", &currentObject.rigidBody3D.frontTouch);
+				ImGui::Checkbox("Selected Object Back Touch", &currentObject.rigidBody3D.backTouch);
+			}
 		}
 
 		ImGui::EndChild();

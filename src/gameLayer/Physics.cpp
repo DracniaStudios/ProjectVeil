@@ -1,10 +1,24 @@
 #include "Physics.h"
  
 #include <gameMap.h>
+#include <iostream>
 
-void RigidBody3D::resetFlags()
+void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 {
-	upTouch = downTouch = frontTouch = backTouch = leftTouch =  rightTouch = false;
+	auto generateRay = [&](Vector3 position, Vector3 direciton)
+		{
+			Ray newRay;
+			newRay.position = position;
+			newRay.direction = direciton;
+			return newRay;
+		};
+
+	upTouch = GetRayCollisionBox(generateRay(translation, up), other.collisionBox).hit;
+	downTouch = GetRayCollisionBox(generateRay(translation, down), other.collisionBox).hit;
+	frontTouch = GetRayCollisionBox(generateRay(translation, front), other.collisionBox).hit;
+	backTouch = GetRayCollisionBox(generateRay(translation, back), other.collisionBox).hit;
+	rightTouch = GetRayCollisionBox(generateRay(translation, right), other.collisionBox).hit;
+	leftTouch = GetRayCollisionBox(generateRay(translation, left), other.collisionBox).hit;
 }
 
 bool RigidBody3D::isCollidingWith(const RigidBody3D& other) const
@@ -60,22 +74,12 @@ void RigidBody3D::resolveConstrains(RigidBody3D* otherObjects, int objectCount)
 		if (isCollidingWith(otherObjects[i]))
 		{
 			resolveCollision(otherObjects[i]);
-			if (collisionBox.max.x > otherObjects[i].collisionBox.min.x && collisionBox.min.x < otherObjects[i].collisionBox.min.x)
-				rightTouch = true;
-			if (collisionBox.min.x < otherObjects[i].collisionBox.max.x && collisionBox.max.x > otherObjects[i].collisionBox.max.x)
-				leftTouch = true;
-			if (collisionBox.max.y > otherObjects[i].collisionBox.min.y && collisionBox.min.y < otherObjects[i].collisionBox.min.y)
-				upTouch = true;
-			if (collisionBox.min.y < otherObjects[i].collisionBox.max.y && collisionBox.max.y > otherObjects[i].collisionBox.max.y)
-				downTouch = true;
-			if (collisionBox.max.z > otherObjects[i].collisionBox.min.z && collisionBox.min.z < otherObjects[i].collisionBox.min.z)
-				frontTouch = true;
-			if (collisionBox.min.z < otherObjects[i].collisionBox.max.z && collisionBox.max.z > otherObjects[i].collisionBox.max.z)
-				backTouch = true;
+			checkRayCollision(otherObjects[i]);
+			isColliding = true;
 		}
 		else
 		{
-			resetFlags();
+			isColliding = false;
 		}
 	}
 }
@@ -134,13 +138,25 @@ void RigidBody3D::resolveCollision(RigidBody3D& other)
 		// Fixes jittering across the Y Velocity
 		if (!isStatic && !other.isStatic)
 		{
-			float avg = (velocity.y + other.velocity.y) * 0.5f;
-			velocity.y = avg;
-			other.velocity.y = avg;
+
+			float avgY = (velocity.y + other.velocity.y) * 0.5f;
+			velocity.y = avgY;
+			other.velocity.y = avgY;
+
+			float avgX = (velocity.x + other.velocity.x) * 0.5f;
+			velocity.x = avgX;
+			other.velocity.x = avgX;
+
+			float avgZ = (velocity.z + other.velocity.z) * 0.5f;
+			velocity.z = avgZ;
+			other.velocity.z = avgZ;
+
 		}
 		else if (!isStatic)
 		{
 			velocity.y = 0;
+			velocity.x = 0;
+			velocity.z = 0;
 		}
 	}
 
@@ -178,4 +194,43 @@ void RigidBody3D::resolveCollision(RigidBody3D& other)
 			velocity -= tangentDir * frictionImpulse;
 		}
 	}
+
+}
+
+void RigidBody3D::updateForce(float deltaTime)
+{
+	if (airTime > 0)
+	{
+		velocity.y += deltaTime;
+	}
+
+	// Apply acceleration to velocity
+	velocity += acceleration * deltaTime;
+	// Limit velocity to max speed
+	if (Vector3Length(velocity) > maxSpeed)
+	{
+		velocity = Vector3Scale(Vector3Normalize(velocity), maxSpeed);
+	}
+	// Apply velocity to position
+	translation += velocity * deltaTime;
+	// Apply drag to velocity
+	velocity *= drag;
+	// Reset acceleration for the next frame
+	acceleration = { 0, 0 };
+
+	// Apply Touch Detection
+
+
+	if (translation.y < 0.0f + scale.y / 2)
+	{
+		translation.y = 0.0f + scale.y / 2;
+		velocity.y = 0.0f;
+		downTouch = true;
+	}
+	else
+	{
+		downTouch = false;
+		airTime += deltaTime;
+	}
+
 }
