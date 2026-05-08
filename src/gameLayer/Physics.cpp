@@ -13,12 +13,25 @@ void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 			return newRay;
 		};
 
-	upTouch = GetRayCollisionBox(generateRay(translation, up), other.collisionBox).hit;
-	downTouch = GetRayCollisionBox(generateRay(translation, down), other.collisionBox).hit;
-	frontTouch = GetRayCollisionBox(generateRay(translation, front), other.collisionBox).hit;
-	backTouch = GetRayCollisionBox(generateRay(translation, back), other.collisionBox).hit;
-	rightTouch = GetRayCollisionBox(generateRay(translation, right), other.collisionBox).hit;
-	leftTouch = GetRayCollisionBox(generateRay(translation, left), other.collisionBox).hit;
+	const float touchDistance = 0.15f; // Adjust this value based on how close the ray needs to be to count as a touch
+
+	auto hitWithinRange = [&](Ray ray)
+		{
+			RayCollision collision = GetRayCollisionBox(ray, other.collisionBox);
+			return collision.hit && collision.distance <= Vector3Length(translation - ray.position) + touchDistance;
+		};
+	// Face Translation
+	Vector3 c = translation;
+	float hx = scale.x * 0.5f;
+	float hy = scale.y * 0.5f;
+	float hz = scale.z * 0.5f;
+
+	upTouch = upTouch || hitWithinRange(generateRay({c.x, c.y + hy, c.z}, up));
+	downTouch = downTouch || hitWithinRange(generateRay({c.x, c.y - hy, c.z}, down));
+	frontTouch = frontTouch || hitWithinRange(generateRay({ c.x, c.y, c.z + hz }, front));
+	backTouch = backTouch  || hitWithinRange(generateRay({c.x, c.y, c.z - hz}, back));
+	rightTouch = rightTouch || hitWithinRange(generateRay({c.x + hx, c.y, c.z}, right));
+	leftTouch = leftTouch  || hitWithinRange(generateRay({c.x - hx, c.y, c.z}, left));
 }
 
 bool RigidBody3D::isCollidingWith(const RigidBody3D& other) const
@@ -64,8 +77,11 @@ float RigidBody3D::getPenetrationDepth(const RigidBody3D& other) const
 
 void RigidBody3D::resolveConstrains(RigidBody3D* otherObjects, int objectCount)
 {
-	if (otherObjects == nullptr || objectCount <= 0)
-		return;
+	if (otherObjects == nullptr || objectCount <= 0)return;
+
+	// Reset all touch flags once before checking any objects
+	upTouch = downTouch = frontTouch = backTouch = leftTouch = rightTouch = false;
+	isColliding = false;
 
 	for (int i = 0; i < objectCount; i++)
 	{
@@ -201,16 +217,19 @@ void RigidBody3D::updateForce(float deltaTime)
 {
 	if (airTime > 0)
 	{
-		velocity.y += deltaTime;
+		velocity.y += deltaTime * airTime;
 	}
 
 	// Apply acceleration to velocity
 	velocity += acceleration * deltaTime;
+	
 	// Limit velocity to max speed
+	/*
 	if (Vector3Length(velocity) > maxSpeed)
 	{
 		velocity = Vector3Scale(Vector3Normalize(velocity), maxSpeed);
 	}
+	*/
 	// Apply velocity to position
 	translation += velocity * deltaTime;
 	// Apply drag to velocity
@@ -218,19 +237,16 @@ void RigidBody3D::updateForce(float deltaTime)
 	// Reset acceleration for the next frame
 	acceleration = { 0, 0 };
 
-	// Apply Touch Detection
-
-
+	// Limit To Ground
 	if (translation.y < 0.0f + scale.y / 2)
 	{
 		translation.y = 0.0f + scale.y / 2;
 		velocity.y = 0.0f;
-		downTouch = true;
+		//downTouch = true;
 	}
 	else
 	{
-		downTouch = false;
+		//downTouch = false;
 		airTime += deltaTime;
 	}
-
 }

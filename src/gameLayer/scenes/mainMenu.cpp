@@ -17,9 +17,9 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 	playerCamera.UpdateCameraFPS(&cam, &player);
 	player.update(manager, deltaTime);
 
-	if (&scene->gameMap.gameObjects[0] != &player)
+	if (scene->gameMap.gameObjects[0] != &player)
 	{
-		scene->gameMap.gameObjects[0] = player;
+		scene->gameMap.gameObjects[0] = &player;
 	}
 
 	if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -64,21 +64,21 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 		currentObjectID = Clamp(currentObjectID, 0, scene->gameMap.gameObjects.size());
 		if (&scene->gameMap.gameObjects[currentObjectID] != nullptr)
 		{
-			auto& currentObject = scene->gameMap.gameObjects[currentObjectID];
-			ImGui::Checkbox("Selected Object Enabled", &currentObject.isEnabled);
-			if(currentObject.isEnabled) {
-				DrawCubeWires(currentObject.rigidBody3D.translation, currentObject.rigidBody3D.scale.x, currentObject.rigidBody3D.scale.y, currentObject.rigidBody3D.scale.z, WHITE);
-				ImGui::Text("Selected Object Position: (%.2f, %.2f, %.2f)", currentObject.rigidBody3D.translation.x, currentObject.rigidBody3D.translation.y, currentObject.rigidBody3D.translation.z);
-				ImGui::Text("Selected Object Scale: (%.2f, %.2f, %.2f)", currentObject.rigidBody3D.scale.x, currentObject.rigidBody3D.scale.y, currentObject.rigidBody3D.scale.z);
-				ImGui::Text("Selected Object Velocity: (%.2f, %.2f, %.2f)", currentObject.rigidBody3D.velocity.x, currentObject.rigidBody3D.velocity.y, currentObject.rigidBody3D.velocity.z);
-				ImGui::Checkbox("Selected Object Visible", &currentObject.display3DModel);
-				ImGui::Checkbox("Selected Object Collider", &currentObject.displayCollider);
-				ImGui::Checkbox("Selected Object Up Touch", &currentObject.rigidBody3D.upTouch);
-				ImGui::Checkbox("Selected Object Down Touch", &currentObject.rigidBody3D.downTouch);
-				ImGui::Checkbox("Selected Object Left Touch", &currentObject.rigidBody3D.leftTouch);
-				ImGui::Checkbox("Selected Object Right Touch", &currentObject.rigidBody3D.rightTouch);
-				ImGui::Checkbox("Selected Object Front Touch", &currentObject.rigidBody3D.frontTouch);
-				ImGui::Checkbox("Selected Object Back Touch", &currentObject.rigidBody3D.backTouch);
+			auto currentObject = scene->gameMap.gameObjects[currentObjectID];
+			ImGui::Checkbox("Selected Object Enabled", &currentObject->isEnabled);
+			if(currentObject->isEnabled) {
+				DrawCubeWires(currentObject->rigidBody3D.translation, currentObject->rigidBody3D.scale.x, currentObject->rigidBody3D.scale.y, currentObject->rigidBody3D.scale.z, WHITE);
+				ImGui::Text("Selected Object Position: (%.2f, %.2f, %.2f)", currentObject->rigidBody3D.translation.x, currentObject->rigidBody3D.translation.y, currentObject->rigidBody3D.translation.z);
+				ImGui::Text("Selected Object Scale: (%.2f, %.2f, %.2f)", currentObject->rigidBody3D.scale.x, currentObject->rigidBody3D.scale.y, currentObject->rigidBody3D.scale.z);
+				ImGui::Text("Selected Object Velocity: (%.2f, %.2f, %.2f)", currentObject->rigidBody3D.velocity.x, currentObject->rigidBody3D.velocity.y, currentObject->rigidBody3D.velocity.z);
+				ImGui::Checkbox("Selected Object Visible", &currentObject->display3DModel);
+				ImGui::Checkbox("Selected Object Collider", &currentObject->displayCollider);
+				ImGui::Checkbox("Selected Object Up Touch", &currentObject->rigidBody3D.upTouch);
+				ImGui::Checkbox("Selected Object Down Touch", &currentObject->rigidBody3D.downTouch);
+				ImGui::Checkbox("Selected Object Left Touch", &currentObject->rigidBody3D.leftTouch);
+				ImGui::Checkbox("Selected Object Right Touch", &currentObject->rigidBody3D.rightTouch);
+				ImGui::Checkbox("Selected Object Front Touch", &currentObject->rigidBody3D.frontTouch);
+				ImGui::Checkbox("Selected Object Back Touch", &currentObject->rigidBody3D.backTouch);
 			}
 		}
 
@@ -115,7 +115,7 @@ Scene* Scene_MainMenuConstruct()
 
 	//scene->gameMap.create(1920, 5, 1080);
 	scene->gameMap.create(10, 1, 5);
-	scene->gameMap.gameObjects.push_back(player);
+	scene->gameMap.gameObjects.push_back(&player);
 
 	return scene;
 }

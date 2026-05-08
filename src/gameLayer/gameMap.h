@@ -9,7 +9,7 @@
 
 struct GameMap {
 
-	std::vector<GameObject> gameObjects = {};
+	std::vector<GameObject*> gameObjects = {};
 
 	int mapX = 5;
 	int mapY = 5;

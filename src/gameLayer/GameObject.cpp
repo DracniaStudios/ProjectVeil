@@ -68,6 +68,14 @@ void GameObject::render3D()
 		DrawSphere(rigidBody3D.right + rigidBody3D.translation, 0.1f, GREEN);
 		DrawSphere(rigidBody3D.up + rigidBody3D.translation, 0.1f, BLUE);
 		DrawSphere(rigidBody3D.down + rigidBody3D.translation, 0.1f, PURPLE);
+
+		/// Show Ray Lines
+		DrawRay(Ray{ rigidBody3D.translation, rigidBody3D.front }, RED);
+		DrawRay(Ray{ rigidBody3D.translation, rigidBody3D.back }, ORANGE);
+		DrawRay(Ray{ rigidBody3D.translation, rigidBody3D.left }, YELLOW);
+		DrawRay(Ray{ rigidBody3D.translation, rigidBody3D.right }, GREEN);
+		DrawRay(Ray{ rigidBody3D.translation, rigidBody3D.up }, BLUE);
+		DrawRay(Ray{ rigidBody3D.translation, rigidBody3D.down }, PURPLE);
 	}
 
 }
@@ -77,7 +85,7 @@ void GameObject::update(float deltaTime)
 {
 	if (!isEnabled) { return; }
 	// Update Data
-	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
+	rigidBody3D.collisionBox = GetMeshBoundingBox(this->mesh);
 	rigidBody3D.update(deltaTime);
 	/*
 	// Clamp 2D to position from game map size to screen size

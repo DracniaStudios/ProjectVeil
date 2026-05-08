@@ -123,12 +123,12 @@ void Player::update(SceneManager* manager, float deltaTime)
 	
 	for (size_t i = 0; i < manager->currentScene->gameMap.gameObjects.size(); i++)
 	{
-		auto& object = manager->currentScene->gameMap.gameObjects[i];
-		if (&object != this)
+		auto object = manager->currentScene->gameMap.gameObjects[i];
+		if (object != this)
 		{
-			if (CheckCollisionBoxes(rigidBody3D.collisionBox, object.rigidBody3D.collisionBox))
+			if (CheckCollisionBoxes(rigidBody3D.collisionBox, object->rigidBody3D.collisionBox))
 			{
-				rigidBody3D.resolveCollision(object.rigidBody3D);
+				rigidBody3D.resolveCollision(object->rigidBody3D);
 			}
 		}
 	}

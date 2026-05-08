@@ -14,11 +14,11 @@ void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 	{
 		for (int i = 0; i < static_cast<int>(scene->gameMap.gameObjects.size()); i++)
 		{
-			auto& bodyA = scene->gameMap.gameObjects[i].rigidBody3D;
+			auto& bodyA = scene->gameMap.gameObjects[i]->rigidBody3D;
 
 			for (int j = i + 1; j < static_cast<int>(scene->gameMap.gameObjects.size()); j++)
 			{
-				auto& bodyB = scene->gameMap.gameObjects[j].rigidBody3D;
+				auto& bodyB = scene->gameMap.gameObjects[j]->rigidBody3D;
 
 				if (CheckCollisionBoxes(bodyA.collisionBox, bodyB.collisionBox))
 				{
@@ -28,7 +28,7 @@ void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 
 			// Refresh the collision box after each correction so subsequent
 			// iterations use the updated position rather than the stale one
-			scene->gameMap.gameObjects[i].rigidBody3D.collisionBox = {
+			scene->gameMap.gameObjects[i]->rigidBody3D.collisionBox = {
 				Vector3Subtract(bodyA.translation, Vector3Scale(bodyA.scale, 0.5f)),
 				Vector3Add(bodyA.translation,      Vector3Scale(bodyA.scale, 0.5f))
 			};
@@ -40,9 +40,19 @@ void Scene_updateScene(void* manager_ptr, Scene* scene, float delta) {
 	scene->update(manager_ptr, scene->object_ptr, delta);
 
 	// Update GameObjects
-	for (auto& object : scene->gameMap.gameObjects) {
-		object.update(delta);
+	/*
+	for (size_t i = 0; i < scene->gameMap.gameObjects.size(); i++)
+	{
+		GameObject obj = *scene->gameMap.gameObjects[i];
+		obj.update(delta);
 	}
+	*/
+	
+	for (auto object : scene->gameMap.gameObjects) {
+		auto obj = *object;
+		obj.update(delta);
+	}
+	
 
 	solveCollision(scene, delta, 8);
 }
@@ -53,7 +63,8 @@ void Scene_drawScene2D(void* manager_ptr, Scene* scene) {
 
 void Scene_drawScene3D(void* manager_ptr, Scene* scene) {
 	scene->draw3D(manager_ptr, scene->object_ptr);
-	for (auto& object : scene->gameMap.gameObjects) {
-		object.render3D();
+	for (auto object : scene->gameMap.gameObjects) {
+		auto obj = *object;
+		obj.render3D();
 	}
 }

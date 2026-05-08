@@ -56,8 +56,8 @@ GameObject& GameMap::saveObjectAt(Vector3 position, GameObject& object)
 
 	object.onEnable();
 	std::cout << "Added Object \n";
-	gameObjects.push_back(object);
-	return gameObjects.back();
+	gameObjects.push_back(&object);
+	return object;
 }
 
 GameObject& GameMap::saveObjectAt(int x, int y, int z, GameObject& object)
