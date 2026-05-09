@@ -3,60 +3,56 @@
 bool isImGuiEnabled = false;
 
 Player player;
-PlayerCamera playerCamera;
 AssetManager assetManager;
+GameObject* selectedObject;
 
 Vector3 cubePosition = { 0, 0, 0 };
-int currentObjectID = 0;
 
-GameObject selectedObject;
+GameObject* selectObject(Scene* scene, Camera& cam)
+{
+	Ray selectRay;
+	selectRay.position = cam.position; // Adjust the ray's origin to be at the player's head height
+	selectRay.direction = player.camera.forward;
+
+	if (scene->gameMap.gameObjects.size() > 0)
+	{
+		for (auto& object : scene->gameMap.gameObjects)
+		{
+			if (object.isEnabled)
+			{
+				BoundingBox objectBox = {
+					object.getPosition() - object.getSize() / 2,
+					object.getPosition() + object.getSize() / 2
+				};
+				if (GetRayCollisionBox(selectRay, objectBox).hit)
+				{
+					if (!object.canBeSelected) { continue; }
+
+					std::cout << "Ray hit Object ID: " << object.id << "\n";
+					return &object;
+				}
+			}
+		}
+	}
+
+	return nullptr;
+
+}
 
 void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 {
 	auto manager = static_cast<SceneManager*>(manager_ptr);
 	auto scene = static_cast<Scene*>(object_ptr);
-
 	auto& cam = manager->camera3D;
-	playerCamera.UpdateCameraFPS(&cam, &player);
-	player.update(manager, deltaTime);
 
-	if (&scene->gameMap.gameObjects[0] != &player)
-	{
-		scene->gameMap.gameObjects[0] = player;
-	}
+	scene->gameMap.gameObjects[0].rigidBody3D.scale = scene->gameMap.getMapSize();
+
+	player.update(manager, deltaTime);
+	player.camera.UpdateCameraFPS(&cam, &player);
 
 	if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
 	{
-		Ray selectRay;
-		selectRay.position = cam.position + Vector3(0, 1, 0); // Adjust the ray's origin to be at the player's head height
-		selectRay.direction = playerCamera.forward;
-		
-		// Place Object At Mouse Positon
-		static GameObject newObject;
-		
-		
-		/*
-		if (scene->gameMap.gameObjects.size() > 0)
-		{
-			for (auto& object : scene->gameMap.gameObjects)
-			{
-				if (object.isEnabled)
-				{
-					BoundingBox objectBox = {
-						object.getPosition() - object.getSize() / 2,
-						object.getPosition() + object.getSize() / 2
-					};
-					if (GetRayCollisionBox(selectRay, objectBox).hit)
-					{
-						selectedObject = object;
-						std::cout << "Selected Object ID: " << selectedObject.id << "\n";
-						std::cout << "Selected Object Position: (" << selectedObject.getPosition().x << ", " << selectedObject.getPosition().y << ", " << selectedObject.getPosition().z << ")\n";
-						break; // Stop checking after the first hit
-					}
-				}
-			}
-		}
-		*/
+		selectedObject = selectObject(scene, cam);
 	}
 
 #pragma region ImGui
@@ -69,7 +65,7 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 
 		ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", player.rigidBody3D.translation.x, player.rigidBody3D.translation.y, player.rigidBody3D.translation.z);
 		ImGui::Text("Player Velocity 3D: (%.2f, %.2f, %.2f)", player.rigidBody3D.velocity.x, player.rigidBody3D.velocity.y, player.rigidBody3D.velocity.z);
-		ImGui::Text("Camera Target: (%.2f, %.2f, %.2f)", cam.target.x, cam.target.y, cam.target.z);
+		ImGui::Text("Camera Forward: (%.2f, %.2f, %.2f)", player.camera.forward.x, player.camera.forward.y, player.camera.forward.z);
 
 		ImGui::Separator();
 
@@ -78,6 +74,7 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 
 
 		ImGui::Separator();
+		ImGui::InputFloat3("Cube Position", &cubePosition.x);
 		if (ImGui::Button("Add Game Object"))
 		{
 			GameObject newObject;
@@ -85,30 +82,25 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 			newObject.rigidBody3D.scale = Vector3(1, 1, 1);
 			scene->gameMap.saveObjectAt(cubePosition, newObject);
 		}
-		ImGui::InputFloat3("Cube Position", &cubePosition.x);
 		
 		ImGui::Separator();
 		// Show Current Game Object Data
-		ImGui::InputInt("Current Object ID: ", &currentObjectID, 1, 1);
-		currentObjectID = Clamp(currentObjectID, 0, scene->gameMap.gameObjects.size());
-		if (&scene->gameMap.gameObjects[currentObjectID] != nullptr)
+		if (selectedObject != nullptr)
 		{
-			auto& currentObject = scene->gameMap.gameObjects[currentObjectID];
-			ImGui::Checkbox("Selected Object Enabled", &currentObject.isEnabled);
-			if(currentObject.isEnabled) {
-				DrawCubeWires(currentObject.rigidBody3D.translation, currentObject.rigidBody3D.scale.x, currentObject.rigidBody3D.scale.y, currentObject.rigidBody3D.scale.z, WHITE);
-				ImGui::Text("Selected Object Position: (%.2f, %.2f, %.2f)", currentObject.rigidBody3D.translation.x, currentObject.rigidBody3D.translation.y, currentObject.rigidBody3D.translation.z);
-				ImGui::Text("Selected Object Scale: (%.2f, %.2f, %.2f)", currentObject.rigidBody3D.scale.x, currentObject.rigidBody3D.scale.y, currentObject.rigidBody3D.scale.z);
-				ImGui::Text("Selected Object Velocity: (%.2f, %.2f, %.2f)", currentObject.rigidBody3D.velocity.x, currentObject.rigidBody3D.velocity.y, currentObject.rigidBody3D.velocity.z);
-				ImGui::Checkbox("Selected Object Visible", &currentObject.display3DModel);
-				ImGui::Checkbox("Selected Object Collider", &currentObject.displayCollider);
-				ImGui::Checkbox("Selected Object Up Touch", &currentObject.rigidBody3D.upTouch);
-				ImGui::Checkbox("Selected Object Down Touch", &currentObject.rigidBody3D.downTouch);
-				ImGui::Checkbox("Selected Object Left Touch", &currentObject.rigidBody3D.leftTouch);
-				ImGui::Checkbox("Selected Object Right Touch", &currentObject.rigidBody3D.rightTouch);
-				ImGui::Checkbox("Selected Object Front Touch", &currentObject.rigidBody3D.frontTouch);
-				ImGui::Checkbox("Selected Object Back Touch", &currentObject.rigidBody3D.backTouch);
-			}
+			DrawCubeWires(selectedObject->rigidBody3D.translation, selectedObject->rigidBody3D.scale.x, selectedObject->rigidBody3D.scale.y, selectedObject->rigidBody3D.scale.z, WHITE);
+			ImGui::Text("Selected Object ID: %d", selectedObject->id);
+			//ImGui::Text("Selected Object Name: %s", selectedObject->name);
+			ImGui::Text("Selected Object Position: (%.2f, %.2f, %.2f)", selectedObject->rigidBody3D.translation.x, selectedObject->rigidBody3D.translation.y, selectedObject->rigidBody3D.translation.z);
+			ImGui::Text("Selected Object Scale: (%.2f, %.2f, %.2f)", selectedObject->rigidBody3D.scale.x, selectedObject->rigidBody3D.scale.y, selectedObject->rigidBody3D.scale.z);
+			ImGui::Text("Selected Object Velocity: (%.2f, %.2f, %.2f)", selectedObject->rigidBody3D.velocity.x, selectedObject->rigidBody3D.velocity.y, selectedObject->rigidBody3D.velocity.z);
+			ImGui::Checkbox("Selected Object Visible", &selectedObject->display3DModel);
+			ImGui::Checkbox("Selected Object Collider", &selectedObject->displayCollider);
+			ImGui::Checkbox("Selected Object Up Touch", &selectedObject->rigidBody3D.upTouch);
+			ImGui::Checkbox("Selected Object Down Touch", &selectedObject->rigidBody3D.downTouch);
+			ImGui::Checkbox("Selected Object Left Touch", &selectedObject->rigidBody3D.leftTouch);
+			ImGui::Checkbox("Selected Object Right Touch", &selectedObject->rigidBody3D.rightTouch);
+			ImGui::Checkbox("Selected Object Front Touch", &selectedObject->rigidBody3D.frontTouch);
+			ImGui::Checkbox("Selected Object Back Touch", &selectedObject->rigidBody3D.backTouch);
 		}
 
 		ImGui::EndChild();
@@ -136,7 +128,6 @@ void Scene_MainMenuDraw3D(void* manager_ptr, void* object_ptr)
 	auto scene = static_cast<Scene*>(object_ptr);
 	DrawGrid(100.0f, 1.0f);
 	player.render3D();
-	DrawRay(Ray{manager->camera3D.position, manager->camera3D.target}, RED);
 }
 
 Scene* Scene_MainMenuConstruct()
@@ -148,7 +139,7 @@ Scene* Scene_MainMenuConstruct()
 	scene->object_ptr = scene;
 
 	//scene->gameMap.create(1920, 5, 1080);
-	scene->gameMap.create(100, 1, 100);
+	scene->gameMap.create(Vector3(100, 1, 100));
 	scene->gameMap.gameObjects.push_back(player);
 
 	return scene;

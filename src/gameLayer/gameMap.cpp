@@ -5,23 +5,18 @@
 
 void GameMap::create(Vector3 size)
 {
-	mapX = size.x;
-	mapY = size.y;
-	mapZ = size.z;
+	this->size = size;
 
-	static GameObject floor;
+	GameObject floor;
+	floor.name = "Floor";
 	floor.rigidBody3D.isStatic = true;
+	floor.canBeSelected = false;
 	floor.rigidBody3D.translation = Vector3(0, -1, 0);
-	floor.defaultColor = BLACK;
 	floor.rigidBody3D.scale = size;
+	floor.defaultColor = BLACK;
 
 	saveObjectAt(floor.getPosition(), floor);
 
-}
-
-void GameMap::create(int x, int y, int z)
-{
-	create(Vector3(x, y, z));
 }
 
 GameObject* GameMap::getObjectAt(Vector3 position)
@@ -44,23 +39,12 @@ GameObject* GameMap::getObjectAt(int x, int y, int z)
 GameObject& GameMap::saveObjectAt(Vector3 position, GameObject& object)
 {
 	object.rigidBody3D.translation = position;
-	object.rigidBody3D.scale = Vector3{ 1, 1, 1 };
-	object.id = objectID++;
-	if (object.id == 0) { std::cout << "Object ID is 0, this may cause issues with object management. Consider starting objectID at 1. \n"; }
-	
-	/*
-	for (auto& o : gameObjects)
-	{
-		if (o.rigidBody3D.translation.x == position.x && o.rigidBody3D.translation.y == position.y && o.rigidBody3D.translation.z == position.z)
-		{
-			o = object;
-			o.onEnable();
-			std::cout << "Replace Object \n";
-			return o;
 
-		}
+	if (object.rigidBody3D.scale == Vector3Zero())
+	{
+		object.rigidBody3D.scale = Vector3One();
 	}
-	*/
+	object.id = objectID++;
 
 	object.onEnable();
 	std::cout << "Added Object \n";

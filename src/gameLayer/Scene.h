@@ -10,7 +10,6 @@
 #include <randomStuff.h>
 
 #include <Player.h>
-#include <PlayerCamera.h>
 #include <AssetManager.h>
 
 #include <stdlib.h>
@@ -39,9 +38,11 @@ typedef void (*drawSceneMethod3D)(void* manager_ptr, void* object_ptr);
  * Struct to represent a Scene
  */
 typedef struct Scene {
-	const char* name = {};
 	void* object_ptr; // Reference Scene
+	
+	const char* name = {};
 	bool is2DActive = false;
+
 	updateSceneMethod update;
 	drawSceneMethod2D draw2D;
 	drawSceneMethod3D draw3D;

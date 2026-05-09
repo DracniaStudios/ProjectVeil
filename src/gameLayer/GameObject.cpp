@@ -14,8 +14,6 @@ BoundingBox getBoundingBox(Model mdl, Vector3 pos)
 void GameObject::onEnable()
 {
 	isEnabled = true;
-	//rigidBody2D.scale = Vector3(1, 1, 1);
-	rigidBody3D.scale = Vector3(1, 1, 1);
 	
 	// Generate 3D Model
 	mesh = GenMeshCube(rigidBody3D.scale.x, rigidBody3D.scale.y, rigidBody3D.scale.z);

@@ -13,12 +13,25 @@ void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 			return newRay;
 		};
 
-	upTouch = GetRayCollisionBox(generateRay(translation, up), other.collisionBox).hit;
-	downTouch = GetRayCollisionBox(generateRay(translation, down), other.collisionBox).hit;
-	frontTouch = GetRayCollisionBox(generateRay(translation, front), other.collisionBox).hit;
-	backTouch = GetRayCollisionBox(generateRay(translation, back), other.collisionBox).hit;
-	rightTouch = GetRayCollisionBox(generateRay(translation, right), other.collisionBox).hit;
-	leftTouch = GetRayCollisionBox(generateRay(translation, left), other.collisionBox).hit;
+	const float touchDistance = 0.15f; // Adjust this value based on how close the ray needs to be to count as a touch
+
+	auto hitWithinRange = [&](Ray ray)
+		{
+			RayCollision collision = GetRayCollisionBox(ray, other.collisionBox);
+			return collision.hit && collision.distance <= Vector3Length(translation - ray.position) + touchDistance;
+		};
+	// Face Translation
+	Vector3 c = translation;
+	float hx = scale.x * 0.5f;
+	float hy = scale.y * 0.5f;
+	float hz = scale.z * 0.5f;
+
+	upTouch = upTouch || hitWithinRange(generateRay({ c.x, c.y + hy, c.z }, up));
+	downTouch = downTouch || hitWithinRange(generateRay({ c.x, c.y - hy, c.z }, down));
+	frontTouch = frontTouch || hitWithinRange(generateRay({ c.x, c.y, c.z + hz }, front));
+	backTouch = backTouch || hitWithinRange(generateRay({ c.x, c.y, c.z - hz }, back));
+	rightTouch = rightTouch || hitWithinRange(generateRay({ c.x + hx, c.y, c.z }, right));
+	leftTouch = leftTouch || hitWithinRange(generateRay({ c.x - hx, c.y, c.z }, left));
 }
 
 bool RigidBody3D::isCollidingWith(const RigidBody3D& other) const
@@ -219,8 +232,6 @@ void RigidBody3D::updateForce(float deltaTime)
 	acceleration = { 0, 0 };
 
 	// Apply Touch Detection
-
-
 	if (translation.y < 0.0f + scale.y / 2)
 	{
 		translation.y = 0.0f + scale.y / 2;

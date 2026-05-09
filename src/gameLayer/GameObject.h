@@ -8,18 +8,22 @@
 
 struct GameObject 
 {
+
+	const char* name = "GameObject";
+
 	bool isEnabled = true;
+	bool canBeSelected = true;
 	bool displayDirection = true;
 	bool display3DModel = true;
 	bool displayCollider = false;
 	int id = 0;
 	
 	/// Physics
-	RigidBody3D rigidBody3D;
+	RigidBody3D rigidBody3D = {};
 
 	/// Renderer
-	Model model;
-	Mesh mesh;
+	Model model = {};
+	Mesh mesh = {};
 	Color defaultColor = BLUE;
 
 	Vector3 getPosition() { return rigidBody3D.translation; }

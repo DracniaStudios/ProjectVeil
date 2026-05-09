@@ -5,38 +5,31 @@
 #include <raylib.h>
 
 #include <GameObject.h>
+
+struct Player;
 struct SceneManager;
+struct PlayerCamera;
 
-struct Player : public GameObject
+struct PlayerCamera
 {
-	// Player2D is replicated from Player3D, but only for rendering and input purposes.
-	
-	// The position of Player2D is derived from Player3D's position,
-	// and the movement of Player2D is controlled by Player3D's movement.
+	Vector2 sensitivity = Vector2{ 0.01f, 0.01f };
+	Vector2 lookRotation = Vector2{ 0, 0 };
+	Vector2 lean = Vector2{ 0, 0 };
+	float headLerp;
+	float walkLerp;
+	float headTimer;
 
-	// This allows us to have a consistent player representation in both 2D and 3D space,
-	// while still maintaining the core logic and physics in the 3D player structure.
+	Vector3 forward;
 
-	bool isEnabled = true;
-	bool displayDirection = true;
-	bool display2DModel = true;
-	bool display3DModel = true;
-	bool displayCollider = false;
-	int id = 0;
+	void UpdateCameraFPS(Camera* camera, Player* player);
 
-	/// Physics
-	RigidBody3D rigidBody3D;
-	RigidBody2D rigidBody2D;
+};
 
-	/// Renderer
-	Model model;
-	Mesh mesh;
-	Color defaultColor = Color(0, 115, 0, 255);
+struct Player :  GameObject
+{
 
-	Vector3 getPosition() { return rigidBody3D.translation; }
-	Quaternion getRotation() { return rigidBody3D.rotation; }
-	Vector3 getSize() { return rigidBody3D.scale; }
-
+	/// Camera Data
+	PlayerCamera camera = {};
 
 	bool isCrouching = false;
 

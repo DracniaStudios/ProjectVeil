@@ -54,11 +54,6 @@
 			"language" : "CXX",
 			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/Player.cpp"
 		},
-		"CMakeFiles/ProjectVeil.dir/src/gameLayer/PlayerCamera.cpp.obj" : 
-		{
-			"language" : "CXX",
-			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/PlayerCamera.cpp"
-		},
 		"CMakeFiles/ProjectVeil.dir/src/gameLayer/Scene.cpp.obj" : 
 		{
 			"language" : "CXX",

@@ -11,13 +11,9 @@ struct GameMap {
 
 	std::vector<GameObject> gameObjects = {};
 
-	int mapX = 5;
-	int mapY = 5;
-	int mapZ = 5;
+	Vector3 size = {10, 10, 10};
+	int objectID = -1;
 
-	int objectID = 0;
-
-	void create(int x, int y, int z);
 	void create(Vector3 size);
 
 	// Read Data
@@ -29,7 +25,7 @@ struct GameMap {
 	GameObject& saveObjectAt(int x, int y, int z, GameObject& object);
 
 	// Return Data
-	Vector3 getMapSize() {	return Vector3(mapX, mapY, mapZ);}
+	Vector3 getMapSize() {	return size;}
 
 	// Convert Data
 	//Vector3 getConverstion(Vector3 space) { return Vector3(0, 0, 0); }
