@@ -14,6 +14,10 @@ typedef struct SceneManager {
 	Scene* nextScene; /**< The next Scene to activate */
 	Transition* transition; /**< The Transition between two Scene */
 
+	MiniGame* miniGames[10]; /**< The Mini Game List */
+	MiniGame* currentMiniGame; /**< The current Mini Game */
+	MiniGame* nextMiniGame; /**< The next Game */
+
 	Camera3D camera3D;
 	Camera2D camera2D;
 

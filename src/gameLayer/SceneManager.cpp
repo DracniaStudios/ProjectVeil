@@ -13,6 +13,16 @@ void SceneManager_init(SceneManager* manager) {
 	// ... Initialize other scenes as needed
 	manager->scenes[0] = Scene_MainMenuConstruct();
 
+	// ... Initialize mini games
+	manager->miniGames[0] = MiniGame_flappyBird();
+	/*
+	manager->miniGames[1] = MiniGame_crane();
+	manager->miniGames[2] = MiniGame_doctor();
+	manager->miniGames[3] = MiniGame_saysMe();
+	manager->miniGames[4] = MiniGame_timedSaysMe();
+	manager->miniGames[5] = MiniGame_maze();
+	manager->miniGames[6] = MiniGame_roShamBoo();
+	*/
 	manager->transition = Transition_new();
 
 	SceneManager_push(manager, SCENE_MAIN_MENU);

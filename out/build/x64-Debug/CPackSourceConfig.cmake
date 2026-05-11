@@ -24,7 +24,7 @@ set(CPACK_IGNORE_FILES "/CVS/;/\\.svn/;/\\.bzr/;/\\.hg/;/\\.git/;\\.swp\$;\\.#;/
 set(CPACK_INNOSETUP_ARCHITECTURE "x64")
 set(CPACK_INSTALLED_DIRECTORIES "D:/GitHub/ProjectVeil;/")
 set(CPACK_INSTALL_CMAKE_PROJECTS "")
-set(CPACK_INSTALL_PREFIX "D:/GitHub/ProjectVeil/out/install/x64-Debug")
+set(CPACK_INSTALL_PREFIX "D:/GitHub/ProjectVeil/out/install/x64-debug")
 set(CPACK_MODULE_PATH "D:/GitHub/ProjectVeil/thirdparty/raylib-6.0/cmake")
 set(CPACK_NSIS_DISPLAY_NAME "raylib 6.0.0")
 set(CPACK_NSIS_INSTALLER_ICON_CODE "")

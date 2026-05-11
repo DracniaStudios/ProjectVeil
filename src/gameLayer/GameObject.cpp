@@ -23,6 +23,8 @@ void GameObject::onEnable()
 
 	// Set Initial Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
+
+	health = getMaxHealth();
 }
 
 void GameObject::onDisable()
@@ -96,5 +98,7 @@ void GameObject::update(float deltaTime)
 
 	}
 	*/
+	health = Clamp(health, 0, getMaxHealth());
+
 }
 

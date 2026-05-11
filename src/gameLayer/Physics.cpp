@@ -245,3 +245,20 @@ void RigidBody3D::updateForce(float deltaTime)
 	}
 
 }
+
+/// ------------------- RigidBody2D Collision Detection and Resolution ------------------- ///
+
+void RigidBody2D::resolveConstrains(GameMap& mapData)
+{
+
+}
+
+void RigidBody2D::checkCollisionOnce(Vector2& position, GameMap& mapData)
+{
+	
+}
+
+Vector2 RigidBody2D::performCollisionOnOneAxis(GameMap& mapData, Vector2 position, Vector2 delta)
+{
+	return Vector2Zero();
+}

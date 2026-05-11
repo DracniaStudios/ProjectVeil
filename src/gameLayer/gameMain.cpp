@@ -1,9 +1,7 @@
 #include "gameMain.h"
 
 SceneManager manager = {};
-bool lockMouse = false;
-
-static void UpdateCameraFPS(Camera* camera);
+bool lockMouse = true;
 
 bool init_game()
 {
@@ -36,15 +34,18 @@ bool update_game()
 
 	ClearBackground(WHITE);
 
+	// Update Input System
+
 	/// Update and Draw Scene
 	SceneManager_update(&manager, deltaTime);
 
 	SceneManager_draw(&manager);
+	
+	if (IsKeyPressed(KEY_F1)) { lockMouse = !lockMouse; }
 	/*
 	if (lockMouse)
 	{
 		DisableCursor();
-		//GetMouseDelta() = Vector2{ 0, 0 };
 	}
 	else
 	{

@@ -5,6 +5,9 @@
 
 void Player::onEnable()
 {
+	stamina = getMaxStamina();
+	rigidBody2D.translation = Vector3(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f, 0);
+	std::cout << rigidBody2D.translation.x << "\n";
 	GameObject::onEnable();
 }
 
@@ -16,7 +19,11 @@ void Player::onDisable()
 
 void Player::render2D()
 {
+	if (!isEnabled) return;
 	
+	DrawCircle(rigidBody2D.translation.x, rigidBody2D.translation.y, 5, WHITE);
+	DrawRectangle(rigidBody2D.translation.x, rigidBody2D.translation.y, rigidBody2D.scale.x, rigidBody2D.scale.y, WHITE);
+
 }
 
 void Player::render3D()
@@ -44,9 +51,26 @@ void Player::render3D()
 	
 }
 
-void Player::update(SceneManager* manager, float deltaTime)
+void Player::update2D(SceneManager* manager, float deltaTime)
 {
 	if (!isEnabled) return;
+	if (!manager->currentScene->is2DActive) return;
+
+	// Player2D Function
+	moveDirection = Vector2Zero();
+	moveDirection.x = IsKeyDown(KEY_A) ? -1.0f : IsKeyDown(KEY_LEFT) ? -1.0f : IsKeyDown(KEY_D) ? 1.0f : IsKeyDown(KEY_RIGHT) ? 1.0f : 0;
+	moveDirection.y = IsKeyDown(KEY_W) ? -1.0f : IsKeyDown(KEY_UP) ? -1.0f : IsKeyDown(KEY_S) ? 1.0f : IsKeyDown(KEY_DOWN) ? 1.0f : 0;
+	
+	auto speed = IsKeyDown(KEY_LEFT_SHIFT) ? baseSpeed * 2 : baseSpeed;
+	
+	rigidBody2D.translation += Vector3(moveDirection.x, moveDirection.y) * speed;
+	//rigidBody2D.update(deltaTime);
+}
+
+void Player::update3D(SceneManager* manager, float deltaTime)
+{
+	if (!isEnabled) return;
+	if (manager->currentScene->is2DActive) { return; }
 
 	/// Player Flags
 	isCrouching = IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_LEFT_SHIFT);
@@ -57,18 +81,15 @@ void Player::update(SceneManager* manager, float deltaTime)
 	/// Player Movement
 	auto speed = IsKeyDown(KEY_LEFT_SHIFT) ? baseSpeed * 2 : baseSpeed;
 
-	if (IsKeyDown(KEY_W)) { 
-		rigidBody3D.translation += (rigidBody3D.front * speed) * 0.1f;
-	}
-	if (IsKeyDown(KEY_S)) { 
-		rigidBody3D.translation += (rigidBody3D.back * speed) * 0.1f;
-	}
-	if (IsKeyDown(KEY_A)) { 
-		rigidBody3D.translation += (rigidBody3D.left * speed) * 0.1f;
-	}
-	if (IsKeyDown(KEY_D)) {
-		rigidBody3D.translation += (rigidBody3D.right * speed) * 0.1f;
-	}
+	// Player Movement Input
+	moveDirection = Vector2Zero();
+	moveDirection.x = IsKeyDown(KEY_A) ? -1.0f : IsKeyDown(KEY_LEFT) ? -1.0f : IsKeyDown(KEY_D) ? 1.0f : IsKeyDown(KEY_RIGHT) ? 1.0f : 0;
+	moveDirection.y = IsKeyDown(KEY_W) ? 1.0f : IsKeyDown(KEY_UP) ? 1.0f : IsKeyDown(KEY_S) ? -1.0f : IsKeyDown(KEY_DOWN) ? -1.0f : 0;
+
+	if (moveDirection.y > 0) {	rigidBody3D.translation += (rigidBody3D.front * speed) * 0.1f;}
+	if (moveDirection.y < 0) { 	rigidBody3D.translation += (rigidBody3D.back * speed) * 0.1f; }
+	if (moveDirection.x < 0) { 	rigidBody3D.translation += (rigidBody3D.left * speed) * 0.1f; }
+	if (moveDirection.x > 0) {	rigidBody3D.translation += (rigidBody3D.right * speed) * 0.1f;}
 
 	if (IsKeyPressed(KEY_SPACE)) rigidBody3D.jump(20);
 
@@ -104,6 +125,9 @@ void Player::update(SceneManager* manager, float deltaTime)
 			}
 		}
 	}
+
+	health = Clamp(health, 0, getMaxHealth());
+	stamina = Clamp(stamina, 0, getMaxStamina());
 
 }
 

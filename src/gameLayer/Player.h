@@ -12,6 +12,7 @@ struct PlayerCamera;
 
 struct PlayerCamera
 {
+	Vector3 forward;
 	Vector2 sensitivity = Vector2{ 0.01f, 0.01f };
 	Vector2 lookRotation = Vector2{ 0, 0 };
 	Vector2 lean = Vector2{ 0, 0 };
@@ -19,27 +20,29 @@ struct PlayerCamera
 	float walkLerp;
 	float headTimer;
 
-	Vector3 forward;
 
 	void UpdateCameraFPS(Camera* camera, Player* player);
 
 };
 
-struct Player :  GameObject
+struct Player : GameObject
 {
+	Vector2 moveDirection = {};
+	bool isCrouching = false;
+	float baseSpeed = 1;
+	float stamina = 0;
 
 	/// Camera Data
 	PlayerCamera camera = {};
-
-	bool isCrouching = false;
-
-	float baseSpeed = 1;
 
 	void render2D();
 	void render3D();
 	void onEnable();
 	void onDisable();
-	void update(SceneManager* manager, float deltaTime);
+	void update2D(SceneManager* manager, float deltaTime);
+	void update3D(SceneManager* manager, float deltaTime);
+	int getMaxHealth() override { return 20; }
+	int getMaxStamina() { return 100; }
 };
 
 #endif

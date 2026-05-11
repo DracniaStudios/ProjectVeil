@@ -5,12 +5,13 @@
 
 #include <raylib.h>
 #include <raymath.h>
-#include <gameMap.h>
 #include <imgui.h>
-#include <randomStuff.h>
 
+#include <randomStuff.h>
+#include <gameMap.h>
 #include <Player.h>
 #include <AssetManager.h>
+#include <MiniGame.h>
 
 #include <stdlib.h>
 #include <iostream>
@@ -41,7 +42,8 @@ typedef struct Scene {
 	void* object_ptr; // Reference Scene
 	
 	const char* name = {};
-	bool is2DActive = false;
+	bool is2DActive = false; // 2D Mode
+	bool isMiniActive = false;// Mini Game 
 
 	updateSceneMethod update;
 	drawSceneMethod2D draw2D;

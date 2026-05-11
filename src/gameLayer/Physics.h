@@ -243,6 +243,7 @@ struct RigidBody3D : public Transform3D
 	float maxSpeed = 200.0f;
 	float drag = 0.9f;
 	
+	bool isEnabled = true;
 	bool useGravity = true;
 	bool isStatic = false;
 	bool isColliding = false;
@@ -270,6 +271,8 @@ struct RigidBody3D : public Transform3D
 
 	void update(float deltaTime)
 	{
+		if (scale == Vector3Zero()) { scale = Vector3One(); }
+		if (!isEnabled) return;
 		if (!isStatic) {
 			if (useGravity) applyGravity();
 			updateForce(deltaTime);
@@ -353,12 +356,14 @@ struct Transform2D : public Transform
 struct RigidBody2D : public Transform2D
 {
 	Vector2 lastPosition = {};
-	Vector2 velocity;
-	Vector2 acceleration;
+	Vector2 velocity = {};
+	Vector2 acceleration = {};
 
 	float maxSpeed = 200.0f;
 	float drag = 0.9f;
 	
+	bool isEnabled = true;
+	bool isStatic = false;
 	bool useGravity = true;
 
 	bool upTouch = false;
@@ -411,10 +416,17 @@ struct RigidBody2D : public Transform2D
 
 	void update(float deltaTime)
 	{
+		if (scale == Vector3Zero()) { scale = Vector3One(); }
+		
+		if (!isEnabled) return;
+		if (!isStatic) return;
+
 		if (useGravity) applyGravity();
 		updateForce(deltaTime);
 		lastPosition = Vector2(translation.x, translation.y);
 	}
+
+	Vector2 getPosition() { return Vector2{ translation.x, translation.y }; }
 
 	void jump(float force)	{ if (downTouch){velocity.y -= force;}	}
 

@@ -5,19 +5,31 @@
 
 Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity instead of the velocity itself.
 
-
 [ Issues ]
 
 - Object Collision is working but objects can go within each other and jitter when stacked.
+
 [ Added ]
 
+- Adde Mini Games into 2D mode
+
 - GameObjects are now displayed on 2D space
+
 - Added Player collision with game Objects
+
+- Player2D controls body in 2d mode
 
 [ Updated ]
 
 - Raylib 6.0 added to project
+
 - Physics System now has basic collision detection and resolution methods implemented
+
+- GameObjects now have a dynamic RigidBody2D
+
+- ImGui Player Stats display 2D and 3D in seperate moded
+
+- Player rigidbody is now disabled on 2D mode
 
 [ Fixed ]
 

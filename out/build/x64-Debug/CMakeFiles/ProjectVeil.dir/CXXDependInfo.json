@@ -79,6 +79,11 @@
 			"language" : "CXX",
 			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/gameMap.cpp"
 		},
+		"CMakeFiles/ProjectVeil.dir/src/gameLayer/minigames/FlappyBird.cpp.obj" : 
+		{
+			"language" : "CXX",
+			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/minigames/FlappyBird.cpp"
+		},
 		"CMakeFiles/ProjectVeil.dir/src/gameLayer/randomStuff.cpp.obj" : 
 		{
 			"language" : "CXX",
@@ -88,6 +93,11 @@
 		{
 			"language" : "CXX",
 			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/scenes/mainMenu.cpp"
+		},
+		"CMakeFiles/ProjectVeil.dir/src/gameLayer/ui.cpp.obj" : 
+		{
+			"language" : "CXX",
+			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/ui.cpp"
 		},
 		"CMakeFiles/ProjectVeil.dir/src/platform/ProjectVeil.cpp.obj" : 
 		{
