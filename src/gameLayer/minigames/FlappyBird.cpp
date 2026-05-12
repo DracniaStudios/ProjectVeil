@@ -90,6 +90,7 @@ void FlappyBird::update(void* manager_ptr, void* player_ptr, float deltaTime)
 	if (score >= goal)
 	{
 		scene->isMiniActive = false;
+		player->health += 5;
 		std::cout << "Completed Mini Game \n";
 	}
 

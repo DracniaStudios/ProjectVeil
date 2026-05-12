@@ -76,28 +76,11 @@ void GameObject::render3D()
 void GameObject::update(float deltaTime)
 {
 	if (!isEnabled) { return; }
+	health = static_cast<int>(Clamp(health, 0, getMaxHealth()));
 	// Update Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
 	rigidBody3D.update(deltaTime);
-	/*
-	// Clamp 2D to position from game map size to screen size
-	{
-		const float screenX = static_cast<float>(GetScreenWidth());
-		const float screenY = static_cast<float>(GetScreenHeight());
-
-		rigidBody3D.translation.x = Clamp(rigidBody3D.translation.x, -(screenX / 10) + rigidBody3D.scale.x / 2, screenX / 10 - rigidBody3D.scale.x / 2);
-		rigidBody3D.translation.y = Clamp(rigidBody3D.translation.y, 0, screenY / 2 - rigidBody3D.scale.y / 2);
-		rigidBody3D.translation.z = Clamp(rigidBody3D.translation.z, -(screenX / 10) + rigidBody3D.scale.z / 2, screenX / 10 - rigidBody3D.scale.z / 2);
-
-		rigidBody2D.translation.x = screenX / 2 + rigidBody3D.translation.x * 10;
-		rigidBody2D.translation.y = screenY - rigidBody3D.translation.y * 10;
-		// Clamp object within bounds by calculating 108 - scale.x / 2
-
-		rigidBody2D.translation.x = Clamp(rigidBody2D.translation.x, 0, screenX);
-		rigidBody2D.translation.y = Clamp(rigidBody2D.translation.y, 0, screenY);
-
-	}
-	*/
+	
 	health = Clamp(health, 0, getMaxHealth());
 
 }

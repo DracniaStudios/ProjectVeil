@@ -1,12 +1,13 @@
 #include "mainMenu.h"
 
+#include <DeveloperWindow.h>
 
 bool isImGuiEnabled = false;
 
 Player player = {};
 AssetManager assetManager = {};
 GameObject* selectedObject = {};
-
+DeveloperWindow developerConsole = {};
 MiniGame* currentMiniGame = {};
 int miniGameID = 0;
 
@@ -82,34 +83,13 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 	if (IsKeyPressed(KEY_F10)) { isImGuiEnabled = !isImGuiEnabled; }
 
 	if (isImGuiEnabled) {
+		developerConsole.render(manager, &player);
+		developerConsole.update();
+		/*
 		ImGui::Begin("Game Data");
 
-		ImGui::Checkbox("Scene is 2D: ", &scene->is2DActive);
-
-		ImGui::BeginChild("Player Data");
-
-		if (scene->is2DActive)
-		{
-			ImGui::Checkbox("RigidBody is Enabled: ", &player.rigidBody2D.isEnabled);
-			ImGui::Text("Player Position 2D: (%.2f, %.2f)", player.rigidBody2D.translation.x, player.rigidBody2D.translation.y);
-			ImGui::Text("Player Velocity 2D: (%.2f, %.2f)", player.rigidBody2D.velocity.x, player.rigidBody2D.velocity.y);
-			ImGui::Text("Player Scale 2D: (%.2f, %.2f)", player.rigidBody2D.scale.x, player.rigidBody2D.scale.y);
-			
-		}
-		else
-		{
-			ImGui::Checkbox("RigidBody is Enabled: ", &player.rigidBody3D.isEnabled);
-			ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", player.rigidBody3D.translation.x, player.rigidBody3D.translation.y, player.rigidBody3D.translation.z);
-			ImGui::Text("Player Velocity 3D: (%.2f, %.2f, %.2f)", player.rigidBody3D.velocity.x, player.rigidBody3D.velocity.y, player.rigidBody3D.velocity.z);
-			ImGui::Text("Player Scale 3D: (%.2f, %.2f, %.2f)", player.rigidBody3D.scale.x, player.rigidBody3D.scale.y, player.rigidBody3D.scale.z);
-			
-		}
-		ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player.rigidBody3D.front.x, player.rigidBody3D.front.y, player.rigidBody3D.front.z);
-
-		ImGui::Text("Camera Forward: (%.2f, %.2f, %.2f)", player.camera.forward.x, player.camera.forward.y, player.camera.forward.z);
-		ImGui::Separator();
-
-		ImGui::Separator();
+		//ImGui::Checkbox("Scene is 2D: ", &scene->is2DActive);
+		
 		ImGui::InputFloat3("Cube Position", &cubePosition.x);
 		if (ImGui::Button("Add Game Object"))
 		{
@@ -138,16 +118,7 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 			ImGui::Checkbox("Selected Object Front Touch", &selectedObject->rigidBody3D.frontTouch);
 			ImGui::Checkbox("Selected Object Back Touch", &selectedObject->rigidBody3D.backTouch);
 		}
-
-		ImGui::Separator();
-
-		ImGui::Checkbox("Activate Mini Game", &scene->isMiniActive);
-		ImGui::InputInt("Set MiniGame ID", &miniGameID);
-		miniGameID = Clamp(miniGameID, 0, 1);
-
-		ImGui::EndChild();
-
-		ImGui::End();
+		*/
 	}
 #pragma endregion
 }
@@ -165,9 +136,9 @@ void Scene_MainMenuDraw2D(void* manager_ptr, void* object_ptr)
 			currentMiniGame = MiniGame_flappyBird();
 			currentMiniGame->draw(manager_ptr, object_ptr);
 		}
+		player.render2D();
 	}
 	/// Always Render Player Last (On Top)
-	player.render2D();
 };
 
 void Scene_MainMenuDraw3D(void* manager_ptr, void* object_ptr)
@@ -186,7 +157,6 @@ Scene* Scene_MainMenuConstruct()
 	scene->draw3D = Scene_MainMenuDraw3D;
 	scene->object_ptr = scene;
 
-	//scene->gameMap.create(1920, 5, 1080);
 	scene->gameMap.create(Vector3(100, 1, 100));
 	scene->gameMap.gameObjects.push_back(player);
 	player.onEnable();

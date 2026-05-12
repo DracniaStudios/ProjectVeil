@@ -1,7 +1,11 @@
 ninja_dyndep_version = 1.0
 build CMakeFiles\ProjectVeil.dir\src\gameLayer\AssetManager.cpp.obj: dyndep
 
+build CMakeFiles\ProjectVeil.dir\src\gameLayer\DeveloperWindow.cpp.obj: dyndep
+
 build CMakeFiles\ProjectVeil.dir\src\gameLayer\GameObject.cpp.obj: dyndep
+
+build CMakeFiles\ProjectVeil.dir\src\gameLayer\Inventory.cpp.obj: dyndep
 
 build CMakeFiles\ProjectVeil.dir\src\gameLayer\ParticleSystem.cpp.obj: dyndep
 

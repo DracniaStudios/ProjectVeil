@@ -29,6 +29,7 @@ struct Player : GameObject
 {
 	Vector2 moveDirection = {};
 	bool isCrouching = false;
+
 	float baseSpeed = 1;
 	float stamina = 0;
 

@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
-// Version: 0.1.1
+// Version: 0.1.14
 // Date: 2026-06-06 (First Video Release)
-// Date: 2026-05-6 (Current Development Date)
+// Date: 2026-05-12 (Current Development Date)
 
 Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity instead of the velocity itself.
 
@@ -19,6 +19,10 @@ Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity 
 
 - Player2D controls body in 2d mode
 
+- Added New Developer Window to split up ImGui Code and readability
+
+- Adde New Inventory Struct (not implemented)
+
 [ Updated ]
 
 - Raylib 6.0 added to project
@@ -30,6 +34,7 @@ Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity 
 - ImGui Player Stats display 2D and 3D in seperate moded
 
 - Player rigidbody is now disabled on 2D mode
+
 
 [ Fixed ]
 

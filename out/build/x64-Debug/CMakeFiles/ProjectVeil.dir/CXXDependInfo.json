@@ -34,10 +34,20 @@
 			"language" : "CXX",
 			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/AssetManager.cpp"
 		},
+		"CMakeFiles/ProjectVeil.dir/src/gameLayer/DeveloperWindow.cpp.obj" : 
+		{
+			"language" : "CXX",
+			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/DeveloperWindow.cpp"
+		},
 		"CMakeFiles/ProjectVeil.dir/src/gameLayer/GameObject.cpp.obj" : 
 		{
 			"language" : "CXX",
 			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/GameObject.cpp"
+		},
+		"CMakeFiles/ProjectVeil.dir/src/gameLayer/Inventory.cpp.obj" : 
+		{
+			"language" : "CXX",
+			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/Inventory.cpp"
 		},
 		"CMakeFiles/ProjectVeil.dir/src/gameLayer/ParticleSystem.cpp.obj" : 
 		{
