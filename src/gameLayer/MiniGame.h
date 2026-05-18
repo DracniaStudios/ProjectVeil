@@ -15,16 +15,29 @@ struct MiniGame
 {
 	bool isEnabled = true;
 
+	Rectangle screen;
+
 	updateGameMethod update;
 	drawGameMethod draw;
 };
 // Angel Engine Style
 
+inline Rectangle generateScaleRect(Rectangle screen, Rectangle rect)
+{
+	Rectangle r = {};
+
+	r.x = screen.x * rect.x;
+	r.y = screen.y * rect.y;
+	r.width = screen.width * rect.width;
+	r.height = screen.height * rect.height;
+	return r;
+}
+
 #define MINI_GAME_ID 0
 MiniGame* MiniGame_flappyBird();
-/*
 #define MINI_GAME_ID 1
 MiniGame* MiniGame_crane();
+/*
 #define MINI_GAME_ID 2
 MiniGame* MiniGame_doctor();
 #define MINI_GAME_ID 3

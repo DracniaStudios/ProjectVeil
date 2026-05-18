@@ -14,7 +14,6 @@ void GameMap::create(Vector3 size)
 	floor.rigidBody3D.translation = Vector3(0, -1, 0);
 	floor.rigidBody3D.scale = size;
 	floor.defaultColor = BLACK;
-
 	saveObjectAt(floor.getPosition(), floor);
 
 }
@@ -38,13 +37,16 @@ GameObject* GameMap::getObjectAt(int x, int y, int z)
 
 GameObject& GameMap::saveObjectAt(Vector3 position, GameObject& object)
 {
+	
+
 	object.rigidBody3D.translation = position;
 
 	if (object.rigidBody3D.scale == Vector3Zero())
 	{
 		object.rigidBody3D.scale = Vector3One();
 	}
-	object.id = objectID++;
+	object.id = objectID;
+	objectID++;
 
 	object.onEnable();
 	std::cout << "Added Object \n";
@@ -56,5 +58,3 @@ GameObject& GameMap::saveObjectAt(int x, int y, int z, GameObject& object)
 {
 	return saveObjectAt(Vector3(x, y, z), object);
 }
-
-//Vector3 GameMap::get

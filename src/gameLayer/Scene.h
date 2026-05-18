@@ -49,7 +49,8 @@ typedef struct Scene {
 	drawSceneMethod2D draw2D;
 	drawSceneMethod3D draw3D;
 
-	GameMap gameMap; // The GameMap of the Scene
+	GameMap gameMap = {}; // The GameMap of the Scene
+	MiniGame* miniGame = {};
 } Scene;
 
 /**

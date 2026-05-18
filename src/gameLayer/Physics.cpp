@@ -13,7 +13,7 @@ void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 			return newRay;
 		};
 
-	const float touchDistance = 0.15f; // Adjust this value based on how close the ray needs to be to count as a touch
+	constexpr float touchDistance = 0.1f; // Adjust this value based on how close the ray needs to be to count as a touch
 
 	auto hitWithinRange = [&](Ray ray)
 		{
@@ -210,7 +210,7 @@ void RigidBody3D::resolveCollision(RigidBody3D& other)
 
 }
 
-void RigidBody3D::updateForce(float deltaTime)
+void RigidBody3D::updateForce(GameMap gameMap, float deltaTime)
 {
 	if (airTime > 0)
 	{
@@ -219,19 +219,25 @@ void RigidBody3D::updateForce(float deltaTime)
 
 	// Apply acceleration to velocity
 	velocity += acceleration * deltaTime;
+
 	// Limit velocity to max speed
-	if (Vector3Length(velocity) > maxSpeed)
+	if (Vector3Length(velocity) > 999)
 	{
-		velocity = Vector3Scale(Vector3Normalize(velocity), maxSpeed);
+		velocity = Vector3Scale(Vector3Normalize(velocity), 999);
 	}
+	
 	// Apply velocity to position
 	translation += velocity * deltaTime;
+	
 	// Apply drag to velocity
 	velocity *= drag;
+	
 	// Reset acceleration for the next frame
-	acceleration = { 0, 0 };
+	acceleration = {};
 
 	// Apply Touch Detection
+	
+	// Ground Detection
 	if (translation.y < 0.0f + scale.y / 2)
 	{
 		translation.y = 0.0f + scale.y / 2;
@@ -244,6 +250,26 @@ void RigidBody3D::updateForce(float deltaTime)
 		airTime += deltaTime;
 	}
 
+	for (auto& obj : gameMap.gameObjects)
+	{
+		checkRayCollision(obj.rigidBody3D);
+	}
+
+}
+
+void RigidBody3D::update(GameMap gameMap,float deltaTime)
+{
+	if (scale == Vector3Zero()) { scale = Vector3One(); }
+	if (!isEnabled) return;
+	if (!isStatic) {
+		if (useGravity) applyGravity();
+		updateForce(gameMap, deltaTime);
+	}
+	lastPosition = translation;
+
+	// Update collision box to match current position and scale
+	collisionBox.min = { translation.x - scale.x * 0.5f, translation.y - scale.y * 0.5f, translation.z - scale.z * 0.5f };
+	collisionBox.max = { translation.x + scale.x * 0.5f, translation.y + scale.y * 0.5f, translation.z + scale.z * 0.5f };
 }
 
 /// ------------------- RigidBody2D Collision Detection and Resolution ------------------- ///

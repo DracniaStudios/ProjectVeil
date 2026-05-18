@@ -8,7 +8,6 @@ Player player = {};
 AssetManager assetManager = {};
 GameObject* selectedObject = {};
 DeveloperWindow developerConsole = {};
-MiniGame* currentMiniGame = {};
 int miniGameID = 0;
 
 Vector3 cubePosition = { 0, 0, 0 };
@@ -64,9 +63,9 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 
 	if (scene->isMiniActive)
 	{
-		if (currentMiniGame != nullptr)
+		if (scene->miniGame != nullptr)
 		{
-			currentMiniGame->update(manager_ptr, &player, deltaTime);
+			scene->miniGame->update(manager_ptr, &player, deltaTime);
 		}
 	}
 
@@ -83,42 +82,8 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 	if (IsKeyPressed(KEY_F10)) { isImGuiEnabled = !isImGuiEnabled; }
 
 	if (isImGuiEnabled) {
-		developerConsole.render(manager, &player);
-		developerConsole.update();
-		/*
-		ImGui::Begin("Game Data");
-
-		//ImGui::Checkbox("Scene is 2D: ", &scene->is2DActive);
-		
-		ImGui::InputFloat3("Cube Position", &cubePosition.x);
-		if (ImGui::Button("Add Game Object"))
-		{
-			GameObject newObject;
-			newObject.rigidBody3D.translation = cubePosition;
-			newObject.rigidBody3D.scale = Vector3(1, 1, 1);
-			scene->gameMap.saveObjectAt(cubePosition, newObject);
-		}
-		
-		ImGui::Separator();
-		// Show Current Game Object Data
-		if (selectedObject != nullptr)
-		{
-			DrawCubeWires(selectedObject->rigidBody3D.translation, selectedObject->rigidBody3D.scale.x, selectedObject->rigidBody3D.scale.y, selectedObject->rigidBody3D.scale.z, WHITE);
-			ImGui::Text("Selected Object ID: %d", selectedObject->id);
-			//ImGui::Text("Selected Object Name: %s", selectedObject->name);
-			ImGui::Text("Selected Object Position: (%.2f, %.2f, %.2f)", selectedObject->rigidBody3D.translation.x, selectedObject->rigidBody3D.translation.y, selectedObject->rigidBody3D.translation.z);
-			ImGui::Text("Selected Object Scale: (%.2f, %.2f, %.2f)", selectedObject->rigidBody3D.scale.x, selectedObject->rigidBody3D.scale.y, selectedObject->rigidBody3D.scale.z);
-			ImGui::Text("Selected Object Velocity: (%.2f, %.2f, %.2f)", selectedObject->rigidBody3D.velocity.x, selectedObject->rigidBody3D.velocity.y, selectedObject->rigidBody3D.velocity.z);
-			ImGui::Checkbox("Selected Object Visible", &selectedObject->display3DModel);
-			ImGui::Checkbox("Selected Object Collider", &selectedObject->displayCollider);
-			ImGui::Checkbox("Selected Object Up Touch", &selectedObject->rigidBody3D.upTouch);
-			ImGui::Checkbox("Selected Object Down Touch", &selectedObject->rigidBody3D.downTouch);
-			ImGui::Checkbox("Selected Object Left Touch", &selectedObject->rigidBody3D.leftTouch);
-			ImGui::Checkbox("Selected Object Right Touch", &selectedObject->rigidBody3D.rightTouch);
-			ImGui::Checkbox("Selected Object Front Touch", &selectedObject->rigidBody3D.frontTouch);
-			ImGui::Checkbox("Selected Object Back Touch", &selectedObject->rigidBody3D.backTouch);
-		}
-		*/
+		developerConsole.render(manager);
+		developerConsole.update(manager, &player);
 	}
 #pragma endregion
 }
@@ -131,10 +96,9 @@ void Scene_MainMenuDraw2D(void* manager_ptr, void* object_ptr)
 	if (scene->is2DActive)
 	{
 		DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{20, 20, 20, 200});
-		if (scene->isMiniActive)
+		if (scene->isMiniActive && scene->miniGame != nullptr)
 		{
-			currentMiniGame = MiniGame_flappyBird();
-			currentMiniGame->draw(manager_ptr, object_ptr);
+			scene->miniGame->draw(manager_ptr, object_ptr);
 		}
 		player.render2D();
 	}
@@ -158,7 +122,10 @@ Scene* Scene_MainMenuConstruct()
 	scene->object_ptr = scene;
 
 	scene->gameMap.create(Vector3(100, 1, 100));
+	
+	// Add Player To Objects
 	scene->gameMap.gameObjects.push_back(player);
+	scene->gameMap.objectID++;
 	player.onEnable();
 
 	return scene;

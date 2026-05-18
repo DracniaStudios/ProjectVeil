@@ -6,6 +6,7 @@
 #include <Physics.h>
 
 
+
 struct GameObject 
 {
 	const char* name = "GameObject";
@@ -17,13 +18,14 @@ struct GameObject
 	bool display3DModel = true;
 	bool displayCollider = false;
 	
-	int health;
+	int health = 1;
 
 	/// Physics
 	RigidBody3D rigidBody3D = {};
 	RigidBody2D rigidBody2D = {};
 
 	Color defaultColor = BLUE;
+
 	/// Renderer
 	Model model = {};
 	Mesh mesh = {};
@@ -32,7 +34,7 @@ struct GameObject
 	Quaternion getRotation() { return rigidBody3D.rotation; }
 	Vector3 getSize() { return rigidBody3D.scale; }
 
-	virtual void update(float deltaTime);
+	virtual void update(GameMap gameMap, float deltaTime);
 	virtual void render2D();
 	virtual void render3D();
 	virtual void onEnable();

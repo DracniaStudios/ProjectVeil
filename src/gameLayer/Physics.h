@@ -262,34 +262,15 @@ struct RigidBody3D : public Transform3D
 	}
 
 	float airTime = 0;
-	void applyGravity()
-	{
-		acceleration -= Vector3{ 0, 20, 0 }; //Vector3{ 0, 9.81f, 0 };
-	}
 
-	void updateForce(float deltaTime);
-
-	void update(float deltaTime)
-	{
-		if (scale == Vector3Zero()) { scale = Vector3One(); }
-		if (!isEnabled) return;
-		if (!isStatic) {
-			if (useGravity) applyGravity();
-			updateForce(deltaTime);
-		}
-		lastPosition = translation;
-
-		// Update collision box to match current position and scale
-		collisionBox.min = { translation.x - scale.x * 0.5f, translation.y - scale.y * 0.5f, translation.z - scale.z * 0.5f };
-		collisionBox.max = { translation.x + scale.x * 0.5f, translation.y + scale.y * 0.5f, translation.z + scale.z * 0.5f };
-	}
-
+	void applyGravity()	{	acceleration -= Vector3{ 0, 20, 0 }; }//Vector3{ 0, 9.81f, 0 }
+	void addForce(Vector3 forceDirection, float force){		acceleration += Vector3Scale(forceDirection, force);}
 	void jump(float force){	if (downTouch) { velocity.y = force; }}
 
-	void addForce(Vector3 forceDirection, float force)
-	{
-		acceleration += Vector3Scale(forceDirection, force);
-	}
+	void updateForce(GameMap gameMap, float deltaTime);
+	void update(GameMap gameMap, float deltaTime);
+
+
 
 
 	/// Collision Detection

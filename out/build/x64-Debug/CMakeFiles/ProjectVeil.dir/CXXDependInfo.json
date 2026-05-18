@@ -89,6 +89,11 @@
 			"language" : "CXX",
 			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/gameMap.cpp"
 		},
+		"CMakeFiles/ProjectVeil.dir/src/gameLayer/minigames/Crane.cpp.obj" : 
+		{
+			"language" : "CXX",
+			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/minigames/Crane.cpp"
+		},
 		"CMakeFiles/ProjectVeil.dir/src/gameLayer/minigames/FlappyBird.cpp.obj" : 
 		{
 			"language" : "CXX",

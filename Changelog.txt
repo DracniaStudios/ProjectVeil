@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
 // Version: 0.1.14
 // Date: 2026-06-06 (First Video Release)
-// Date: 2026-05-12 (Current Development Date)
+// Date: 2026-05-13 (Current Development Date)
 
 Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity instead of the velocity itself.
 
@@ -9,9 +9,11 @@ Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity 
 
 - Object Collision is working but objects can go within each other and jitter when stacked.
 
+- Find a way to load different meshes into the game, not just the cube
+
 [ Added ]
 
-- Adde Mini Games into 2D mode
+- Added Mini Games into 2D mode (Flappy Bird, Crane)
 
 - GameObjects are now displayed on 2D space
 
@@ -39,5 +41,9 @@ Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity 
 [ Fixed ]
 
 - Collision Boxes now updated on Scene update
+
+- Fixed an issue where objects would jitter when on top of each other
+
+- Fixed an issue where objects wouldn't detect collisions on sides and implement touch flags
 
 [ Removed ]

@@ -23,6 +23,8 @@ build CMakeFiles\ProjectVeil.dir\src\gameLayer\gameMain.cpp.obj: dyndep
 
 build CMakeFiles\ProjectVeil.dir\src\gameLayer\gameMap.cpp.obj: dyndep
 
+build CMakeFiles\ProjectVeil.dir\src\gameLayer\minigames\Crane.cpp.obj: dyndep
+
 build CMakeFiles\ProjectVeil.dir\src\gameLayer\minigames\FlappyBird.cpp.obj: dyndep
 
 build CMakeFiles\ProjectVeil.dir\src\gameLayer\randomStuff.cpp.obj: dyndep

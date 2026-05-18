@@ -95,7 +95,7 @@ void Player::update3D(SceneManager* manager, float deltaTime)
 
 	//GameObject::update(deltaTime);
 	
-	rigidBody3D.update(deltaTime);
+	rigidBody3D.update(manager->currentScene->gameMap, deltaTime);
 	
 	// Clamp 2D to position from game map size to screen size
 	{

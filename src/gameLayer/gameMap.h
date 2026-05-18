@@ -29,6 +29,10 @@ struct GameMap {
 
 	// Convert Data
 	//Vector3 getConverstion(Vector3 space) { return Vector3(0, 0, 0); }
+
+	// Check IDs
+	//void sanatize();
+
 };
 
 #endif

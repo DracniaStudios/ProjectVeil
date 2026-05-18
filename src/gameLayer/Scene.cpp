@@ -1,6 +1,5 @@
 #include "scene.h"
 
-
 Scene* Scene_new() {
 	Scene* scene = new Scene;
 	return scene;
@@ -41,7 +40,7 @@ void Scene_updateScene(void* manager_ptr, Scene* scene, float delta) {
 
 	// Update GameObjects
 	for (auto& object : scene->gameMap.gameObjects) {
-		object.update(delta);
+		object.update(scene->gameMap, delta);
 	}
 
 	solveCollision(scene, delta, 8);

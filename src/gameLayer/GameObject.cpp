@@ -1,6 +1,7 @@
 #include "GameObject.h"
 
 #include <asserts.h>
+#include <gameMap.h>
 
 BoundingBox getBoundingBox(Model mdl, Vector3 pos)
 {
@@ -16,7 +17,6 @@ void GameObject::onEnable()
 	isEnabled = true;
 	
 	// Generate 3D Model
-	mesh = GenMeshCube(rigidBody3D.scale.x, rigidBody3D.scale.y, rigidBody3D.scale.z);
 	model = LoadModelFromMesh(mesh);
 	
 	// Generate 2d Model
@@ -37,18 +37,6 @@ void GameObject::onDisable()
 void GameObject::render2D()
 {
 	if (!isEnabled) { return; }
-	/*
-	Rectangle pos2D = { rigidBody2D.translation.x - rigidBody2D.scale.x / 2,
-		rigidBody2D.translation.y - rigidBody2D.scale.y / 2,
-		rigidBody3D.scale.x * 32,
-		rigidBody3D.scale.y * 32 };
-
-	pos2D.y -= rigidBody3D.scale.y * 32;
-
-	if (display2DModel) {
-		DrawRectangle(pos2D.x, pos2D.y, pos2D.width, pos2D.height, defaultColor);
-	}
-	*/
 }
 void GameObject::render3D()
 {
@@ -73,13 +61,13 @@ void GameObject::render3D()
 }
 
 
-void GameObject::update(float deltaTime)
+void GameObject::update(GameMap gameMap, float deltaTime)
 {
 	if (!isEnabled) { return; }
 	health = static_cast<int>(Clamp(health, 0, getMaxHealth()));
 	// Update Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
-	rigidBody3D.update(deltaTime);
+	rigidBody3D.update(gameMap, deltaTime);
 	
 	health = Clamp(health, 0, getMaxHealth());
 

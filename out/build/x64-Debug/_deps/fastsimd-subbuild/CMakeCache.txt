@@ -26,7 +26,7 @@ CMAKE_FIND_PACKAGE_REDIRECTS_DIR:STATIC=D:/GitHub/ProjectVeil/out/build/x64-Debu
 //Install path prefix, prepended onto install directories.
 CMAKE_INSTALL_PREFIX:PATH=C:/Program Files (x86)/fastsimd-populate
 
-//No help, variable specified on the command line.
+//make program
 CMAKE_MAKE_PROGRAM:FILEPATH=C:/PROGRA~1/MICROS~3/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe
 
 //Value Computed by CMake
@@ -76,9 +76,9 @@ CMAKE_CACHEFILE_DIR:INTERNAL=d:/GitHub/ProjectVeil/out/build/x64-Debug/_deps/fas
 //Major version of cmake used to create the current loaded cache
 CMAKE_CACHE_MAJOR_VERSION:INTERNAL=4
 //Minor version of cmake used to create the current loaded cache
-CMAKE_CACHE_MINOR_VERSION:INTERNAL=2
+CMAKE_CACHE_MINOR_VERSION:INTERNAL=3
 //Patch version of cmake used to create the current loaded cache
-CMAKE_CACHE_PATCH_VERSION:INTERNAL=3
+CMAKE_CACHE_PATCH_VERSION:INTERNAL=1
 //Path to CMake executable.
 CMAKE_COMMAND:INTERNAL=C:/Program Files/Microsoft Visual Studio/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe
 //Path to cpack program executable.
@@ -109,7 +109,7 @@ CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=1
 //Platform information initialized
 CMAKE_PLATFORM_INFO_INITIALIZED:INTERNAL=1
 //Path to CMake installation.
-CMAKE_ROOT:INTERNAL=C:/Program Files/Microsoft Visual Studio/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-4.2
+CMAKE_ROOT:INTERNAL=C:/Program Files/Microsoft Visual Studio/18/Insiders/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-4.3
 //ADVANCED property for variable: CMAKE_SKIP_INSTALL_RPATH
 CMAKE_SKIP_INSTALL_RPATH-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_SKIP_RPATH

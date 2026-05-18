@@ -2,9 +2,6 @@
 #ifndef DEVELOPER_WINDOW_H
 #define DEVELOPER_WINDOW_H
 
-#include <raylib.h>
-#include <imgui.h>
-
 struct SceneManager;
 struct Player;
 
@@ -12,8 +9,8 @@ struct Player;
 struct DeveloperWindow
 {
 	
-	void update();
-	void render(SceneManager* manager, Player* player);
+	void render(SceneManager* manager);
+	void update(SceneManager* manager, Player* player);
 
 	bool isPlayerActive = false;
 	bool isCameraActive = false;
