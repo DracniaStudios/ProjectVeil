@@ -2,33 +2,35 @@
 #ifndef INVENTORY_H
 #define INVENTORY_H
 
-#include <raylib.h>
-#include <GameObject.h>
 #include <vector>
+#include <Item.h>
+#include <raylib.h>
 
-struct Slot
-{
-	int id = -1;
+struct AssetManager;
 
-	GameObject* item = {};
-	int itemCount = 0;
-
-	bool addItemToSlot(GameObject* item);
-	bool removeItemFromSlot(GameObject* item);
-	[[nodiscard]] auto* getItemFromSlot() const { return item; }
-};
 
 struct Inventory
 {
 	
 	const int maxSlots = 5;
 	
-	std::vector<Slot*> slots;
+	Item currentItemHeld;
+	Rectangle rectangle;
 
-	// Scans through all items
-	bool addItem(GameObject* item);
-	bool removeItem(GameObject* item);
-	GameObject* getItem(const GameObject* item);// Item Type
+	std::vector<Item> inventoryList;
+
+	void render(AssetManager& assetManager);
+	void addItem();
+	void removeItem();
+};
+struct InventorySlot
+{
+	Item item;
+	
+	void render(AssetManager& assetManager, Inventory& inventory, Rectangle rect);
+	void update();
+	void addItem();
+	void removeItem();
 
 };
 

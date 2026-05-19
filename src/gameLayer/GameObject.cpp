@@ -17,6 +17,19 @@ void GameObject::onEnable()
 	isEnabled = true;
 	
 	// Generate 3D Model
+	if (meshVariant != MESH_CUSTOM)
+	{
+		switch (meshVariant)
+		{
+		case MESH_POLY:	mesh = GenMeshPoly(getSize().x, getSize().y); break;                                            // Generate polygonal mesh
+		case MESH_PLANE: mesh = GenMeshPlane(meshData.x, meshData.y, meshData.z, meshData.w); break;                     // Generate plane mesh (with subdivisions)
+		case MESH_CUBE: mesh = GenMeshCube(getSize().x, getSize().y, getSize().z); break;                            // Generate cuboid mesh
+		case MESH_SPHERE: mesh = GenMeshSphere(getSize().x, getSize().y, getSize().z); break;                              // Generate sphere mesh (standard sphere)
+		case MESH_HEMISPHERE: mesh = GenMeshHemiSphere(getSize().x, getSize().y, getSize().z); break;                          // Generate half-sphere mesh (no bottom cap)
+		case MESH_CYLINDER: mesh = GenMeshCylinder(getSize().x, getSize().y, getSize().z); break;                         // Generate cylinder mesh
+		case MESH_CONE: mesh = GenMeshCone(getSize().x, getSize().y, getSize().z); break;
+		}
+	}
 	model = LoadModelFromMesh(mesh);
 	
 	// Generate 2d Model

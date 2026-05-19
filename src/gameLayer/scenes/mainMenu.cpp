@@ -8,6 +8,7 @@ Player player = {};
 AssetManager assetManager = {};
 GameObject* selectedObject = {};
 DeveloperWindow developerConsole = {};
+Inventory inventory = {};
 int miniGameID = 0;
 
 Vector3 cubePosition = { 0, 0, 0 };
@@ -76,8 +77,10 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 	}
 
 	/// Switch to 2D Mode
-	if (IsKeyPressed(KEY_TAB)) scene->is2DActive = !scene->is2DActive;
-
+	if (IsKeyPressed(KEY_TAB))
+	{
+		scene->is2DActive = !scene->is2DActive;
+	}
 #pragma region ImGui
 	if (IsKeyPressed(KEY_F10)) { isImGuiEnabled = !isImGuiEnabled; }
 
@@ -95,13 +98,29 @@ void Scene_MainMenuDraw2D(void* manager_ptr, void* object_ptr)
 
 	if (scene->is2DActive)
 	{
+		/// Background
 		DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{20, 20, 20, 200});
+		
+		/// Inventory
+		inventory.render(assetManager);
+
+		/// Mini Games On Top
 		if (scene->isMiniActive && scene->miniGame != nullptr)
 		{
 			scene->miniGame->draw(manager_ptr, object_ptr);
+			player.render2D();
 		}
-		player.render2D();
 	}
+
+
+	DrawTexturePro(
+		assetManager.frame,
+		{ 0,0,(float)assetManager.frame.width, (float)assetManager.frame.height }, //source
+		{ 0, 0, 25, 25 }, //dest
+		{ 0, 0 },// origin (top-left corner)
+		0.0f, // rotation
+		{ 220,250,220,250 } // tint
+	);
 	/// Always Render Player Last (On Top)
 };
 

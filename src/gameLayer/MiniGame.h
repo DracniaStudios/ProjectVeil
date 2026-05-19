@@ -16,12 +16,11 @@ struct MiniGame
 	bool isEnabled = true;
 
 	Rectangle screen;
-
 	updateGameMethod update;
 	drawGameMethod draw;
 };
-// Angel Engine Style
 
+// Angel Engine Style
 inline Rectangle generateScaleRect(Rectangle screen, Rectangle rect)
 {
 	Rectangle r = {};

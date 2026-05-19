@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
-// Version: 0.1.14
+// Version: 0.1.16
 // Date: 2026-06-06 (First Video Release)
-// Date: 2026-05-13 (Current Development Date)
+// Date: 2026-05-19 (Current Development Date)
 
 Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity instead of the velocity itself.
 
@@ -16,6 +16,7 @@ Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity 
 - Added Mini Games into 2D mode (Flappy Bird, Crane)
 
 - GameObjects are now displayed on 2D space
+- GameObjects render basic meshes on enable
 
 - Added Player collision with game Objects
 
@@ -23,7 +24,7 @@ Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity 
 
 - Added New Developer Window to split up ImGui Code and readability
 
-- Adde New Inventory Struct (not implemented)
+- Added Inventory
 
 [ Updated ]
 
@@ -32,6 +33,7 @@ Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity 
 - Physics System now has basic collision detection and resolution methods implemented
 
 - GameObjects now have a dynamic RigidBody2D
+- GameObjects can have a custom mesh or predetermined mesh on spawn
 
 - ImGui Player Stats display 2D and 3D in seperate moded
 

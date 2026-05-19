@@ -49,6 +49,11 @@
 			"language" : "CXX",
 			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/Inventory.cpp"
 		},
+		"CMakeFiles/ProjectVeil.dir/src/gameLayer/Item.cpp.obj" : 
+		{
+			"language" : "CXX",
+			"source" : "D:/GitHub/ProjectVeil/src/gameLayer/Item.cpp"
+		},
 		"CMakeFiles/ProjectVeil.dir/src/gameLayer/ParticleSystem.cpp.obj" : 
 		{
 			"language" : "CXX",

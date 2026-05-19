@@ -14,11 +14,8 @@ struct GameMap {
 	Vector3 size = {10, 10, 10};
 	int objectID = -1;
 
+	// Generate Map Size
 	void create(Vector3 size);
-
-	// Read Data
-	GameObject* getObjectAt(Vector3 position);
-	GameObject* getObjectAt(int x, int y, int z);
 
 	// Alter Data
 	GameObject& saveObjectAt(Vector3 position, GameObject& object);
@@ -26,12 +23,6 @@ struct GameMap {
 
 	// Return Data
 	Vector3 getMapSize() {	return size;}
-
-	// Convert Data
-	//Vector3 getConverstion(Vector3 space) { return Vector3(0, 0, 0); }
-
-	// Check IDs
-	//void sanatize();
 
 };
 

@@ -80,6 +80,7 @@ bool isCreatingObject = false;
 void DeveloperWindow::showObjectInspector(SceneManager* manager)
 {
 	auto scene = manager->currentScene;
+	auto rng = std::ranlux24_base(std::random_device{}());
 
 	ImGui::Begin("Object Inspector");
 
@@ -118,11 +119,25 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager)
 	if (ImGui::Button("Create New Object")) { isCreatingObject = true; }
 	if (isCreatingObject)
 	{
-		if (newObject == nullptr){ newObject = new GameObject(); }
+		if (newObject == nullptr)
+		{
+			newObject = new GameObject();
+			newObject->rigidBody3D.translation = Vector3One();
+			newObject->rigidBody3D.scale = Vector3One();
+			newObject->meshData = Vector4One();
+			newObject->defaultColor = Color(
+				getRandomInt(rng, 0, 255),
+				getRandomInt(rng, 0, 255),
+				getRandomInt(rng, 0, 255),
+				255
+			);
+		}
 		
 		ImGui::Text("Object Data:");
 		ImGui::InputFloat3("Position: ", &newObject->rigidBody3D.translation.x);
 		ImGui::InputFloat3("Scale: ", &newObject->rigidBody3D.scale.x);
+		ImGui::InputInt("Mesh Variant", &newObject->meshVariant, 1, 1);
+		newObject->meshVariant = Clamp(newObject->meshVariant, 0, MESH_COUNT);
 		ImGui::Spacing();
 
 		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Rigidbody");

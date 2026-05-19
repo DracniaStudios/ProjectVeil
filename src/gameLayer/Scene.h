@@ -12,6 +12,7 @@
 #include <Player.h>
 #include <AssetManager.h>
 #include <MiniGame.h>
+#include <Inventory.h>
 
 #include <stdlib.h>
 #include <iostream>

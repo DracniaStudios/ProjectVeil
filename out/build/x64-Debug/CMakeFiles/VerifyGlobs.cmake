@@ -8,6 +8,7 @@ set(OLD_GLOB
   "D:/GitHub/ProjectVeil/src/gameLayer/DeveloperWindow.cpp"
   "D:/GitHub/ProjectVeil/src/gameLayer/GameObject.cpp"
   "D:/GitHub/ProjectVeil/src/gameLayer/Inventory.cpp"
+  "D:/GitHub/ProjectVeil/src/gameLayer/Item.cpp"
   "D:/GitHub/ProjectVeil/src/gameLayer/ParticleSystem.cpp"
   "D:/GitHub/ProjectVeil/src/gameLayer/Physics.cpp"
   "D:/GitHub/ProjectVeil/src/gameLayer/Player.cpp"

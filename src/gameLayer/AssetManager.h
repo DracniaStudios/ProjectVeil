@@ -6,9 +6,12 @@
 
 struct AssetManager
 {
-
+	// Magic Items
 	Texture2D magicSphereSet;
 	Texture2D magicSphere;
+
+	// UI Decal
+	Texture2D frame;
 
 	// Functions
 	void loadAll();
