@@ -359,57 +359,20 @@ struct RigidBody2D : public Transform2D
 	}
 
 	// Force Functions
-	void applyGravity()
-	{
-		acceleration += {0, 20};
-	}
+	void applyGravity(Vector2 gravity = {0, 20}){	acceleration += gravity;}
+	void applyForce(Vector2 force = { 1, 0 }) { acceleration += force; }
 
-	void updateForce(float deltaTime)
-	{
-		velocity += acceleration * deltaTime;
-		if (Vector2Length(velocity) > maxSpeed)
-		{
-			velocity = Vector2Scale(Vector2Normalize(velocity), maxSpeed);
-		}
-		translation.x += velocity.x * deltaTime;
-		translation.y += velocity.y * deltaTime;
+	void updateForce(float deltaTime);
 
-		// Universal drag ( air resisitance, friction, etc. )
-		Vector2 dragVector = Vector2{ velocity.x * std::abs(velocity.x), velocity.y * std::abs(velocity.y) };
-		float drag = 0.01f; // Adjust this value to increase/decrease drag strength
-
-		if (Vector2Length(dragVector) * drag * deltaTime > Vector2Length(velocity))
-		{
-			velocity = {};
-		}
-		else
-		{
-			velocity -= dragVector * drag * deltaTime;
-		}
-
-		if (Vector2Length(velocity) <= 0.01f)
-		{
-			velocity = {};
-		}
-
-		acceleration = {};
-	}
-
-	void update(float deltaTime)
-	{
-		if (scale == Vector3Zero()) { scale = Vector3One(); }
-		
-		if (!isEnabled) return;
-		if (!isStatic) return;
-
-		if (useGravity) applyGravity();
-		updateForce(deltaTime);
-		lastPosition = Vector2(translation.x, translation.y);
-	}
+	void update(float deltaTime);
 
 	Vector2 getPosition() { return Vector2{ translation.x, translation.y }; }
 
-	void jump(float force)	{ if (downTouch){velocity.y -= force;}	}
+	void jump(float force)
+	{
+		velocity.y = 0;
+		velocity.y -= force;
+	}
 
 	void resolveConstrains(GameMap& mapData);
 

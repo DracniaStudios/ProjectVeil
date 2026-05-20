@@ -51,7 +51,7 @@ void Player::render3D()
 	
 }
 
-void Player::update2D(SceneManager* manager, float deltaTime)
+void Player::update2D(SceneManager* manager, float deltaTime, bool canMove)
 {
 	if (!isEnabled) return;
 	if (!manager->currentScene->is2DActive) return;
@@ -63,8 +63,8 @@ void Player::update2D(SceneManager* manager, float deltaTime)
 	
 	auto speed = IsKeyDown(KEY_LEFT_SHIFT) ? baseSpeed * 2 : baseSpeed;
 	
-	rigidBody2D.translation += Vector3(moveDirection.x, moveDirection.y) * speed;
-	//rigidBody2D.update(deltaTime);
+	//if (canMove) { rigidBody2D.translation += Vector3(moveDirection.x, moveDirection.y) * speed; }
+	rigidBody2D.update(deltaTime);
 }
 
 void Player::update3D(SceneManager* manager, float deltaTime)

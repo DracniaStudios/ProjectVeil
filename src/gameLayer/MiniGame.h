@@ -13,9 +13,8 @@ typedef void (*drawGameMethod)(void* manager_ptr, void* scene_ptr);
 
 struct MiniGame
 {
-	bool isEnabled = true;
-
-	Rectangle screen;
+	const char* name = {};
+	Rectangle screen = {};
 	updateGameMethod update;
 	drawGameMethod draw;
 };

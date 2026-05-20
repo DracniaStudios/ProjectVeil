@@ -7,9 +7,8 @@ Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity 
 
 [ Issues ]
 
-- Object Collision is working but objects can go within each other and jitter when stacked.
-
-- Find a way to load different meshes into the game, not just the cube
+- Mini game Reset Funciton not implemented
+- Mini game obstacle Function not implemented
 
 [ Added ]
 
@@ -35,10 +34,10 @@ Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity 
 - GameObjects now have a dynamic RigidBody2D
 - GameObjects can have a custom mesh or predetermined mesh on spawn
 
-- ImGui Player Stats display 2D and 3D in seperate moded
+- ImGui Player Stats display 2D and 3D in seperate modes
 
-- Player rigidbody is now disabled on 2D mode
-
+- Updated Flappy bird to alter player rigidbody2D 
+- Updated Flappy bird to create harmful objects for player to collide and respawn at
 
 [ Fixed ]
 
@@ -47,5 +46,7 @@ Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity 
 - Fixed an issue where objects would jitter when on top of each other
 
 - Fixed an issue where objects wouldn't detect collisions on sides and implement touch flags
+
+- Fixed an issue where object meshes wouldn't instansiate OnEnable
 
 [ Removed ]

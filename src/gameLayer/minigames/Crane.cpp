@@ -28,8 +28,8 @@ void Crane::update(void* manager_ptr, void* player_ptr, float deltaTime)
 MiniGame* MiniGame_crane()
 {
 	MiniGame* game = new MiniGame();
+	game->name = "Crane";
 	game->update = &Crane::update;
 	game->draw = &Crane::render;
-	game->isEnabled = true;
 	return game;
 }

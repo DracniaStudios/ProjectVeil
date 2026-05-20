@@ -62,12 +62,9 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 		player.camera.UpdateCameraFPS(&cam, &player);
 	}
 
-	if (scene->isMiniActive)
+	if (scene->isMiniActive && scene->miniGame != nullptr)
 	{
-		if (scene->miniGame != nullptr)
-		{
-			scene->miniGame->update(manager_ptr, &player, deltaTime);
-		}
+		scene->miniGame->update(manager_ptr, &player, deltaTime);
 	}
 
 	/// Player Select Objects
@@ -102,7 +99,7 @@ void Scene_MainMenuDraw2D(void* manager_ptr, void* object_ptr)
 		DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{20, 20, 20, 200});
 		
 		/// Inventory
-		inventory.render(assetManager);
+		//inventory.render(assetManager);
 
 		/// Mini Games On Top
 		if (scene->isMiniActive && scene->miniGame != nullptr)

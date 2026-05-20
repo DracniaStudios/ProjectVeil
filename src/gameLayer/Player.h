@@ -40,7 +40,7 @@ struct Player : GameObject
 	void render3D();
 	void onEnable();
 	void onDisable();
-	void update2D(SceneManager* manager, float deltaTime);
+	void update2D(SceneManager* manager, float deltaTime, bool canMove = true);
 	void update3D(SceneManager* manager, float deltaTime);
 	int getMaxHealth() override { return 20; }
 	int getMaxStamina() { return 100; }

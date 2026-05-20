@@ -6,6 +6,7 @@
 
 void DeveloperWindow::render(SceneManager* manager)
 {
+	auto scene = static_cast<Scene*>(manager->currentScene);
 
 	ImGui::Begin("Game Data");
 
@@ -17,9 +18,10 @@ void DeveloperWindow::render(SceneManager* manager)
 	ImGui::Separator();
 	
 	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Scene Data");
-	auto scene = static_cast<Scene*>(manager->currentScene);
 	
-	
+	ImGui::Checkbox("Is 2D Active", &scene->is2DActive);
+	ImGui::Text("GameObjects", scene->gameMap.gameObjects.size());
+
 	ImGui::End();
 
 }
@@ -175,7 +177,6 @@ int currentGameID = 0;
 void DeveloperWindow::showMiniGameData(SceneManager* manager, Player* player)
 {
 	auto scene = manager->currentScene;
-	auto miniGame = manager->currentMiniGame;
 
 	ImGui::Begin("Mini Game Data");
 
@@ -183,24 +184,25 @@ void DeveloperWindow::showMiniGameData(SceneManager* manager, Player* player)
 	ImGui::InputInt("Mini Game ID", &currentGameID, 1, 1);
 	currentGameID = Clamp(currentGameID, 0, 2);
 
+	ImGui::Checkbox("Is Mini Game Active", &scene->isMiniActive);
+
 	if (ImGui::Button("Launch Mini Game"))
 	{
-		switch (MINI_GAME_ID)
+		switch (currentGameID)
 		{
 		case 0:
 			scene->miniGame = MiniGame_flappyBird();
+			scene->isMiniActive = true;
 			break;
 		case 1:
 			scene->miniGame = MiniGame_crane();
+			scene->isMiniActive = true;
 			break;
-		default:
-			scene->miniGame = nullptr;
-			scene->isMiniActive = false;
-			return;
 		}
-
-		scene->isMiniActive = true;
 	}
+
+	ImGui::Separator();
+	ImGui::TextColored(ImVec4(0, 0, 255, 255), "Mini Game Data");
 
 	ImGui::End();
 }
