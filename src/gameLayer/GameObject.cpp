@@ -2,10 +2,12 @@
 
 #include <asserts.h>
 #include <gameMap.h>
+#include <iostream>
 
 BoundingBox getBoundingBox(Model mdl, Vector3 pos)
 {
-	//permaAssertComment(mdl.meshes == nullptr, "No Meshes In Model");
+	permaAssertComment(mdl.meshes == nullptr, "No Meshes In Model");
+	
 	BoundingBox box = GetMeshBoundingBox(mdl.meshes[0]);
 	box.min = Vector3Add(pos, box.min);
 	box.max = Vector3Add(pos, box.max);
@@ -36,6 +38,8 @@ void GameObject::onEnable()
 
 	// Set Initial Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
+	rigidBody3D.owner = this;
+
 
 	health = getMaxHealth();
 }
@@ -71,8 +75,17 @@ void GameObject::render3D()
 		DrawSphere(rigidBody3D.down + rigidBody3D.translation, 0.1f, PURPLE);
 	}
 
-}
+	auto displayRay = [&](Ray ray, Color color)
+	{
+		DrawLine3D(ray.position, Vector3Add(ray.position, Vector3Scale(ray.direction, 0.5f)), color);
+	};
 
+	if (displayCollider)
+	{
+		// Show Collision Rays
+	}
+
+}
 
 void GameObject::update(GameMap gameMap, float deltaTime)
 {
@@ -86,3 +99,11 @@ void GameObject::update(GameMap gameMap, float deltaTime)
 
 }
 
+void GameObject::onHit(float damage)
+{
+	health -= damage;
+	if (health <= 0)
+	{
+		onDisable();
+	}
+}

@@ -10,19 +10,21 @@
 struct GameMap {
 
 	std::vector<GameObject> gameObjects = {};
+	int objectID = 0;
 
 	Vector3 size = {10, 10, 10};
-	int objectID = -1;
-
-	// Generate Map Size
 	void create(Vector3 size);
+
+	// Read Data
+	GameObject* getObjectAt(Vector3 position);
+	GameObject* getObjectAt(int x, int y, int z);
 
 	// Alter Data
 	GameObject& saveObjectAt(Vector3 position, GameObject& object);
 	GameObject& saveObjectAt(int x, int y, int z, GameObject& object);
 
 	// Return Data
-	Vector3 getMapSize() {	return size;}
+	Vector3 getMapSize() {	return Vector3(size.x, size.y, size.z);}
 
 };
 

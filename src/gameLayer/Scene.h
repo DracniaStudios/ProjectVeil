@@ -5,10 +5,10 @@
 
 #include <raylib.h>
 #include <raymath.h>
-#include <imgui.h>
-
-#include <randomStuff.h>
 #include <gameMap.h>
+#include <imgui.h>
+#include <randomStuff.h>
+
 #include <Player.h>
 #include <AssetManager.h>
 #include <MiniGame.h>
@@ -27,7 +27,6 @@
  */
 typedef void (*updateSceneMethod)(void* manager_ptr, void* object_ptr, float delta);
 
-
 /**
  * Define an draw method
  * @param object_ptr The object_ptr contained in Scene Object
@@ -40,9 +39,10 @@ typedef void (*drawSceneMethod3D)(void* manager_ptr, void* object_ptr);
  * Struct to represent a Scene
  */
 typedef struct Scene {
-	void* object_ptr; // Reference Scene
-	
 	const char* name = {};
+
+	void* object_ptr; // Reference Scene
+
 	bool is2DActive = false; // 2D Mode
 	bool isMiniActive = false;// Mini Game 
 

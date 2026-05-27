@@ -7,9 +7,7 @@ void GameMap::create(Vector3 size)
 {
 	this->size = size;
 
-	GameObject floor;
-	floor.name = "Floor";
-
+	GameObject floor = {};
 	floor.canBeSelected = false;
 	
 	floor.meshVariant = MESH_CUBE;
@@ -25,21 +23,22 @@ void GameMap::create(Vector3 size)
 
 GameObject& GameMap::saveObjectAt(Vector3 position, GameObject& object)
 {
-	
 
+	/// Set RigidBody3D Data
 	object.rigidBody3D.translation = position;
-
 	if (object.rigidBody3D.scale == Vector3Zero())
 	{
 		object.rigidBody3D.scale = Vector3One();
 	}
-	object.id = objectID;
+
+	/// Set GameMap Data
 	objectID++;
+	object.id = objectID;
 
 	object.onEnable();
-	std::cout << "Added Object \n";
 	gameObjects.push_back(object);
-	return gameObjects.back();
+	std::cout << "Added Object \n";
+	return object;
 }
 
 GameObject& GameMap::saveObjectAt(int x, int y, int z, GameObject& object)

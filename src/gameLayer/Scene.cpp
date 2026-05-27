@@ -11,25 +11,24 @@ void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 	solverIterations = static_cast<int>(Clamp(solverIterations, 4, 8));
 	for (int iter = 0; iter < solverIterations; iter++)
 	{
-		for (int i = 0; i < static_cast<int>(scene->gameMap.gameObjects.size()); i++)
+		for (auto& bodyA : scene->gameMap.gameObjects)
 		{
-			auto& bodyA = scene->gameMap.gameObjects[i].rigidBody3D;
-
-			for (int j = i + 1; j < static_cast<int>(scene->gameMap.gameObjects.size()); j++)
+			//permaAssertComment(&bodyA == nullptr, "Null bodyA @ Scene.cpp");
+			for (auto& bodyB : scene->gameMap.gameObjects)
 			{
-				auto& bodyB = scene->gameMap.gameObjects[j].rigidBody3D;
+				//permaAssertComment(&bodyB == nullptr, "Null bodyB @ Scene.cpp");
 
-				if (CheckCollisionBoxes(bodyA.collisionBox, bodyB.collisionBox))
+				if (CheckCollisionBoxes(bodyA.rigidBody3D.collisionBox, bodyB.rigidBody3D.collisionBox))
 				{
-					bodyA.resolveCollision(bodyB);
+					bodyA.rigidBody3D.resolveConstrains(&bodyB.rigidBody3D);
 				}
 			}
 
 			// Refresh the collision box after each correction so subsequent
 			// iterations use the updated position rather than the stale one
-			scene->gameMap.gameObjects[i].rigidBody3D.collisionBox = {
-				Vector3Subtract(bodyA.translation, Vector3Scale(bodyA.scale, 0.5f)),
-				Vector3Add(bodyA.translation,      Vector3Scale(bodyA.scale, 0.5f))
+			bodyA.rigidBody3D.collisionBox = {
+				Vector3Subtract(bodyA.rigidBody3D.translation, Vector3Scale(bodyA.rigidBody3D.scale, 0.5f)),
+				Vector3Add(bodyA.rigidBody3D.translation,      Vector3Scale(bodyA.rigidBody3D.scale, 0.5f))
 			};
 		}
 	}
@@ -52,7 +51,4 @@ void Scene_drawScene2D(void* manager_ptr, Scene* scene) {
 
 void Scene_drawScene3D(void* manager_ptr, Scene* scene) {
 	scene->draw3D(manager_ptr, scene->object_ptr);
-	for (auto& object : scene->gameMap.gameObjects) {
-		object.render3D();
-	}
 }

@@ -19,16 +19,23 @@ enum MeshType
 };
 struct GameObject 
 {
-	const char* name = "GameObject";
 
+	// Data
+	int* ptr = nullptr;
+	const char* name = "GameObject";
 	int id = 0;
+	
+	// Flags
 	bool isEnabled = true;
 	bool canBeSelected = true;
+	
+	// Debug Display
 	bool displayDirection = true;
 	bool display3DModel = true;
 	bool displayCollider = false;
 	
-	int health = 1;
+	float health = 1;
+	float baseDamage = 0;
 
 	/// Physics
 	RigidBody3D rigidBody3D = {};
@@ -51,11 +58,9 @@ struct GameObject
 	virtual void render3D();
 	virtual void onEnable();
 	virtual void onDisable();
-	virtual int getMaxHealth() { return 10; }
-	/// Add a child to the GameObject
-	/// Add Component to the GameObject
-	/// Add a Rigidbody to the GameObject if enabled
 
+	virtual int getMaxHealth() { return 10; }
+	virtual void onHit(float damage);
 };
 
 #endif

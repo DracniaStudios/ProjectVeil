@@ -125,8 +125,14 @@ void Scene_MainMenuDraw3D(void* manager_ptr, void* object_ptr)
 {
 	auto manager = static_cast<SceneManager*>(manager_ptr);
 	auto scene = static_cast<Scene*>(object_ptr);
+
 	DrawGrid(100.0f, 1.0f);
-	player.render3D();
+	
+	for (auto& object : scene->gameMap.gameObjects) {
+		object.render3D();
+	}
+	
+	//player.render3D();
 }
 
 Scene* Scene_MainMenuConstruct()
@@ -142,6 +148,8 @@ Scene* Scene_MainMenuConstruct()
 	// Add Player To Objects
 	scene->gameMap.gameObjects.push_back(player);
 	scene->gameMap.objectID++;
+	
+	player.name = "Player";
 	player.onEnable();
 
 	return scene;

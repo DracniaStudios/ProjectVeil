@@ -5,6 +5,7 @@
 
 void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 {
+	// Auto function to Create a Ray
 	auto generateRay = [&](Vector3 position, Vector3 direciton)
 		{
 			Ray newRay;
@@ -12,26 +13,38 @@ void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 			newRay.direction = direciton;
 			return newRay;
 		};
-
+	/// Distance threshold for ray collision detection
 	constexpr float touchDistance = 0.1f; // Adjust this value based on how close the ray needs to be to count as a touch
 
+	// Auto function to check if a ray hits the other object within the touch distance
 	auto hitWithinRange = [&](Ray ray)
 		{
 			RayCollision collision = GetRayCollisionBox(ray, other.collisionBox);
 			return collision.hit && collision.distance <= Vector3Length(translation - ray.position) + touchDistance;
 		};
+
 	// Face Translation
 	Vector3 c = translation;
 	float hx = scale.x * 0.5f;
 	float hy = scale.y * 0.5f;
 	float hz = scale.z * 0.5f;
-
+	
+	// Check each face with a raycast and update touch flags accordingly
+	upTouch = hitWithinRange(generateRay({ c.x, c.y + hy, c.z }, up));
+	downTouch = hitWithinRange(generateRay({ c.x, c.y - hy, c.z }, down));
+	frontTouch = hitWithinRange(generateRay({ c.x, c.y, c.z + hz }, front));
+	backTouch = hitWithinRange(generateRay({ c.x, c.y, c.z - hz }, back));
+	rightTouch = hitWithinRange(generateRay({ c.x + hx, c.y, c.z }, right));
+	leftTouch = hitWithinRange(generateRay({ c.x - hx, c.y, c.z }, left));
+	
+	/*
 	upTouch = upTouch || hitWithinRange(generateRay({ c.x, c.y + hy, c.z }, up));
 	downTouch = downTouch || hitWithinRange(generateRay({ c.x, c.y - hy, c.z }, down));
 	frontTouch = frontTouch || hitWithinRange(generateRay({ c.x, c.y, c.z + hz }, front));
 	backTouch = backTouch || hitWithinRange(generateRay({ c.x, c.y, c.z - hz }, back));
 	rightTouch = rightTouch || hitWithinRange(generateRay({ c.x + hx, c.y, c.z }, right));
 	leftTouch = leftTouch || hitWithinRange(generateRay({ c.x - hx, c.y, c.z }, left));
+	*/
 }
 
 bool RigidBody3D::isCollidingWith(const RigidBody3D& other) const
@@ -75,10 +88,40 @@ float RigidBody3D::getPenetrationDepth(const RigidBody3D& other) const
 
 // ─── Constraint Resolution ─────────────────────────────────────────────────
 
+void RigidBody3D::resolveConstrains(RigidBody3D* other)
+{
+	if (other == this) return;
+		
+	// Reset Position to prevent tunneling
+	resolveCollision(*other);
+	
+	// Update Collision Flags
+	checkRayCollision(*other);
+	
+	if (isCollidingWith(*other))
+	{
+
+		// Call Collision Event on Owner
+		onCollision();
+
+		// Set collidingWith to other object's owner
+		if (other->owner)
+		{
+			collidingWith = other->owner;
+		}
+
+		isColliding = true;
+	}
+	else
+	{
+		collidingWith = nullptr;
+		isColliding = false;
+	}
+}
+
 void RigidBody3D::resolveConstrains(RigidBody3D* otherObjects, int objectCount)
 {
-	if (otherObjects == nullptr || objectCount <= 0)
-		return;
+	if (otherObjects == nullptr || objectCount <= 0)return;
 
 	for (int i = 0; i < objectCount; i++)
 	{
@@ -86,12 +129,25 @@ void RigidBody3D::resolveConstrains(RigidBody3D* otherObjects, int objectCount)
 
 		if (isCollidingWith(otherObjects[i]))
 		{
+			// Reset Position to prevent tunneling
 			resolveCollision(otherObjects[i]);
+			
+			// Update Collision Flags 
 			checkRayCollision(otherObjects[i]);
+			
+			// Call Collision Event on Owner
+			onCollision();
+			
+			if (otherObjects[i].owner)
+			{
+				collidingWith = otherObjects[i].owner;
+			}
+
 			isColliding = true;
 		}
 		else
 		{
+			collidingWith = nullptr;
 			isColliding = false;
 		}
 	}
@@ -152,13 +208,13 @@ void RigidBody3D::resolveCollision(RigidBody3D& other)
 		if (!isStatic && !other.isStatic)
 		{
 
-			float avgY = (velocity.y + other.velocity.y) * 0.5f;
-			velocity.y = avgY;
-			other.velocity.y = avgY;
-
 			float avgX = (velocity.x + other.velocity.x) * 0.5f;
 			velocity.x = avgX;
 			other.velocity.x = avgX;
+
+			float avgY = (velocity.y + other.velocity.y) * 0.5f;
+			velocity.y = avgY;
+			other.velocity.y = avgY;
 
 			float avgZ = (velocity.z + other.velocity.z) * 0.5f;
 			velocity.z = avgZ;
@@ -167,8 +223,8 @@ void RigidBody3D::resolveCollision(RigidBody3D& other)
 		}
 		else if (!isStatic)
 		{
-			velocity.y = 0;
 			velocity.x = 0;
+			velocity.y = 0;
 			velocity.z = 0;
 		}
 	}
@@ -272,6 +328,11 @@ void RigidBody3D::update(GameMap gameMap,float deltaTime)
 	collisionBox.max = { translation.x + scale.x * 0.5f, translation.y + scale.y * 0.5f, translation.z + scale.z * 0.5f };
 }
 
+void RigidBody3D::onCollision()
+{
+	addForce(Vector3Negate(front), 50);
+}
+
 /// ------------------- RigidBody2D Collision Detection and Resolution ------------------- ///
 
 void RigidBody2D::resolveConstrains(GameMap& mapData)
@@ -321,10 +382,17 @@ void RigidBody2D::updateForce(float deltaTime)
 
 	// Ground Rules
 
+	translation.y = std::max(translation.y, static_cast<float>(GetScreenHeight()) - scale.y);
+	translation.y = std::min(translation.y, scale.y);
+
+	translation.x = std::max(translation.x, static_cast<float>(GetScreenWidth()) - scale.x);
+	translation.x = std::min(translation.x, scale.x);
+	/*
 	if (translation.y > GetScreenHeight() - scale.y) { translation.y = GetScreenHeight() - scale.y; }
 	if (translation.y < scale.y) { translation.y = scale.y; }
 	if (translation.x > GetScreenWidth() - scale.x) { translation.x = GetScreenWidth() - scale.x; }
 	if (translation.x < scale.x) { translation.x = scale.x; }
+	*/
 
 }
 void RigidBody2D::update(float deltaTime)

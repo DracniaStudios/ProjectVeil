@@ -20,7 +20,7 @@ void DeveloperWindow::render(SceneManager* manager)
 	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Scene Data");
 	
 	ImGui::Checkbox("Is 2D Active", &scene->is2DActive);
-	ImGui::Text("GameObjects", scene->gameMap.gameObjects.size());
+	ImGui::Text(std::to_string(scene->gameMap.gameObjects.size()).c_str());
 
 	ImGui::End();
 
@@ -40,7 +40,7 @@ void DeveloperWindow::showPlayerData(SceneManager* manager, Player* player)
 	ImGui::Begin("Player Data");
 
 	if (ImGui::Button("Hurt Player")) { player->health -= 1; }
-	ImGui::InputInt("Player Health: ", &player->health, 1, 1);
+	ImGui::InputFloat("Player Health: ", &player->health, 1, 1);
 	if (scene->is2DActive)
 	{
 		ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody2D.isEnabled);
@@ -58,6 +58,12 @@ void DeveloperWindow::showPlayerData(SceneManager* manager, Player* player)
 
 	}
 	ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player->rigidBody3D.front.x, player->rigidBody3D.front.y, player->rigidBody3D.front.z);
+	ImGui::Checkbox("Up Touch", &player->rigidBody3D.upTouch);
+	ImGui::Checkbox("Down Touch", &player->rigidBody3D.downTouch);
+	ImGui::Checkbox("Left Touch", &player->rigidBody3D.leftTouch);
+	ImGui::Checkbox("Right Touch", &player->rigidBody3D.rightTouch);
+	ImGui::Checkbox("Front Touch", &player->rigidBody3D.frontTouch);
+	ImGui::Checkbox("Back Touch", &player->rigidBody3D.backTouch);
 
 	ImGui::Separator();
 	ImGui::End();
@@ -75,7 +81,7 @@ void DeveloperWindow::showCameraData(SceneManager* manager, Player* player)
 	ImGui::End();
 }
 
-GameObject* inspectObject = {};
+GameObject* inspectObject;
 GameObject* newObject = {};
 bool isCreatingObject = false;
 
@@ -86,12 +92,17 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager)
 
 	ImGui::Begin("Object Inspector");
 
-	//ImGui::BeginChild("Game Object List");
 	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Game Objects");
 	for (auto& object : scene->gameMap.gameObjects)
 	{
 		ImGui::PushID(object.id);
-		if (ImGui::Button(object.name)){ inspectObject = inspectObject == &object ? nullptr : &object; }
+
+		std::string displayName =  object.name;
+		displayName += " (ID: " + std::to_string(object.id) + ")";
+		if (ImGui::Button(displayName.c_str()))
+		{
+			inspectObject = inspectObject == &object ? nullptr : &object;
+		}
 		ImGui::PopID();
 	}
 	
@@ -118,9 +129,10 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager)
 	ImGui::Separator();
 
 	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Create Object");
-	if (ImGui::Button("Create New Object")) { isCreatingObject = true; }
+	if (ImGui::Button("Create New Object")) { isCreatingObject = !isCreatingObject; }
 	if (isCreatingObject)
 	{
+		ImGui::Begin("Create Object");
 		if (newObject == nullptr)
 		{
 			newObject = new GameObject();
@@ -136,6 +148,7 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager)
 		}
 		
 		ImGui::Text("Object Data:");
+		ImGui::InputInt4("Color", (int*)&newObject->defaultColor, 1);
 		ImGui::InputFloat3("Position: ", &newObject->rigidBody3D.translation.x);
 		ImGui::InputFloat3("Scale: ", &newObject->rigidBody3D.scale.x);
 		ImGui::InputInt("Mesh Variant", &newObject->meshVariant, 1, 1);
@@ -167,6 +180,7 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager)
 			newObject = {};
 			isCreatingObject = false;
 		}
+		ImGui::End();
 	}
 
 	ImGui::End();

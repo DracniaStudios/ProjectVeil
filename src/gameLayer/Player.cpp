@@ -97,37 +97,28 @@ void Player::update3D(SceneManager* manager, float deltaTime)
 	
 	rigidBody3D.update(manager->currentScene->gameMap, deltaTime);
 	
-	// Clamp 2D to position from game map size to screen size
-	{
-		const float screenX = static_cast<float>(GetScreenWidth());
-		const float screenY = static_cast<float>(GetScreenHeight());
-
-		//rigidBody2D.translation.x = screenX / 2 + rigidBody3D.translation.x;
-		//rigidBody2D.translation.y = screenY - rigidBody3D.translation.y + (rigidBody2D.scale.y * 32);
-
-		rigidBody3D.translation.x = Clamp(rigidBody3D.translation.x, -(screenX / 2), screenX / 2);
-		rigidBody3D.translation.z = Clamp(rigidBody3D.translation.z, -(screenY / 2), screenY / 2);
-
-		//rigidBody2D.translation.x = Clamp(rigidBody2D.translation.x, 0, screenX);
-		//rigidBody2D.translation.y = Clamp(rigidBody2D.translation.y, 0, screenY);
-
-	}
 	
+	const float screenX = static_cast<float>(GetScreenWidth());
+	const float screenY = static_cast<float>(GetScreenHeight());
+
+	rigidBody3D.translation.x = Clamp(rigidBody3D.translation.x, -(screenX / 2), screenX / 2);
+	rigidBody3D.translation.z = Clamp(rigidBody3D.translation.z, -(screenY / 2), screenY / 2);
+
 	// Resolve Player Collision
-	for (size_t i = 0; i < manager->currentScene->gameMap.gameObjects.size(); i++)
+
+	for (auto& obj : manager->currentScene->gameMap.gameObjects)
 	{
-		auto& object = manager->currentScene->gameMap.gameObjects[i];
-		if (&object != this)
+		if (&obj != this)
 		{
-			if (CheckCollisionBoxes(rigidBody3D.collisionBox, object.rigidBody3D.collisionBox))
+			if (CheckCollisionBoxes(rigidBody3D.collisionBox, obj.rigidBody3D.collisionBox))
 			{
-				rigidBody3D.resolveCollision(object.rigidBody3D);
+				rigidBody3D.resolveConstrains(&obj.rigidBody3D);
 			}
 		}
 	}
 
-	health = Clamp(health, 0, getMaxHealth());
-	stamina = Clamp(stamina, 0, getMaxStamina());
+	health = Clamp(health, 0, static_cast<float>(getMaxHealth()));
+	stamina = Clamp(stamina, 0, static_cast<float>(getMaxStamina()));
 
 }
 

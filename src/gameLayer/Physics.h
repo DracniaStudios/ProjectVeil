@@ -203,8 +203,6 @@ struct Transform3D : public Transform
 	// rotation
 	// Scale
 
-	BoundingBox collisionBox = {};
-
 	Vector3& getPosition() { return translation; }
 	Vector3 getCenter()		  const { return { translation.x, translation.y, translation.z }; }
 
@@ -234,6 +232,12 @@ struct Transform3D : public Transform
 
 struct RigidBody3D : public Transform3D
 {
+private:
+	// pointer to owning GameObject
+	GameObject* collidingWith = nullptr;
+public:
+	// pointer to owner of current object
+	GameObject* owner = nullptr;
 
 	Vector3 lastPosition = {};
 	Vector3 velocity = {};
@@ -270,16 +274,16 @@ struct RigidBody3D : public Transform3D
 	void updateForce(GameMap gameMap, float deltaTime);
 	void update(GameMap gameMap, float deltaTime);
 
-
-
-
 	/// Collision Detection
 	bool isCollidingWith(const RigidBody3D& other) const;
 	Vector3 getCollisionNormal(const RigidBody3D& other) const;
 	float getPenetrationDepth(const RigidBody3D& other) const;
 	void checkRayCollision(const RigidBody3D& other);
+	GameObject* getCollider() const { return collidingWith; }
+	virtual void onCollision();
 
 	/// Constraint Resolution
+	void resolveConstrains(RigidBody3D* otherObject);
 	void resolveConstrains(RigidBody3D* otherObjects, int objectCount);
 	void resolveCollision(RigidBody3D& other);
 
