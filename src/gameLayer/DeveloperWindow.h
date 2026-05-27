@@ -16,6 +16,7 @@ struct DeveloperWindow
 	bool isCameraActive = false;
 	bool isInspectorActive = false;
 	bool isMiniGameActive = false;
+	bool showCursorPosition = false;
 
 	void showPlayerData(SceneManager* manager, Player* player);
 	void showCameraData(SceneManager* manager, Player* player);

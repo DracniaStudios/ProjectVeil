@@ -31,6 +31,18 @@ inline Rectangle generateScaleRect(Rectangle screen, Rectangle rect)
 	return r;
 }
 
+inline Rectangle generateObstacleRect(Rectangle screen, Rectangle rect)
+{
+	Rectangle newSize;
+	newSize.x = 1 + rect.x;
+	newSize.y = 1 + rect.y;
+	newSize.width = rect.width;
+	newSize.height = rect.height;
+
+	return generateScaleRect(screen, newSize);
+
+}
+
 #define MINI_GAME_ID 0
 MiniGame* MiniGame_flappyBird();
 #define MINI_GAME_ID 1

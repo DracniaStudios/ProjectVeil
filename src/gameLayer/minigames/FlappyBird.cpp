@@ -15,19 +15,34 @@ int scoreGoal = 5;
 
 std::vector<Rectangle> obstacles;
 
+void Reset(Scene* scene)
+{
+	std::cout << "Reset Mini Game \n";
+	// Reset
+	scene->miniGame = {};
+	scene->isMiniActive = false;
+
+	// Display Fail Screen For 3 Seconds;
+
+}
+
 void generateObstacle(int count = 4)
 {
 	obstacles = {};
 	auto rng = std::ranlux24_base(std::random_device{}());
+	
+	// x 500 -> 1100
+	
 	for (int i = 0; i < count; i++)
 	{
 		// Gen Top Size
-		Rectangle top = {getRandomFloat(rng, 0.3f, 2.5f), 0.05f, 0.05f, getRandomFloat(rng, 0.1f, 0.3f)};
+		Rectangle top = {getRandomFloat(rng, 0.2f, 1.5f), 0.05f, 0.05f, getRandomFloat(rng, 0.1f, 0.3f)};
+
 		// Gen Bottom Size
-		Rectangle bottom = { top.x, top.y + (top.y * 0.5f), top.width, top.height + (top.height * 0.5f)};
+		Rectangle bottom = { top.x, top.height + 0.9f, top.width, 0.5f - top.height};
 
 		obstacles.push_back(top);
-		//obstacles.push_back(bottom);
+		obstacles.push_back(bottom);
 	}
 }
 
@@ -35,8 +50,8 @@ void FlappyBird::render(void* manager_ptr, void* player_ptr)
 {
 	std::ranlux24_base rng(std::random_device{}());
 
-	Rectangle screen = {};
 	/// Draw Background Screen
+	Rectangle screen = {};
 	
 	screen.x = GetScreenWidth() * 0.25f;
 	screen.y = GetScreenHeight() * 0.3f;
@@ -70,6 +85,8 @@ void FlappyBird::render(void* manager_ptr, void* player_ptr)
 		DrawRectangleRec(generateScaleRect(screen, newSize), RED);
 	}
 
+	DrawRectangleRec(generateScaleRect(screen, Rectangle{ 1, 1, 1, 0.1f }), BLACK);
+	DrawRectangleRec(generateScaleRect(screen, Rectangle{ 1, 2.5f, 1, 0.1f }), BLACK);
 
 }
 
@@ -78,6 +95,13 @@ void FlappyBird::update(void* manager_ptr, void* player_ptr, float deltaTime)
 	auto manager = static_cast<SceneManager*>(manager_ptr);
 	auto scene = static_cast<Scene*>(manager->currentScene->object_ptr);
 	auto player = static_cast<Player*>(player_ptr);
+
+	Rectangle screen = {};
+
+	screen.x = GetScreenWidth() * 0.25f;
+	screen.y = GetScreenHeight() * 0.3f;
+	screen.width = GetScreenWidth() * 0.5f;
+	screen.height = GetScreenHeight() * 0.5f;
 
 	// Game Logic
 	if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, leftGoal))
@@ -102,6 +126,13 @@ void FlappyBird::update(void* manager_ptr, void* player_ptr, float deltaTime)
 		generateObstacle(2 + score);
 	}
 
+	if (player->rigidBody2D.getPosition().x < screen.x) Reset(scene);
+	if (player->rigidBody2D.getPosition().y < screen.y) Reset(scene);
+	if (player->rigidBody2D.getPosition().x > screen.x + screen.width) Reset(scene);
+	if (player->rigidBody2D.getPosition().y > screen.y + screen.height) Reset(scene);
+
+	// Win Condition
+
 	if (score >= scoreGoal)
 	{
 		scene->isMiniActive = false;
@@ -123,13 +154,23 @@ void FlappyBird::update(void* manager_ptr, void* player_ptr, float deltaTime)
 
 	// Entity Logic
 	{
+		ImGui::Begin("Obstacles");
 		for (auto &obj : obstacles)
 		{
-			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obj))
-			{
-				
-			}
+			Rectangle newSize = obj;
+
+			newSize.x = 1 + obj.x;
+			newSize.y = 1 + obj.y;
+			newSize.width = obj.width;
+			newSize.height = obj.height;
+
+			Rectangle obstacle = generateScaleRect(screen, newSize);
+
+
+			ImGui::Text(std::to_string(obstacle.y).c_str());
+			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obstacle)) Reset(scene);
 		}
+		ImGui::End();
 	}
 }
 

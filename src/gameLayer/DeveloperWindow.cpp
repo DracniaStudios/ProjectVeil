@@ -32,6 +32,7 @@ void DeveloperWindow::update(SceneManager* manager, Player* player)
 	if (isCameraActive) showCameraData(manager, player);
 	if (isInspectorActive) showObjectInspector(manager);
 	if (isMiniGameActive) showMiniGameData(manager, player);
+
 }
 
 void DeveloperWindow::showPlayerData(SceneManager* manager, Player* player)
@@ -204,13 +205,14 @@ void DeveloperWindow::showMiniGameData(SceneManager* manager, Player* player)
 	{
 		switch (currentGameID)
 		{
-		case 0:
-			scene->miniGame = MiniGame_flappyBird();
-			scene->isMiniActive = true;
-			break;
 		case 1:
 			scene->miniGame = MiniGame_crane();
 			scene->isMiniActive = true;
+			break;
+		default:
+			scene->miniGame = MiniGame_flappyBird();
+			scene->isMiniActive = true;
+			player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
 			break;
 		}
 	}

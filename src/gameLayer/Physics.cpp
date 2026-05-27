@@ -330,7 +330,7 @@ void RigidBody3D::update(GameMap gameMap,float deltaTime)
 
 void RigidBody3D::onCollision()
 {
-	addForce(Vector3Negate(front), 50);
+	//addForce(Vector3Negate(front), 50);
 }
 
 /// ------------------- RigidBody2D Collision Detection and Resolution ------------------- ///
@@ -381,18 +381,12 @@ void RigidBody2D::updateForce(float deltaTime)
 	acceleration = {};
 
 	// Ground Rules
-
-	translation.y = std::max(translation.y, static_cast<float>(GetScreenHeight()) - scale.y);
-	translation.y = std::min(translation.y, scale.y);
-
-	translation.x = std::max(translation.x, static_cast<float>(GetScreenWidth()) - scale.x);
-	translation.x = std::min(translation.x, scale.x);
-	/*
+	
 	if (translation.y > GetScreenHeight() - scale.y) { translation.y = GetScreenHeight() - scale.y; }
 	if (translation.y < scale.y) { translation.y = scale.y; }
 	if (translation.x > GetScreenWidth() - scale.x) { translation.x = GetScreenWidth() - scale.x; }
 	if (translation.x < scale.x) { translation.x = scale.x; }
-	*/
+	
 
 }
 void RigidBody2D::update(float deltaTime)
