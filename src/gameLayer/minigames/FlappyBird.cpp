@@ -3,32 +3,25 @@
 #include <Player.h>
 #include <SceneManager.h>
 
-
 Rectangle leftGoal = {};
 bool isLeftGoalActive = false;
 
 Rectangle rightGoal = {};
 bool isRightGoalActive = true;
 
-int score = 0;
-int scoreGoal = 5;
-
-std::vector<Rectangle> obstacles;
-
-void Reset(Scene* scene)
-{
-	std::cout << "Reset Mini Game \n";
-	// Reset
-	scene->miniGame = {};
-	scene->isMiniActive = false;
-
-	// Display Fail Screen For 3 Seconds;
-
-}
+MiniGameData flappyData = {
+	0,
+	5,
+	false,
+	true,
+	{},
+	{},
+	{}
+};
 
 void generateObstacle(int count = 4)
 {
-	obstacles = {};
+	flappyData.obstacles = {};
 	auto rng = std::ranlux24_base(std::random_device{}());
 	
 	// x 500 -> 1100
@@ -41,8 +34,8 @@ void generateObstacle(int count = 4)
 		// Gen Bottom Size
 		Rectangle bottom = { top.x, top.height + 0.9f, top.width, 0.5f - top.height};
 
-		obstacles.push_back(top);
-		obstacles.push_back(bottom);
+		flappyData.obstacles.push_back(top);
+		flappyData.obstacles.push_back(bottom);
 	}
 }
 
@@ -51,13 +44,7 @@ void FlappyBird::render(void* manager_ptr, void* player_ptr)
 	std::ranlux24_base rng(std::random_device{}());
 
 	/// Draw Background Screen
-	Rectangle screen = {};
-	
-	screen.x = GetScreenWidth() * 0.25f;
-	screen.y = GetScreenHeight() * 0.3f;
-	screen.width = GetScreenWidth() * 0.5f;
-	screen.height = GetScreenHeight() * 0.5f;
-	
+	Rectangle screen = getScreenScale({ 0.25f, 0.3f, 0.5f, 0.5f });
 	
 	DrawRectangleRec(generateScaleRect(screen, Rectangle{ 1, 1, 1, 1 }), BLACK);
 	DrawRectangleRec(generateScaleRect(screen, Rectangle{1.05f, 1.05f,0.95f, 0.95f}), DARKGREEN);
@@ -72,7 +59,7 @@ void FlappyBird::render(void* manager_ptr, void* player_ptr)
 	
 	/// Draw Enemy Tiles
 
-	for (auto &obj : obstacles)
+	for (auto &obj : flappyData.obstacles)
 	{
 		Rectangle newSize = obj;
 
@@ -108,22 +95,22 @@ void FlappyBird::update(void* manager_ptr, void* player_ptr, float deltaTime)
 	{
 		if (!isLeftGoalActive) return;
 		std::cout << "Player Inside Left Goal \n";
-		score++;
+		flappyData.score++;
 		isRightGoalActive = true;
 		isLeftGoalActive = false;
 		player->rigidBody2D.velocity = {};
-		generateObstacle(2 + score);
+		generateObstacle(2 + flappyData.score);
 
 	}
 	if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, rightGoal))
 	{
 		if (!isRightGoalActive) return;
 		std::cout << "Player Inside Right Goal \n";
-		score++;
+		flappyData.score++;
 		isLeftGoalActive = true;
 		isRightGoalActive = false;
 		player->rigidBody2D.velocity = {};
-		generateObstacle(2 + score);
+		generateObstacle(2 + flappyData.	score);
 	}
 
 	if (player->rigidBody2D.getPosition().x < screen.x) Reset(scene);
@@ -133,7 +120,7 @@ void FlappyBird::update(void* manager_ptr, void* player_ptr, float deltaTime)
 
 	// Win Condition
 
-	if (score >= scoreGoal)
+	if (flappyData.score >= flappyData.scoreGoal)
 	{
 		scene->isMiniActive = false;
 		player->health += 5;
@@ -155,7 +142,7 @@ void FlappyBird::update(void* manager_ptr, void* player_ptr, float deltaTime)
 	// Entity Logic
 	{
 		ImGui::Begin("Obstacles");
-		for (auto &obj : obstacles)
+		for (auto &obj : flappyData.obstacles)
 		{
 			Rectangle newSize = obj;
 
@@ -180,6 +167,7 @@ MiniGame* MiniGame_flappyBird()
 	game->name = "Flappy Bird";
 	game->update = &FlappyBird::update;
 	game->draw = &FlappyBird::render;
+	game->data = &flappyData;
 
 	generateObstacle(2);
 

@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
-// Version: 0.1.22
+// Version: 0.1.23
 // Date: 2026-06-06 (First Video Release)
-// Date: 2026-05-27 (Current Development Date)
+// Date: 2026-05-28 (Current Development Date)
 
 Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity instead of the velocity itself.
 
@@ -10,12 +10,14 @@ Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity 
 
 [ Added ]
 
+- Added Crane Game Funtionality
+
 [ Updated ]
 
-- Mini Game now has a reset function
+- Mini Game: Crane now has a win condition
+- Updated Mini Games to contain a data struct
+- Updated Mini Game Window to include Mini Game Data
 
 [ Fixed ]
-
-- Flappy Bird obstacles now reset the player on collision
 
 [ Removed ]
