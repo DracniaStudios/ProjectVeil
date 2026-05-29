@@ -1,23 +1,22 @@
 // Game Name: Subject Veil
-// Version: 0.1.23
+// Version: 0.1.24
 // Date: 2026-06-06 (First Video Release)
-// Date: 2026-05-28 (Current Development Date)
+// Date: 2026-05-29 (Current Development Date)
 
 Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity instead of the velocity itself.
 
 [ Issues ]
 
+- Found an issue where the gameObject flags don't update.
+- Found an issue where the developer window doesn't convert gameObject color's correctly.-
+- Found an issue where the Mini Game scenes use only percentage placement for objects with no pixel optionality.
 
 [ Added ]
 
-- Added Crane Game Funtionality
-
 [ Updated ]
-
-- Mini Game: Crane now has a win condition
-- Updated Mini Games to contain a data struct
-- Updated Mini Game Window to include Mini Game Data
 
 [ Fixed ]
 
 [ Removed ]
+
+- Removed Developer Window / GameObject Inspector's ability to change the gameObject's color. This was removed due to the fact that the gameObject's color couldn't be changed manually.

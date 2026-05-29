@@ -4,7 +4,6 @@
 
 #include <raylib.h>
 #include <vector>
-
 #include <GameObject.h>
 
 struct GameMap {
@@ -14,10 +13,6 @@ struct GameMap {
 
 	Vector3 size = {10, 10, 10};
 	void create(Vector3 size);
-
-	// Read Data
-	GameObject* getObjectAt(Vector3 position);
-	GameObject* getObjectAt(int x, int y, int z);
 
 	// Alter Data
 	GameObject& saveObjectAt(Vector3 position, GameObject& object);

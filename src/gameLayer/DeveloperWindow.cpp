@@ -6,10 +6,15 @@
 
 void DeveloperWindow::render(SceneManager* manager)
 {
+	/// Render Main developer Window
+
+	// Get Scene From Manager
 	auto scene = static_cast<Scene*>(manager->currentScene);
 
+	// Begin Game Data Window
 	ImGui::Begin("Game Data");
 
+	// Show Enable Window Flags
 	ImGui::Checkbox("Player Data Window", &isPlayerActive);
 	ImGui::Checkbox("Camera Data Window", &isCameraActive);
 	ImGui::Checkbox("Object Data Window", &isInspectorActive);
@@ -17,17 +22,28 @@ void DeveloperWindow::render(SceneManager* manager)
 
 	ImGui::Separator();
 	
+	/// Show Scene Data
 	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Scene Data");
 	
 	ImGui::Checkbox("Is 2D Active", &scene->is2DActive);
-	ImGui::Text(std::to_string(scene->gameMap.gameObjects.size()).c_str());
-
+	ImGui::Checkbox("Is Mini Game Active", &scene->isMiniActive);
+	
+	ImGui::Separator();
+	
+	/// Show Game Map Data
+	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Game Map Data");
+	
+	ImGui::Text("Game Object ID: %d", static_cast<int>(scene->gameMap.objectID));
+	ImGui::Text("Game Objects: %d", static_cast<int>(scene->gameMap.gameObjects.size()));
+	ImGui::InputFloat3("Game Map Size", &scene->gameMap.size.x);
+	
 	ImGui::End();
 
 }
 
 void DeveloperWindow::update(SceneManager* manager, Player* player)
 {
+	/// Update Game Data Windows
 	if (isPlayerActive) showPlayerData(manager, player);
 	if (isCameraActive) showCameraData(manager, player);
 	if (isInspectorActive) showObjectInspector(manager);
@@ -38,10 +54,14 @@ void DeveloperWindow::update(SceneManager* manager, Player* player)
 void DeveloperWindow::showPlayerData(SceneManager* manager, Player* player)
 {
 	auto scene = manager->currentScene;
+	
+	/// Begin Player Window
 	ImGui::Begin("Player Data");
 
 	if (ImGui::Button("Hurt Player")) { player->health -= 1; }
 	ImGui::InputFloat("Player Health: ", &player->health, 1, 1);
+	
+	/// Show Rigidbody Data based on space
 	if (scene->is2DActive)
 	{
 		ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody2D.isEnabled);
@@ -58,6 +78,8 @@ void DeveloperWindow::showPlayerData(SceneManager* manager, Player* player)
 		ImGui::Text("Player Scale 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.scale.x, player->rigidBody3D.scale.y, player->rigidBody3D.scale.z);
 
 	}
+
+	/// Show Player Directional Data and Flags
 	ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player->rigidBody3D.front.x, player->rigidBody3D.front.y, player->rigidBody3D.front.z);
 	ImGui::Checkbox("Up Touch", &player->rigidBody3D.upTouch);
 	ImGui::Checkbox("Down Touch", &player->rigidBody3D.downTouch);
@@ -73,6 +95,7 @@ void DeveloperWindow::showPlayerData(SceneManager* manager, Player* player)
 
 void DeveloperWindow::showCameraData(SceneManager* manager, Player* player)
 {
+	/// Show Camera Data Window
 	ImGui::Begin("Camera Data");
 
 	ImGui::Text("Camera Forward: (%.2f, %.2f, %.2f)", player->camera.forward.x, player->camera.forward.y, player->camera.forward.z);
@@ -91,9 +114,13 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager)
 	auto scene = manager->currentScene;
 	auto rng = std::ranlux24_base(std::random_device{}());
 
+
+	/// Show Object Inspector Window
 	ImGui::Begin("Object Inspector");
 
 	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Game Objects");
+	
+	/// List Game Objects
 	for (auto& object : scene->gameMap.gameObjects)
 	{
 		ImGui::PushID(object.id);
@@ -109,6 +136,7 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager)
 	
 	ImGui::Separator();
 
+	/// Show Selected Object Data
 	if (inspectObject != nullptr) {
 		ImGui::Text("ID: %d", inspectObject->id);
 		ImGui::Text("Name: %s", &inspectObject->name);
@@ -129,13 +157,16 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager)
 
 	ImGui::Separator();
 
+	/// Show Create Object Window
 	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Create Object");
 	if (ImGui::Button("Create New Object")) { isCreatingObject = !isCreatingObject; }
 	if (isCreatingObject)
 	{
+		/// Create Game Object Window 
 		ImGui::Begin("Create Object");
 		if (newObject == nullptr)
 		{
+			// Default Object Data
 			newObject = new GameObject();
 			newObject->rigidBody3D.translation = Vector3One();
 			newObject->rigidBody3D.scale = Vector3One();
@@ -148,18 +179,20 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager)
 			);
 		}
 		
+		// Altered Object Data
 		ImGui::Text("Object Data:");
-		ImGui::InputInt4("Color", (int*)&newObject->defaultColor, 1);
 		ImGui::InputFloat3("Position: ", &newObject->rigidBody3D.translation.x);
 		ImGui::InputFloat3("Scale: ", &newObject->rigidBody3D.scale.x);
 		ImGui::InputInt("Mesh Variant", &newObject->meshVariant, 1, 1);
 		newObject->meshVariant = Clamp(newObject->meshVariant, 0, MESH_COUNT);
 		ImGui::Spacing();
 
+		// Rigid Body Data
 		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Rigidbody");
 		ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", newObject->rigidBody3D.velocity.x, newObject->rigidBody3D.velocity.y, newObject->rigidBody3D.velocity.z);
 		ImGui::Spacing();
 		
+		// Object Flags
 		ImGui::TextColored(ImVec4(100, 0, 0, 255), "Flags");
 		ImGui::Checkbox("isEnabled", &newObject->rigidBody3D.isEnabled);
 		ImGui::Checkbox("isStatic", &newObject->rigidBody3D.isStatic);
@@ -173,6 +206,7 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager)
 		ImGui::Checkbox("Back Touch", &newObject->rigidBody3D.backTouch);
 		ImGui::Spacing();
 
+		// Spawn Object Button
 		if (ImGui::Button("Spawn Game Object"))
 		{
 			GameObject clone = *newObject;
@@ -192,7 +226,8 @@ int currentGameID = 0;
 void DeveloperWindow::showMiniGameData(SceneManager* manager, Player* player)
 {
 	auto scene = manager->currentScene;
-
+	
+	/// Begin Mini Game Data Window
 	ImGui::Begin("Mini Game Data");
 
 	ImGui::Text("Display Mini Game Data");
@@ -201,10 +236,12 @@ void DeveloperWindow::showMiniGameData(SceneManager* manager, Player* player)
 
 	ImGui::Checkbox("Is Mini Game Active", &scene->isMiniActive);
 
+	/// Launch Mini Game Button
 	if (ImGui::Button("Launch Mini Game"))
 	{
 		switch (currentGameID)
 		{
+			// Select Mini Game
 		case 1:
 			scene->miniGame = MiniGame_crane();
 			scene->isMiniActive = true;
@@ -218,8 +255,9 @@ void DeveloperWindow::showMiniGameData(SceneManager* manager, Player* player)
 			break;
 		}
 	}
-
 	ImGui::Separator();
+
+	/// Show Mini Game Data
 	ImGui::TextColored(ImVec4(0, 0, 255, 255), "Mini Game Data");
 
 	if (scene->miniGame != nullptr)
