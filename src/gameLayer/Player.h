@@ -36,10 +36,10 @@ struct Player : GameObject
 	/// Camera Data
 	PlayerCamera camera = {};
 
-	void render2D();
-	void render3D();
-	void onEnable();
-	void onDisable();
+	void render2D() override;
+	void render3D() override;
+	void onEnable() override;
+	void onDisable() override;
 	void update2D(SceneManager* manager, float deltaTime, bool canMove = true);
 	void update3D(SceneManager* manager, float deltaTime);
 	int getMaxHealth() override { return 20; }

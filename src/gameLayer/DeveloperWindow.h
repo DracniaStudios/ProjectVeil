@@ -3,6 +3,7 @@
 #define DEVELOPER_WINDOW_H
 
 struct SceneManager;
+struct AssetManager;
 struct Player;
 
 
@@ -10,7 +11,7 @@ struct DeveloperWindow
 {
 	
 	void render(SceneManager* manager);
-	void update(SceneManager* manager, Player* player);
+	void update(SceneManager* manager, AssetManager* assetManager, Player* player);
 
 	bool isPlayerActive = false;
 	bool isCameraActive = false;
@@ -20,7 +21,7 @@ struct DeveloperWindow
 
 	void showPlayerData(SceneManager* manager, Player* player);
 	void showCameraData(SceneManager* manager, Player* player);
-	void showObjectInspector(SceneManager* manager);
+	void showObjectInspector(SceneManager* manager, AssetManager* assetManager);
 	void showMiniGameData(SceneManager* manager, Player* player);
 
 };

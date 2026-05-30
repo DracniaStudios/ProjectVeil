@@ -48,6 +48,7 @@ struct GameObject
 	Mesh mesh = {};
 	Vector4 meshData = Vector4One();
 	int meshVariant = MESH_CUBE;
+	int blockID = -1;
 
 	Vector3 getPosition() { return rigidBody3D.translation; }
 	Quaternion getRotation() { return rigidBody3D.rotation; }

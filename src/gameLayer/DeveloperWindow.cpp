@@ -2,7 +2,7 @@
 
 #include <SceneManager.h>
 #include <Player.h>
-
+#include <AssetManager.h>
 
 void DeveloperWindow::render(SceneManager* manager)
 {
@@ -41,12 +41,12 @@ void DeveloperWindow::render(SceneManager* manager)
 
 }
 
-void DeveloperWindow::update(SceneManager* manager, Player* player)
+void DeveloperWindow::update(SceneManager* manager, AssetManager* assetManager, Player* player)
 {
 	/// Update Game Data Windows
 	if (isPlayerActive) showPlayerData(manager, player);
 	if (isCameraActive) showCameraData(manager, player);
-	if (isInspectorActive) showObjectInspector(manager);
+	if (isInspectorActive) showObjectInspector(manager, assetManager);
 	if (isMiniGameActive) showMiniGameData(manager, player);
 
 }
@@ -109,7 +109,7 @@ GameObject* inspectObject;
 GameObject* newObject = {};
 bool isCreatingObject = false;
 
-void DeveloperWindow::showObjectInspector(SceneManager* manager)
+void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* assetManager)
 {
 	auto scene = manager->currentScene;
 	auto rng = std::ranlux24_base(std::random_device{}());
@@ -187,6 +187,9 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager)
 		newObject->meshVariant = Clamp(newObject->meshVariant, 0, MESH_COUNT);
 		ImGui::Spacing();
 
+		// Texture Data
+		ImGui::InputInt("Block ID: ", &newObject->blockID);
+
 		// Rigid Body Data
 		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Rigidbody");
 		ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", newObject->rigidBody3D.velocity.x, newObject->rigidBody3D.velocity.y, newObject->rigidBody3D.velocity.z);
@@ -210,10 +213,10 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager)
 		if (ImGui::Button("Spawn Game Object"))
 		{
 			GameObject clone = *newObject;
-			//clone.mesh = getMeshVariant(clone.meshVariant, meshVector);
 			scene->gameMap.saveObjectAt(newObject->getPosition(), clone);
 			newObject = {};
 			isCreatingObject = false;
+
 		}
 		ImGui::End();
 	}

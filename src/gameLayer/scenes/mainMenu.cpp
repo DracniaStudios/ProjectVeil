@@ -83,7 +83,7 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 
 	if (isImGuiEnabled) {
 		developerConsole.render(manager);
-		developerConsole.update(manager, &player);
+		developerConsole.update(manager, &assetManager, &player);
 	}
 #pragma endregion
 }
@@ -151,6 +151,16 @@ Scene* Scene_MainMenuConstruct()
 	
 	player.name = "Player";
 	player.onEnable();
+
+	for (int i = 0; i < 25; i++)
+	{
+		Vector3 newPos = Vector3{ static_cast<float>(i), 5, 0 };
+		
+		GameObject newObject;
+		newObject.name = "GameObject: " + i;
+		newObject.blockID = i;
+		scene->gameMap.saveObjectAt(newPos, newObject);
+	}
 
 	return scene;
 }

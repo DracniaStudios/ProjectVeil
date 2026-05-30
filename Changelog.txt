@@ -8,15 +8,17 @@ Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity 
 [ Issues ]
 
 - Found an issue where the gameObject flags don't update.
-- Found an issue where the developer window doesn't convert gameObject color's correctly.-
+- Found an issue where the developer window doesn't convert gameObject color's correctly.
 - Found an issue where the Mini Game scenes use only percentage placement for objects with no pixel optionality.
-
+- Found an issue where objects can't load object textures and return null ( just black )
 [ Added ]
 
+- Added Textures into the resource/blocks folder
+
 [ Updated ]
+
+- Updated AssetManager to return texture based on ID
 
 [ Fixed ]
 
 [ Removed ]
-
-- Removed Developer Window / GameObject Inspector's ability to change the gameObject's color. This was removed due to the fact that the gameObject's color couldn't be changed manually.

@@ -4,6 +4,8 @@
 #include <gameMap.h>
 #include <iostream>
 
+#include <AssetManager.h>
+
 BoundingBox getBoundingBox(Model mdl, Vector3 pos)
 {
 	permaAssertComment(mdl.meshes == nullptr, "No Meshes In Model");
@@ -34,12 +36,16 @@ void GameObject::onEnable()
 	}
 	model = LoadModelFromMesh(mesh);
 	
-	// Generate 2d Model
+	if (blockID >= 0)
+	{
+		//SetMaterialTexture(&model.materials[0], MATERIAL_MAP_ALBEDO, getTextureFromID(blockID));
+		model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getTextureFromID(blockID);
+		defaultColor = WHITE;
+	}
 
 	// Set Initial Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
 	rigidBody3D.owner = this;
-
 
 	health = getMaxHealth();
 }
