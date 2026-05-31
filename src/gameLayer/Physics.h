@@ -220,7 +220,7 @@ struct Transform3D : public Transform
 	// Z+ is Forward
 	// X+ is Right
 	
-	Vector3 front = Vector3(0, 0, 1); 
+	Vector3 forward = Vector3(0, 0, 1); 
 	Vector3 back = Vector3(0, 0, -1); 
 	Vector3 right = Vector3(-1, 0, 0); 
 	Vector3 left = Vector3(1, 0, 0); 
@@ -268,7 +268,7 @@ public:
 	float airTime = 0;
 
 	void applyGravity()	{	acceleration -= Vector3{ 0, 20, 0 }; }//Vector3{ 0, 9.81f, 0 }
-	void addForce(Vector3 forceDirection, float force){		acceleration += Vector3Scale(forceDirection, force);}
+	void addForce(Vector3 forceDirection, float force){ velocity += Vector3Scale(forceDirection, force);}
 	void jump(float force){	if (downTouch) { velocity.y = force; }}
 
 	void updateForce(GameMap gameMap, float deltaTime);

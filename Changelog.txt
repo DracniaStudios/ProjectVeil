@@ -1,9 +1,10 @@
 // Game Name: Subject Veil
-// Version: 0.1.24
+// Version: 0.1.26
 // Date: 2026-06-06 (First Video Release)
-// Date: 2026-05-29 (Current Development Date)
+// Date: 2026-05-31 (Current Development Date)
 
-Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity instead of the velocity itself.
+I keep doing the rigidbody forward instead of the camera forward
+I'm using the rigidbody translation which is at the center instead of the camera which is the head.
 
 [ Issues ]
 
@@ -11,14 +12,36 @@ Take Note Of Physics System Changes: Line 116 - 127 changes only the y velocity 
 - Found an issue where the developer window doesn't convert gameObject color's correctly.
 - Found an issue where the Mini Game scenes use only percentage placement for objects with no pixel optionality.
 - Found an issue where objects can't load object textures and return null ( just black )
+
 [ Added ]
 
-- Added Textures into the resource/blocks folder
+- Added "isFiring" flag to Player and Developer window.
+- Added "lifeSpan" private float to GameObjects.
+
+- Added a Projectile Spawner (Left Click) to the Player.
+- Added a Laser Spawner (Right Click) to the Player.
 
 [ Updated ]
 
-- Updated AssetManager to return texture based on ID
+- Disabled texture streaming to prevent unnessary texture loading.
+
+- Updated Rigidbody3D "front" to "forward" to match the camera forward.
+- Updated Physics "addForce" to adjust velocity instead of accelleration.
+
+- Updated Developer Window \ Camera Window to show additional camera details ( offset, position, sensitivity, look rotation, and lean)
+- Updated Developer Window \ Object Window to show corrent object data and areas of adjustment (Rigidbody, Static, Flags, health)
+
+- Updated Game Objects to hide "Direction" by default.
+- Updated Game Objects to return a float for "max(Health/Stamina)".
+
+- Increased the "baseDamage" of gameObjects to 1.
+
+- Player now required "Scene" to render.
 
 [ Fixed ]
 
+- Fixed an issue where MainMenu had the "player.render3D" disabled.
+
 [ Removed ]
+
+- Removed Rigidbody2D from GameObjects.

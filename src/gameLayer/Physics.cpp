@@ -30,21 +30,21 @@ void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 	float hz = scale.z * 0.5f;
 	
 	// Check each face with a raycast and update touch flags accordingly
+	/*
 	upTouch = hitWithinRange(generateRay({ c.x, c.y + hy, c.z }, up));
 	downTouch = hitWithinRange(generateRay({ c.x, c.y - hy, c.z }, down));
-	frontTouch = hitWithinRange(generateRay({ c.x, c.y, c.z + hz }, front));
+	frontTouch = hitWithinRange(generateRay({ c.x, c.y, c.z + hz }, forward));
 	backTouch = hitWithinRange(generateRay({ c.x, c.y, c.z - hz }, back));
 	rightTouch = hitWithinRange(generateRay({ c.x + hx, c.y, c.z }, right));
 	leftTouch = hitWithinRange(generateRay({ c.x - hx, c.y, c.z }, left));
+	*/
 	
-	/*
 	upTouch = upTouch || hitWithinRange(generateRay({ c.x, c.y + hy, c.z }, up));
 	downTouch = downTouch || hitWithinRange(generateRay({ c.x, c.y - hy, c.z }, down));
-	frontTouch = frontTouch || hitWithinRange(generateRay({ c.x, c.y, c.z + hz }, front));
+	frontTouch = frontTouch || hitWithinRange(generateRay({ c.x, c.y, c.z + hz }, forward));
 	backTouch = backTouch || hitWithinRange(generateRay({ c.x, c.y, c.z - hz }, back));
 	rightTouch = rightTouch || hitWithinRange(generateRay({ c.x + hx, c.y, c.z }, right));
 	leftTouch = leftTouch || hitWithinRange(generateRay({ c.x - hx, c.y, c.z }, left));
-	*/
 }
 
 bool RigidBody3D::isCollidingWith(const RigidBody3D& other) const
@@ -330,7 +330,7 @@ void RigidBody3D::update(GameMap gameMap,float deltaTime)
 
 void RigidBody3D::onCollision()
 {
-	//addForce(Vector3Negate(front), 50);
+	//addForce(Vector3Negate(forward), 50);
 }
 
 /// ------------------- RigidBody2D Collision Detection and Resolution ------------------- ///

@@ -73,7 +73,7 @@ void GameObject::render3D()
 	}
 	if (displayDirection) {
 		/// Show Directions
-		DrawSphere(rigidBody3D.front + rigidBody3D.translation, 0.1f, RED);
+		DrawSphere(rigidBody3D.forward + rigidBody3D.translation, 0.1f, RED);
 		DrawSphere(rigidBody3D.back + rigidBody3D.translation, 0.1f, ORANGE);
 		DrawSphere(rigidBody3D.left + rigidBody3D.translation, 0.1f, YELLOW);
 		DrawSphere(rigidBody3D.right + rigidBody3D.translation, 0.1f, GREEN);
@@ -96,6 +96,9 @@ void GameObject::render3D()
 void GameObject::update(GameMap gameMap, float deltaTime)
 {
 	if (!isEnabled) { return; }
+
+	lifeSpan += deltaTime;
+
 	health = static_cast<int>(Clamp(health, 0, getMaxHealth()));
 	// Update Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
@@ -113,3 +116,6 @@ void GameObject::onHit(float damage)
 		onDisable();
 	}
 }
+
+// Remove Object From Scene and Destroy It.
+// Called When Object's Health Reaches 0, or When Object is Otherwise Destroyed.

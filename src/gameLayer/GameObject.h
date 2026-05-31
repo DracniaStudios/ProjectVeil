@@ -20,6 +20,10 @@ enum MeshType
 struct GameObject 
 {
 
+private:
+	float lifeSpan = 0;
+	float endLife = 0;
+public:
 	// Data
 	int* ptr = nullptr;
 	const char* name = "GameObject";
@@ -30,16 +34,15 @@ struct GameObject
 	bool canBeSelected = true;
 	
 	// Debug Display
-	bool displayDirection = true;
+	bool displayDirection = false;
 	bool display3DModel = true;
 	bool displayCollider = false;
 	
 	float health = 1;
-	float baseDamage = 0;
+	float baseDamage = 1;
 
 	/// Physics
 	RigidBody3D rigidBody3D = {};
-	RigidBody2D rigidBody2D = {};
 
 	Color defaultColor = BLUE;
 
@@ -60,7 +63,8 @@ struct GameObject
 	virtual void onEnable();
 	virtual void onDisable();
 
-	virtual int getMaxHealth() { return 10; }
+	virtual float getMaxHealth() { return 10; }
+	virtual float getMaxStamina() { return 100; }
 	virtual void onHit(float damage);
 };
 

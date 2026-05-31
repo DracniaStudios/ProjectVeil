@@ -60,6 +60,7 @@ void DeveloperWindow::showPlayerData(SceneManager* manager, Player* player)
 
 	if (ImGui::Button("Hurt Player")) { player->health -= 1; }
 	ImGui::InputFloat("Player Health: ", &player->health, 1, 1);
+	ImGui::Checkbox("Is Firing", player->IsFiring());
 	
 	/// Show Rigidbody Data based on space
 	if (scene->is2DActive)
@@ -80,7 +81,7 @@ void DeveloperWindow::showPlayerData(SceneManager* manager, Player* player)
 	}
 
 	/// Show Player Directional Data and Flags
-	ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player->rigidBody3D.front.x, player->rigidBody3D.front.y, player->rigidBody3D.front.z);
+	ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player->rigidBody3D.forward.x, player->rigidBody3D.forward.y, player->rigidBody3D.forward.z);
 	ImGui::Checkbox("Up Touch", &player->rigidBody3D.upTouch);
 	ImGui::Checkbox("Down Touch", &player->rigidBody3D.downTouch);
 	ImGui::Checkbox("Left Touch", &player->rigidBody3D.leftTouch);
@@ -99,7 +100,12 @@ void DeveloperWindow::showCameraData(SceneManager* manager, Player* player)
 	ImGui::Begin("Camera Data");
 
 	ImGui::Text("Camera Forward: (%.2f, %.2f, %.2f)", player->camera.forward.x, player->camera.forward.y, player->camera.forward.z);
-	
+	ImGui::Text("Camera Offset: (%.2f, %.2f, %.2f)", player->camera.offset.x, player->camera.offset.y, player->camera.offset.z);
+	ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", player->camera.position.x, player->camera.position.y, player->camera.position.z);
+	ImGui::Text("Camera Sensitivity: (%.2f, %.2f)", player->camera.sensitivity.x, player->camera.sensitivity.y);
+	ImGui::Text("Camera Look Rotation: (%.2f, %.2f)", player->camera.lookRotation.x, player->camera.lookRotation	.y);
+	ImGui::Text("Camera Lean: (%.2f, %.2f)", player->camera.lean.x, player->camera.lean	.y);
+
 	ImGui::Separator();
 
 	ImGui::End();
@@ -140,9 +146,21 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* a
 	if (inspectObject != nullptr) {
 		ImGui::Text("ID: %d", inspectObject->id);
 		ImGui::Text("Name: %s", &inspectObject->name);
+		ImGui::Spacing();
+		
+		// RigidBody Data
+		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Rigidbody");
 		ImGui::InputFloat3("Position: ", &inspectObject->rigidBody3D.translation.x);
 		ImGui::InputFloat3("Scale: ", &inspectObject->rigidBody3D.scale.x);
 		ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", inspectObject->rigidBody3D.velocity.x, inspectObject->rigidBody3D.velocity.y, inspectObject->rigidBody3D.velocity.z);
+		ImGui::Spacing();
+
+		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Status");
+		ImGui::InputFloat("Health", &inspectObject->health);
+		ImGui::Spacing();
+
+		// Object Flags 
+		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Flags");
 		ImGui::Checkbox("isEnabled", &inspectObject->rigidBody3D.isEnabled);
 		ImGui::Checkbox("isStatic", &inspectObject->rigidBody3D.isStatic);
 		ImGui::Checkbox("isVisible", &inspectObject->display3DModel);
@@ -153,6 +171,7 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* a
 		ImGui::Checkbox("Right Touch", &inspectObject->rigidBody3D.rightTouch);
 		ImGui::Checkbox("Front Touch", &inspectObject->rigidBody3D.frontTouch);
 		ImGui::Checkbox("Back Touch", &inspectObject->rigidBody3D.backTouch);
+		ImGui::Spacing();
 	}
 
 	ImGui::Separator();
@@ -189,10 +208,10 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* a
 
 		// Texture Data
 		ImGui::InputInt("Block ID: ", &newObject->blockID);
-
-		// Rigid Body Data
-		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Rigidbody");
-		ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", newObject->rigidBody3D.velocity.x, newObject->rigidBody3D.velocity.y, newObject->rigidBody3D.velocity.z);
+		
+		// Status Data
+		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Status");
+		ImGui::InputFloat("Health: %.2f", &newObject->health);
 		ImGui::Spacing();
 		
 		// Object Flags

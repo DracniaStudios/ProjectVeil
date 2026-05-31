@@ -105,9 +105,9 @@ void Scene_MainMenuDraw2D(void* manager_ptr, void* object_ptr)
 		if (scene->isMiniActive && scene->miniGame != nullptr)
 		{
 			scene->miniGame->draw(manager_ptr, object_ptr);
-			player.render2D();
 		}
 	}
+	player.render2D(scene);
 
 
 	DrawTexturePro(
@@ -132,7 +132,9 @@ void Scene_MainMenuDraw3D(void* manager_ptr, void* object_ptr)
 		object.render3D();
 	}
 	
-	//player.render3D();
+	// Weird Interaction Between Rendering Ray and layer Objects
+
+	player.render3D(scene);
 }
 
 Scene* Scene_MainMenuConstruct()
@@ -151,7 +153,7 @@ Scene* Scene_MainMenuConstruct()
 	
 	player.name = "Player";
 	player.onEnable();
-
+	/*
 	for (int i = 0; i < 25; i++)
 	{
 		Vector3 newPos = Vector3{ static_cast<float>(i), 5, 0 };
@@ -161,6 +163,6 @@ Scene* Scene_MainMenuConstruct()
 		newObject.blockID = i;
 		scene->gameMap.saveObjectAt(newPos, newObject);
 	}
-
+	*/
 	return scene;
 }

@@ -6,13 +6,16 @@
 
 #include <GameObject.h>
 
-struct Player;
 struct SceneManager;
+struct Scene;
+struct Player;
 struct PlayerCamera;
 
 struct PlayerCamera
 {
 	Vector3 forward;
+	Vector3 offset;
+	Vector3 position;
 	Vector2 sensitivity = Vector2{ 0.01f, 0.01f };
 	Vector2 lookRotation = Vector2{ 0, 0 };
 	Vector2 lean = Vector2{ 0, 0 };
@@ -27,6 +30,13 @@ struct PlayerCamera
 
 struct Player : GameObject
 {
+private:
+	bool isFiring = false;
+
+public:
+	RigidBody2D rigidBody2D = {};
+
+
 	Vector2 moveDirection = {};
 	bool isCrouching = false;
 
@@ -36,14 +46,26 @@ struct Player : GameObject
 	/// Camera Data
 	PlayerCamera camera = {};
 
-	void render2D() override;
-	void render3D() override;
+	/// Functions
+	
+	bool* IsFiring() { return &isFiring; }
+
+	// Render And Update
+	void render2D(Scene* scene);
+	void render3D(Scene* scene);
 	void onEnable() override;
 	void onDisable() override;
 	void update2D(SceneManager* manager, float deltaTime, bool canMove = true);
 	void update3D(SceneManager* manager, float deltaTime);
-	int getMaxHealth() override { return 20; }
-	int getMaxStamina() { return 100; }
+	
+	// Status Functions
+	float getMaxHealth() override { return 20; }
+	float getMaxStamina() override { return 100; }
+
+	// Combat Functions
+	void Fire(Scene* scene);
+	void FireLaser(Scene* scene);
+
 };
 
 #endif

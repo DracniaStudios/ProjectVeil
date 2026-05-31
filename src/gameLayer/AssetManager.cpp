@@ -4,10 +4,8 @@ void AssetManager::loadAll()
 {
 	frame = LoadTexture(RESOURCES_PATH "icons/frame.png");
 
-	magicSphereSet = LoadTexture(RESOURCES_PATH "icons/MagicSphere/TileSet512x512px.png");
-	magicSphere = LoadTexture(RESOURCES_PATH "icons/MagicSphere/512x512px/01.png");
-
 	/// Blocks
+	/*
 	asphalt_01 = LoadTexture(RESOURCES_PATH "blocks/Asphalt031/Asphalt031_4K-PNG_Color.png");
 	bricks_01 = LoadTexture(RESOURCES_PATH "blocks/Bricks058/Bricks058_4K-PNG_Color.png");
 	bricks_02 = LoadTexture(RESOURCES_PATH "blocks/Bricks097/Bricks097_4K-PNG_Color.png");
@@ -33,4 +31,5 @@ void AssetManager::loadAll()
 	tile_01 = LoadTexture(RESOURCES_PATH "blocks/Tiles133A/Tiles133A_4K-PNG_Color.png");
 	woodFloor_01 = LoadTexture(RESOURCES_PATH "blocks/WoodFloor009/WoodFloor009_4K-PNG_Color.png");
 	wood_01 = LoadTexture(RESOURCES_PATH "blocks/Wood067/Wood067_4K-PNG_Color.png");
+	*/
 }

@@ -3,6 +3,17 @@
 #include <raymath.h>
 #include <SceneManager.h>
 
+/// <summary>
+///  Player Functions
+///  
+///  Enable
+///  Disable
+///  Render
+///  Update
+///  Camera
+///  
+/// </summary>
+
 void Player::onEnable()
 {
 	stamina = getMaxStamina();
@@ -17,43 +28,60 @@ void Player::onDisable()
 	
 }
 
-void Player::render2D()
+void Player::render2D(Scene* scene)
 {
-	if (!isEnabled) return;
+	if (!this->isEnabled) return;
 	
-	DrawCircle(rigidBody2D.translation.x, rigidBody2D.translation.y, 5, WHITE);
-	DrawRectangle(rigidBody2D.translation.x, rigidBody2D.translation.y, rigidBody2D.scale.x, rigidBody2D.scale.y, WHITE);
+	if (scene->isMiniActive && scene->miniGame != nullptr)
+	{
+		DrawCircle(rigidBody2D.translation.x, rigidBody2D.translation.y, rigidBody2D.scale.x, WHITE);
 
+	}
+
+	/// Reticle
+	DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 10, 
+		IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? RED
+		: IsMouseButtonDown(MOUSE_BUTTON_RIGHT) ? RED
+		: WHITE);
 }
 
-void Player::render3D()
+void Player::render3D(Scene* scene)
 {
-	if (!isEnabled) { return; }
+	if (!this->isEnabled) { return; }
 
-	if (displayCollider)
+	if (this->displayCollider)
 	{
 		DrawBoundingBox(rigidBody3D.collisionBox, WHITE);
 	}
 
-	if (display3DModel) {
+	if (this->display3DModel) {
 		DrawModel(model, rigidBody3D.translation, 1.0f, Color{ 20, 30, 30, 255 });
 		DrawModelWires(model, rigidBody3D.translation, 1.0f, BLACK);
 	}
-	if (displayDirection) {
+
+	if (this->displayDirection) {
 		/// Show Directions
-		DrawSphere(rigidBody3D.front + rigidBody3D.translation, 0.1f, RED);
+		DrawSphere(rigidBody3D.forward + rigidBody3D.translation, 0.1f, RED);
 		DrawSphere(rigidBody3D.back + rigidBody3D.translation, 0.1f, ORANGE);
 		DrawSphere(rigidBody3D.left + rigidBody3D.translation, 0.1f, YELLOW);
 		DrawSphere(rigidBody3D.right + rigidBody3D.translation, 0.1f, GREEN);
 		DrawSphere(rigidBody3D.up + rigidBody3D.translation, 0.1f, BLUE);
 		DrawSphere(rigidBody3D.down + rigidBody3D.translation, 0.1f, PURPLE);
 	}
-	
+
+	Vector3 rayOffset = Vector3Add(camera.forward, rigidBody3D.right);
+	DrawSphere(camera.position + rayOffset, 0.1f, GREEN);
+	if (isFiring)
+	{
+		//DrawRay(Ray{ camera.position + camera.forward, camera.forward }, GREEN);
+		DrawRay(Ray{ camera.position + rayOffset, camera.forward }, GREEN);
+	}
+
 }
 
 void Player::update2D(SceneManager* manager, float deltaTime, bool canMove)
 {
-	if (!isEnabled) return;
+	if (!this->isEnabled) return;
 	if (!manager->currentScene->is2DActive) return;
 
 	// Player2D Function
@@ -86,26 +114,24 @@ void Player::update3D(SceneManager* manager, float deltaTime)
 	moveDirection.x = IsKeyDown(KEY_A) ? -1.0f : IsKeyDown(KEY_LEFT) ? -1.0f : IsKeyDown(KEY_D) ? 1.0f : IsKeyDown(KEY_RIGHT) ? 1.0f : 0;
 	moveDirection.y = IsKeyDown(KEY_W) ? 1.0f : IsKeyDown(KEY_UP) ? 1.0f : IsKeyDown(KEY_S) ? -1.0f : IsKeyDown(KEY_DOWN) ? -1.0f : 0;
 
-	if (moveDirection.y > 0) {	rigidBody3D.translation += (rigidBody3D.front * speed) * 0.1f;}
+	if (moveDirection.y > 0) {	rigidBody3D.translation += (rigidBody3D.forward * speed) * 0.1f;}
 	if (moveDirection.y < 0) { 	rigidBody3D.translation += (rigidBody3D.back * speed) * 0.1f; }
 	if (moveDirection.x < 0) { 	rigidBody3D.translation += (rigidBody3D.left * speed) * 0.1f; }
 	if (moveDirection.x > 0) {	rigidBody3D.translation += (rigidBody3D.right * speed) * 0.1f;}
 
 	if (IsKeyPressed(KEY_SPACE)) rigidBody3D.jump(20);
 
-	//GameObject::update(deltaTime);
-	
+	/// Update RigidBody3D Physics
 	rigidBody3D.update(manager->currentScene->gameMap, deltaTime);
 	
-	
+	/// Clamp Player Position to Screen Bounds \ World Size
 	const float screenX = static_cast<float>(GetScreenWidth());
 	const float screenY = static_cast<float>(GetScreenHeight());
 
 	rigidBody3D.translation.x = Clamp(rigidBody3D.translation.x, -(screenX / 2), screenX / 2);
 	rigidBody3D.translation.z = Clamp(rigidBody3D.translation.z, -(screenY / 2), screenY / 2);
 
-	// Resolve Player Collision
-
+	/// Resolve Player Collision
 	for (auto& obj : manager->currentScene->gameMap.gameObjects)
 	{
 		if (&obj != this)
@@ -117,20 +143,34 @@ void Player::update3D(SceneManager* manager, float deltaTime)
 		}
 	}
 
+	/// Clamp Player Health and Stamina
 	health = Clamp(health, 0, static_cast<float>(getMaxHealth()));
 	stamina = Clamp(stamina, 0, static_cast<float>(getMaxStamina()));
 
+	/// Update Player Actions
+	
+	isFiring = IsMouseButtonDown(MOUSE_BUTTON_LEFT) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
+	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){ Fire(manager->currentScene); }
+	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) { FireLaser(manager->currentScene); }
 }
 
+///  Camera Update Function for First-Person Style Camera. 
+///  Updates the camera's position to be at the player's head, and rotates based on mouse movement.
+///  Also updates the player's direction vectors to match the camera's look direction.
 
 void PlayerCamera::UpdateCameraFPS(Camera* camera, Player* player)
 {
-
+	offset = Vector3(0, player->rigidBody3D.scale.y / 2, 0); // Camera offset to be at player's head)
+	position = Vector3Add(player->rigidBody3D.translation, offset);
+	
+	/*
 	camera->position = Vector3(
 		player->rigidBody3D.translation.x,
 		player->rigidBody3D.translation.y + (player->rigidBody3D.scale.y / 2),
 		player->rigidBody3D.translation.z
 	);
+	*/
+	camera->position = Vector3Add(player->rigidBody3D.translation, offset);
 
 	UpdateCamera(camera, CAMERA_FIRST_PERSON);
 
@@ -155,7 +195,7 @@ void PlayerCamera::UpdateCameraFPS(Camera* camera, Player* player)
 	// Update player direction vectors to match camera look
 	Vector3 flatForward = camForward; flatForward.y = 0; flatForward = Vector3Normalize(flatForward);
 	if (Vector3Length(flatForward) > 0.001f) {
-		player->rigidBody3D.front = flatForward;
+		player->rigidBody3D.forward = flatForward;
 		player->rigidBody3D.back = Vector3Scale(flatForward, -1);
 		player->rigidBody3D.right = Vector3{ -flatForward.z, 0, flatForward.x };
 		player->rigidBody3D.left = Vector3{ flatForward.z, 0, -flatForward.x };
@@ -163,4 +203,50 @@ void PlayerCamera::UpdateCameraFPS(Camera* camera, Player* player)
 		player->rigidBody3D.down = Vector3{ 0, -1, 0 };
 	}
 
+}
+
+///
+///
+///
+
+// Projectile Variant
+void Player::Fire(Scene* scene)
+{
+	/// Spawn Object In Front Of Player
+	float projectileSpeed = 1000;
+
+	// Create Projectile Object
+	GameObject projectile = {};
+	projectile.name = "Projectile";
+	projectile.rigidBody3D.scale = Vector3(0.2f, 0.2f, 0.2f);
+	projectile.baseDamage = 1;
+	projectile.defaultColor = GRAY;
+
+	// Set Projectile Position to Player's Front
+	Vector3 spawn = Vector3Add(camera.position, Vector3Scale(camera.forward, 1.0f));
+
+	// Add Projectile to Scene's Game Objects
+	auto spawnedObject = scene->gameMap.saveObjectAt(spawn, projectile);
+
+}
+
+void Player::FireLaser(Scene* scene)
+{
+	
+	// Create Ray from Camera
+	Ray cameraRay = {camera.position, camera.forward};
+	// Check Ray Collision with Game Objects
+	for (auto& obj : scene->gameMap.gameObjects)
+	{
+		auto collider = GetRayCollisionBox(cameraRay, obj.rigidBody3D.collisionBox);
+		// If Collision, Apply Damage to Object
+		if (collider.hit)
+		{
+			// Object Data
+			obj.health -= 0.01f;
+			obj.rigidBody3D.addForce(camera.forward, 10.0f);
+
+		}
+
+	}
 }
