@@ -71,11 +71,7 @@ void Player::render3D(Scene* scene)
 
 	Vector3 rayOffset = Vector3Add(camera.forward, rigidBody3D.right);
 	DrawSphere(camera.position + rayOffset, 0.1f, GREEN);
-	if (isFiring)
-	{
-		//DrawRay(Ray{ camera.position + camera.forward, camera.forward }, GREEN);
-		DrawRay(Ray{ camera.position + rayOffset, camera.forward }, GREEN);
-	}
+	if (isFiring)	{	DrawRay(Ray{ camera.position + rayOffset, camera.forward }, GREEN);}
 
 }
 
@@ -150,7 +146,7 @@ void Player::update3D(SceneManager* manager, float deltaTime)
 	/// Update Player Actions
 	
 	isFiring = IsMouseButtonDown(MOUSE_BUTTON_LEFT) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
-	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){ Fire(manager->currentScene); }
+	//if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){ Fire(manager->currentScene); }
 	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) { FireLaser(manager->currentScene); }
 }
 
@@ -163,13 +159,6 @@ void PlayerCamera::UpdateCameraFPS(Camera* camera, Player* player)
 	offset = Vector3(0, player->rigidBody3D.scale.y / 2, 0); // Camera offset to be at player's head)
 	position = Vector3Add(player->rigidBody3D.translation, offset);
 	
-	/*
-	camera->position = Vector3(
-		player->rigidBody3D.translation.x,
-		player->rigidBody3D.translation.y + (player->rigidBody3D.scale.y / 2),
-		player->rigidBody3D.translation.z
-	);
-	*/
 	camera->position = Vector3Add(player->rigidBody3D.translation, offset);
 
 	UpdateCamera(camera, CAMERA_FIRST_PERSON);
@@ -219,7 +208,6 @@ void Player::Fire(Scene* scene)
 	GameObject projectile = {};
 	projectile.name = "Projectile";
 	projectile.rigidBody3D.scale = Vector3(0.2f, 0.2f, 0.2f);
-	projectile.baseDamage = 1;
 	projectile.defaultColor = GRAY;
 
 	// Set Projectile Position to Player's Front
@@ -227,6 +215,7 @@ void Player::Fire(Scene* scene)
 
 	// Add Projectile to Scene's Game Objects
 	auto spawnedObject = scene->gameMap.saveObjectAt(spawn, projectile);
+	spawnedObject.rigidBody3D.addForce(camera.forward, projectileSpeed);
 
 }
 
@@ -235,18 +224,21 @@ void Player::FireLaser(Scene* scene)
 	
 	// Create Ray from Camera
 	Ray cameraRay = {camera.position, camera.forward};
+
 	// Check Ray Collision with Game Objects
+	
 	for (auto& obj : scene->gameMap.gameObjects)
 	{
 		auto collider = GetRayCollisionBox(cameraRay, obj.rigidBody3D.collisionBox);
+
 		// If Collision, Apply Damage to Object
 		if (collider.hit)
 		{
-			// Object Data
-			obj.health -= 0.01f;
+			obj.onHit(baseDamage);
 			obj.rigidBody3D.addForce(camera.forward, 10.0f);
 
 		}
 
 	}
+	
 }

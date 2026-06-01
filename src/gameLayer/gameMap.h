@@ -18,6 +18,9 @@ struct GameMap {
 	GameObject& saveObjectAt(Vector3 position, GameObject& object);
 	GameObject& saveObjectAt(int x, int y, int z, GameObject& object);
 
+	void removeObject(GameObject* object);
+	void removeObject(int id);
+
 	// Return Data
 	Vector3 getMapSize() {	return Vector3(size.x, size.y, size.z);}
 

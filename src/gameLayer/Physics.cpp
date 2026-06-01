@@ -321,6 +321,11 @@ void RigidBody3D::update(GameMap gameMap,float deltaTime)
 		if (useGravity) applyGravity();
 		updateForce(gameMap, deltaTime);
 	}
+	else
+	{
+		velocity = {};
+		acceleration = {};
+	}
 	lastPosition = translation;
 
 	// Update collision box to match current position and scale

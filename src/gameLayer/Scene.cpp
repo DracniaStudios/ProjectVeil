@@ -39,7 +39,7 @@ void Scene_updateScene(void* manager_ptr, Scene* scene, float delta) {
 
 	// Update GameObjects
 	for (auto& object : scene->gameMap.gameObjects) {
-		object.update(scene->gameMap, delta);
+		object.update(scene, delta);
 	}
 
 	solveCollision(scene, delta, 8);

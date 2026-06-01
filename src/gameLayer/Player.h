@@ -4,7 +4,7 @@
 
 #include <raylib.h>
 
-#include <GameObject.h>
+#include <Entity.h>
 
 struct SceneManager;
 struct Scene;
@@ -28,26 +28,23 @@ struct PlayerCamera
 
 };
 
-struct Player : GameObject
+struct Player : public Entity
 {
 private:
 	bool isFiring = false;
 
 public:
+
 	RigidBody2D rigidBody2D = {};
 
-
 	Vector2 moveDirection = {};
-	bool isCrouching = false;
 
-	float baseSpeed = 1;
-	float stamina = 0;
+	bool isCrouching = false;
 
 	/// Camera Data
 	PlayerCamera camera = {};
 
 	/// Functions
-	
 	bool* IsFiring() { return &isFiring; }
 
 	// Render And Update

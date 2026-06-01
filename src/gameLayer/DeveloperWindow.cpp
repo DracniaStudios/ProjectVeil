@@ -111,9 +111,14 @@ void DeveloperWindow::showCameraData(SceneManager* manager, Player* player)
 	ImGui::End();
 }
 
-GameObject* inspectObject;
-GameObject* newObject = {};
 bool isCreatingObject = false;
+bool isCreatingEntity = false;
+
+ObjectType getType(void* object)
+{
+	auto check = static_cast<GameObject*>(object);
+	return check->type;
+}
 
 void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* assetManager)
 {
@@ -124,9 +129,10 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* a
 	/// Show Object Inspector Window
 	ImGui::Begin("Object Inspector");
 
-	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Game Objects");
 	
 	/// List Game Objects
+	ImGui::BeginChild("Object List", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.2f));
+	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Game Objects");
 	for (auto& object : scene->gameMap.gameObjects)
 	{
 		ImGui::PushID(object.id);
@@ -140,106 +146,217 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* a
 		ImGui::PopID();
 	}
 	
+	ImGui::EndChild();
 	ImGui::Separator();
 
+	ImGui::BeginChild("Selector", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.8f));
 	/// Show Selected Object Data
 	if (inspectObject != nullptr) {
-		ImGui::Text("ID: %d", inspectObject->id);
-		ImGui::Text("Name: %s", &inspectObject->name);
+
+		auto check = getType(inspectObject) == OBJECT_GENERIC ? static_cast<GameObject*>(inspectObject): static_cast<Entity*>(inspectObject);
+
+		if (check->type == OBJECT_ENTITY)
+		{
+			ImGui::TextColored(ImVec4(255, 255, 0, 255), "Entity Data");
+			check = static_cast<Entity*>(inspectObject);
+		}
+		else
+		{
+			ImGui::TextColored(ImVec4(255, 255, 0, 255), "Object Data");
+			check = {};
+			check = static_cast<GameObject*>(inspectObject);
+		}
+
+
+		ImGui::Text("ID: %d", check->id);
+		ImGui::Text("Name: %s", check->name);
+		ImGui::Text("Type: %d", check->type);
 		ImGui::Spacing();
-		
+
 		// RigidBody Data
 		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Rigidbody");
-		ImGui::InputFloat3("Position: ", &inspectObject->rigidBody3D.translation.x);
-		ImGui::InputFloat3("Scale: ", &inspectObject->rigidBody3D.scale.x);
-		ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", inspectObject->rigidBody3D.velocity.x, inspectObject->rigidBody3D.velocity.y, inspectObject->rigidBody3D.velocity.z);
+		ImGui::InputFloat3("Position: ", &check->rigidBody3D.translation.x);
+		ImGui::InputFloat3("Scale: ", &check->rigidBody3D.scale.x);
+		ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", check->rigidBody3D.velocity.x, check->rigidBody3D.velocity.y, check->rigidBody3D.velocity.z);
 		ImGui::Spacing();
 
 		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Status");
-		ImGui::InputFloat("Health", &inspectObject->health);
+		ImGui::Checkbox("Is Alive", &check->isAlive);
+		ImGui::Text("Life Span: %f", check->lifeSpan);
+		ImGui::Text("Life End: %f", check->endLife);
+		ImGui::Text("Health: %f", check->health);
+		if (check->type == OBJECT_ENTITY)
+		{
+			auto entity = static_cast<Entity*>(check);
+
+			ImGui::Text("Stamina: %f", entity->stamina);
+			ImGui::Text("Base Damage: %f", entity->baseDamage);
+			ImGui::Text("Base Speed: %f", entity->baseSpeed);
+		}
 		ImGui::Spacing();
 
 		// Object Flags 
 		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Flags");
-		ImGui::Checkbox("isEnabled", &inspectObject->rigidBody3D.isEnabled);
-		ImGui::Checkbox("isStatic", &inspectObject->rigidBody3D.isStatic);
-		ImGui::Checkbox("isVisible", &inspectObject->display3DModel);
-		ImGui::Checkbox("Show Collider", &inspectObject->displayCollider);
-		ImGui::Checkbox("Up Touch", &inspectObject->rigidBody3D.upTouch);
-		ImGui::Checkbox("Down Touch", &inspectObject->rigidBody3D.downTouch);
-		ImGui::Checkbox("Left Touch", &inspectObject->rigidBody3D.leftTouch);
-		ImGui::Checkbox("Right Touch", &inspectObject->rigidBody3D.rightTouch);
-		ImGui::Checkbox("Front Touch", &inspectObject->rigidBody3D.frontTouch);
-		ImGui::Checkbox("Back Touch", &inspectObject->rigidBody3D.backTouch);
+		ImGui::Checkbox("isEnabled", &check->rigidBody3D.isEnabled);
+		ImGui::Checkbox("isStatic", &check->rigidBody3D.isStatic);
+		ImGui::Checkbox("isInteractable", &check->isInteractable);
+		ImGui::Checkbox("isVisible", &check->display3DModel);
+		ImGui::Checkbox("Show Collider", &check->displayCollider);
+		ImGui::Checkbox("Up Touch", &check->rigidBody3D.upTouch);
+		ImGui::Checkbox("Down Touch", &check->rigidBody3D.downTouch);
+		ImGui::Checkbox("Left Touch", &check->rigidBody3D.leftTouch);
+		ImGui::Checkbox("Right Touch", &check->rigidBody3D.rightTouch);
+		ImGui::Checkbox("Front Touch", &check->rigidBody3D.frontTouch);
+		ImGui::Checkbox("Back Touch", &check->rigidBody3D.backTouch);
 		ImGui::Spacing();
+
+		if (ImGui::Button("Delete Object"))
+		{
+			scene->gameMap.removeObject(check->id);
+			inspectObject = nullptr;
+		}
 	}
 
+	ImGui::EndChild();
 	ImGui::Separator();
 
+
 	/// Show Create Object Window
+	ImGui::BeginChild("Create Windows");
+
+	/** Object Window **/
 	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Create Object");
-	if (ImGui::Button("Create New Object")) { isCreatingObject = !isCreatingObject; }
+	if (ImGui::Button("Create New Object"))
+	{
+		isCreatingObject = !isCreatingObject;
+		newObject = new GameObject();
+	}
+
 	if (isCreatingObject)
 	{
 		/// Create Game Object Window 
 		ImGui::Begin("Create Object");
-		if (newObject == nullptr)
-		{
-			// Default Object Data
-			newObject = new GameObject();
-			newObject->rigidBody3D.translation = Vector3One();
-			newObject->rigidBody3D.scale = Vector3One();
-			newObject->meshData = Vector4One();
-			newObject->defaultColor = Color(
-				getRandomInt(rng, 0, 255),
-				getRandomInt(rng, 0, 255),
-				getRandomInt(rng, 0, 255),
-				255
-			);
-		}
+		
+		auto object = static_cast<GameObject*>(newObject);
+		if (object == nullptr) { object = new GameObject(); }
+		//permaAssertComment(object == nullptr, "No Object Data @ DeveloperWindow.cpp");
+		/** Base Object Data **/
+		object->type = OBJECT_GENERIC;
+		object->rigidBody3D.isStatic = true;
+		object->rigidBody3D.translation = Vector3One();
+		object->rigidBody3D.scale = Vector3One();
+		object->meshData = Vector4One();
+		object->defaultColor = Color(
+			getRandomInt(rng, 0, 255),
+			getRandomInt(rng, 0, 255),
+			getRandomInt(rng, 0, 255),
+			255
+		);
 		
 		// Altered Object Data
 		ImGui::Text("Object Data:");
-		ImGui::InputFloat3("Position: ", &newObject->rigidBody3D.translation.x);
-		ImGui::InputFloat3("Scale: ", &newObject->rigidBody3D.scale.x);
-		ImGui::InputInt("Mesh Variant", &newObject->meshVariant, 1, 1);
-		newObject->meshVariant = Clamp(newObject->meshVariant, 0, MESH_COUNT);
+		ImGui::InputFloat3("Position: ", &object->rigidBody3D.translation.x);
+		ImGui::InputFloat3("Scale: ", &object->rigidBody3D.scale.x);
+		ImGui::InputInt("Mesh Variant", &object->meshVariant, 1, 1);
+		object->meshVariant = Clamp(object->meshVariant, 0, MESH_COUNT);
 		ImGui::Spacing();
 
 		// Texture Data
-		ImGui::InputInt("Block ID: ", &newObject->blockID);
-		
-		// Status Data
-		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Status");
-		ImGui::InputFloat("Health: %.2f", &newObject->health);
-		ImGui::Spacing();
+		ImGui::InputInt("Block ID: ", &object->blockID);
 		
 		// Object Flags
 		ImGui::TextColored(ImVec4(100, 0, 0, 255), "Flags");
-		ImGui::Checkbox("isEnabled", &newObject->rigidBody3D.isEnabled);
-		ImGui::Checkbox("isStatic", &newObject->rigidBody3D.isStatic);
-		ImGui::Checkbox("isVisible", &newObject->display3DModel);
-		ImGui::Checkbox("Show Collider", &newObject->displayCollider);
-		ImGui::Checkbox("Up Touch", &newObject->rigidBody3D.upTouch);
-		ImGui::Checkbox("Down Touch", &newObject->rigidBody3D.downTouch);
-		ImGui::Checkbox("Left Touch", &newObject->rigidBody3D.leftTouch);
-		ImGui::Checkbox("Right Touch", &newObject->rigidBody3D.rightTouch);
-		ImGui::Checkbox("Front Touch", &newObject->rigidBody3D.frontTouch);
-		ImGui::Checkbox("Back Touch", &newObject->rigidBody3D.backTouch);
+		ImGui::Checkbox("isEnabled", &object->rigidBody3D.isEnabled);
+		ImGui::Checkbox("isStatic", &object->rigidBody3D.isStatic);
+		ImGui::Checkbox("isVisible", &object->display3DModel);
+		ImGui::Checkbox("Show Collider", &object->displayCollider);
+		ImGui::Checkbox("Up Touch", &object->rigidBody3D.upTouch);
+		ImGui::Checkbox("Down Touch", &object->rigidBody3D.downTouch);
+		ImGui::Checkbox("Left Touch", &object->rigidBody3D.leftTouch);
+		ImGui::Checkbox("Right Touch", &object->rigidBody3D.rightTouch);
+		ImGui::Checkbox("Front Touch", &object->rigidBody3D.frontTouch);
+		ImGui::Checkbox("Back Touch", &object->rigidBody3D.backTouch);
 		ImGui::Spacing();
 
 		// Spawn Object Button
 		if (ImGui::Button("Spawn Game Object"))
 		{
-			GameObject clone = *newObject;
-			scene->gameMap.saveObjectAt(newObject->getPosition(), clone);
+			GameObject clone = *object;
+			scene->gameMap.saveObjectAt(object->getPosition(), clone);
 			newObject = {};
 			isCreatingObject = false;
-
 		}
 		ImGui::End();
 	}
 
+	/** Entity Window **/
+	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Create Entity");
+	if (ImGui::Button("Create Entity"))
+	{
+		isCreatingEntity = !isCreatingEntity;
+		newObject = new Entity();
+	}
+	if (isCreatingEntity)
+	{
+		/// Create Game Object Window 
+		ImGui::Begin("Create Entity");
+		auto object = static_cast<Entity*>(newObject);
+		
+		if (object == nullptr) { object = new Entity(); }
+		//permaAssertComment(object == nullptr, "No Entity Data @ DeveloperWindow.cpp");
+
+		object->type = OBJECT_ENTITY;
+		object->rigidBody3D.isStatic = false;
+		object->rigidBody3D.translation = Vector3One();
+		object->rigidBody3D.scale = Vector3One();
+		object->meshData = Vector4One();
+		object->defaultColor = Color(255, 0, 0, 255);
+
+		// Altered Object Data
+		ImGui::Text("Entity Data:");
+		ImGui::InputFloat3("Position: ", &object->rigidBody3D.translation.x);
+		ImGui::InputFloat3("Scale: ", &object->rigidBody3D.scale.x);
+		ImGui::InputInt("Mesh Variant", &object->meshVariant, 1, 1);
+		object->meshVariant = Clamp(object->meshVariant, 0, MESH_COUNT);
+		ImGui::Spacing();
+
+		// Texture Data
+		ImGui::InputInt("Block ID: ", &object->blockID);
+		
+		// Status Data
+		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Status");
+		ImGui::InputFloat("Health", &object->health);
+		ImGui::InputFloat("Stamina", &object->stamina);
+		ImGui::InputFloat("Base Damage", &object->baseDamage);
+		ImGui::InputFloat("Base Speed", &object->baseSpeed);
+		ImGui::Spacing();
+		
+		// Object Flags
+		ImGui::TextColored(ImVec4(100, 0, 0, 255), "Flags");
+		ImGui::Checkbox("isEnabled", &object->rigidBody3D.isEnabled);
+		ImGui::Checkbox("isStatic", &object->rigidBody3D.isStatic);
+		ImGui::Checkbox("isVisible", &object->display3DModel);
+		ImGui::Checkbox("Show Collider", &object->displayCollider);
+		ImGui::Checkbox("Up Touch", &object->rigidBody3D.upTouch);
+		ImGui::Checkbox("Down Touch", &object->rigidBody3D.downTouch);
+		ImGui::Checkbox("Left Touch", &object->rigidBody3D.leftTouch);
+		ImGui::Checkbox("Right Touch", &object->rigidBody3D.rightTouch);
+		ImGui::Checkbox("Front Touch", &object->rigidBody3D.frontTouch);
+		ImGui::Checkbox("Back Touch", &object->rigidBody3D.backTouch);
+		ImGui::Spacing();
+
+		// Spawn Object Button
+		if (ImGui::Button("Spawn Game Object"))
+		{
+			GameObject clone = *object;
+			scene->gameMap.saveObjectAt(object->getPosition(), clone);
+			newObject = {};
+			isCreatingEntity = false;
+		}
+		ImGui::End();
+	}
+
+	ImGui::EndChild();
 	ImGui::End();
 }
 

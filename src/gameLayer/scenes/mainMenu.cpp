@@ -108,16 +108,6 @@ void Scene_MainMenuDraw2D(void* manager_ptr, void* object_ptr)
 		}
 	}
 	player.render2D(scene);
-
-
-	DrawTexturePro(
-		assetManager.frame,
-		{ 0,0,(float)assetManager.frame.width, (float)assetManager.frame.height }, //source
-		{ 0, 0, 25, 25 }, //dest
-		{ 0, 0 },// origin (top-left corner)
-		0.0f, // rotation
-		{ 220,250,220,250 } // tint
-	);
 	/// Always Render Player Last (On Top)
 };
 

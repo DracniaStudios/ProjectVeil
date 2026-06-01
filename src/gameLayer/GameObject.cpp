@@ -2,9 +2,9 @@
 
 #include <asserts.h>
 #include <gameMap.h>
-#include <iostream>
 
 #include <AssetManager.h>
+#include <Scene.h>
 
 BoundingBox getBoundingBox(Model mdl, Vector3 pos)
 {
@@ -19,7 +19,7 @@ BoundingBox getBoundingBox(Model mdl, Vector3 pos)
 void GameObject::onEnable()
 {
 	isEnabled = true;
-	
+	ptr = this;
 	// Generate 3D Model
 	if (meshVariant != MESH_CUSTOM)
 	{
@@ -46,15 +46,19 @@ void GameObject::onEnable()
 	// Set Initial Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
 	rigidBody3D.owner = this;
-
-	health = getMaxHealth();
 }
 
 void GameObject::onDisable()
 {
 	isEnabled = false;
-	UnloadModel(model);
 	UnloadMesh(mesh);
+	UnloadModel(model);
+}
+
+// Destroy Object After Delay (in milliseconds)
+void GameObject::onDestroy(Scene* scene)
+{
+	scene->gameMap.removeObject(this);
 }
 
 void GameObject::render2D()
@@ -71,6 +75,7 @@ void GameObject::render3D()
 		DrawModel(model, rigidBody3D.translation, 1.0f, defaultColor);
 		DrawModelWires(model, rigidBody3D.translation, 1.0f, BLACK);
 	}
+
 	if (displayDirection) {
 		/// Show Directions
 		DrawSphere(rigidBody3D.forward + rigidBody3D.translation, 0.1f, RED);
@@ -93,29 +98,30 @@ void GameObject::render3D()
 
 }
 
-void GameObject::update(GameMap gameMap, float deltaTime)
+void setLife(float& life, int time) { life = static_cast<float>(GetTime() + time); }
+
+void GameObject::update(Scene* scene, float deltaTime)
 {
 	if (!isEnabled) { return; }
 
-	lifeSpan += deltaTime;
-
-	health = static_cast<int>(Clamp(health, 0, getMaxHealth()));
 	// Update Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
-	rigidBody3D.update(gameMap, deltaTime);
-	
-	health = Clamp(health, 0, getMaxHealth());
+	rigidBody3D.update(scene->gameMap, deltaTime);
 
-}
+	if (isAlive) { endLife += deltaTime + 1; }
+	lifeSpan += deltaTime;
 
-void GameObject::onHit(float damage)
-{
-	health -= damage;
-	if (health <= 0)
-	{
-		onDisable();
+	if (isDestructable) {
+		if (health <= 0) {
+			if (isAlive) { setLife(endLife, 3); }
+			isAlive = false;
+		}
+		if (lifeSpan > endLife) {
+			onDestroy(scene);
+		}
 	}
 }
+
 
 // Remove Object From Scene and Destroy It.
 // Called When Object's Health Reaches 0, or When Object is Otherwise Destroyed.
