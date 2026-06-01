@@ -14,13 +14,33 @@ I'm using the rigidbody translation which is at the center instead of the camera
 
 [ Added ]
 
+- Added Children to Window areas (BeginChild() and EndChild() ).
+- Added new Delete Object function to Object Inspector.
+- Added new Entity Create Window to Object Inspector.
+
+- Added new Entity Scriptable Object.
+
+- Added Object Types to GameObjects.
+- Added OnDestroy Function to GameObjects.
 
 [ Updated ]
 
+- Updated Object Inspector to include Entity Script.
+- Updated GameObjects to require Scene data to update.
+- Updated Object Inspector to use void* for inspected and new object data.
 
+- Updated GameMap to remove GameObjects that are destroyed.
+
+- Updated GameObjects to become dectructable by health.
+- Updated GameObjects to include a void* reference to self.
 
 [ Fixed ]
 
 - Fixed an issue where object rigidbody flags don't update
+- Fixed an issue where static Rigidbodies would calculate velocity and acceleration (now always 0).
+
 
 [ Removed ]
+
+- Removed frame from Main Menu
+- Removed Entity specific data (stamina, damage) from GameObject
