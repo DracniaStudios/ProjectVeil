@@ -27,15 +27,20 @@ enum ObjectType
 	OBJECT_PLAYER,
 	OBJECT_ENTITY,
 	OBJECT_ITEM,
+	OBJECT_PROJECTILE,
+	OBJECT_ENVIRONMENT,
 	OBJECT_COUNT
 };
 
 struct GameObject 
 {
+private: 
 public:
+	//GameObject();
+	//GameObject(const GameObject& other);
+	//~GameObject();
+
 	/// Data
-	void* ptr = nullptr;
-	int id = 0;
 	const char* name = "GameObject";
 	ObjectType type = OBJECT_GENERIC;
 
@@ -44,7 +49,8 @@ public:
 	bool isAlive = true;
 	float lifeSpan = 0;
 	float endLife = 0;
-	void Decay(float time = 0);
+	float decayTime = 0;
+	void Decay(float time = 0) { decayTime = time; }
 
 	/// Flags
 	bool isEnabled = true;
@@ -58,22 +64,21 @@ public:
 	bool displayCollider = false;
 
 	/// Physics
-	RigidBody3D rigidBody3D = {};
+	RigidBody3D* rigidBody3D = new RigidBody3D{};
 
 	/// Renderer
+	Model* model = new Model{};
+	Mesh* mesh = new Mesh{};
 	Color defaultColor = WHITE;
-	Model model = {};
-	Mesh mesh = {};
 	Vector4 meshData = Vector4One();
 	int meshVariant = MESH_CUBE;
 	
 	// Developer Menu Texture Test
 	int blockID = -1;
 
-	Vector3 getPosition() { return rigidBody3D.translation; }
-	Quaternion getRotation() { return rigidBody3D.rotation; }
-	Vector3 getSize() { return rigidBody3D.scale; }
-	ObjectType getType() const { return type; }
+	Vector3 getPosition() { return rigidBody3D->translation; }
+	Quaternion getRotation() { return rigidBody3D->rotation; }
+	Vector3 getSize() { return rigidBody3D->scale; }
 
 	virtual void update(Scene* scene, float deltaTime);
 	virtual void render2D();
@@ -82,7 +87,7 @@ public:
 	virtual void onDisable();
 	virtual void onDestroy(Scene* scene);
 
-	virtual void onHit(float damage = 0.1f) { health -= damage; };
+	virtual void onHit(const GameObject* collider);
 	virtual float getMaxHealth() { return 10; }
 
 };

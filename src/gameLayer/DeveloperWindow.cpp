@@ -4,56 +4,49 @@
 #include <Player.h>
 #include <AssetManager.h>
 
-void DeveloperWindow::render(SceneManager* manager)
+void DeveloperWindow::update(Player* player)
 {
-	/// Render Main developer Window
+	if (IsKeyPressed(KEY_F1)) { isGameDataActive = !isGameDataActive; }
+	if (IsKeyPressed(KEY_F2)) { isPlayerActive = !isPlayerActive; }
+	if (IsKeyPressed(KEY_F3)) { isCameraActive = !isCameraActive; }
+	if (IsKeyPressed(KEY_F4)) { isInspectorActive = !isInspectorActive; }
+	if (IsKeyPressed(KEY_F5)) { isMiniGameActive = !isMiniGameActive; }
 
-	// Get Scene From Manager
-	auto scene = static_cast<Scene*>(manager->currentScene);
+	/// Update Game Data Windows
+	if (isPlayerActive) showPlayerData(player);
+	if (isCameraActive) showCameraData(player);
+	if (isInspectorActive) showObjectInspector();
+	if (isMiniGameActive) showMiniGameData(player);
+	if (isGameDataActive) showGameData(player);
 
-	// Begin Game Data Window
+}
+
+void DeveloperWindow::showGameData(Player* player)
+{
+
+	auto scene = static_cast<Scene*>(SceneManager::getInstance().currentScene);
 	ImGui::Begin("Game Data");
 
-	// Show Enable Window Flags
-	ImGui::Checkbox("Player Data Window", &isPlayerActive);
-	ImGui::Checkbox("Camera Data Window", &isCameraActive);
-	ImGui::Checkbox("Object Data Window", &isInspectorActive);
-	ImGui::Checkbox("Mini Game Data Window", &isMiniGameActive);
-
-	ImGui::Separator();
-	
 	/// Show Scene Data
 	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Scene Data");
-	
+
 	ImGui::Checkbox("Is 2D Active", &scene->is2DActive);
 	ImGui::Checkbox("Is Mini Game Active", &scene->isMiniActive);
-	
+
 	ImGui::Separator();
-	
+
 	/// Show Game Map Data
 	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Game Map Data");
-	
-	ImGui::Text("Game Object ID: %d", static_cast<int>(scene->gameMap.objectID));
+
 	ImGui::Text("Game Objects: %d", static_cast<int>(scene->gameMap.gameObjects.size()));
 	ImGui::InputFloat3("Game Map Size", &scene->gameMap.size.x);
-	
+
 	ImGui::End();
-
 }
 
-void DeveloperWindow::update(SceneManager* manager, AssetManager* assetManager, Player* player)
+void DeveloperWindow::showPlayerData(Player* player)
 {
-	/// Update Game Data Windows
-	if (isPlayerActive) showPlayerData(manager, player);
-	if (isCameraActive) showCameraData(manager, player);
-	if (isInspectorActive) showObjectInspector(manager, assetManager);
-	if (isMiniGameActive) showMiniGameData(manager, player);
-
-}
-
-void DeveloperWindow::showPlayerData(SceneManager* manager, Player* player)
-{
-	auto scene = manager->currentScene;
+	auto scene = SceneManager::getInstance().currentScene;
 	
 	/// Begin Player Window
 	ImGui::Begin("Player Data");
@@ -73,28 +66,28 @@ void DeveloperWindow::showPlayerData(SceneManager* manager, Player* player)
 	}
 	else
 	{
-		ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody3D.isEnabled);
-		ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.translation.x, player->rigidBody3D.translation.y, player->rigidBody3D.translation.z);
-		ImGui::Text("Player Velocity 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.velocity.x, player->rigidBody3D.velocity.y, player->rigidBody3D.velocity.z);
-		ImGui::Text("Player Scale 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.scale.x, player->rigidBody3D.scale.y, player->rigidBody3D.scale.z);
+		ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody3D->isEnabled);
+		ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D->translation.x, player->rigidBody3D->translation.y, player->rigidBody3D->translation.z);
+		ImGui::Text("Player Velocity 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D->velocity.x, player->rigidBody3D->velocity.y, player->rigidBody3D->velocity.z);
+		ImGui::Text("Player Scale 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D->scale.x, player->rigidBody3D->scale.y, player->rigidBody3D->scale.z);
 
 	}
 
 	/// Show Player Directional Data and Flags
-	ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player->rigidBody3D.forward.x, player->rigidBody3D.forward.y, player->rigidBody3D.forward.z);
-	ImGui::Checkbox("Up Touch", &player->rigidBody3D.upTouch);
-	ImGui::Checkbox("Down Touch", &player->rigidBody3D.downTouch);
-	ImGui::Checkbox("Left Touch", &player->rigidBody3D.leftTouch);
-	ImGui::Checkbox("Right Touch", &player->rigidBody3D.rightTouch);
-	ImGui::Checkbox("Front Touch", &player->rigidBody3D.frontTouch);
-	ImGui::Checkbox("Back Touch", &player->rigidBody3D.backTouch);
+	ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player->rigidBody3D->forward.x, player->rigidBody3D->forward.y, player->rigidBody3D->forward.z);
+	ImGui::Checkbox("Up Touch", &player->rigidBody3D->upTouch);
+	ImGui::Checkbox("Down Touch", &player->rigidBody3D->downTouch);
+	ImGui::Checkbox("Left Touch", &player->rigidBody3D->leftTouch);
+	ImGui::Checkbox("Right Touch", &player->rigidBody3D->rightTouch);
+	ImGui::Checkbox("Front Touch", &player->rigidBody3D->frontTouch);
+	ImGui::Checkbox("Back Touch", &player->rigidBody3D->backTouch);
 
 	ImGui::Separator();
 	ImGui::End();
 
 }
 
-void DeveloperWindow::showCameraData(SceneManager* manager, Player* player)
+void DeveloperWindow::showCameraData(Player* player)
 {
 	/// Show Camera Data Window
 	ImGui::Begin("Camera Data");
@@ -120,11 +113,10 @@ ObjectType getType(void* object)
 	return check->type;
 }
 
-void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* assetManager)
+void DeveloperWindow::showObjectInspector()
 {
-	auto scene = manager->currentScene;
+	auto scene = SceneManager::getInstance().currentScene;
 	auto rng = std::ranlux24_base(std::random_device{}());
-
 
 	/// Show Object Inspector Window
 	ImGui::Begin("Object Inspector");
@@ -135,13 +127,11 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* a
 	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Game Objects");
 	for (auto& object : scene->gameMap.gameObjects)
 	{
-		ImGui::PushID(object.id);
+		ImGui::PushID(object.get());
 
-		std::string displayName =  object.name;
-		displayName += " (ID: " + std::to_string(object.id) + ")";
-		if (ImGui::Button(displayName.c_str()))
+		if (ImGui::Button(object->name))
 		{
-			inspectObject = inspectObject == &object ? nullptr : &object;
+			inspectObject = inspectObject == object.get() ? nullptr : object.get();
 		}
 		ImGui::PopID();
 	}
@@ -167,17 +157,15 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* a
 			check = static_cast<GameObject*>(inspectObject);
 		}
 
-
-		ImGui::Text("ID: %d", check->id);
-		ImGui::Text("Name: %s", check->name);
+		//ImGui::Text("Name: %s", check->name);
 		ImGui::Text("Type: %d", check->type);
 		ImGui::Spacing();
 
 		// RigidBody Data
 		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Rigidbody");
-		ImGui::InputFloat3("Position: ", &check->rigidBody3D.translation.x);
-		ImGui::InputFloat3("Scale: ", &check->rigidBody3D.scale.x);
-		ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", check->rigidBody3D.velocity.x, check->rigidBody3D.velocity.y, check->rigidBody3D.velocity.z);
+		ImGui::InputFloat3("Position: ", &check->rigidBody3D->translation.x);
+		ImGui::InputFloat3("Scale: ", &check->rigidBody3D->scale.x);
+		ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", check->rigidBody3D->velocity.x, check->rigidBody3D->velocity.y, check->rigidBody3D->velocity.z);
 		ImGui::Spacing();
 
 		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Status");
@@ -197,22 +185,22 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* a
 
 		// Object Flags 
 		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Flags");
-		ImGui::Checkbox("isEnabled", &check->rigidBody3D.isEnabled);
-		ImGui::Checkbox("isStatic", &check->rigidBody3D.isStatic);
+		ImGui::Checkbox("isEnabled", &check->rigidBody3D->isEnabled);
+		ImGui::Checkbox("isStatic", &check->rigidBody3D->isStatic);
 		ImGui::Checkbox("isInteractable", &check->isInteractable);
 		ImGui::Checkbox("isVisible", &check->display3DModel);
 		ImGui::Checkbox("Show Collider", &check->displayCollider);
-		ImGui::Checkbox("Up Touch", &check->rigidBody3D.upTouch);
-		ImGui::Checkbox("Down Touch", &check->rigidBody3D.downTouch);
-		ImGui::Checkbox("Left Touch", &check->rigidBody3D.leftTouch);
-		ImGui::Checkbox("Right Touch", &check->rigidBody3D.rightTouch);
-		ImGui::Checkbox("Front Touch", &check->rigidBody3D.frontTouch);
-		ImGui::Checkbox("Back Touch", &check->rigidBody3D.backTouch);
+		ImGui::Checkbox("Up Touch", &check->rigidBody3D->upTouch);
+		ImGui::Checkbox("Down Touch", &check->rigidBody3D->downTouch);
+		ImGui::Checkbox("Left Touch", &check->rigidBody3D->leftTouch);
+		ImGui::Checkbox("Right Touch", &check->rigidBody3D->rightTouch);
+		ImGui::Checkbox("Front Touch", &check->rigidBody3D->frontTouch);
+		ImGui::Checkbox("Back Touch", &check->rigidBody3D->backTouch);
 		ImGui::Spacing();
 
 		if (ImGui::Button("Delete Object"))
 		{
-			scene->gameMap.removeObject(check->id);
+			scene->gameMap.removeObject(check);
 			inspectObject = nullptr;
 		}
 	}
@@ -242,9 +230,9 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* a
 		//permaAssertComment(object == nullptr, "No Object Data @ DeveloperWindow.cpp");
 		/** Base Object Data **/
 		object->type = OBJECT_GENERIC;
-		object->rigidBody3D.isStatic = true;
-		object->rigidBody3D.translation = Vector3One();
-		object->rigidBody3D.scale = Vector3One();
+		object->rigidBody3D->isStatic = true;
+		object->rigidBody3D->translation = Vector3One();
+		object->rigidBody3D->scale = Vector3One();
 		object->meshData = Vector4One();
 		object->defaultColor = Color(
 			getRandomInt(rng, 0, 255),
@@ -255,8 +243,8 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* a
 		
 		// Altered Object Data
 		ImGui::Text("Object Data:");
-		ImGui::InputFloat3("Position: ", &object->rigidBody3D.translation.x);
-		ImGui::InputFloat3("Scale: ", &object->rigidBody3D.scale.x);
+		ImGui::InputFloat3("Position: ", &object->rigidBody3D->translation.x);
+		ImGui::InputFloat3("Scale: ", &object->rigidBody3D->scale.x);
 		ImGui::InputInt("Mesh Variant", &object->meshVariant, 1, 1);
 		object->meshVariant = Clamp(object->meshVariant, 0, MESH_COUNT);
 		ImGui::Spacing();
@@ -266,16 +254,16 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* a
 		
 		// Object Flags
 		ImGui::TextColored(ImVec4(100, 0, 0, 255), "Flags");
-		ImGui::Checkbox("isEnabled", &object->rigidBody3D.isEnabled);
-		ImGui::Checkbox("isStatic", &object->rigidBody3D.isStatic);
+		ImGui::Checkbox("isEnabled", &object->rigidBody3D->isEnabled);
+		ImGui::Checkbox("isStatic", &object->rigidBody3D->isStatic);
 		ImGui::Checkbox("isVisible", &object->display3DModel);
 		ImGui::Checkbox("Show Collider", &object->displayCollider);
-		ImGui::Checkbox("Up Touch", &object->rigidBody3D.upTouch);
-		ImGui::Checkbox("Down Touch", &object->rigidBody3D.downTouch);
-		ImGui::Checkbox("Left Touch", &object->rigidBody3D.leftTouch);
-		ImGui::Checkbox("Right Touch", &object->rigidBody3D.rightTouch);
-		ImGui::Checkbox("Front Touch", &object->rigidBody3D.frontTouch);
-		ImGui::Checkbox("Back Touch", &object->rigidBody3D.backTouch);
+		ImGui::Checkbox("Up Touch", &object->rigidBody3D->upTouch);
+		ImGui::Checkbox("Down Touch", &object->rigidBody3D->downTouch);
+		ImGui::Checkbox("Left Touch", &object->rigidBody3D->leftTouch);
+		ImGui::Checkbox("Right Touch", &object->rigidBody3D->rightTouch);
+		ImGui::Checkbox("Front Touch", &object->rigidBody3D->frontTouch);
+		ImGui::Checkbox("Back Touch", &object->rigidBody3D->backTouch);
 		ImGui::Spacing();
 
 		// Spawn Object Button
@@ -306,16 +294,16 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* a
 		//permaAssertComment(object == nullptr, "No Entity Data @ DeveloperWindow.cpp");
 
 		object->type = OBJECT_ENTITY;
-		object->rigidBody3D.isStatic = false;
-		object->rigidBody3D.translation = Vector3One();
-		object->rigidBody3D.scale = Vector3One();
+		object->rigidBody3D->isStatic = false;
+		object->rigidBody3D->translation = Vector3One();
+		object->rigidBody3D->scale = Vector3One();
 		object->meshData = Vector4One();
 		object->defaultColor = Color(255, 0, 0, 255);
 
 		// Altered Object Data
 		ImGui::Text("Entity Data:");
-		ImGui::InputFloat3("Position: ", &object->rigidBody3D.translation.x);
-		ImGui::InputFloat3("Scale: ", &object->rigidBody3D.scale.x);
+		ImGui::InputFloat3("Position: ", &object->rigidBody3D->translation.x);
+		ImGui::InputFloat3("Scale: ", &object->rigidBody3D->scale.x);
 		ImGui::InputInt("Mesh Variant", &object->meshVariant, 1, 1);
 		object->meshVariant = Clamp(object->meshVariant, 0, MESH_COUNT);
 		ImGui::Spacing();
@@ -333,16 +321,16 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* a
 		
 		// Object Flags
 		ImGui::TextColored(ImVec4(100, 0, 0, 255), "Flags");
-		ImGui::Checkbox("isEnabled", &object->rigidBody3D.isEnabled);
-		ImGui::Checkbox("isStatic", &object->rigidBody3D.isStatic);
+		ImGui::Checkbox("isEnabled", &object->rigidBody3D->isEnabled);
+		ImGui::Checkbox("isStatic", &object->rigidBody3D->isStatic);
 		ImGui::Checkbox("isVisible", &object->display3DModel);
 		ImGui::Checkbox("Show Collider", &object->displayCollider);
-		ImGui::Checkbox("Up Touch", &object->rigidBody3D.upTouch);
-		ImGui::Checkbox("Down Touch", &object->rigidBody3D.downTouch);
-		ImGui::Checkbox("Left Touch", &object->rigidBody3D.leftTouch);
-		ImGui::Checkbox("Right Touch", &object->rigidBody3D.rightTouch);
-		ImGui::Checkbox("Front Touch", &object->rigidBody3D.frontTouch);
-		ImGui::Checkbox("Back Touch", &object->rigidBody3D.backTouch);
+		ImGui::Checkbox("Up Touch", &object->rigidBody3D->upTouch);
+		ImGui::Checkbox("Down Touch", &object->rigidBody3D->downTouch);
+		ImGui::Checkbox("Left Touch", &object->rigidBody3D->leftTouch);
+		ImGui::Checkbox("Right Touch", &object->rigidBody3D->rightTouch);
+		ImGui::Checkbox("Front Touch", &object->rigidBody3D->frontTouch);
+		ImGui::Checkbox("Back Touch", &object->rigidBody3D->backTouch);
 		ImGui::Spacing();
 
 		// Spawn Object Button
@@ -362,9 +350,9 @@ void DeveloperWindow::showObjectInspector(SceneManager* manager, AssetManager* a
 
 int currentGameID = 0;
 
-void DeveloperWindow::showMiniGameData(SceneManager* manager, Player* player)
+void DeveloperWindow::showMiniGameData(Player* player)
 {
-	auto scene = manager->currentScene;
+	auto scene = SceneManager::getInstance().currentScene;
 	
 	/// Begin Mini Game Data Window
 	ImGui::Begin("Mini Game Data");

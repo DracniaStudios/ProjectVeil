@@ -12,9 +12,10 @@ int main()
 	SetTraceLogLevel(LOG_FATAL);
 #endif
 
-	//SetConfigFlags(FLAG_WINDOW_MAXIMIZED);
-	//SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-	SetExitKey(KEY_F10);
+	SetConfigFlags(FLAG_WINDOW_MAXIMIZED);
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+
+	SetExitKey(KEY_F9);
 	SetTargetFPS(60);
 
 	InitWindow(1600, 900, "Project: Veil");
@@ -49,6 +50,8 @@ int main()
 		ImGui::PopStyleColor(2);
 
 #pragma endregion
+
+		if (IsKeyPressed(KEY_F11)) { ToggleFullscreen(); }
 
 		if (!update_game())
 		{

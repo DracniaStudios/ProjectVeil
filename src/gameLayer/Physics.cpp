@@ -30,21 +30,20 @@ void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 	float hz = scale.z * 0.5f;
 	
 	// Check each face with a raycast and update touch flags accordingly
-	/*
 	upTouch = hitWithinRange(generateRay({ c.x, c.y + hy, c.z }, up));
 	downTouch = hitWithinRange(generateRay({ c.x, c.y - hy, c.z }, down));
 	frontTouch = hitWithinRange(generateRay({ c.x, c.y, c.z + hz }, forward));
 	backTouch = hitWithinRange(generateRay({ c.x, c.y, c.z - hz }, back));
 	rightTouch = hitWithinRange(generateRay({ c.x + hx, c.y, c.z }, right));
 	leftTouch = hitWithinRange(generateRay({ c.x - hx, c.y, c.z }, left));
-	*/
-	
+	/*
 	upTouch = upTouch || hitWithinRange(generateRay({ c.x, c.y + hy, c.z }, up));
 	downTouch = downTouch || hitWithinRange(generateRay({ c.x, c.y - hy, c.z }, down));
 	frontTouch = frontTouch || hitWithinRange(generateRay({ c.x, c.y, c.z + hz }, forward));
 	backTouch = backTouch || hitWithinRange(generateRay({ c.x, c.y, c.z - hz }, back));
 	rightTouch = rightTouch || hitWithinRange(generateRay({ c.x + hx, c.y, c.z }, right));
 	leftTouch = leftTouch || hitWithinRange(generateRay({ c.x - hx, c.y, c.z }, left));
+	*/
 }
 
 bool RigidBody3D::isCollidingWith(const RigidBody3D& other) const
@@ -102,7 +101,7 @@ void RigidBody3D::resolveConstrains(RigidBody3D* other)
 	{
 
 		// Call Collision Event on Owner
-		onCollision();
+		//owner->onHit(other->owner);
 
 		// Set collidingWith to other object's owner
 		if (other->owner)
@@ -136,7 +135,7 @@ void RigidBody3D::resolveConstrains(RigidBody3D* otherObjects, int objectCount)
 			checkRayCollision(otherObjects[i]);
 			
 			// Call Collision Event on Owner
-			onCollision();
+			owner->onHit(otherObjects[i].owner);
 			
 			if (otherObjects[i].owner)
 			{
@@ -268,6 +267,10 @@ void RigidBody3D::resolveCollision(RigidBody3D& other)
 
 void RigidBody3D::updateForce(GameMap gameMap, float deltaTime)
 {
+	// Control Air Time
+	if (downTouch){ airTime = 0;}
+	else { airTime += deltaTime; }
+
 	if (airTime > 0)
 	{
 		velocity.y += deltaTime;
@@ -294,6 +297,7 @@ void RigidBody3D::updateForce(GameMap gameMap, float deltaTime)
 	// Apply Touch Detection
 	
 	// Ground Detection
+	/*
 	if (translation.y < 0.0f + scale.y / 2)
 	{
 		translation.y = 0.0f + scale.y / 2;
@@ -305,10 +309,11 @@ void RigidBody3D::updateForce(GameMap gameMap, float deltaTime)
 		downTouch = false;
 		airTime += deltaTime;
 	}
+	*/
 
 	for (auto& obj : gameMap.gameObjects)
 	{
-		checkRayCollision(obj.rigidBody3D);
+		checkRayCollision(*obj->rigidBody3D);
 	}
 
 }
@@ -331,11 +336,6 @@ void RigidBody3D::update(GameMap gameMap,float deltaTime)
 	// Update collision box to match current position and scale
 	collisionBox.min = { translation.x - scale.x * 0.5f, translation.y - scale.y * 0.5f, translation.z - scale.z * 0.5f };
 	collisionBox.max = { translation.x + scale.x * 0.5f, translation.y + scale.y * 0.5f, translation.z + scale.z * 0.5f };
-}
-
-void RigidBody3D::onCollision()
-{
-	//addForce(Vector3Negate(forward), 50);
 }
 
 /// ------------------- RigidBody2D Collision Detection and Resolution ------------------- ///

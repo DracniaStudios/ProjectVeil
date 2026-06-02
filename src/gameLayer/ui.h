@@ -32,6 +32,20 @@ Rectangle shrinkRectanglePercentage(Rectangle r, float percentageX, float percen
 
 struct UIEngine
 {
+public:
+
+	// Delete, copy, and move functions to prevent duplication
+	UIEngine(const UIEngine&) = delete;
+	UIEngine& operator=(const UIEngine&) = delete;
+	UIEngine(UIEngine&&) = delete;
+	UIEngine& operator=(UIEngine&&) = delete;
+
+	// Global Access point to the UIEngine instance
+	static UIEngine& getInstance() {
+		static UIEngine instance; // Guaranteed to be destroyed and instantiated on first use
+		return instance;
+	}
+
 	int widgetId;
 
 	enum Type
@@ -56,8 +70,9 @@ struct UIEngine
 
 	std::vector<Widget> widgets;
 
-
 	void updateAndRender();
+private:
+	UIEngine() = default;
 };
 
 void drawText(std::string text, Rectangle smallerRect, float yOffset = 0);

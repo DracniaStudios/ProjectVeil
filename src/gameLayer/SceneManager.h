@@ -3,24 +3,35 @@
 #ifndef SCENEMANAGER_H
 #define SCENEMANAGER_H
 
-#include <stdlib.h>
-#include <vector>
 #include <Scene.h>
 #include <Transition.h>
 
-typedef struct SceneManager {
+typedef struct SceneManager
+{
+private:
+	SceneManager() = default; // Private constructor to prevent instantiation
+	
+public:
+	// Delete, copy, and move functions to prevent duplication
+	SceneManager(const SceneManager&) = delete;
+	SceneManager& operator=(const SceneManager&) = delete;
+	SceneManager(SceneManager&&) = delete;
+	SceneManager& operator=(SceneManager&&) = delete;
+	
+	// Global access point to the SceneManager instance
+	static SceneManager& getInstance() {
+		static SceneManager instance; // Guaranteed to be destroyed and instantiated on first use
+		return instance;
+	}
+
+	/** Scene Manager Data **/
 	Scene* scenes[255]; /**< The Scene list */
 	Scene* currentScene; /**< The current Scene active */
 	Scene* nextScene; /**< The next Scene to activate */
 	Transition* transition; /**< The Transition between two Scene */
 
-	MiniGame* miniGames[10]; /**< The Mini Game List */
-	MiniGame* currentMiniGame; /**< The current Mini Game */
-	MiniGame* nextMiniGame; /**< The next Game */
-
 	Camera3D camera3D;
 	Camera2D camera2D;
-
 } SceneManager;
 
 /**

@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
-// Version: 0.1.26
-// Date: 2026-06-06 (First Video Release)
-// Date: 2026-05-31 (Current Development Date)
+// Version: 0.1.28
+// Date: 2026-06-02 (Combat System)
+// Date: 2026-06-2 (Current Development Date)
 
 I keep doing the rigidbody forward instead of the camera forward
 I'm using the rigidbody translation which is at the center instead of the camera which is the head.
@@ -11,36 +11,32 @@ I'm using the rigidbody translation which is at the center instead of the camera
 - Found an issue where the developer window doesn't convert gameObject color's correctly.
 - Found an issue where the Mini Game scenes use only percentage placement for objects with no pixel optionality.
 - Found an issue where objects can't load object textures and return null ( just black )
+- Found an issue where GameMap can't load GameObject pointers (Known and Major Issue)
 
 [ Added ]
 
-- Added Children to Window areas (BeginChild() and EndChild() ).
-- Added new Delete Object function to Object Inspector.
-- Added new Entity Create Window to Object Inspector.
-
-- Added new Entity Scriptable Object.
-
-- Added Object Types to GameObjects.
-- Added OnDestroy Function to GameObjects.
+- Added new Projectile and Environment Object Types.
 
 [ Updated ]
 
-- Updated Object Inspector to include Entity Script.
-- Updated GameObjects to require Scene data to update.
-- Updated Object Inspector to use void* for inspected and new object data.
+- Updated SceneManager to have a global Instance and made it a singleton for easier access across scripts.
+- Updated AssetManager to have a global Instance and made it a singleton for easier access across scripts.
 
-- Updated GameMap to remove GameObjects that are destroyed.
+- Updated Entities to contain an attack and onHit function
 
-- Updated GameObjects to become dectructable by health.
-- Updated GameObjects to include a void* reference to self.
+- Updated RigidBody to become a pointer object.
+- Updated Model to become a pointer object.
+- Updated Mesh to become a pointer object.
+
+- Updated Entity Attacks to craete projectiles ( temporary ).
 
 [ Fixed ]
 
-- Fixed an issue where object rigidbody flags don't update
-- Fixed an issue where static Rigidbodies would calculate velocity and acceleration (now always 0).
+- Fixed an issue where GameObjects wouldn't reference their Rigidbody3D pointer ( major issue )
+- Fixed an issue where GameObjects wouldn't decay on Destroy.
 
 
 [ Removed ]
 
-- Removed frame from Main Menu
-- Removed Entity specific data (stamina, damage) from GameObject
+- Removed Object pointer and Id identifiers.
+- Removed onCollision function from RigidBody3D.

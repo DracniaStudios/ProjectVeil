@@ -6,8 +6,6 @@
 
 #include <Entity.h>
 
-struct SceneManager;
-struct Scene;
 struct Player;
 struct PlayerCamera;
 
@@ -48,20 +46,20 @@ public:
 	bool* IsFiring() { return &isFiring; }
 
 	// Render And Update
-	void render2D(Scene* scene);
-	void render3D(Scene* scene);
+	void render2D();
+	void render3D();
 	void onEnable() override;
 	void onDisable() override;
-	void update2D(SceneManager* manager, float deltaTime, bool canMove = true);
-	void update3D(SceneManager* manager, float deltaTime);
+	void update2D(float deltaTime, bool canMove = true);
+	void update3D(float deltaTime);
 	
 	// Status Functions
 	float getMaxHealth() override { return 20; }
 	float getMaxStamina() override { return 100; }
 
 	// Combat Functions
-	void Fire(Scene* scene);
-	void FireLaser(Scene* scene);
+	void Fire();
+	void FireLaser();
 
 };
 

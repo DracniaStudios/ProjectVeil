@@ -280,7 +280,6 @@ public:
 	float getPenetrationDepth(const RigidBody3D& other) const;
 	void checkRayCollision(const RigidBody3D& other);
 	GameObject* getCollider() const { return collidingWith; }
-	virtual void onCollision();
 
 	/// Constraint Resolution
 	void resolveConstrains(RigidBody3D* otherObject);

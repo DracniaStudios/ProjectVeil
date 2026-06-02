@@ -1,20 +1,17 @@
 #include "mainMenu.h"
 
-#include <DeveloperWindow.h>
-
 bool isImGuiEnabled = false;
 
-Player player = {};
-AssetManager assetManager = {};
-GameObject* selectedObject = {};
-DeveloperWindow developerConsole = {};
-Inventory inventory = {};
+Player player{};
+GameObject* selectedObject{};
+Inventory inventory{};
 int miniGameID = 0;
 
-Vector3 cubePosition = { 0, 0, 0 };
-
-GameObject* selectObject(Scene* scene, Camera& cam)
+GameObject* selectObject(Camera& cam)
 {
+
+	auto scene = SceneManager::getInstance().currentScene;
+
 	Ray selectRay;
 	selectRay.position = cam.position; // Adjust the ray's origin to be at the player's head height
 	selectRay.direction = player.camera.forward;
@@ -23,17 +20,17 @@ GameObject* selectObject(Scene* scene, Camera& cam)
 	{
 		for (auto& object : scene->gameMap.gameObjects)
 		{
-			if (object.isEnabled)
+			if (object->isEnabled)
 			{
 				BoundingBox objectBox = {
-					object.getPosition() - object.getSize() / 2,
-					object.getPosition() + object.getSize() / 2
+					object->getPosition() - object->getSize() / 2,
+					object->getPosition() + object->getSize() / 2
 				};
 				if (GetRayCollisionBox(selectRay, objectBox).hit)
 				{
-					if (!object.canBeSelected) { continue; }
+					if (!object->canBeSelected) { continue; }
 
-					return &object;
+					return object.get();
 				}
 			}
 		}
@@ -49,16 +46,14 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 	auto scene = static_cast<Scene*>(object_ptr);
 	auto& cam = manager->camera3D;
 
-	scene->gameMap.gameObjects[0].rigidBody3D.scale = scene->gameMap.getMapSize();
-
 	/// Update Scene Data
 	if (scene->is2DActive)
 	{
-		player.update2D(manager, deltaTime);
+		player.update2D(deltaTime);
 	}
 	else
 	{
-		player.update3D(manager, deltaTime);
+		player.update3D(deltaTime);
 		player.camera.UpdateCameraFPS(&cam, &player);
 	}
 
@@ -70,7 +65,7 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 	/// Player Select Objects
 	if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
 	{
-		selectedObject = selectObject(scene, cam);
+		selectedObject = selectObject(cam);
 	}
 
 	/// Switch to 2D Mode
@@ -79,11 +74,10 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 		scene->is2DActive = !scene->is2DActive;
 	}
 #pragma region ImGui
-	if (IsKeyPressed(KEY_F10)) { isImGuiEnabled = !isImGuiEnabled; }
+	if (IsKeyPressed(KEY_GRAVE)) { isImGuiEnabled = !isImGuiEnabled; }
 
 	if (isImGuiEnabled) {
-		developerConsole.render(manager);
-		developerConsole.update(manager, &assetManager, &player);
+		DeveloperWindow::getInstance().update(&player);
 	}
 #pragma endregion
 }
@@ -107,7 +101,7 @@ void Scene_MainMenuDraw2D(void* manager_ptr, void* object_ptr)
 			scene->miniGame->draw(manager_ptr, object_ptr);
 		}
 	}
-	player.render2D(scene);
+	player.render2D();
 	/// Always Render Player Last (On Top)
 };
 
@@ -119,12 +113,12 @@ void Scene_MainMenuDraw3D(void* manager_ptr, void* object_ptr)
 	DrawGrid(100.0f, 1.0f);
 	
 	for (auto& object : scene->gameMap.gameObjects) {
-		object.render3D();
+		object->render3D();
 	}
 	
 	// Weird Interaction Between Rendering Ray and layer Objects
 
-	player.render3D(scene);
+	player.render3D();
 }
 
 Scene* Scene_MainMenuConstruct()
@@ -138,21 +132,11 @@ Scene* Scene_MainMenuConstruct()
 	scene->gameMap.create(Vector3(100, 1, 100));
 	
 	// Add Player To Objects
-	scene->gameMap.gameObjects.push_back(player);
-	scene->gameMap.objectID++;
+	scene->gameMap.gameObjects.push_back(std::make_unique<Player>(player));
 	
 	player.name = "Player";
 	player.onEnable();
-	/*
-	for (int i = 0; i < 25; i++)
-	{
-		Vector3 newPos = Vector3{ static_cast<float>(i), 5, 0 };
-		
-		GameObject newObject;
-		newObject.name = "GameObject: " + i;
-		newObject.blockID = i;
-		scene->gameMap.saveObjectAt(newPos, newObject);
-	}
-	*/
+	player.rigidBody3D->teleport(Vector3(0, 5, 0));
+
 	return scene;
 }

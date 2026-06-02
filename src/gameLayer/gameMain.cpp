@@ -1,29 +1,27 @@
 #include "gameMain.h"
 
-SceneManager manager = {};
 bool lockMouse = true;
 
 bool init_game()
 {
 	InitAudioDevice();
-	SceneManager_init(&manager);
-	AssetManager assetManager = {};
-	assetManager.loadAll();
+	SceneManager_init(&SceneManager::getInstance());
+	AssetManager::getInstance().loadAll();
 	
 	// Camera
-	manager.camera3D.position = Vector3{ 0, 10, 10 };
-	manager.camera3D.target = Vector3{ 0, 0, 0 };
-	manager.camera3D.up = Vector3(0.0f, 1.0f, 0.0f);
-	manager.camera3D.fovy = 90;
-	manager.camera3D.projection = CAMERA_PERSPECTIVE;
+	SceneManager::getInstance().camera3D.position = Vector3{ 0, 10, 10 };
+	SceneManager::getInstance().camera3D.target = Vector3{ 0, 0, 0 };
+	SceneManager::getInstance().camera3D.up = Vector3(0.0f, 1.0f, 0.0f);
+	SceneManager::getInstance().camera3D.fovy = 90;
+	SceneManager::getInstance().camera3D.projection = CAMERA_PERSPECTIVE;
 
-	manager.camera2D.zoom = 1.0f;// Scale Screen To World (1 pixel = 1 unit)
-	manager.camera2D.rotation = 0.0f;
-	manager.camera2D.offset = Vector2{ 0, 0 };
-	manager.camera2D.target = Vector2{ 0, 0 };
+	SceneManager::getInstance().camera2D.zoom = 1.0f;// Scale Screen To World (1 pixel = 1 unit)
+	SceneManager::getInstance().camera2D.rotation = 0.0f;
+	SceneManager::getInstance().camera2D.offset = Vector2{ 0, 0 };
+	SceneManager::getInstance().camera2D.target = Vector2{ 0, 0 };
 
 	// Go To Main Menu
-	SceneManager_push(&manager, SCENE_MAIN_MENU);
+	SceneManager_push(&SceneManager::getInstance(), SCENE_MAIN_MENU);
 	
 	return true;
 }
@@ -37,9 +35,9 @@ bool update_game()
 	// Update Input System
 
 	/// Update and Draw Scene
-	SceneManager_update(&manager, deltaTime);
+	SceneManager_update(&SceneManager::getInstance(), deltaTime);
 
-	SceneManager_draw(&manager);
+	SceneManager_draw(&SceneManager::getInstance());
 	
 	if (IsKeyPressed(KEY_F1)) { lockMouse = !lockMouse; }
 	/*

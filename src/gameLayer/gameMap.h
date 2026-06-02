@@ -5,11 +5,11 @@
 #include <raylib.h>
 #include <vector>
 #include <GameObject.h>
+#include <memory>
 
 struct GameMap {
 
-	std::vector<GameObject> gameObjects = {};
-	int objectID = 0;
+	std::vector<std::unique_ptr<GameObject>> gameObjects = {};
 
 	Vector3 size = {10, 10, 10};
 	void create(Vector3 size);
@@ -19,7 +19,7 @@ struct GameMap {
 	GameObject& saveObjectAt(int x, int y, int z, GameObject& object);
 
 	void removeObject(GameObject* object);
-	void removeObject(int id);
+	void flushRemovals();
 
 	// Return Data
 	Vector3 getMapSize() {	return Vector3(size.x, size.y, size.z);}

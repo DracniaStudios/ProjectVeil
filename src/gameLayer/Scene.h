@@ -13,6 +13,7 @@
 #include <AssetManager.h>
 #include <MiniGame.h>
 #include <Inventory.h>
+#include <DeveloperWindow.h>
 
 #include <stdlib.h>
 #include <iostream>

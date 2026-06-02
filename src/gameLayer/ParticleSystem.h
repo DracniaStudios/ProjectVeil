@@ -12,14 +12,14 @@ typedef struct Particle {
 } Particle;
 
 class ParticleSystem {
-private:
-	std::vector<Particle> particles;
 
 public:
 	bool isLoop = true;
-	ParticleSystem();
-	~ParticleSystem();
 	void Update();
 	void Draw();
 	void Emit(int count);
+private:
+	ParticleSystem();
+	~ParticleSystem();
+	std::vector<Particle> particles;
 };

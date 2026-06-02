@@ -10,7 +10,7 @@ struct Scene;
 struct Entity : public GameObject
 {
 private:
-
+	float attackTime = 1;
 public:
 
 	/** Status **/
@@ -25,7 +25,13 @@ public:
 	virtual void render3D() override;
 	virtual void update(Scene* scene, float deltaTime) override;
 
-	virtual float getMaxStamina() { return 100; };
+	/** Statuss **/
+	virtual float getMaxStamina() { return 100; }
+
+	/** Combat Functions **/
+	virtual void onHit(const GameObject* collider) override;
+	virtual void Attack();
+
 };
 
 #endif
