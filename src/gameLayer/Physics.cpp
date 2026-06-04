@@ -36,14 +36,6 @@ void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 	backTouch = hitWithinRange(generateRay({ c.x, c.y, c.z - hz }, back));
 	rightTouch = hitWithinRange(generateRay({ c.x + hx, c.y, c.z }, right));
 	leftTouch = hitWithinRange(generateRay({ c.x - hx, c.y, c.z }, left));
-	/*
-	upTouch = upTouch || hitWithinRange(generateRay({ c.x, c.y + hy, c.z }, up));
-	downTouch = downTouch || hitWithinRange(generateRay({ c.x, c.y - hy, c.z }, down));
-	frontTouch = frontTouch || hitWithinRange(generateRay({ c.x, c.y, c.z + hz }, forward));
-	backTouch = backTouch || hitWithinRange(generateRay({ c.x, c.y, c.z - hz }, back));
-	rightTouch = rightTouch || hitWithinRange(generateRay({ c.x + hx, c.y, c.z }, right));
-	leftTouch = leftTouch || hitWithinRange(generateRay({ c.x - hx, c.y, c.z }, left));
-	*/
 }
 
 bool RigidBody3D::isCollidingWith(const RigidBody3D& other) const
@@ -87,28 +79,33 @@ float RigidBody3D::getPenetrationDepth(const RigidBody3D& other) const
 
 // ─── Constraint Resolution ─────────────────────────────────────────────────
 
-void RigidBody3D::resolveConstrains(RigidBody3D* other)
+void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 {
-	if (other == this) return;
-		
-	// Reset Position to prevent tunneling
-	resolveCollision(*other);
-	
+	if (&other->rigidBody3D == this) return;
+
 	// Update Collision Flags
-	checkRayCollision(*other);
-	
-	if (isCollidingWith(*other))
+	checkRayCollision(other->rigidBody3D);
+
+	if (isCollidingWith(other->rigidBody3D))
 	{
 
 		// Call Collision Event on Owner
-		//owner->onHit(other->owner);
-
-		// Set collidingWith to other object's owner
-		if (other->owner)
+		self->onCollision(other);
+		
+		if (self->type == OBJECT_ENTITY)
 		{
-			collidingWith = other->owner;
+			auto obj = (Entity*)other;
 		}
 
+		if (other->type == OBJECT_PROJECTILE)
+		{
+			auto obj = (Entity*)other;
+			auto selfEntity = (Entity*)self;
+			selfEntity->takeDamage(obj->baseDamage);
+		}
+
+		// Set colliding with to other object's owner
+		collidingWith = other;
 		isColliding = true;
 	}
 	else
@@ -116,42 +113,52 @@ void RigidBody3D::resolveConstrains(RigidBody3D* other)
 		collidingWith = nullptr;
 		isColliding = false;
 	}
+	
+	// Reset Position to prevent tunneling
+	resolveCollision(other->rigidBody3D);
 }
-
-void RigidBody3D::resolveConstrains(RigidBody3D* otherObjects, int objectCount)
+/*
+void RigidBody3D::resolveConstrains(Entity* self, Entity* other)
 {
-	if (otherObjects == nullptr || objectCount <= 0)return;
+	if (&other->rigidBody3D == this) return;
 
-	for (int i = 0; i < objectCount; i++)
+	// Update Collision Flags
+	checkRayCollision(other->rigidBody3D);
+
+	if (isCollidingWith(other->rigidBody3D))
 	{
-		if (&otherObjects[i] == this) continue;
 
-		if (isCollidingWith(otherObjects[i]))
+		// Call Collision Event on Owner
+		self->onCollision(other);
+		
+		if (self->type == OBJECT_ENTITY)
 		{
-			// Reset Position to prevent tunneling
-			resolveCollision(otherObjects[i]);
-			
-			// Update Collision Flags 
-			checkRayCollision(otherObjects[i]);
-			
-			// Call Collision Event on Owner
-			owner->onHit(otherObjects[i].owner);
-			
-			if (otherObjects[i].owner)
-			{
-				collidingWith = otherObjects[i].owner;
-			}
+			auto obj = (Entity*)other;
+			auto selfEntity = (Entity*)self;
+			selfEntity->onHit(obj);
+		}
 
-			isColliding = true;
-		}
-		else
+		if (other->type == OBJECT_PROJECTILE)
 		{
-			collidingWith = nullptr;
-			isColliding = false;
+			auto obj = (Entity*)other;
+			auto selfEntity = (Entity*)self;
+			selfEntity->takeDamage(obj->baseDamage);
 		}
+
+		// Set colliding with to other object's owner
+		collidingWith = other;
+		isColliding = true;
 	}
+	else
+	{
+		collidingWith = nullptr;
+		isColliding = false;
+	}
+	
+	// Reset Position to prevent tunneling
+	resolveCollision(other->rigidBody3D);
 }
-
+*/
 // ─── Collision Response ────────────────────────────────────────────────────
 
 void RigidBody3D::resolveCollision(RigidBody3D& other)
@@ -313,7 +320,7 @@ void RigidBody3D::updateForce(GameMap gameMap, float deltaTime)
 
 	for (auto& obj : gameMap.gameObjects)
 	{
-		checkRayCollision(*obj->rigidBody3D);
+		checkRayCollision(obj.rigidBody3D);
 	}
 
 }

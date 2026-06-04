@@ -4,8 +4,6 @@
 
 #include <raylib.h>
 #include <raymath.h>
-#include <cmath>
-#include <string>
 
 #if defined(RAYMATH_DISABLE_CPP_OPERATORS)
 // Vector2 operator overloads (only defined when raymath C++ operators are disabled)
@@ -236,8 +234,6 @@ private:
 	// pointer to owning GameObject
 	GameObject* collidingWith = nullptr;
 public:
-	// pointer to owner of current object
-	GameObject* owner = nullptr;
 
 	Vector3 lastPosition = {};
 	Vector3 velocity = {};
@@ -282,8 +278,7 @@ public:
 	GameObject* getCollider() const { return collidingWith; }
 
 	/// Constraint Resolution
-	void resolveConstrains(RigidBody3D* otherObject);
-	void resolveConstrains(RigidBody3D* otherObjects, int objectCount);
+	void resolveConstrains(GameObject* self, GameObject* otherObject);
 	void resolveCollision(RigidBody3D& other);
 
 

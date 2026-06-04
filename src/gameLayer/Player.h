@@ -54,8 +54,6 @@ public:
 	void update3D(float deltaTime);
 	
 	// Status Functions
-	float getMaxHealth() override { return 20; }
-	float getMaxStamina() override { return 100; }
 
 	// Combat Functions
 	void Fire();

@@ -20,17 +20,17 @@ GameObject* selectObject(Camera& cam)
 	{
 		for (auto& object : scene->gameMap.gameObjects)
 		{
-			if (object->isEnabled)
+			if (object.isEnabled)
 			{
 				BoundingBox objectBox = {
-					object->getPosition() - object->getSize() / 2,
-					object->getPosition() + object->getSize() / 2
+					object.getPosition() - object.getSize() / 2,
+					object.getPosition() + object.getSize() / 2
 				};
 				if (GetRayCollisionBox(selectRay, objectBox).hit)
 				{
-					if (!object->canBeSelected) { continue; }
+					if (!object.canBeSelected) { continue; }
 
-					return object.get();
+					return &object;
 				}
 			}
 		}
@@ -74,11 +74,8 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 		scene->is2DActive = !scene->is2DActive;
 	}
 #pragma region ImGui
-	if (IsKeyPressed(KEY_GRAVE)) { isImGuiEnabled = !isImGuiEnabled; }
-
-	if (isImGuiEnabled) {
-		DeveloperWindow::getInstance().update(&player);
-	}
+	DeveloperWindow::getInstance().update(&player);
+	
 #pragma endregion
 }
 
@@ -113,7 +110,7 @@ void Scene_MainMenuDraw3D(void* manager_ptr, void* object_ptr)
 	DrawGrid(100.0f, 1.0f);
 	
 	for (auto& object : scene->gameMap.gameObjects) {
-		object->render3D();
+		object.render3D();
 	}
 	
 	// Weird Interaction Between Rendering Ray and layer Objects
@@ -132,11 +129,19 @@ Scene* Scene_MainMenuConstruct()
 	scene->gameMap.create(Vector3(100, 1, 100));
 	
 	// Add Player To Objects
-	scene->gameMap.gameObjects.push_back(std::make_unique<Player>(player));
+	scene->gameMap.gameObjects.push_back(player);
 	
 	player.name = "Player";
 	player.onEnable();
-	player.rigidBody3D->teleport(Vector3(0, 5, 0));
+	player.rigidBody3D.teleport(Vector3(0, 5, 0));
+
+	Entity target = {};
+	target.name = "Target";
+	target.type = OBJECT_ENTITY;
+	target.rigidBody3D.translation = Vector3(5, 3, 0);
+	target.rigidBody3D.scale = Vector3(2, 2, 2);
+
+	scene->gameMap.saveObjectAt(target.getPosition(), target);
 
 	return scene;
 }

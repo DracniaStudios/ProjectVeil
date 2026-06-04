@@ -2,6 +2,7 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
 
+#include <iostream>
 #include <raylib.h>
 #include <Physics.h>
 
@@ -36,17 +37,14 @@ struct GameObject
 {
 private: 
 public:
-	//GameObject();
-	//GameObject(const GameObject& other);
-	//~GameObject();
+	GameObject();
 
 	/// Data
 	const char* name = "GameObject";
-	ObjectType type = OBJECT_GENERIC;
+	int type = OBJECT_GENERIC;
 
 	/// Status
-	float health = 10.0f;
-	bool isAlive = true;
+
 	float lifeSpan = 0;
 	float endLife = 0;
 	float decayTime = 0;
@@ -54,9 +52,10 @@ public:
 
 	/// Flags
 	bool isEnabled = true;
-	bool isInteractable = false;
-	bool isDestructable = true;
 	bool canBeSelected = true;
+	bool isInteractable = false;
+	bool isAlive = true;
+	bool isDestructable = true;
 	
 	/// Debug Display
 	bool display3DModel = true;
@@ -64,7 +63,7 @@ public:
 	bool displayCollider = false;
 
 	/// Physics
-	RigidBody3D* rigidBody3D = new RigidBody3D{};
+	RigidBody3D rigidBody3D{};
 
 	/// Renderer
 	Model* model = new Model{};
@@ -76,9 +75,9 @@ public:
 	// Developer Menu Texture Test
 	int blockID = -1;
 
-	Vector3 getPosition() { return rigidBody3D->translation; }
-	Quaternion getRotation() { return rigidBody3D->rotation; }
-	Vector3 getSize() { return rigidBody3D->scale; }
+	Vector3 getPosition() { return rigidBody3D.translation; }
+	Quaternion getRotation() { return rigidBody3D.rotation; }
+	Vector3 getSize() { return rigidBody3D.scale; }
 
 	virtual void update(Scene* scene, float deltaTime);
 	virtual void render2D();
@@ -87,8 +86,8 @@ public:
 	virtual void onDisable();
 	virtual void onDestroy(Scene* scene);
 
-	virtual void onHit(const GameObject* collider);
-	virtual float getMaxHealth() { return 10; }
+	virtual void onCollision(const GameObject* collider);
+	virtual float getMaxHealth() { return maxHealth; }
 
 };
 

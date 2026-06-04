@@ -25,6 +25,7 @@ public:
 	void update(Player* player);
 
 	/** Window Flags **/
+	bool isActive = false;
 	bool isPlayerActive = false;
 	bool isCameraActive = false;
 	bool isInspectorActive = false;

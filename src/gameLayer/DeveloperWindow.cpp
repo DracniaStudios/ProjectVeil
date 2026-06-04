@@ -6,10 +6,17 @@
 
 void DeveloperWindow::update(Player* player)
 {
+
+	isActive =
+		isCameraActive ||
+		isInspectorActive ||
+		isMiniGameActive ||
+		isGameDataActive;
+
 	if (IsKeyPressed(KEY_F1)) { isGameDataActive = !isGameDataActive; }
 	if (IsKeyPressed(KEY_F2)) { isPlayerActive = !isPlayerActive; }
 	if (IsKeyPressed(KEY_F3)) { isCameraActive = !isCameraActive; }
-	if (IsKeyPressed(KEY_F4)) { isInspectorActive = !isInspectorActive; }
+	if (IsKeyPressed(KEY_F4)) { isInspectorActive = !isInspectorActive; inspectObject = nullptr; }
 	if (IsKeyPressed(KEY_F5)) { isMiniGameActive = !isMiniGameActive; }
 
 	/// Update Game Data Windows
@@ -66,21 +73,21 @@ void DeveloperWindow::showPlayerData(Player* player)
 	}
 	else
 	{
-		ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody3D->isEnabled);
-		ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D->translation.x, player->rigidBody3D->translation.y, player->rigidBody3D->translation.z);
-		ImGui::Text("Player Velocity 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D->velocity.x, player->rigidBody3D->velocity.y, player->rigidBody3D->velocity.z);
-		ImGui::Text("Player Scale 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D->scale.x, player->rigidBody3D->scale.y, player->rigidBody3D->scale.z);
+		ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody3D.isEnabled);
+		ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.translation.x, player->rigidBody3D.translation.y, player->rigidBody3D.translation.z);
+		ImGui::Text("Player Velocity 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.velocity.x, player->rigidBody3D.velocity.y, player->rigidBody3D.velocity.z);
+		ImGui::Text("Player Scale 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.scale.x, player->rigidBody3D.scale.y, player->rigidBody3D.scale.z);
 
 	}
 
 	/// Show Player Directional Data and Flags
-	ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player->rigidBody3D->forward.x, player->rigidBody3D->forward.y, player->rigidBody3D->forward.z);
-	ImGui::Checkbox("Up Touch", &player->rigidBody3D->upTouch);
-	ImGui::Checkbox("Down Touch", &player->rigidBody3D->downTouch);
-	ImGui::Checkbox("Left Touch", &player->rigidBody3D->leftTouch);
-	ImGui::Checkbox("Right Touch", &player->rigidBody3D->rightTouch);
-	ImGui::Checkbox("Front Touch", &player->rigidBody3D->frontTouch);
-	ImGui::Checkbox("Back Touch", &player->rigidBody3D->backTouch);
+	ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player->rigidBody3D.forward.x, player->rigidBody3D.forward.y, player->rigidBody3D.forward.z);
+	ImGui::Checkbox("Up Touch", &player->rigidBody3D.upTouch);
+	ImGui::Checkbox("Down Touch", &player->rigidBody3D.downTouch);
+	ImGui::Checkbox("Left Touch", &player->rigidBody3D.leftTouch);
+	ImGui::Checkbox("Right Touch", &player->rigidBody3D.rightTouch);
+	ImGui::Checkbox("Front Touch", &player->rigidBody3D.frontTouch);
+	ImGui::Checkbox("Back Touch", &player->rigidBody3D.backTouch);
 
 	ImGui::Separator();
 	ImGui::End();
@@ -110,8 +117,11 @@ bool isCreatingEntity = false;
 ObjectType getType(void* object)
 {
 	auto check = static_cast<GameObject*>(object);
-	return check->type;
+	return static_cast<ObjectType>(check->type);
 }
+
+Vector4 colorHolder = Vector4One();
+static char inputName[128] = "GameObject";
 
 void DeveloperWindow::showObjectInspector()
 {
@@ -127,11 +137,11 @@ void DeveloperWindow::showObjectInspector()
 	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Game Objects");
 	for (auto& object : scene->gameMap.gameObjects)
 	{
-		ImGui::PushID(object.get());
+		ImGui::PushID(&object);
 
-		if (ImGui::Button(object->name))
+		if (ImGui::Button(object.name))
 		{
-			inspectObject = inspectObject == object.get() ? nullptr : object.get();
+			inspectObject = inspectObject == &object ? nullptr : &object;
 		}
 		ImGui::PopID();
 	}
@@ -158,14 +168,22 @@ void DeveloperWindow::showObjectInspector()
 		}
 
 		//ImGui::Text("Name: %s", check->name);
-		ImGui::Text("Type: %d", check->type);
+		const char* objectTypeString =
+			check->type == OBJECT_PLAYER ? "Player" :
+			check->type == OBJECT_ENTITY ? "Entity" :
+			check->type == OBJECT_ITEM ? "Item" :
+			check->type == OBJECT_PROJECTILE ? "Projectile" :
+			check->type == OBJECT_ENVIRONMENT ? "Environment" :
+			"Generic"
+			;
+		ImGui::Text("Type: %s", objectTypeString);
 		ImGui::Spacing();
 
 		// RigidBody Data
 		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Rigidbody");
-		ImGui::InputFloat3("Position: ", &check->rigidBody3D->translation.x);
-		ImGui::InputFloat3("Scale: ", &check->rigidBody3D->scale.x);
-		ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", check->rigidBody3D->velocity.x, check->rigidBody3D->velocity.y, check->rigidBody3D->velocity.z);
+		ImGui::Text("Position: (%.2f, %.2f, %.2f)", check->getPosition().x, check->getPosition().y, check->getPosition().z);
+		ImGui::Text("Scale: (%.2f, %.2f, %.2f)", check->rigidBody3D.scale.x, check->rigidBody3D.scale.y, check->rigidBody3D.scale.z);
+		ImGui::Text("Velocity: (%.2f, %.2f, %.2f)", check->rigidBody3D.velocity.x, check->rigidBody3D.velocity.y, check->rigidBody3D.velocity.z);
 		ImGui::Spacing();
 
 		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Status");
@@ -180,22 +198,23 @@ void DeveloperWindow::showObjectInspector()
 			ImGui::Text("Stamina: %f", entity->stamina);
 			ImGui::Text("Base Damage: %f", entity->baseDamage);
 			ImGui::Text("Base Speed: %f", entity->baseSpeed);
+			ImGui::Checkbox("Force Firing", &entity->forceFire);
 		}
 		ImGui::Spacing();
 
 		// Object Flags 
 		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Flags");
-		ImGui::Checkbox("isEnabled", &check->rigidBody3D->isEnabled);
-		ImGui::Checkbox("isStatic", &check->rigidBody3D->isStatic);
+		ImGui::Checkbox("isEnabled", &check->rigidBody3D.isEnabled);
+		ImGui::Checkbox("isStatic", &check->rigidBody3D.isStatic);
 		ImGui::Checkbox("isInteractable", &check->isInteractable);
 		ImGui::Checkbox("isVisible", &check->display3DModel);
 		ImGui::Checkbox("Show Collider", &check->displayCollider);
-		ImGui::Checkbox("Up Touch", &check->rigidBody3D->upTouch);
-		ImGui::Checkbox("Down Touch", &check->rigidBody3D->downTouch);
-		ImGui::Checkbox("Left Touch", &check->rigidBody3D->leftTouch);
-		ImGui::Checkbox("Right Touch", &check->rigidBody3D->rightTouch);
-		ImGui::Checkbox("Front Touch", &check->rigidBody3D->frontTouch);
-		ImGui::Checkbox("Back Touch", &check->rigidBody3D->backTouch);
+		ImGui::Checkbox("Up Touch", &check->rigidBody3D.upTouch);
+		ImGui::Checkbox("Down Touch", &check->rigidBody3D.downTouch);
+		ImGui::Checkbox("Left Touch", &check->rigidBody3D.leftTouch);
+		ImGui::Checkbox("Right Touch", &check->rigidBody3D.rightTouch);
+		ImGui::Checkbox("Front Touch", &check->rigidBody3D.frontTouch);
+		ImGui::Checkbox("Back Touch", &check->rigidBody3D.backTouch);
 		ImGui::Spacing();
 
 		if (ImGui::Button("Delete Object"))
@@ -228,23 +247,39 @@ void DeveloperWindow::showObjectInspector()
 		auto object = static_cast<GameObject*>(newObject);
 		if (object == nullptr) { object = new GameObject(); }
 		//permaAssertComment(object == nullptr, "No Object Data @ DeveloperWindow.cpp");
-		/** Base Object Data **/
-		object->type = OBJECT_GENERIC;
-		object->rigidBody3D->isStatic = true;
-		object->rigidBody3D->translation = Vector3One();
-		object->rigidBody3D->scale = Vector3One();
-		object->meshData = Vector4One();
-		object->defaultColor = Color(
-			getRandomInt(rng, 0, 255),
-			getRandomInt(rng, 0, 255),
-			getRandomInt(rng, 0, 255),
-			255
-		);
+
+		 /** Base Object Data **/
+		ImGui::InputText("Name: ", inputName, 128);
+		{
+			object->name = inputName;
+		}
+		ImGui::InputInt("Object Type: ", &object->type, 1, 1);
+		object->type = Clamp(object->type, 0, OBJECT_COUNT);
+		const char* objectTypeString =
+			object->type == OBJECT_PLAYER ? "Player" :
+			object->type == OBJECT_ENTITY ? "Entity" :
+			object->type == OBJECT_ITEM ? "Item" :
+			object->type == OBJECT_PROJECTILE ? "Projectile" :
+			object->type == OBJECT_ENVIRONMENT ? "Environment" :
+			"Generic"
+			;
+		ImGui::Text(objectTypeString);
+		
+		// Color ( float to unsigned char conversion )
+		{
+			ImGui::InputFloat4("Color", &colorHolder.x);
+			object->defaultColor = Color(
+				static_cast<unsigned char>(Clamp(colorHolder.x, 0, 255)),
+				static_cast<unsigned char>(Clamp(colorHolder.y, 0, 255)),
+				static_cast<unsigned char>(Clamp(colorHolder.z, 0, 255)),
+				static_cast<unsigned char>(Clamp(colorHolder.w, 0, 255))
+			);
+		}
 		
 		// Altered Object Data
 		ImGui::Text("Object Data:");
-		ImGui::InputFloat3("Position: ", &object->rigidBody3D->translation.x);
-		ImGui::InputFloat3("Scale: ", &object->rigidBody3D->scale.x);
+		ImGui::InputFloat3("Position: ", &object->rigidBody3D.translation.x);
+		ImGui::InputFloat3("Scale: ", &object->rigidBody3D.scale.x);
 		ImGui::InputInt("Mesh Variant", &object->meshVariant, 1, 1);
 		object->meshVariant = Clamp(object->meshVariant, 0, MESH_COUNT);
 		ImGui::Spacing();
@@ -254,16 +289,17 @@ void DeveloperWindow::showObjectInspector()
 		
 		// Object Flags
 		ImGui::TextColored(ImVec4(100, 0, 0, 255), "Flags");
-		ImGui::Checkbox("isEnabled", &object->rigidBody3D->isEnabled);
-		ImGui::Checkbox("isStatic", &object->rigidBody3D->isStatic);
+		ImGui::Checkbox("isEnabled", &object->rigidBody3D.isEnabled);
+		ImGui::Checkbox("isStatic", &object->rigidBody3D.isStatic);
 		ImGui::Checkbox("isVisible", &object->display3DModel);
+		ImGui::Checkbox("isDestructible", &object->isDestructable);
 		ImGui::Checkbox("Show Collider", &object->displayCollider);
-		ImGui::Checkbox("Up Touch", &object->rigidBody3D->upTouch);
-		ImGui::Checkbox("Down Touch", &object->rigidBody3D->downTouch);
-		ImGui::Checkbox("Left Touch", &object->rigidBody3D->leftTouch);
-		ImGui::Checkbox("Right Touch", &object->rigidBody3D->rightTouch);
-		ImGui::Checkbox("Front Touch", &object->rigidBody3D->frontTouch);
-		ImGui::Checkbox("Back Touch", &object->rigidBody3D->backTouch);
+		ImGui::Checkbox("Up Touch", &object->rigidBody3D.upTouch);
+		ImGui::Checkbox("Down Touch", &object->rigidBody3D.downTouch);
+		ImGui::Checkbox("Left Touch", &object->rigidBody3D.leftTouch);
+		ImGui::Checkbox("Right Touch", &object->rigidBody3D.rightTouch);
+		ImGui::Checkbox("Front Touch", &object->rigidBody3D.frontTouch);
+		ImGui::Checkbox("Back Touch", &object->rigidBody3D.backTouch);
 		ImGui::Spacing();
 
 		// Spawn Object Button
@@ -293,17 +329,35 @@ void DeveloperWindow::showObjectInspector()
 		if (object == nullptr) { object = new Entity(); }
 		//permaAssertComment(object == nullptr, "No Entity Data @ DeveloperWindow.cpp");
 
-		object->type = OBJECT_ENTITY;
-		object->rigidBody3D->isStatic = false;
-		object->rigidBody3D->translation = Vector3One();
-		object->rigidBody3D->scale = Vector3One();
-		object->meshData = Vector4One();
-		object->defaultColor = Color(255, 0, 0, 255);
+		ImGui::InputText("Name: ", inputName, 128);
+		{
+			object->name = inputName;
+		}
+		ImGui::InputInt("Object Type: ", &object->type, 1, 1);
+		const char* objectTypeString =
+			object->type == OBJECT_PLAYER ? "Player" :
+			object->type == OBJECT_ENTITY ? "Entity" :
+			"Generic"
+		;
+		ImGui::Text(objectTypeString);
+		// Possible Entity List
+		object->type = Clamp(object->type, 0, OBJECT_ENTITY);
+
+		// Color ( float to unsigned char conversion )
+		{
+			ImGui::InputFloat4("Color", &colorHolder.x);
+			object->defaultColor = Color(
+				static_cast<unsigned char>(Clamp(colorHolder.x, 0, 255)),
+				static_cast<unsigned char>(Clamp(colorHolder.y, 0, 255)),
+				static_cast<unsigned char>(Clamp(colorHolder.z, 0, 255)),
+				static_cast<unsigned char>(Clamp(colorHolder.w, 0, 255))
+			);
+		}
 
 		// Altered Object Data
 		ImGui::Text("Entity Data:");
-		ImGui::InputFloat3("Position: ", &object->rigidBody3D->translation.x);
-		ImGui::InputFloat3("Scale: ", &object->rigidBody3D->scale.x);
+		ImGui::InputFloat3("Position: ", &object->rigidBody3D.translation.x);
+		ImGui::InputFloat3("Scale: ", &object->rigidBody3D.scale.x);
 		ImGui::InputInt("Mesh Variant", &object->meshVariant, 1, 1);
 		object->meshVariant = Clamp(object->meshVariant, 0, MESH_COUNT);
 		ImGui::Spacing();
@@ -321,16 +375,21 @@ void DeveloperWindow::showObjectInspector()
 		
 		// Object Flags
 		ImGui::TextColored(ImVec4(100, 0, 0, 255), "Flags");
-		ImGui::Checkbox("isEnabled", &object->rigidBody3D->isEnabled);
-		ImGui::Checkbox("isStatic", &object->rigidBody3D->isStatic);
+		ImGui::Checkbox("isEnabled", &object->rigidBody3D.isEnabled);
+		ImGui::Checkbox("isStatic", &object->rigidBody3D.isStatic);
 		ImGui::Checkbox("isVisible", &object->display3DModel);
 		ImGui::Checkbox("Show Collider", &object->displayCollider);
-		ImGui::Checkbox("Up Touch", &object->rigidBody3D->upTouch);
-		ImGui::Checkbox("Down Touch", &object->rigidBody3D->downTouch);
-		ImGui::Checkbox("Left Touch", &object->rigidBody3D->leftTouch);
-		ImGui::Checkbox("Right Touch", &object->rigidBody3D->rightTouch);
-		ImGui::Checkbox("Front Touch", &object->rigidBody3D->frontTouch);
-		ImGui::Checkbox("Back Touch", &object->rigidBody3D->backTouch);
+		ImGui::Checkbox("Up Touch", &object->rigidBody3D.upTouch);
+		ImGui::Checkbox("Down Touch", &object->rigidBody3D.downTouch);
+		ImGui::Checkbox("Left Touch", &object->rigidBody3D.leftTouch);
+		ImGui::Checkbox("Right Touch", &object->rigidBody3D.rightTouch);
+		ImGui::Checkbox("Front Touch", &object->rigidBody3D.frontTouch);
+		ImGui::Checkbox("Back Touch", &object->rigidBody3D.backTouch);
+
+		// Combat Flags
+		ImGui::Checkbox("Is Firing", &object->isFiring);
+		
+
 		ImGui::Spacing();
 
 		// Spawn Object Button

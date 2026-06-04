@@ -35,7 +35,6 @@ void SceneManager_update(SceneManager* manager, float delta) {
 	// Update Scene
 	if (manager->currentScene) Scene_updateScene(manager, manager->currentScene, delta);
 
-	manager->currentScene->gameMap.flushRemovals();
 }
 
 void SceneManager_draw(SceneManager* manager) {

@@ -1,42 +1,34 @@
 // Game Name: Subject Veil
-// Version: 0.1.28
-// Date: 2026-06-02 (Combat System)
-// Date: 2026-06-2 (Current Development Date)
+// Version: 0.1.29
+// Due: 2026-06-09 (Combat System)
+// Date: 2026-06-04 (Current Development Date)
 
-I keep doing the rigidbody forward instead of the camera forward
-I'm using the rigidbody translation which is at the center instead of the camera which is the head.
+I need to split Entities and Gameobjects
+
+GameObjects we're not meant to be used as pointer objects, but rather as a way to reference the actual object in the scene. 
+This caused a lot of issues with memory management and object referencing, so we had to change our approach to use normal objects for the actual objects instead of the GameObjects.
 
 [ Issues ]
 
 - Found an issue where the developer window doesn't convert gameObject color's correctly.
 - Found an issue where the Mini Game scenes use only percentage placement for objects with no pixel optionality.
 - Found an issue where objects can't load object textures and return null ( just black )
-- Found an issue where GameMap can't load GameObject pointers (Known and Major Issue)
 
 [ Added ]
 
-- Added new Projectile and Environment Object Types.
+- Added Object naming To Object Inspector
 
 [ Updated ]
 
-- Updated SceneManager to have a global Instance and made it a singleton for easier access across scripts.
-- Updated AssetManager to have a global Instance and made it a singleton for easier access across scripts.
-
-- Updated Entities to contain an attack and onHit function
-
-- Updated RigidBody to become a pointer object.
-- Updated Model to become a pointer object.
-- Updated Mesh to become a pointer object.
-
-- Updated Entity Attacks to craete projectiles ( temporary ).
+- Updated Physics Objects to resolve Collisions last on frame ( updates flags and data before moving object )
 
 [ Fixed ]
 
-- Fixed an issue where GameObjects wouldn't reference their Rigidbody3D pointer ( major issue )
-- Fixed an issue where GameObjects wouldn't decay on Destroy.
-
+- Fixed an issue where projectiles would not me added to SceneObjects
+- Fixed an issue where GameObjects DecayTime was not adjusted correctly on spawn and to life span.
+- Fixed an issue where Game Object Inspector would load Inputs instead of Text
+- Fixed an issue where Game Objects would not send collision data
+- Fixed an issue where Object Inspector couldn't apply colors to Objects.
 
 [ Removed ]
 
-- Removed Object pointer and Id identifiers.
-- Removed onCollision function from RigidBody3D.

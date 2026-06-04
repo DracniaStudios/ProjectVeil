@@ -2,22 +2,39 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
-#include <GameObject.h>
+#include <iostream>
+#include <raylib.h>
+#include <Physics.h>
 
-struct SceneManager;
 struct Scene;
 
-struct Entity : public GameObject
+enum EntityType
+{
+	ENTITY_FRIENDLY,
+	ENTITY_ENEMY,
+	ENTITY_PROJECTILE,
+	ENTITIY_PLAYER,
+	ENTITY_COUNT
+};
+
+struct Entity
 {
 private:
-	float attackTime = 1;
+	float attackStartTime = 1.0f;
+	float attackWaitTime = 3.0f;
 public:
 
 	/** Status **/
 	float stamina = 1.0f;
+	float maxStamina = 100.0f;
 
 	float baseDamage = 1.0f;
 	float baseSpeed = 1.0f;
+
+	/** Flags **/
+	bool isFiring = false;
+	bool forceFire = false;
+	bool canAttack = true;
 
 	/** Functions **/
 	virtual void onEnable() override;
@@ -26,10 +43,15 @@ public:
 	virtual void update(Scene* scene, float deltaTime) override;
 
 	/** Statuss **/
-	virtual float getMaxStamina() { return 100; }
+	float getMaxStamina() const { return maxStamina; }
 
 	/** Combat Functions **/
-	virtual void onHit(const GameObject* collider) override;
+	virtual void onHit(const Entity* collider);
+	void takeDamage(const float& damage)
+	{
+		std::cout << "Damage Taken: " << damage << "\n";
+		health -= damage;
+	}
 	virtual void Attack();
 
 };
