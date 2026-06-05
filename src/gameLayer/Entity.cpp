@@ -25,11 +25,12 @@ void Entity::render3D()
 
 void Entity::update(Scene* scene, float deltaTime)
 {
+	std::cout << "Update Entity \n";
 	GameObject::update(scene, deltaTime);
 
 	stamina = Clamp(stamina, 0, getMaxStamina());
 
-	if (forceFire) { isFiring = true; Attack(); }
+	if (forceFire) { Attack(); }
 
 }
 
@@ -48,7 +49,7 @@ void Entity::Attack()
 {
 	std::cout << "Start Attack: " << name << "\n";
 
-	if (!WaitTimer(attackStartTime, canAttack, 3)) return;
+	//if (!WaitTimer(attackStartTime, canAttack, 3)) return;
 
 	canAttack = false;
 	Entity projectile = {};

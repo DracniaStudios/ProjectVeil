@@ -138,10 +138,13 @@ Scene* Scene_MainMenuConstruct()
 	Entity target = {};
 	target.name = "Target";
 	target.type = OBJECT_ENTITY;
+	target.defaultColor = RED;
+	target.forceFire = false;
 	target.rigidBody3D.translation = Vector3(5, 3, 0);
 	target.rigidBody3D.scale = Vector3(2, 2, 2);
+	target.rigidBody3D.isStatic = true;
 
-	scene->gameMap.saveObjectAt(target.getPosition(), target);
+	scene->gameMap.saveEntityAt(target.getPosition(), target);
 
 	return scene;
 }

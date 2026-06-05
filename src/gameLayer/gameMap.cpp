@@ -2,9 +2,11 @@
 
 #include <iostream>
 #include <string>
+#include <SceneManager.h>
 
-#include "SceneManager.h"
+/** Map Data **/
 
+// Create GameMap and Floor Space
 void GameMap::create(Vector3 size)
 {
 	this->size = size;
@@ -26,8 +28,13 @@ void GameMap::create(Vector3 size)
 
 }
 
+// Load Object into Scene (Vector3)
 GameObject& GameMap::saveObjectAt(Vector3 position, GameObject& object)
 {
+	auto scene = SceneManager::getInstance().currentScene;
+	auto id = scene->instanceHolder.getIdAndIncrement();
+
+	object.id = id;
 
 	/// Set RigidBody3D Data
 	object.rigidBody3D.translation = position;
@@ -44,12 +51,23 @@ GameObject& GameMap::saveObjectAt(Vector3 position, GameObject& object)
 	return gameObjects.back();
 }
 
-GameObject& GameMap::saveObjectAt(int x, int y, int z, GameObject& object)
+
+Entity& GameMap::saveEntityAt(Vector3 position, Entity& entity)
 {
-	return saveObjectAt(Vector3(x, y, z), object);
+	auto scene = SceneManager::getInstance().currentScene;
+	
+	// Sets Object ID and Adds To Scene
+	saveObjectAt(entity.getPosition(), entity);
+
+	/// Add Entity To Scene Entity Data
+	auto entity_ptr = std::make_unique<Entity>(entity);
+	scene->entities[entity.id] = std::move(entity_ptr);
+
+	std::cout << "Added Object \n";
+	return *scene->entities[entity.id].get();
 }
 
-
+// UnLoad Object From Scene
 void GameMap::removeObject(GameObject* object) {
     if (!object) return;
 

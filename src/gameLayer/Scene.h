@@ -5,21 +5,21 @@
 
 #include <raylib.h>
 #include <raymath.h>
-#include <gameMap.h>
 #include <imgui.h>
 #include <randomStuff.h>
 
+#include <gameMap.h>
 #include <Player.h>
 #include <AssetManager.h>
 #include <MiniGame.h>
 #include <Inventory.h>
 #include <DeveloperWindow.h>
+#include <asserts.h>
 
 #include <stdlib.h>
 #include <iostream>
 #include <string>
-#include <asserts.h>
-
+#include <unordered_map>
 
 /**
  * Define an update method
@@ -39,6 +39,16 @@ typedef void (*drawSceneMethod3D)(void* manager_ptr, void* object_ptr);
 /**
  * Struct to represent a Scene
  */
+
+ // Force Player ID
+constexpr static std::uint64_t PLAYER_ID = 1;
+
+struct InstanceID
+{
+	std::uint64_t idCounter = 2;
+	std::uint64_t getIdAndIncrement();
+};
+
 typedef struct Scene {
 	const char* name = {};
 
@@ -52,7 +62,10 @@ typedef struct Scene {
 	drawSceneMethod3D draw3D;
 
 	GameMap gameMap = {}; // The GameMap of the Scene
-	MiniGame* miniGame = {};
+	MiniGame* miniGame = {}; // Current Mini Game Loaded
+	std::unordered_map<std::uint64_t, std::unique_ptr<Entity>> entities{};
+	InstanceID instanceHolder = {}; // All Instances Stored
+
 } Scene;
 
 /**

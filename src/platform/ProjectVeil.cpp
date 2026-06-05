@@ -5,6 +5,7 @@
 
 using namespace std;
 
+static bool lockMouse;
 int main()
 {
 #if PRODUCTION_BUILD == 1
@@ -28,6 +29,7 @@ int main()
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 	ImGui::StyleColorsDark();
+
 #pragma endregion
 
 	if (!init_game())
@@ -52,6 +54,11 @@ int main()
 #pragma endregion
 
 		if (IsKeyPressed(KEY_F11)) { ToggleFullscreen(); }
+		if (IsKeyPressed(KEY_GRAVE)) { lockMouse = !lockMouse; }
+		/*
+		if (lockMouse) { DisableCursor(); }
+		else { EnableCursor(); }
+		*/
 
 		if (!update_game())
 		{

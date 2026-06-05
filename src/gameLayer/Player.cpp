@@ -16,6 +16,7 @@
 
 void Player::onEnable()
 {
+	id = PLAYER_ID;
 	stamina = getMaxStamina();
 	rigidBody2D.translation = Vector3(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f, 0);
 	std::cout << rigidBody2D.translation.x << "\n";
@@ -161,17 +162,28 @@ void Player::update3D(float deltaTime)
 
 void PlayerCamera::UpdateCameraFPS(Camera* camera, Player* player)
 {
+	auto up = Vector3(0.0f, 1.0f, 0.0f);
 	offset = Vector3(0, player->rigidBody3D.scale.y / 2, 0); // Camera offset to be at player's head)
 	position = Vector3Add(player->rigidBody3D.translation, offset);
 	
 	camera->position = Vector3Add(player->rigidBody3D.translation, offset);
 
-	UpdateCamera(camera, CAMERA_FIRST_PERSON);
+	//UpdateCamera(camera, CAMERA_FIRST_PERSON);
+
+	/*
+	// Left and Right
+	Vector3 yaw = Vector3RotateByAxisAngle(offset, up, lookRotation.x);
+
+	// Clamp View Up
+	float maxAngleUp = Vector3Angle(up, yaw);
+	*/
+
 
 	// FPS-style camera look
 	static float yaw = 0.0f;
 	static float pitch = 0.0f;
 	const float sensitivity = -0.003f;
+
 	Vector2 mouseDelta = GetMouseDelta();
 	yaw += mouseDelta.x * sensitivity;
 	pitch += mouseDelta.y * sensitivity;
@@ -187,7 +199,10 @@ void PlayerCamera::UpdateCameraFPS(Camera* camera, Player* player)
 	camera->target = Vector3Add(camera->position, Vector3Scale(camForward, 10.0f));
 
 	// Update player direction vectors to match camera look
-	Vector3 flatForward = camForward; flatForward.y = 0; flatForward = Vector3Normalize(flatForward);
+	Vector3 flatForward = camForward;
+	flatForward.y = 0; 
+	flatForward = Vector3Normalize(flatForward);
+	
 	if (Vector3Length(flatForward) > 0.001f) {
 		player->rigidBody3D.forward = flatForward;
 		player->rigidBody3D.back = Vector3Scale(flatForward, -1);

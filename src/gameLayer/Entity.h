@@ -3,28 +3,24 @@
 #define ENTITY_H
 
 #include <iostream>
-#include <raylib.h>
-#include <Physics.h>
+#include <GameObject.h>
 
 struct Scene;
 
-enum EntityType
-{
-	ENTITY_FRIENDLY,
-	ENTITY_ENEMY,
-	ENTITY_PROJECTILE,
-	ENTITIY_PLAYER,
-	ENTITY_COUNT
-};
-
-struct Entity
+struct Entity : public GameObject
 {
 private:
 	float attackStartTime = 1.0f;
 	float attackWaitTime = 3.0f;
 public:
-
+	
+	/** Data **/
+	const char* name = "Entity";
+	
 	/** Status **/
+	float health = 1.0f;
+	float maxHealth = 10.0f;
+
 	float stamina = 1.0f;
 	float maxStamina = 100.0f;
 
@@ -37,19 +33,20 @@ public:
 	bool canAttack = true;
 
 	/** Functions **/
-	virtual void onEnable() override;
-	virtual void onDisable() override;
-	virtual void render3D() override;
+
+	virtual void onEnable();
+	virtual void onDisable();
+	virtual void render3D();
 	virtual void update(Scene* scene, float deltaTime) override;
 
 	/** Statuss **/
+	float getMaxHealth() const { return maxHealth; }
 	float getMaxStamina() const { return maxStamina; }
 
 	/** Combat Functions **/
 	virtual void onHit(const Entity* collider);
 	void takeDamage(const float& damage)
 	{
-		std::cout << "Damage Taken: " << damage << "\n";
 		health -= damage;
 	}
 	virtual void Attack();

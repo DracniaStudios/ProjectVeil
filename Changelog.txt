@@ -1,34 +1,34 @@
 // Game Name: Subject Veil
-// Version: 0.1.29
+// Version: 0.1.30
 // Due: 2026-06-09 (Combat System)
-// Date: 2026-06-04 (Current Development Date)
-
-I need to split Entities and Gameobjects
-
-GameObjects we're not meant to be used as pointer objects, but rather as a way to reference the actual object in the scene. 
-This caused a lot of issues with memory management and object referencing, so we had to change our approach to use normal objects for the actual objects instead of the GameObjects.
+// Date: 2026-06-05 (Current Development Date)
 
 [ Issues ]
 
 - Found an issue where the developer window doesn't convert gameObject color's correctly.
 - Found an issue where the Mini Game scenes use only percentage placement for objects with no pixel optionality.
 - Found an issue where objects can't load object textures and return null ( just black )
+- Found an issue where the camera doesn't update position based on mouse delta ( raylib [core] example - 3d camera fps )
 
 [ Added ]
 
-- Added Object naming To Object Inspector
+- Added Entites Holder To Scene
+- Added unique IDs to GameObjects
+- Added Destroy function to GameObjects
 
 [ Updated ]
 
-- Updated Physics Objects to resolve Collisions last on frame ( updates flags and data before moving object )
+- Updated Application to Enable and Disable the Cursor (KEY_GRAVE)
+- Updated GameMap to automatically increment and apply unique IDs to GameObjects and Entities
+- Updated GameMap to add Entities to Scene, seperately from Game Objects
+- Updated Scene to update GameObjects and Entities seperately
+- Updated Object Inspector to show more GameObject data (lambdo)
+
 
 [ Fixed ]
 
-- Fixed an issue where projectiles would not me added to SceneObjects
-- Fixed an issue where GameObjects DecayTime was not adjusted correctly on spawn and to life span.
-- Fixed an issue where Game Object Inspector would load Inputs instead of Text
-- Fixed an issue where Game Objects would not send collision data
-- Fixed an issue where Object Inspector couldn't apply colors to Objects.
+- Fixed an issue where Entites couldn't Attack ( They were not updated by scene )
 
 [ Removed ]
 
+- Disabled WaitTimer For Attacks ( not implemented correctly )

@@ -6,6 +6,8 @@
 #include <AssetManager.h>
 #include <Scene.h>
 
+#include "SceneManager.h"
+
 BoundingBox getBoundingBox(Model mdl, Vector3 pos)
 {
 	permaAssertComment(mdl.meshes == nullptr, "No Meshes In Model");
@@ -115,6 +117,12 @@ void GameObject::render3D()
 
 float setLife(float life, int time) { return static_cast<float>(life + time); }
 
+void GameObject::Destroy()
+{
+	isAlive = false;
+	onDestroy(SceneManager::getInstance().currentScene);
+}
+
 void GameObject::update(Scene* scene, float deltaTime)
 {
 	if (!isEnabled) { return; }
@@ -126,15 +134,8 @@ void GameObject::update(Scene* scene, float deltaTime)
 	if (isAlive) { endLife += deltaTime; }
 	lifeSpan += deltaTime;
 
-	if (isDestructable) {
-		if (health <= 0) {
-			if (isAlive) { endLife = setLife(lifeSpan, decayTime); }
-			isAlive = false;
-		}
-	}
-
 	if (lifeSpan > endLife) {
-		onDestroy(scene);
+		Destroy();
 	}
 }
 

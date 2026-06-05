@@ -15,12 +15,12 @@ struct GameMap {
 
 	// Alter Data
 	GameObject& saveObjectAt(Vector3 position, GameObject& object);
-	GameObject& saveObjectAt(int x, int y, int z, GameObject& object);
+	Entity& saveEntityAt(Vector3 position, Entity& object);
 
 	void removeObject(GameObject* object);
 
 	// Return Data
-	Vector3 getMapSize() const {	return Vector3(size.x, size.y, size.z);}
+	Vector3 getMapSize() const { return Vector3(size.x, size.y, size.z);}
 
 };
 

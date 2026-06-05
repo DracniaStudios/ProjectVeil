@@ -42,6 +42,7 @@ public:
 	/// Data
 	const char* name = "GameObject";
 	int type = OBJECT_GENERIC;
+	std::uint64_t id = 0;
 
 	/// Status
 
@@ -84,10 +85,11 @@ public:
 	virtual void render3D();
 	virtual void onEnable();
 	virtual void onDisable();
-	virtual void onDestroy(Scene* scene);
 
+	virtual void Destroy();
+	virtual void onDestroy(Scene* scene);
+	
 	virtual void onCollision(const GameObject* collider);
-	virtual float getMaxHealth() { return maxHealth; }
 
 };
 
