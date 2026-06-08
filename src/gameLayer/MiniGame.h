@@ -128,8 +128,6 @@ inline void generateObstacleVertical(MiniGameData* data, Rectangle range, int co
 
 }
 
-
-
 MiniGame* MiniGame_flappyBird();
 MiniGame* MiniGame_crane();
 /*

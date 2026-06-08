@@ -1,34 +1,26 @@
 // Game Name: Subject Veil
-// Version: 0.1.30
-// Due: 2026-06-09 (Combat System)
-// Date: 2026-06-05 (Current Development Date)
+// Version: 0.1.33
+// Due: 2026-06-19 (Interacting)
+// Date: 2026-06-08 (Current Development Date)
 
 [ Issues ]
 
-- Found an issue where the developer window doesn't convert gameObject color's correctly.
 - Found an issue where the Mini Game scenes use only percentage placement for objects with no pixel optionality.
 - Found an issue where objects can't load object textures and return null ( just black )
-- Found an issue where the camera doesn't update position based on mouse delta ( raylib [core] example - 3d camera fps )
 
 [ Added ]
 
-- Added Entites Holder To Scene
-- Added unique IDs to GameObjects
-- Added Destroy function to GameObjects
+
 
 [ Updated ]
 
-- Updated Application to Enable and Disable the Cursor (KEY_GRAVE)
-- Updated GameMap to automatically increment and apply unique IDs to GameObjects and Entities
-- Updated GameMap to add Entities to Scene, seperately from Game Objects
-- Updated Scene to update GameObjects and Entities seperately
-- Updated Object Inspector to show more GameObject data (lambdo)
-
+- Updated AssetManager to become a class.
+- Updated Developer Window by splitting Inspectors into seperate files.
+- Updated Developer Window to become a class.
+- Updated Physics by splitting RigidBody3D and RigidBody2D into seperate files.
 
 [ Fixed ]
 
-- Fixed an issue where Entites couldn't Attack ( They were not updated by scene )
+
 
 [ Removed ]
-
-- Disabled WaitTimer For Attacks ( not implemented correctly )

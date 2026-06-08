@@ -80,9 +80,9 @@ void Scene_updateScene(void* manager_ptr, Scene* scene, float delta) {
 	}
 
 	for (auto& object : scene->gameMap.gameObjects) {
+
 		object.update(scene, delta);
 	}
-	
 	solveCollision(scene, delta, 8);
 
 }

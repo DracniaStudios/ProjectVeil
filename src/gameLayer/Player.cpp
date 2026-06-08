@@ -20,13 +20,12 @@ void Player::onEnable()
 	stamina = getMaxStamina();
 	rigidBody2D.translation = Vector3(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f, 0);
 	std::cout << rigidBody2D.translation.x << "\n";
-	GameObject::onEnable();
+	Entity::onEnable();
 }
 
 void Player::onDisable()
 {
-	GameObject::onDisable();
-	
+	Entity::onDisable();
 }
 
 void Player::render2D()
@@ -119,10 +118,10 @@ void Player::update3D(float deltaTime)
 	if (moveDirection.x < 0) { 	rigidBody3D.translation += (rigidBody3D.left * speed) * 0.1f; }
 	if (moveDirection.x > 0) {	rigidBody3D.translation += (rigidBody3D.right * speed) * 0.1f;}
 
-	if (IsKeyPressed(KEY_SPACE)) rigidBody3D.jump(20);
+	if (IsKeyPressed(KEY_SPACE)) rigidBody3D.Jump(20);
 
 	/// Update RigidBody3D Physics
-	rigidBody3D.update(SceneManager::getInstance().currentScene->gameMap, deltaTime);
+	rigidBody3D.Update(deltaTime);
 	
 	/// Clamp Player Position to Screen Bounds \ World Size
 	const float screenX = static_cast<float>(GetScreenWidth());
@@ -150,7 +149,7 @@ void Player::update3D(float deltaTime)
 	/// Update Player Actions
 	
 	isFiring = IsMouseButtonDown(MOUSE_BUTTON_LEFT) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
-	if (!DeveloperWindow::getInstance().isActive) {
+	if (!DeveloperWindow::getInstance().IsEnabled()) {
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) { Fire(); }
 		if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) { FireLaser(); }
 	}
@@ -163,21 +162,13 @@ void Player::update3D(float deltaTime)
 void PlayerCamera::UpdateCameraFPS(Camera* camera, Player* player)
 {
 	auto up = Vector3(0.0f, 1.0f, 0.0f);
-	offset = Vector3(0, player->rigidBody3D.scale.y / 2, 0); // Camera offset to be at player's head)
+	offset = Vector3(0, player->rigidBody3D.scale.y / 2, 0); // Camera offset to be at player's head
 	position = Vector3Add(player->rigidBody3D.translation, offset);
+	lookRotation.x -= GetMouseDelta().x * sensitivity.x;
+	lookRotation.y += GetMouseDelta().y * sensitivity.y;
+
 	
-	camera->position = Vector3Add(player->rigidBody3D.translation, offset);
-
-	//UpdateCamera(camera, CAMERA_FIRST_PERSON);
-
-	/*
-	// Left and Right
-	Vector3 yaw = Vector3RotateByAxisAngle(offset, up, lookRotation.x);
-
-	// Clamp View Up
-	float maxAngleUp = Vector3Angle(up, yaw);
-	*/
-
+	UpdateCamera(camera, CAMERA_FIRST_PERSON);
 
 	// FPS-style camera look
 	static float yaw = 0.0f;
@@ -211,6 +202,9 @@ void PlayerCamera::UpdateCameraFPS(Camera* camera, Player* player)
 		player->rigidBody3D.up = Vector3{ 0, 1, 0 };
 		player->rigidBody3D.down = Vector3{ 0, -1, 0 };
 	}
+	position = Vector3Add(player->rigidBody3D.translation, offset);
+	camera->position = Vector3Add(player->rigidBody3D.translation, offset);
+
 
 }
 
@@ -227,12 +221,12 @@ void Player::Fire()
 	projectile.rigidBody3D.scale = Vector3(0.2f, 0.2f, 0.2f);
 	projectile.meshVariant = MESH_CUBE;
 
-	projectile.rigidBody3D.velocity = Vector3Scale(camera.forward, projectile.baseSpeed * 10);
+	projectile.rigidBody3D.SetVelocity(Vector3Scale(camera.forward, projectile.baseSpeed * 10));
 
 	projectile.health = 0;
 	projectile.maxHealth = -1;
 	projectile.Decay(3);
-	projectile.isAlive = true;
+	projectile.isAlive = false;
 	projectile.isDestructable = true;
 
 	SceneManager::getInstance().currentScene->gameMap.saveObjectAt(projectile.rigidBody3D.translation, projectile);
@@ -261,7 +255,7 @@ void Player::FireLaser()
 				entity->takeDamage(output);
 			}
 			
-			obj.rigidBody3D.addForce(camera.forward, 0.1f);
+			obj.rigidBody3D.AddForce(camera.forward, 0.1f);
 		}
 	}
 }

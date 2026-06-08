@@ -3,6 +3,8 @@
 
 #include "ProjectVeil.h"
 
+#include <mutex>
+
 using namespace std;
 
 static bool lockMouse;
@@ -19,7 +21,7 @@ int main()
 	SetExitKey(KEY_F9);
 	SetTargetFPS(60);
 
-	InitWindow(1600, 900, "Project: Veil");
+	InitWindow(1920, 1080, "Project: Veil");
 
 #pragma region ImGui
 	rlImGuiSetup(true);
@@ -38,6 +40,7 @@ int main()
 		return 0;
 	}
 
+	SetWindowFocused();
 	while (!WindowShouldClose())
 	{
 
@@ -54,12 +57,19 @@ int main()
 #pragma endregion
 
 		if (IsKeyPressed(KEY_F11)) { ToggleFullscreen(); }
-		if (IsKeyPressed(KEY_GRAVE)) { lockMouse = !lockMouse; }
-		/*
-		if (lockMouse) { DisableCursor(); }
-		else { EnableCursor(); }
-		*/
-
+		if (IsKeyPressed(KEY_GRAVE))
+		{
+			lockMouse = !lockMouse;
+			if (lockMouse)
+			{
+				EnableCursor();
+			}
+			else
+			{
+				DisableCursor();
+			}
+		}
+		
 		if (!update_game())
 		{
 			close_game();

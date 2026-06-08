@@ -2,11 +2,8 @@
 
 #include <asserts.h>
 #include <gameMap.h>
-
 #include <AssetManager.h>
-#include <Scene.h>
-
-#include "SceneManager.h"
+#include <SceneManager.h>
 
 BoundingBox getBoundingBox(Model mdl, Vector3 pos)
 {
@@ -58,7 +55,7 @@ void GameObject::onEnable()
 	
 	if (blockID >= 0)
 	{
-		//SetMaterialTexture(&model.materials[0], MATERIAL_MAP_ALBEDO, getTextureFromID(blockID));
+		SetMaterialTexture(&model->materials[0], MATERIAL_MAP_ALBEDO, getTextureFromID(blockID));
 		model->materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = getTextureFromID(blockID);
 		defaultColor = WHITE;
 	}
@@ -75,13 +72,6 @@ void GameObject::onDisable()
 	isEnabled = false;
 	UnloadMesh(*mesh);
 	UnloadModel(*model);
-}
-
-// Destroy Object After Delay (in milliseconds)
-void GameObject::onDestroy(Scene* scene)
-{
-	scene->gameMap.removeObject(this);
-	std::cout << "Destroy Object: " << name << std::endl;
 }
 
 void GameObject::render2D()
@@ -115,6 +105,25 @@ void GameObject::render3D()
 	};
 }
 
+void GameObject::update(Scene* scene, float deltaTime)
+{
+	if (!isEnabled) { return; }
+
+	// Update Data
+	rigidBody3D.collisionBox = GetMeshBoundingBox(*mesh);
+	rigidBody3D.Update(deltaTime);
+
+	lifeSpan += deltaTime;
+
+	if (isAlive) { endLife += deltaTime; }
+
+	if (!isAlive) {
+		if (lifeSpan > endLife) {
+			Destroy();
+		}
+	}
+}
+
 float setLife(float life, int time) { return static_cast<float>(life + time); }
 
 void GameObject::Destroy()
@@ -123,20 +132,11 @@ void GameObject::Destroy()
 	onDestroy(SceneManager::getInstance().currentScene);
 }
 
-void GameObject::update(Scene* scene, float deltaTime)
+// Destroy Object After Delay (in milliseconds)
+void GameObject::onDestroy(Scene* scene)
 {
-	if (!isEnabled) { return; }
-
-	// Update Data
-	rigidBody3D.collisionBox = GetMeshBoundingBox(*mesh);
-	rigidBody3D.update(scene->gameMap, deltaTime);
-
-	if (isAlive) { endLife += deltaTime; }
-	lifeSpan += deltaTime;
-
-	if (lifeSpan > endLife) {
-		Destroy();
-	}
+	scene->gameMap.removeObject(this);
+	std::cout << "Destroy Object: " << name << "\n";
 }
 
 void GameObject::onCollision(const GameObject* collider)

@@ -93,4 +93,10 @@ public:
 
 };
 
+inline ObjectType getType(void* object)
+{
+	auto check = static_cast<GameObject*>(object);
+	return static_cast<ObjectType>(check->type);
+}
+
 #endif

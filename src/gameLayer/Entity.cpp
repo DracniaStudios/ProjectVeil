@@ -25,7 +25,6 @@ void Entity::render3D()
 
 void Entity::update(Scene* scene, float deltaTime)
 {
-	std::cout << "Update Entity \n";
 	GameObject::update(scene, deltaTime);
 
 	stamina = Clamp(stamina, 0, getMaxStamina());
@@ -48,7 +47,6 @@ void Entity::onHit(const Entity* collider)
 void Entity::Attack()
 {
 	std::cout << "Start Attack: " << name << "\n";
-
 	//if (!WaitTimer(attackStartTime, canAttack, 3)) return;
 
 	canAttack = false;
@@ -62,7 +60,7 @@ void Entity::Attack()
 	projectile.rigidBody3D.scale = Vector3(0.2f, 0.2f, 0.2f);
 	projectile.meshVariant = MESH_CUBE;
 
-	projectile.rigidBody3D.velocity = Vector3Scale(rigidBody3D.forward, projectile.baseSpeed * 10);
+	projectile.rigidBody3D.SetVelocity(Vector3Scale(rigidBody3D.forward, projectile.baseSpeed * 10));
 	
 	projectile.Decay(3);
 	projectile.health = -1;

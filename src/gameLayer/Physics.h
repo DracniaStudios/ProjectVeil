@@ -233,21 +233,25 @@ struct RigidBody3D : public Transform3D
 private:
 	// pointer to owning GameObject
 	GameObject* collidingWith = nullptr;
-public:
 
 	Vector3 lastPosition = {};
 	Vector3 velocity = {};
 	Vector3 acceleration = {};
-	BoundingBox collisionBox = {};
+	Vector3 appliedGravity = Vector3{0, 20, 0};
 
 	float maxSpeed = 200.0f;
 	float drag = 0.9f;
-	
-	bool isEnabled = true;
+
 	bool useGravity = true;
-	bool isStatic = false;
 	bool isColliding = false;
 
+	float airTime = 0;
+public:
+	
+	bool isEnabled = true;
+	bool isStatic = false;
+
+	BoundingBox collisionBox = {};
 	bool upTouch = false;
 	bool downTouch = false; // isGrounded
 	bool frontTouch = false; // X+1
@@ -255,32 +259,34 @@ public:
 	bool leftTouch = false; // Z-1
 	bool rightTouch = false; // Z+1
 
-	void teleport(Vector3 newPosition)
-	{
-		translation = newPosition;
-		lastPosition = newPosition;
-	}
+	void SetGravity(Vector3 gravity) { appliedGravity = gravity; }
+	Vector3 GetGravity() const { return appliedGravity; }
 
-	float airTime = 0;
+	void SetVelocity(Vector3 value) { velocity = value; }
 
-	void applyGravity()	{	acceleration -= Vector3{ 0, 20, 0 }; }//Vector3{ 0, 9.81f, 0 }
-	void addForce(Vector3 forceDirection, float force){ velocity += Vector3Scale(forceDirection, force);}
-	void jump(float force){	if (downTouch) { velocity.y = force; }}
+	/// Get Values
+	GameObject* GetCollider() const { return collidingWith; }
+	BoundingBox* GetColliderBox() { return &collisionBox; }
+	Vector3 GetVelocity() const { return velocity; }
+	Vector3 GetAcceleration() const { return acceleration; }
 
-	void updateForce(GameMap gameMap, float deltaTime);
-	void update(GameMap gameMap, float deltaTime);
+	/// Force Application
+	void ApplyGravity();
+	void Teleport(Vector3 newPosition);
+	void AddForce(Vector3 forceDirection, float force);
+	void Jump(float force);
+	void UpdateForce(float deltaTime);
+	void Update(float deltaTime);
 
 	/// Collision Detection
 	bool isCollidingWith(const RigidBody3D& other) const;
 	Vector3 getCollisionNormal(const RigidBody3D& other) const;
 	float getPenetrationDepth(const RigidBody3D& other) const;
 	void checkRayCollision(const RigidBody3D& other);
-	GameObject* getCollider() const { return collidingWith; }
 
 	/// Constraint Resolution
 	void resolveConstrains(GameObject* self, GameObject* otherObject);
 	void resolveCollision(RigidBody3D& other);
-
 
 };
 

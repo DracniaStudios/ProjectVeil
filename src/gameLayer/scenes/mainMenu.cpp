@@ -1,4 +1,4 @@
-#include "mainMenu.h"
+#include "MainMenu.h"
 
 bool isImGuiEnabled = false;
 
@@ -129,22 +129,32 @@ Scene* Scene_MainMenuConstruct()
 	scene->gameMap.create(Vector3(100, 1, 100));
 	
 	// Add Player To Objects
-	scene->gameMap.gameObjects.push_back(player);
-	
+
 	player.name = "Player";
 	player.onEnable();
-	player.rigidBody3D.teleport(Vector3(0, 5, 0));
+	player.rigidBody3D.Teleport(Vector3(0, 5, 0));
+	scene->gameMap.saveEntityAt(player.getPosition(), player);
+	
+	Entity enemy = {};
+	enemy.name = "Enemy";
+	enemy.type = OBJECT_ENTITY;
+	enemy.defaultColor = RED;
+	enemy.rigidBody3D.translation = Vector3(5, 3, 0);
+	enemy.rigidBody3D.scale = Vector3(1, 1, 1);
+	enemy.rigidBody3D.rotation = QuaternionFromVector3ToVector3(enemy.getPosition(), Vector3Subtract(enemy.getPosition(), enemy.rigidBody3D.down));
+	enemy.rigidBody3D.isStatic = true;
+	enemy.forceFire = true;
+	scene->gameMap.saveEntityAt(enemy.getPosition(), enemy);
 
-	Entity target = {};
+	GameObject target = {};
 	target.name = "Target";
-	target.type = OBJECT_ENTITY;
+	target.type = OBJECT_GENERIC;
 	target.defaultColor = RED;
-	target.forceFire = false;
-	target.rigidBody3D.translation = Vector3(5, 3, 0);
-	target.rigidBody3D.scale = Vector3(2, 2, 2);
+	target.rigidBody3D.translation = Vector3(5, 3, 5);
+	target.rigidBody3D.scale = Vector3(1, 1, 1);
 	target.rigidBody3D.isStatic = true;
-
-	scene->gameMap.saveEntityAt(target.getPosition(), target);
-
+	scene->gameMap.saveObjectAt(target.getPosition(), target);
+	
+	
 	return scene;
 }

@@ -29,7 +29,7 @@ void GameMap::create(Vector3 size)
 }
 
 // Load Object into Scene (Vector3)
-GameObject& GameMap::saveObjectAt(Vector3 position, GameObject& object)
+GameObject* GameMap::saveObjectAt(Vector3 position, GameObject& object)
 {
 	auto scene = SceneManager::getInstance().currentScene;
 	auto id = scene->instanceHolder.getIdAndIncrement();
@@ -48,11 +48,11 @@ GameObject& GameMap::saveObjectAt(Vector3 position, GameObject& object)
 	gameObjects.push_back(object);
 
 	std::cout << "Added Object \n";
-	return gameObjects.back();
+	return &gameObjects.back();
 }
 
 
-Entity& GameMap::saveEntityAt(Vector3 position, Entity& entity)
+Entity* GameMap::saveEntityAt(Vector3 position, Entity& entity)
 {
 	auto scene = SceneManager::getInstance().currentScene;
 	
@@ -64,14 +64,17 @@ Entity& GameMap::saveEntityAt(Vector3 position, Entity& entity)
 	scene->entities[entity.id] = std::move(entity_ptr);
 
 	std::cout << "Added Object \n";
-	return *scene->entities[entity.id].get();
+	return scene->entities[entity.id].get();
 }
 
 // UnLoad Object From Scene
 void GameMap::removeObject(GameObject* object) {
     if (!object) return;
-
-	std::erase_if(SceneManager::getInstance().currentScene->gameMap.gameObjects, [&](GameObject& o){
-        return &o == object;
-    });
+	auto scene = SceneManager::getInstance().currentScene;
+	erase_if(scene->gameMap.gameObjects, [&](const GameObject& o) { return &o == object;});
+}
+void GameMap::removeEntity(Entity* entity)
+{
+	entity->health = -9999;
+	removeObject(entity);
 }
