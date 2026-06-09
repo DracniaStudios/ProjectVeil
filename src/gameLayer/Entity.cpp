@@ -56,7 +56,7 @@ void Entity::Attack()
 	projectile.baseDamage = baseDamage;
 	projectile.baseSpeed = 10;
 	
-	projectile.rigidBody3D.translation = rigidBody3D.translation + rigidBody3D.forward;
+	projectile.rigidBody3D.Teleport(rigidBody3D.translation + rigidBody3D.forward);
 	projectile.rigidBody3D.scale = Vector3(0.2f, 0.2f, 0.2f);
 	projectile.meshVariant = MESH_CUBE;
 
@@ -66,5 +66,5 @@ void Entity::Attack()
 	projectile.health = -1;
 	projectile.isAlive = false;
 
-	SceneManager::getInstance().currentScene->gameMap.saveObjectAt(projectile.rigidBody3D.translation, projectile);
+	SceneManager::getInstance().currentScene->gameMap.saveObject(projectile);
 }

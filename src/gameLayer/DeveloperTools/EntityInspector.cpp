@@ -43,7 +43,6 @@ void DeveloperWindow::ShowEntityInspector()
 			ImGui::TextColored(ImVec4(0, 255, 255, 255), "Flags");
 			ImGui::Checkbox("isEnabled", &object->rigidBody3D.isEnabled);
 			ImGui::Checkbox("isStatic", &object->rigidBody3D.isStatic);
-			ImGui::Checkbox("isInteractable", &object->isInteractable);
 			ImGui::Checkbox("isVisible", &object->display3DModel);
 			ImGui::Checkbox("Show Collider", &object->displayCollider);
 			ImGui::Checkbox("Up Touch", &object->rigidBody3D.upTouch);
@@ -193,7 +192,8 @@ void DeveloperWindow::ShowEntityInspector()
 		// Spawn Object Button
 		if (ImGui::Button("Spawn Entity"))
 		{
-			inspectEntity = scene->gameMap.saveEntityAt(object->getPosition(), *object);
+			object->rigidBody3D.Teleport(object->getPosition());
+			inspectEntity = scene->gameMap.saveEntity(*object);
 			newObject = {};
 			isCreatingEntity = false;
 		}

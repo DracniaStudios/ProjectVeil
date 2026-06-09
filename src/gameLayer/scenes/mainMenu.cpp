@@ -1,20 +1,18 @@
 #include "MainMenu.h"
 
-bool isImGuiEnabled = false;
+#include <Objects/Interactable/LockedBox.h>
 
-Player player{};
-GameObject* selectedObject{};
-Inventory inventory{};
-int miniGameID = 0;
+auto player = Player();
 
-GameObject* selectObject(Camera& cam)
+static GameObject* selectObject(Camera& cam)
 {
 
 	auto scene = SceneManager::getInstance().currentScene;
 
-	Ray selectRay;
-	selectRay.position = cam.position; // Adjust the ray's origin to be at the player's head height
-	selectRay.direction = player.camera.forward;
+	Ray selectRay = {
+		cam.position,
+		player.camera.forward
+	};
 
 	if (scene->gameMap.gameObjects.size() > 0)
 	{
@@ -63,9 +61,22 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 	}
 
 	/// Player Select Objects
-	if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+	if (IsKeyPressed(KEY_ONE))
 	{
-		selectedObject = selectObject(cam);
+		std::cout << "Activate Interaction \n";
+		auto cameraRay = Ray(player.camera.position, player.camera.forward);
+		for (auto& object : scene->gameMap.gameObjects)
+		{
+			auto collision = GetRayCollisionBox(cameraRay, object.rigidBody3D.collisionBox);
+			if (collision.hit)
+			{
+				std::cout << "Hit Ray \n";
+				if (InteractWithObject(&object))
+				{
+					std::cout << "Interacted \n";
+				}
+			}
+		}
 	}
 
 	/// Switch to 2D Mode
@@ -133,28 +144,35 @@ Scene* Scene_MainMenuConstruct()
 	player.name = "Player";
 	player.onEnable();
 	player.rigidBody3D.Teleport(Vector3(0, 5, 0));
-	scene->gameMap.saveEntityAt(player.getPosition(), player);
+	scene->gameMap.saveEntity(player);
 	
 	Entity enemy = {};
 	enemy.name = "Enemy";
 	enemy.type = OBJECT_ENTITY;
 	enemy.defaultColor = RED;
-	enemy.rigidBody3D.translation = Vector3(5, 3, 0);
-	enemy.rigidBody3D.scale = Vector3(1, 1, 1);
+	enemy.rigidBody3D.Teleport(Vector3(5, 3, 0));
+	enemy.rigidBody3D.scale = Vector3One();
 	enemy.rigidBody3D.rotation = QuaternionFromVector3ToVector3(enemy.getPosition(), Vector3Subtract(enemy.getPosition(), enemy.rigidBody3D.down));
 	enemy.rigidBody3D.isStatic = true;
-	enemy.forceFire = true;
-	scene->gameMap.saveEntityAt(enemy.getPosition(), enemy);
+	enemy.forceFire = false;
+	scene->gameMap.saveEntity(enemy);
 
 	GameObject target = {};
 	target.name = "Target";
 	target.type = OBJECT_GENERIC;
 	target.defaultColor = RED;
-	target.rigidBody3D.translation = Vector3(5, 3, 5);
-	target.rigidBody3D.scale = Vector3(1, 1, 1);
+	target.rigidBody3D.Teleport(Vector3(5, 3, 5));
+	target.rigidBody3D.scale = Vector3One();
 	target.rigidBody3D.isStatic = true;
-	scene->gameMap.saveObjectAt(target.getPosition(), target);
+	scene->gameMap.saveObject(target);
 	
-	
+	LockedBox box = {};
+	box.name = "Locked Box";
+	box.type = OBJECT_GENERIC;
+	box.defaultColor = Color(255, 191, 0, 255);
+	box.rigidBody3D.Teleport(Vector3(0, 3, 10));
+	box.rigidBody3D.scale = Vector3One();
+	scene->gameMap.saveObject(box);
+
 	return scene;
 }

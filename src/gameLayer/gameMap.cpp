@@ -24,12 +24,12 @@ void GameMap::create(Vector3 size)
 	floor.rigidBody3D.scale = size;
 	floor.defaultColor = BLACK;
 
-	saveObjectAt(floor.getPosition(), floor);
+	saveObject(floor);
 
 }
 
 // Load Object into Scene (Vector3)
-GameObject* GameMap::saveObjectAt(Vector3 position, GameObject& object)
+GameObject* GameMap::saveObject(GameObject& object)
 {
 	auto scene = SceneManager::getInstance().currentScene;
 	auto id = scene->instanceHolder.getIdAndIncrement();
@@ -37,7 +37,6 @@ GameObject* GameMap::saveObjectAt(Vector3 position, GameObject& object)
 	object.id = id;
 
 	/// Set RigidBody3D Data
-	object.rigidBody3D.translation = position;
 	if (object.rigidBody3D.scale == Vector3Zero())
 	{
 		object.rigidBody3D.scale = Vector3One();
@@ -52,12 +51,12 @@ GameObject* GameMap::saveObjectAt(Vector3 position, GameObject& object)
 }
 
 
-Entity* GameMap::saveEntityAt(Vector3 position, Entity& entity)
+Entity* GameMap::saveEntity(Entity& entity)
 {
 	auto scene = SceneManager::getInstance().currentScene;
 	
 	// Sets Object ID and Adds To Scene
-	saveObjectAt(entity.getPosition(), entity);
+	saveObject(entity);
 
 	/// Add Entity To Scene Entity Data
 	auto entity_ptr = std::make_unique<Entity>(entity);

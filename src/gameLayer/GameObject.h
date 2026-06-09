@@ -6,7 +6,6 @@
 #include <raylib.h>
 #include <Physics.h>
 
-
 struct Scene;
 
 enum MeshType
@@ -33,19 +32,21 @@ enum ObjectType
 	OBJECT_COUNT
 };
 
+/** Game Object Data **/
 struct GameObject 
 {
-private: 
-public:
 	GameObject();
-
 	/// Data
 	const char* name = "GameObject";
-	int type = OBJECT_GENERIC;
 	std::uint64_t id = 0;
 
+	int type = OBJECT_GENERIC;
+	/// Debug Display
+	bool display3DModel = true;
+	bool displayDirection = false;
+	bool displayCollider = false;
+	
 	/// Status
-
 	float lifeSpan = 0;
 	float endLife = 0;
 	float decayTime = 0;
@@ -54,17 +55,11 @@ public:
 	/// Flags
 	bool isEnabled = true;
 	bool canBeSelected = true;
-	bool isInteractable = false;
 	bool isAlive = true;
 	bool isDestructable = true;
-	
-	/// Debug Display
-	bool display3DModel = true;
-	bool displayDirection = false;
-	bool displayCollider = false;
 
 	/// Physics
-	RigidBody3D rigidBody3D{};
+	RigidBody3D rigidBody3D = {};
 
 	/// Renderer
 	Model* model = new Model{};
@@ -76,9 +71,9 @@ public:
 	// Developer Menu Texture Test
 	int blockID = -1;
 
-	Vector3 getPosition() { return rigidBody3D.translation; }
-	Quaternion getRotation() { return rigidBody3D.rotation; }
-	Vector3 getSize() { return rigidBody3D.scale; }
+	Vector3 getPosition() const { return rigidBody3D.translation; }
+	Quaternion getRotation() const { return rigidBody3D.rotation; }
+	Vector3 getSize() const { return rigidBody3D.scale; }
 
 	virtual void update(Scene* scene, float deltaTime);
 	virtual void render2D();
@@ -93,10 +88,39 @@ public:
 
 };
 
+/** Interfaces **/
+
+
+class IInteractable
+{
+	bool isInteractable = true;
+public:
+	IInteractable() = default;
+	virtual ~IInteractable() = default;
+
+	virtual void Interact() = 0;
+	virtual void OnInteract() = 0;
+};
+
+
+inline bool InteractWithObject(GameObject* interactable)
+{
+	if (auto* interactObject = dynamic_cast<IInteractable*>(interactable))
+	{
+		std::cout << "Is Interactable \n";
+		interactObject->Interact();
+		return true;
+	}
+	return false;
+}
+
+/** Global Check Functions **/
 inline ObjectType getType(void* object)
 {
 	auto check = static_cast<GameObject*>(object);
 	return static_cast<ObjectType>(check->type);
 }
+
+
 
 #endif

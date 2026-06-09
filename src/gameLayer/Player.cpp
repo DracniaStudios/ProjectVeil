@@ -217,7 +217,7 @@ void Player::Fire()
 	projectile.baseDamage = baseDamage * 0.5f;
 	projectile.baseSpeed = 10;
 
-	projectile.rigidBody3D.translation = rigidBody3D.translation + camera.forward;
+	projectile.rigidBody3D.Teleport(Vector3Add(rigidBody3D.getPosition(), camera.forward));
 	projectile.rigidBody3D.scale = Vector3(0.2f, 0.2f, 0.2f);
 	projectile.meshVariant = MESH_CUBE;
 
@@ -229,7 +229,7 @@ void Player::Fire()
 	projectile.isAlive = false;
 	projectile.isDestructable = true;
 
-	SceneManager::getInstance().currentScene->gameMap.saveObjectAt(projectile.rigidBody3D.translation, projectile);
+	SceneManager::getInstance().currentScene->gameMap.saveObject(projectile);
 
 }
 

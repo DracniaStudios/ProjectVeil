@@ -2,8 +2,7 @@
 
 #include <GameMap.h>
 #include <iostream>
-
-#include "SceneManager.h"
+#include <SceneManager.h>
 
 
 #pragma region Collision
@@ -12,7 +11,7 @@ void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 	// Auto function to Create a Ray
 	auto generateRay = [&](Vector3 position, Vector3 direciton)
 		{
-			Ray newRay;
+			Ray newRay{};
 			newRay.position = position;
 			newRay.direction = direciton;
 			return newRay;

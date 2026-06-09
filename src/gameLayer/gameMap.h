@@ -14,8 +14,8 @@ struct GameMap {
 	void create(Vector3 size);
 
 	// Alter Data
-	GameObject* saveObjectAt(Vector3 position, GameObject& object);
-	Entity* saveEntityAt(Vector3 position, Entity& object);
+	GameObject* saveObject(GameObject& object);
+	Entity* saveEntity(Entity& object);
 
 	void removeObject(GameObject* object);
 	void removeEntity(Entity* entity);

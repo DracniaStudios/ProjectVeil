@@ -2,6 +2,7 @@
 
 #include <GameMap.h>
 #include <iostream>
+#include <SceneManager.h>
 
 void RigidBody2D::resolveConstrains(GameMap& mapData)
 {

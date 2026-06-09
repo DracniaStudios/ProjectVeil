@@ -10,14 +10,12 @@
 
 [ Added ]
 
-
+- Added new Locked Box Object
+- Added new IInteractable class ( Concepts / Interface)
 
 [ Updated ]
 
-- Updated AssetManager to become a class.
-- Updated Developer Window by splitting Inspectors into seperate files.
-- Updated Developer Window to become a class.
-- Updated Physics by splitting RigidBody3D and RigidBody2D into seperate files.
+- Updated GameMap to only use object position inside function ( removed position paramater )
 
 [ Fixed ]
 

@@ -9,7 +9,7 @@ void DeveloperWindow::ShowPlayerData(Player* player)
 
 	if (ImGui::Button("Hurt Player")) { player->health -= 1; }
 	ImGui::InputFloat("Player Health: ", &player->health, 1, 1);
-	ImGui::Checkbox("Is Firing", player->IsFiring());
+	ImGui::Checkbox("Is Firing", &player->isFiring);
 
 	/// Show Rigidbody Data based on space
 	if (scene->is2DActive)

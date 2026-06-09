@@ -3,12 +3,10 @@
 #define PLAYER_H
 
 #include <raylib.h>
-
 #include <Entity.h>
 
-struct Player;
-struct PlayerCamera;
 
+struct Player;
 struct PlayerCamera
 {
 	Vector3 forward;
@@ -28,22 +26,18 @@ struct PlayerCamera
 
 struct Player : public Entity
 {
-private:
-	bool isFiring = false;
-
 public:
 
 	RigidBody2D rigidBody2D = {};
-
 	Vector2 moveDirection = {};
 
+	bool isFiring = false;
 	bool isCrouching = false;
 
 	/// Camera Data
 	PlayerCamera camera = {};
 
 	/// Functions
-	bool* IsFiring() { return &isFiring; }
 
 	// Render And Update
 	void render2D();
