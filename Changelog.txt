@@ -1,21 +1,25 @@
 // Game Name: Subject Veil
-// Version: 0.1.33
+// Version: 0.1.35
 // Due: 2026-06-19 (Interacting)
-// Date: 2026-06-08 (Current Development Date)
+// Date: 2026-06-10 (Current Development Date)
 
 [ Issues ]
 
 - Found an issue where the Mini Game scenes use only percentage placement for objects with no pixel optionality.
+- Found an issue where ImGui can't load unknown data ( stops at Scene->draw3D )
 - Found an issue where objects can't load object textures and return null ( just black )
 
 [ Added ]
 
-- Added new Locked Box Object
-- Added new IInteractable class ( Concepts / Interface)
+- Player can now run MiniGame(s) by using Number Keys (1 & 2).
 
 [ Updated ]
 
-- Updated GameMap to only use object position inside function ( removed position paramater )
+- Updated MiniGame Inspector to only Initialize minigame.
+- Updated MiniGame to use Player as a parameter on Initialization.
+- Updated All Minigames (Crane and Flappybird) to teleport player on Initialization.
+
+- Updated Scene to use data from SceneManager Instance.
 
 [ Fixed ]
 

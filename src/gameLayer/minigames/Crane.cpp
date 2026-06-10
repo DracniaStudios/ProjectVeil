@@ -71,7 +71,7 @@ void Crane::render(void* manager_ptr, void* player_ptr)
 void Crane::update(void* manager_ptr, void* player_ptr, float deltaTime)
 {
 	auto manager = static_cast<SceneManager*>(manager_ptr);
-	auto scene = static_cast<Scene*>(manager->currentScene->object_ptr);
+	auto scene = manager->currentScene;
 	auto player = static_cast<Player*>(player_ptr);
 
 	/// Player Logic
@@ -103,13 +103,15 @@ void Crane::update(void* manager_ptr, void* player_ptr, float deltaTime)
 
 }
 
-MiniGame* MiniGame_crane()
+MiniGame* MiniGame_crane(Player* player)
 {
 	MiniGame* game = new MiniGame();
 	game->name = "Crane";
 	game->update = &Crane::update;
 	game->draw = &Crane::render;
 	game->data = &craneData;
+
+	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
 
 	generateCrane(6);
 

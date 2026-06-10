@@ -38,10 +38,10 @@ static GameObject* selectObject(Camera& cam)
 
 }
 
-void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
+void Scene_MainMenuUpdate(float deltaTime)
 {
-	auto manager = static_cast<SceneManager*>(manager_ptr);
-	auto scene = static_cast<Scene*>(object_ptr);
+	auto manager = &SceneManager::getInstance();
+	auto scene = manager->currentScene;
 	auto& cam = manager->camera3D;
 
 	/// Update Scene Data
@@ -57,7 +57,7 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 
 	if (scene->isMiniActive && scene->miniGame != nullptr)
 	{
-		scene->miniGame->update(manager_ptr, &player, deltaTime);
+		scene->miniGame->update(manager, &player, deltaTime);
 	}
 
 	/// Player Select Objects
@@ -84,16 +84,20 @@ void Scene_MainMenuUpdate(void* manager_ptr, void* object_ptr, float deltaTime)
 	{
 		scene->is2DActive = !scene->is2DActive;
 	}
+
+	if (IsKeyPressed(KEY_ONE)) { scene->miniGame = MiniGame_flappyBird(&player); }
+	if (IsKeyPressed(KEY_TWO)) { scene->miniGame = MiniGame_crane(&player); }
+
 #pragma region ImGui
 	DeveloperWindow::getInstance().update(&player);
 	
 #pragma endregion
 }
 
-void Scene_MainMenuDraw2D(void* manager_ptr, void* object_ptr)
+void Scene_MainMenuDraw2D()
 {
-	auto manager = static_cast<SceneManager*>(manager_ptr);
-	auto scene = static_cast<Scene*>(object_ptr);
+	auto manager = &SceneManager::getInstance();
+	auto scene = manager->currentScene;
 
 	if (scene->is2DActive)
 	{
@@ -106,17 +110,17 @@ void Scene_MainMenuDraw2D(void* manager_ptr, void* object_ptr)
 		/// Mini Games On Top
 		if (scene->isMiniActive && scene->miniGame != nullptr)
 		{
-			scene->miniGame->draw(manager_ptr, object_ptr);
+			scene->miniGame->draw(manager, scene);
 		}
 	}
 	player.render2D();
 	/// Always Render Player Last (On Top)
 };
 
-void Scene_MainMenuDraw3D(void* manager_ptr, void* object_ptr)
+void Scene_MainMenuDraw3D()
 {
-	auto manager = static_cast<SceneManager*>(manager_ptr);
-	auto scene = static_cast<Scene*>(object_ptr);
+	auto manager = &SceneManager::getInstance();
+	auto scene = static_cast<Scene*>(manager->currentScene);
 
 	DrawGrid(100.0f, 1.0f);
 	
@@ -132,10 +136,10 @@ void Scene_MainMenuDraw3D(void* manager_ptr, void* object_ptr)
 Scene* Scene_MainMenuConstruct()
 {
 	Scene* scene = Scene_new();
+	scene->name = "Mini Game";
 	scene->update = Scene_MainMenuUpdate;
 	scene->draw2D = Scene_MainMenuDraw2D;
 	scene->draw3D = Scene_MainMenuDraw3D;
-	scene->object_ptr = scene;
 
 	scene->gameMap.create(Vector3(100, 1, 100));
 	

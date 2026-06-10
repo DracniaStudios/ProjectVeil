@@ -33,7 +33,7 @@ void SceneManager_update(SceneManager* manager, float delta) {
 	}
 
 	// Update Scene
-	if (manager->currentScene) Scene_updateScene(manager, manager->currentScene, delta);
+	if (manager->currentScene) Scene_updateScene(delta);
 
 }
 
@@ -41,12 +41,12 @@ void SceneManager_draw(SceneManager* manager) {
 
 	// Draw Scene 3D
 	BeginMode3D(manager->camera3D);
-	if (manager->currentScene) Scene_drawScene3D(manager, manager->currentScene);
+	if (manager->currentScene) Scene_drawScene3D();
 	EndMode3D();
 	
 	// Draw Scene 2D
 	BeginMode2D(manager->camera2D);
-	if (manager->currentScene) Scene_drawScene2D(manager, manager->currentScene);
+	if (manager->currentScene) Scene_drawScene2D();
 
 	std::string displayText = "( ";
 	displayText += std::to_string(GetMousePosition().x);

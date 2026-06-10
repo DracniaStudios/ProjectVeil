@@ -19,17 +19,8 @@ void DeveloperWindow::ShowMiniGameData(Player* player)
 		switch (currentGameID)
 		{
 			// Select Mini Game
-		case 1:
-			scene->miniGame = MiniGame_crane();
-			scene->isMiniActive = true;
-			player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.2f));
-			break;
-		default:
-			scene->miniGame = MiniGame_flappyBird();
-			scene->isMiniActive = true;
-			player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
-
-			break;
+			case 1: scene->miniGame = MiniGame_crane(player);break;
+			default: scene->miniGame = MiniGame_flappyBird(player); break;
 		}
 	}
 	ImGui::Separator();

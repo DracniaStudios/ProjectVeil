@@ -26,15 +26,15 @@
  * @param object_ptr The object_ptr contained in Scene Object
  * @param delta The current deltaTime
  */
-typedef void (*updateSceneMethod)(void* manager_ptr, void* object_ptr, float delta);
+typedef void (*updateSceneMethod)(float delta);
 
 /**
  * Define an draw method
  * @param object_ptr The object_ptr contained in Scene Object
  */
-typedef void (*drawSceneMethod2D)(void* manager_ptr, void* object_ptr);
+typedef void (*drawSceneMethod2D)();
 
-typedef void (*drawSceneMethod3D)(void* manager_ptr, void* object_ptr);
+typedef void (*drawSceneMethod3D)();
 
 /**
  * Struct to represent a Scene
@@ -50,9 +50,7 @@ struct InstanceID
 };
 
 typedef struct Scene {
-	const char* name = {};
-
-	void* object_ptr; // Reference Scene
+	const char* name = "Scene";
 
 	bool is2DActive = false; // 2D Mode
 	bool isMiniActive = false;// Mini Game 
@@ -79,14 +77,14 @@ Scene* Scene_new();
  * @param scene The Scene to update
  * @param delta The current deltaTime
  */
-void Scene_updateScene(void* manager_ptr, Scene* scene, float delta);
+void Scene_updateScene(float delta);
 
 /**
  * Draw the current Scene active
  * @param scene The Scene to draw
  */
-void Scene_drawScene2D(void* manager_ptr, Scene* scene);
-void Scene_drawScene3D(void* manager_ptr, Scene* scene);
+void Scene_drawScene2D();
+void Scene_drawScene3D();
 
 /**
  * Define an construction method for all Scene

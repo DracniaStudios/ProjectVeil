@@ -48,8 +48,11 @@ void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 }
 
 /** Scene Functions **/
-void Scene_updateScene(void* manager_ptr, Scene* scene, float delta) {
-	scene->update(manager_ptr, scene->object_ptr, delta);
+void Scene_updateScene(float delta) {
+
+	auto manager = &SceneManager::getInstance();
+	auto scene = manager->currentScene;
+	scene->update(delta);
 
 	// Update GameObjects
 	for (auto entity = scene->entities.begin(); entity != scene->entities.end();)
@@ -87,10 +90,14 @@ void Scene_updateScene(void* manager_ptr, Scene* scene, float delta) {
 
 }
 
-void Scene_drawScene2D(void* manager_ptr, Scene* scene) {
-	scene->draw2D(manager_ptr, scene->object_ptr);
+void Scene_drawScene2D() {
+	auto manager = &SceneManager::getInstance();
+	auto scene = manager->currentScene;
+	if (scene != nullptr) { scene->draw2D(); }
 }
 
-void Scene_drawScene3D(void* manager_ptr, Scene* scene) {
-	scene->draw3D(manager_ptr, scene->object_ptr);
+void Scene_drawScene3D() {
+	auto manager = &SceneManager::getInstance();
+	auto scene = manager->currentScene;
+	if (scene != nullptr) { scene->draw3D(); }
 }
