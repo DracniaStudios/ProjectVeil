@@ -8,7 +8,6 @@
 void Entity::onEnable()
 {
 	GameObject::onEnable();
-
 	health = getMaxHealth();
 	stamina = getMaxStamina();
 }

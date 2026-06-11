@@ -247,7 +247,7 @@ private:
 
 	float airTime = 0;
 public:
-	
+
 	bool isEnabled = true;
 	bool isStatic = false;
 

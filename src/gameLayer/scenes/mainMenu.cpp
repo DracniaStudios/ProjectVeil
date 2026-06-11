@@ -4,7 +4,7 @@
 
 auto player = Player();
 
-static GameObject* selectObject(Camera& cam)
+static GameObject* selectObject(const Camera& cam)
 {
 
 	auto scene = SceneManager::getInstance().currentScene;
@@ -14,7 +14,7 @@ static GameObject* selectObject(Camera& cam)
 		player.camera.forward
 	};
 
-	if (scene->gameMap.gameObjects.size() > 0)
+	if (!scene->gameMap.gameObjects.empty())
 	{
 		for (auto& object : scene->gameMap.gameObjects)
 		{
@@ -55,9 +55,10 @@ void Scene_MainMenuUpdate(float deltaTime)
 		player.camera.UpdateCameraFPS(&cam, &player);
 	}
 
+	/** Possible Issue? **/
 	if (scene->isMiniActive && scene->miniGame != nullptr)
 	{
-		scene->miniGame->update(manager, &player, deltaTime);
+		scene->miniGame->update(&player, deltaTime);
 	}
 
 	/// Player Select Objects
@@ -80,13 +81,17 @@ void Scene_MainMenuUpdate(float deltaTime)
 	}
 
 	/// Switch to 2D Mode
-	if (IsKeyPressed(KEY_TAB))
-	{
-		scene->is2DActive = !scene->is2DActive;
-	}
+	if (IsKeyPressed(KEY_TAB)){ scene->is2DActive = !scene->is2DActive;}
 
-	if (IsKeyPressed(KEY_ONE)) { scene->miniGame = MiniGame_flappyBird(&player); }
-	if (IsKeyPressed(KEY_TWO)) { scene->miniGame = MiniGame_crane(&player); }
+	/// Change Mini Game
+	if (scene->miniGame != nullptr) { scene->isMiniActive = true; }
+	if (IsKeyPressed(KEY_ONE)) { scene->miniGame = MiniGame_FlappyBird(&player); }
+	if (IsKeyPressed(KEY_TWO)) { scene->miniGame = MiniGame_Crane(&player); }
+	if (IsKeyPressed(KEY_THREE)) { scene->miniGame = MiniGame_Doctor(&player); }
+	if (IsKeyPressed(KEY_FOUR)) { scene->miniGame = MiniGame_SimonSays(&player); }
+	if (IsKeyPressed(KEY_FIVE)) { scene->miniGame = MiniGame_TimedSimonSays(&player); }
+	if (IsKeyPressed(KEY_SIX)) { scene->miniGame = MiniGame_Maze(&player); }
+	if (IsKeyPressed(KEY_SEVEN)) { scene->miniGame = MiniGame_RoShamBoo(&player); }
 
 #pragma region ImGui
 	DeveloperWindow::getInstance().update(&player);
@@ -110,7 +115,7 @@ void Scene_MainMenuDraw2D()
 		/// Mini Games On Top
 		if (scene->isMiniActive && scene->miniGame != nullptr)
 		{
-			scene->miniGame->draw(manager, scene);
+			scene->miniGame->draw(&player);
 		}
 	}
 	player.render2D();
@@ -136,7 +141,7 @@ void Scene_MainMenuDraw3D()
 Scene* Scene_MainMenuConstruct()
 {
 	Scene* scene = Scene_new();
-	scene->name = "Mini Game";
+	scene->name = "Main Menu";
 	scene->update = Scene_MainMenuUpdate;
 	scene->draw2D = Scene_MainMenuDraw2D;
 	scene->draw3D = Scene_MainMenuDraw3D;

@@ -13,10 +13,6 @@ private:
 	float attackStartTime = 1.0f;
 	float attackWaitTime = 3.0f;
 public:
-	
-	/** Data **/
-	const char* name = "Entity";
-	
 	/** Status **/
 	float health = 1.0f;
 	float maxHealth = 10.0f;

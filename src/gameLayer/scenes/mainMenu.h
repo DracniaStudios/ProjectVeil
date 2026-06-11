@@ -7,7 +7,7 @@ Scene& loadScene(Scene& scene);
 
 struct MainMenu : Scene
 {
-	const char* name = "Main Menu";
+	
 };
 
 void Scene_MainMenuUpdate(float delta);

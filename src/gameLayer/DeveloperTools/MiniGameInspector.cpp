@@ -9,7 +9,7 @@ void DeveloperWindow::ShowMiniGameData(Player* player)
 
 	ImGui::Text("Display Mini Game Data");
 	ImGui::InputInt("Mini Game ID", &currentGameID, 1, 1);
-	currentGameID = Clamp(currentGameID, 0, 2);
+	currentGameID = Clamp(currentGameID, 0, 6);
 
 	ImGui::Checkbox("Is Mini Game Active", &scene->isMiniActive);
 
@@ -19,8 +19,13 @@ void DeveloperWindow::ShowMiniGameData(Player* player)
 		switch (currentGameID)
 		{
 			// Select Mini Game
-			case 1: scene->miniGame = MiniGame_crane(player);break;
-			default: scene->miniGame = MiniGame_flappyBird(player); break;
+			case 1: scene->miniGame = MiniGame_Crane(player);break;
+			case 2: scene->miniGame = MiniGame_Doctor(player);break;
+			case 3: scene->miniGame = MiniGame_SimonSays(player);break;
+			case 4: scene->miniGame = MiniGame_TimedSimonSays(player);break;
+			case 5: scene->miniGame = MiniGame_Maze(player);break;
+			case 6: scene->miniGame = MiniGame_RoShamBoo(player);break;
+			default: scene->miniGame = MiniGame_FlappyBird(player); break;
 		}
 	}
 	ImGui::Separator();
@@ -32,8 +37,6 @@ void DeveloperWindow::ShowMiniGameData(Player* player)
 	{
 		ImGui::Text("Score: %d", scene->miniGame->data->score);
 		ImGui::Text("Score Goal: %d", scene->miniGame->data->scoreGoal);
-		ImGui::Text("Is Left Goal Active: %s", scene->miniGame->data->isLeftGoalActive ? "True" : "False");
-		ImGui::Text("Is Right Goal Active: %s", scene->miniGame->data->isRightGoalActive ? "True" : "False");
 		ImGui::InputFloat4("Screen Size: %d", &scene->miniGame->data->screen.x);
 		ImGui::InputFloat4("Goal Size: %d", &scene->miniGame->data->goal.x);
 

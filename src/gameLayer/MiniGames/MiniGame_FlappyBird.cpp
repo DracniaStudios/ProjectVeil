@@ -1,6 +1,5 @@
-#include "FlappyBird.h"
+#include "MiniGame_FlappyBird.h"
 
-#include <Player.h>
 #include <SceneManager.h>
 
 Rectangle leftGoal = {};
@@ -12,8 +11,6 @@ bool isRightGoalActive = true;
 MiniGameData flappyData = {
 	0,
 	5,
-	false,
-	true,
 	{},
 	{},
 	{}
@@ -39,7 +36,7 @@ void generateObstacle(int count = 4)
 	}
 }
 
-void FlappyBird::render(void* manager_ptr, void* player_ptr)
+void FlappyBird::render(void* player_ptr)
 {
 	std::ranlux24_base rng(std::random_device{}());
 
@@ -77,10 +74,9 @@ void FlappyBird::render(void* manager_ptr, void* player_ptr)
 
 }
 
-void FlappyBird::update(void* manager_ptr, void* player_ptr, float deltaTime)
+void FlappyBird::update(void* player_ptr, float deltaTime)
 {
-	auto manager = static_cast<SceneManager*>(manager_ptr);
-	auto scene = manager->currentScene;
+	auto scene = SceneManager::getInstance().currentScene;
 	auto player = static_cast<Player*>(player_ptr);
 
 	Rectangle screen = {};
@@ -113,10 +109,10 @@ void FlappyBird::update(void* manager_ptr, void* player_ptr, float deltaTime)
 		generateObstacle(2 + flappyData.	score);
 	}
 
-	if (player->rigidBody2D.getPosition().x < screen.x) Reset(scene);
-	if (player->rigidBody2D.getPosition().y < screen.y) Reset(scene);
-	if (player->rigidBody2D.getPosition().x > screen.x + screen.width) Reset(scene);
-	if (player->rigidBody2D.getPosition().y > screen.y + screen.height) Reset(scene);
+	if (player->rigidBody2D.getPosition().x < screen.x) scene->miniGame->Reset();
+	if (player->rigidBody2D.getPosition().y < screen.y) scene->miniGame->Reset();
+	if (player->rigidBody2D.getPosition().x > screen.x + screen.width) scene->miniGame->Reset();
+	if (player->rigidBody2D.getPosition().y > screen.y + screen.height) scene->miniGame->Reset();
 
 	// Win Condition
 
@@ -141,7 +137,6 @@ void FlappyBird::update(void* manager_ptr, void* player_ptr, float deltaTime)
 
 	// Entity Logic
 	{
-		ImGui::Begin("Obstacles");
 		for (auto &obj : flappyData.obstacles)
 		{
 			Rectangle newSize = obj;
@@ -155,13 +150,12 @@ void FlappyBird::update(void* manager_ptr, void* player_ptr, float deltaTime)
 
 
 			ImGui::Text(std::to_string(obstacle.y).c_str());
-			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obstacle)) Reset(scene);
+			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obstacle)) scene->miniGame->Reset();
 		}
-		ImGui::End();
 	}
 }
 
-MiniGame* MiniGame_flappyBird(Player* player)
+MiniGame* MiniGame_FlappyBird(Player* player)
 {
 	MiniGame* game = new MiniGame();
 	game->name = "Flappy Bird";

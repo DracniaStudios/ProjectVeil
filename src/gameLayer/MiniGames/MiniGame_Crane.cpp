@@ -1,4 +1,4 @@
-#include "Crane.h"
+#include "MiniGame_Crane.h"
 
 #include <Player.h>
 #include <SceneManager.h>
@@ -6,8 +6,6 @@
 MiniGameData craneData = {
 	0,
 	1,
-	false,
-	true,
 	{},
 	{},
 	{}
@@ -39,7 +37,7 @@ void generateCrane(int count = 4)
 	}
 }
 
-void Crane::render(void* manager_ptr, void* player_ptr)
+void Crane::render(void* player_ptr)
 {
 	std::ranlux24_base rng(std::random_device{}());
 
@@ -68,9 +66,9 @@ void Crane::render(void* manager_ptr, void* player_ptr)
 
 }
 
-void Crane::update(void* manager_ptr, void* player_ptr, float deltaTime)
+void Crane::update(void* player_ptr, float deltaTime)
 {
-	auto manager = static_cast<SceneManager*>(manager_ptr);
+	auto manager = &SceneManager::getInstance();
 	auto scene = manager->currentScene;
 	auto player = static_cast<Player*>(player_ptr);
 
@@ -103,7 +101,7 @@ void Crane::update(void* manager_ptr, void* player_ptr, float deltaTime)
 
 }
 
-MiniGame* MiniGame_crane(Player* player)
+MiniGame* MiniGame_Crane(Player* player)
 {
 	MiniGame* game = new MiniGame();
 	game->name = "Crane";

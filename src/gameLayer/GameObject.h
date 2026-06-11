@@ -36,6 +36,7 @@ enum ObjectType
 struct GameObject 
 {
 	GameObject();
+
 	/// Data
 	const char* name = "GameObject";
 	std::uint64_t id = 0;
