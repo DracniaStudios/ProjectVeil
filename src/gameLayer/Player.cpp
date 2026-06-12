@@ -36,7 +36,6 @@ void Player::render2D()
 	if (scene->isMiniActive && scene->miniGame != nullptr)
 	{
 		DrawCircle(rigidBody2D.translation.x, rigidBody2D.translation.y, rigidBody2D.scale.x, WHITE);
-
 	}
 
 	/// Reticle
@@ -106,7 +105,7 @@ void Player::update3D(float deltaTime)
 	rigidBody3D.scale = Vector3(1, 2, 1);
 
 	/// Player Movement
-	auto speed = IsKeyDown(KEY_LEFT_SHIFT) ? baseSpeed * 2 : baseSpeed;
+	auto speed = IsKeyDown(KEY_LEFT_SHIFT) ? baseSpeed * 2 : IsKeyDown(KEY_LEFT_CONTROL) ? baseSpeed / 2 : baseSpeed;
 
 	// Player Movement Input
 	moveDirection = Vector2Zero();
@@ -163,6 +162,9 @@ void PlayerCamera::UpdateCameraFPS(Camera* camera, Player* player)
 {
 	auto up = Vector3(0.0f, 1.0f, 0.0f);
 	offset = Vector3(0, player->rigidBody3D.scale.y / 2, 0); // Camera offset to be at player's head
+
+	if (IsKeyDown(KEY_LEFT_CONTROL)) { offset.y /= 2; }
+
 	position = Vector3Add(player->rigidBody3D.translation, offset);
 	lookRotation.x -= GetMouseDelta().x * sensitivity.x;
 	lookRotation.y += GetMouseDelta().y * sensitivity.y;
@@ -211,26 +213,7 @@ void PlayerCamera::UpdateCameraFPS(Camera* camera, Player* player)
 // Projectile Variant
 void Player::Fire()
 {
-	Entity projectile = {};
-	projectile.name = "Projectile";
-	projectile.type = OBJECT_PROJECTILE;
-	projectile.baseDamage = baseDamage * 0.5f;
-	projectile.baseSpeed = 10;
-
-	projectile.rigidBody3D.Teleport(Vector3Add(rigidBody3D.getPosition(), camera.forward));
-	projectile.rigidBody3D.scale = Vector3(0.2f, 0.2f, 0.2f);
-	projectile.meshVariant = MESH_CUBE;
-
-	projectile.rigidBody3D.SetVelocity(Vector3Scale(camera.forward, projectile.baseSpeed * 10));
-
-	projectile.health = 0;
-	projectile.maxHealth = -1;
-	projectile.Decay(3);
-	projectile.isAlive = false;
-	projectile.isDestructable = true;
-
-	SceneManager::getInstance().currentScene->gameMap.saveObject(projectile);
-
+	std::cout << "Player Attacked\n";
 }
 
 void Player::FireLaser()

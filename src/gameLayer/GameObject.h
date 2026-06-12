@@ -57,7 +57,8 @@ struct GameObject
 	bool isEnabled = true;
 	bool canBeSelected = true;
 	bool isAlive = true;
-	bool isDestructable = true;
+	bool isDestructible = true;
+	bool isInteractable = false;
 
 	/// Physics
 	RigidBody3D rigidBody3D = {};
@@ -81,6 +82,7 @@ struct GameObject
 	virtual void render3D();
 	virtual void onEnable();
 	virtual void onDisable();
+	virtual void onInteract() { std::cout << name << "(base) was Interacted with.\n"; }
 
 	virtual void Destroy();
 	virtual void onDestroy(Scene* scene);
@@ -90,30 +92,6 @@ struct GameObject
 };
 
 /** Interfaces **/
-
-
-class IInteractable
-{
-	bool isInteractable = true;
-public:
-	IInteractable() = default;
-	virtual ~IInteractable() = default;
-
-	virtual void Interact() = 0;
-	virtual void OnInteract() = 0;
-};
-
-
-inline bool InteractWithObject(GameObject* interactable)
-{
-	if (auto* interactObject = dynamic_cast<IInteractable*>(interactable))
-	{
-		std::cout << "Is Interactable \n";
-		interactObject->Interact();
-		return true;
-	}
-	return false;
-}
 
 /** Global Check Functions **/
 inline ObjectType getType(void* object)

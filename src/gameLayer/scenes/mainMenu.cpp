@@ -62,19 +62,21 @@ void Scene_MainMenuUpdate(float deltaTime)
 	}
 
 	/// Player Select Objects
-	if (IsKeyPressed(KEY_ONE))
+	if (IsKeyPressed(KEY_F))
 	{
 		std::cout << "Activate Interaction \n";
 		auto cameraRay = Ray(player.camera.position, player.camera.forward);
-		for (auto& object : scene->gameMap.gameObjects)
+		for (auto object : scene->gameMap.gameObjects)
 		{
-			auto collision = GetRayCollisionBox(cameraRay, object.rigidBody3D.collisionBox);
+			auto ptr = &object;
+			auto collision = GetRayCollisionBox(cameraRay, ptr->rigidBody3D.collisionBox);
 			if (collision.hit)
 			{
-				std::cout << "Hit Ray \n";
-				if (InteractWithObject(&object))
+				std::cout << "Hit: " << ptr->name << "\n";
+				if (ptr->isInteractable)
 				{
-					std::cout << "Interacted \n";
+					std::cout << "Is Interactable: " << ptr->name << "\n";
+					ptr->onInteract();
 				}
 			}
 		}
@@ -151,8 +153,10 @@ Scene* Scene_MainMenuConstruct()
 	// Add Player To Objects
 
 	player.name = "Player";
-	player.onEnable();
+	player.type = OBJECT_PLAYER;
+	player.id = PLAYER_ID;
 	player.rigidBody3D.Teleport(Vector3(0, 5, 0));
+	player.onEnable();
 	scene->gameMap.saveEntity(player);
 	
 	Entity enemy = {};

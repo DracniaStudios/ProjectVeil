@@ -14,7 +14,7 @@ void GameMap::create(Vector3 size)
 	GameObject floor{};
 	floor.name = "Floor";
 	floor.canBeSelected = false;
-	floor.isDestructable = false;
+	floor.isDestructible = false;
 
 	floor.meshVariant = MESH_CUBE;
 	floor.meshData = Vector4One();
@@ -54,15 +54,28 @@ GameObject* GameMap::saveObject(GameObject& object)
 Entity* GameMap::saveEntity(Entity& entity)
 {
 	auto scene = SceneManager::getInstance().currentScene;
-	
+	auto id = scene->instanceHolder.getIdAndIncrement();
 	// Sets Object ID and Adds To Scene
-	saveObject(entity);
+	if (entity.type != OBJECT_PLAYER) {
+		
+		std::cout << "Added Object \n";
+	}
+	entity.id = id;
 
+	/// Set GameMap Data
+	entity.onEnable();
+
+	/// Set RigidBody3D Data
+	if (entity.rigidBody3D.scale == Vector3Zero())
+	{
+		entity.rigidBody3D.scale = Vector3One();
+	}
 	/// Add Entity To Scene Entity Data
 	auto entity_ptr = std::make_unique<Entity>(entity);
 	scene->entities[entity.id] = std::move(entity_ptr);
 
 	std::cout << "Added Object \n";
+	gameObjects.push_back(entity);
 	return scene->entities[entity.id].get();
 }
 

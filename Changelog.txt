@@ -1,7 +1,12 @@
 // Game Name: Subject Veil
-// Version: 0.1.36
+// Version: 0.1.37
 // Due: 2026-06-19 (Interacting)
-// Date: 2026-06-11 (Current Development Date)
+// Date: 2026-06-12 (Current Development Date)
+
+Create a special Interactable Object vector
+Can through the vector with object ID
+use Interect() with Interactable Object
+have Interctable Object return with message / Collected Item or activation
 
 [ Issues ]
 
@@ -12,24 +17,13 @@
 
 [ Added ]
 
-- Added new MiniGames across project (5 new games are not implemented but can run).
-- Added new SetGoal function to MiniGame struct.
 
 
 [ Updated ]
 
-- Renamed MiniGame files and functions to match naming scheme.
-- Updated miniGame to only use Player and DeltaTime as parameters.
 
 
 [ Fixed ]
 
-- Fixed an issue where the MiniGame Reset was resetting the scene data instead of minigame data.
-- Fixed an issue where "Main Menu" was called "Mini Game" (*facepalm*).
-
 [ Removed ]
 
-- Removed "isReset" from MiniGame.
-- Removed "is(Left/Right)GoalActive" from MiniGameData.
-- Removed Entity "name" parameter from struct (duplicate from GameObject).
-- Revomed MainMenu "name" parameter from struct ( duplicate from Scene).

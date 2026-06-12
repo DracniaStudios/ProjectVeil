@@ -115,7 +115,7 @@ void DeveloperWindow::ShowEntityInspector()
 			ImGui::Checkbox("isEnabled", &object->rigidBody3D.isEnabled);
 			ImGui::Checkbox("isStatic", &object->rigidBody3D.isStatic);
 			ImGui::Checkbox("isVisible", &object->display3DModel);
-			ImGui::Checkbox("isDestructible", &object->isDestructable);
+			ImGui::Checkbox("isDestructible", &object->isDestructible);
 			ImGui::Checkbox("Show Collider", &object->displayCollider);
 			ImGui::Checkbox("Up Touch", &object->rigidBody3D.upTouch);
 			ImGui::Checkbox("Down Touch", &object->rigidBody3D.downTouch);
