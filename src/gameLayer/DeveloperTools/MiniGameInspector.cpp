@@ -43,6 +43,7 @@ void DeveloperWindow::ShowMiniGameData(Player* player)
 		ImGui::Text("Obstacles: %d", scene->miniGame->data->obstacles.size());
 		for (auto& obj : scene->miniGame->data->obstacles)
 		{
+			ImGui::PushID(&obj);
 			if (ImGui::Button(std::to_string(obj.x).c_str()))
 			{
 				ImGui::Text("Object: X %f", obj.x);
@@ -51,6 +52,7 @@ void DeveloperWindow::ShowMiniGameData(Player* player)
 				ImGui::Text("Object: Height %f", obj.height);
 
 			}
+			ImGui::PopID();
 		}
 	}
 

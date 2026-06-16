@@ -54,7 +54,7 @@ void Scene_updateScene(float delta) {
 	auto scene = manager->currentScene;
 	scene->update(delta);
 
-	// Update GameObjects
+	/** Update GameObjects **/
 	for (auto entity = scene->entities.begin(); entity != scene->entities.end();)
 	{
 		// Update Data
@@ -78,8 +78,6 @@ void Scene_updateScene(float delta) {
 			entity->second->update(scene, delta);
 			++entity;
 		}
-
-
 	}
 
 	for (auto& object : scene->gameMap.gameObjects) {
@@ -87,6 +85,19 @@ void Scene_updateScene(float delta) {
 		object.update(scene, delta);
 	}
 	solveCollision(scene, delta, 8);
+
+	/** Complete MiniGame **/
+	if (auto miniGame = scene->miniGame)
+	{
+		if (miniGame->data->score >= miniGame->data->scoreGoal)
+		{
+			std::cout << "Completed Mini Game: " << miniGame->name << "\n";
+			scene->isMiniActive = false;
+			scene->is2DActive = false;
+			// Apply Effects and Boosts
+			scene->miniGame = nullptr;
+		}
+	}
 
 }
 

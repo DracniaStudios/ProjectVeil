@@ -39,10 +39,12 @@ void Player::render2D()
 	}
 
 	/// Reticle
-	DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 10, 
-		IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? RED
-		: IsMouseButtonDown(MOUSE_BUTTON_RIGHT) ? RED
-		: WHITE);
+	if (!scene->is2DActive) {
+		DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 10,
+			IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? RED
+			: IsMouseButtonDown(MOUSE_BUTTON_RIGHT) ? RED
+			: WHITE);
+	}
 }
 
 void Player::render3D()

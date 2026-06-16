@@ -46,7 +46,9 @@ public:
 	void onDisable() override;
 	void update2D(float deltaTime, bool canMove = true);
 	void update3D(float deltaTime);
-	
+
+	Vector2 getPosition2D() const { return Vector2{ rigidBody2D.translation.x, rigidBody2D.translation.y }; }
+	Vector2 getSize2D() const { return Vector2{ rigidBody2D.scale.x, rigidBody2D.scale.y }; }
 	// Status Functions
 
 	// Combat Functions

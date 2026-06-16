@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
-// Version: 0.1.37
-// Due: 2026-06-19 (Interacting)
-// Date: 2026-06-12 (Current Development Date)
+// Version: 0.1.39 
+// Due: 2026-06-16 (MiniGames)
+// Date: 2026-06-16 (Current Development Date)
 
 Create a special Interactable Object vector
 Can through the vector with object ID
@@ -17,13 +17,19 @@ have Interctable Object return with message / Collected Item or activation
 
 [ Added ]
 
-
+- Created new Arena Allocator Class for future implementation.
+- Created new Pool Allocator Class for future implementation.
+- Implemented MiniGame "Doctor" functionality
+- Added GetPosition2D and GetSize2D to Player.
 
 [ Updated ]
 
-
+- Updated "Scene" to disable and Reset MiniGame on completion of score.
+- Updated the player to draw Recticle when 2D mode is inactive.
 
 [ Fixed ]
+
+- Fixed an issue where ImGui Repeated Object IDs
 
 [ Removed ]
 

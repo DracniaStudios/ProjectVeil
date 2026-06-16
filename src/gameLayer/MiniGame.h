@@ -59,6 +59,7 @@ inline Rectangle generateObstacleRect(Rectangle screen, Rectangle rect)
 
 }
 
+// Generate a Rectangle based on ScreenSize to Percentage
 inline Rectangle getScreenScale(Rectangle rect)
 {
 	Rectangle r{};
