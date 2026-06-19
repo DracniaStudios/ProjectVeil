@@ -89,7 +89,7 @@ void Scene_updateScene(float delta) {
 	/** Complete MiniGame **/
 	if (auto miniGame = scene->miniGame)
 	{
-		if (miniGame->data->score >= miniGame->data->scoreGoal)
+		if (miniGame->data->score == miniGame->data->scoreGoal)
 		{
 			std::cout << "Completed Mini Game: " << miniGame->name << "\n";
 			scene->isMiniActive = false;

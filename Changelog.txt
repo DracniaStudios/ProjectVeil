@@ -1,12 +1,12 @@
 // Game Name: Subject Veil
 // Version: 0.1.39 
-// Due: 2026-06-16 (MiniGames)
+// Due: 2026-06-26 (MiniGames)
 // Date: 2026-06-16 (Current Development Date)
 
 Create a special Interactable Object vector
 Can through the vector with object ID
 use Interect() with Interactable Object
-have Interctable Object return with message / Collected Item or activation
+have Interactable Object return with message / Collected Item or activation
 
 [ Issues ]
 
@@ -17,19 +17,16 @@ have Interctable Object return with message / Collected Item or activation
 
 [ Added ]
 
-- Created new Arena Allocator Class for future implementation.
-- Created new Pool Allocator Class for future implementation.
-- Implemented MiniGame "Doctor" functionality
-- Added GetPosition2D and GetSize2D to Player.
+- Added Functinality to RoShamBoo.
+- Added Functionality to SimonSays.
 
 [ Updated ]
 
-- Updated "Scene" to disable and Reset MiniGame on completion of score.
-- Updated the player to draw Recticle when 2D mode is inactive.
+- Updated Scene.cpp to compare score and scoreGoal equally ( == not >= ).
 
 [ Fixed ]
 
-- Fixed an issue where ImGui Repeated Object IDs
+- Fixed an issue where MiniGameData is not initialized.
 
 [ Removed ]
 

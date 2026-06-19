@@ -30,7 +30,7 @@ struct MiniGame
 	const char* name = {};
 	updateGameMethod update;
 	drawGameMethod draw;
-	MiniGameData* data;
+	MiniGameData* data = {};
 
 	void SetGoal(const Rectangle rect) const { data->goal = rect; }
 	void Reset() { data = {}; }
