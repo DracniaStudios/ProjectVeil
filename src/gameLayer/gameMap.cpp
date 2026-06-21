@@ -54,13 +54,12 @@ GameObject* GameMap::saveObject(GameObject& object)
 Entity* GameMap::saveEntity(Entity& entity)
 {
 	auto scene = SceneManager::getInstance().currentScene;
-	auto id = scene->instanceHolder.getIdAndIncrement();
+	entity.id = scene->instanceHolder.getIdAndIncrement();
 	// Sets Object ID and Adds To Scene
 	if (entity.type != OBJECT_PLAYER) {
 		
 		std::cout << "Added Object \n";
 	}
-	entity.id = id;
 
 	/// Set GameMap Data
 	entity.onEnable();
@@ -74,12 +73,26 @@ Entity* GameMap::saveEntity(Entity& entity)
 	auto entity_ptr = std::make_unique<Entity>(entity);
 	scene->entities[entity.id] = std::move(entity_ptr);
 
-	std::cout << "Added Object \n";
+	std::cout << "Added Entity \n";
 	gameObjects.push_back(entity);
 	return scene->entities[entity.id].get();
 }
 
-// UnLoad Object From Scene
+InteractableObject* GameMap::saveInteractable(InteractableObject& object)
+{
+	auto scene = SceneManager::getInstance().currentScene;
+	object.id = scene->instanceHolder.getIdAndIncrement();
+	object.onEnable();
+
+	auto interact_ptr = std::make_unique<InteractableObject>(object);
+	scene->interactables[object.id] = std::move(interact_ptr);
+
+	std::cout << "Add Interactable \n";
+	gameObjects.push_back(object);
+	return scene->interactables[object.id].get();
+}
+
+// Unload Object From Scene
 void GameMap::removeObject(GameObject* object) {
     if (!object) return;
 	auto scene = SceneManager::getInstance().currentScene;
@@ -89,4 +102,16 @@ void GameMap::removeEntity(Entity* entity)
 {
 	entity->health = -9999;
 	removeObject(entity);
+}
+
+// Find GameObjects
+void* FindGameObjectByID(int id)
+{
+	auto gameMap = SceneManager::getInstance().currentScene->gameMap;
+
+	for (auto& obj : gameMap.gameObjects)
+	{
+		if (obj.id == id) { return &obj; }
+	}
+	return nullptr;
 }

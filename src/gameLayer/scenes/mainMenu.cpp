@@ -64,19 +64,22 @@ void Scene_MainMenuUpdate(float deltaTime)
 	/// Player Select Objects
 	if (IsKeyPressed(KEY_F))
 	{
-		std::cout << "Activate Interaction \n";
 		auto cameraRay = Ray(player.camera.position, player.camera.forward);
-		for (auto object : scene->gameMap.gameObjects)
+		for (auto& interactable : scene->interactables)
 		{
-			auto ptr = &object;
-			auto collision = GetRayCollisionBox(cameraRay, ptr->rigidBody3D.collisionBox);
+			auto obj = interactable.second.get();
+			GameObject* decoy;
+			for (auto& sceneObject : scene->gameMap.gameObjects) { if (sceneObject.id == obj->id) { decoy = &sceneObject; } }
+			std::cout << "Searching: " << obj->name << "\n";
+
+			auto collision = GetRayCollisionBox(cameraRay, decoy->rigidBody3D.collisionBox);
 			if (collision.hit)
 			{
-				std::cout << "Hit: " << ptr->name << "\n";
-				if (ptr->isInteractable)
+				std::cout << "Hit: " << obj->name << "\n";
+				if (obj->isInteractable)
 				{
-					std::cout << "Is Interactable: " << ptr->name << "\n";
-					ptr->onInteract();
+					std::cout << "Is Interactable: " << obj->name << "\n";
+					obj->onInteract();
 				}
 			}
 		}
@@ -127,7 +130,7 @@ void Scene_MainMenuDraw2D()
 void Scene_MainMenuDraw3D()
 {
 	auto manager = &SceneManager::getInstance();
-	auto scene = static_cast<Scene*>(manager->currentScene);
+	auto scene = manager->currentScene;
 
 	DrawGrid(100.0f, 1.0f);
 	
@@ -185,7 +188,7 @@ Scene* Scene_MainMenuConstruct()
 	box.defaultColor = Color(255, 191, 0, 255);
 	box.rigidBody3D.Teleport(Vector3(0, 3, 10));
 	box.rigidBody3D.scale = Vector3One();
-	scene->gameMap.saveObject(box);
+	scene->gameMap.saveInteractable(box);
 
 	return scene;
 }

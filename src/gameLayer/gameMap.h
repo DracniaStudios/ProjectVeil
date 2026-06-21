@@ -6,6 +6,8 @@
 #include <vector>
 #include <Entity.h>
 
+inline void* FindGameObjectByID(int id);
+
 struct GameMap {
 
 	std::vector<GameObject> gameObjects = {};
@@ -16,13 +18,14 @@ struct GameMap {
 	// Alter Data
 	GameObject* saveObject(GameObject& object);
 	Entity* saveEntity(Entity& object);
+	InteractableObject* saveInteractable(InteractableObject& object);
 
+	// Remove Data
 	void removeObject(GameObject* object);
 	void removeEntity(Entity* entity);
 
 	// Return Data
 	Vector3 getMapSize() const { return Vector3(size.x, size.y, size.z);}
-
 };
 
 #endif

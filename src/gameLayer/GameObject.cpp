@@ -144,5 +144,7 @@ void GameObject::onCollision(const GameObject* collider)
 	// Collision Data Checks
 }
 
-// Remove Object From Scene and Destroy It.
-// Called When Object's Health Reaches 0, or When Object is Otherwise Destroyed.
+void InteractableObject::onInteract()
+{
+	std::cout << "Interacted \n";
+}

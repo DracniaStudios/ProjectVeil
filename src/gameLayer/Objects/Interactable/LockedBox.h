@@ -5,7 +5,7 @@
 #include <randomStuff.h>
 
 
-struct LockedBox : GameObject
+struct LockedBox : InteractableObject
 {
 	void onInteract() override;
 	void onEnable() override;

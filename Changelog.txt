@@ -1,12 +1,7 @@
 // Game Name: Subject Veil
-// Version: 0.1.39 
+// Version: 0.1.42 
 // Due: 2026-06-26 (MiniGames)
-// Date: 2026-06-16 (Current Development Date)
-
-Create a special Interactable Object vector
-Can through the vector with object ID
-use Interect() with Interactable Object
-have Interactable Object return with message / Collected Item or activation
+// Date: 2026-06-21 (Current Development Date)
 
 [ Issues ]
 
@@ -17,16 +12,14 @@ have Interactable Object return with message / Collected Item or activation
 
 [ Added ]
 
-- Added Functinality to RoShamBoo.
-- Added Functionality to SimonSays.
+- Added new Interactable Objects to Scnene (similar to Entities)
+- Added new FindGameObjectByID to GameMap
 
 [ Updated ]
 
-- Updated Scene.cpp to compare score and scoreGoal equally ( == not >= ).
 
 [ Fixed ]
 
-- Fixed an issue where MiniGameData is not initialized.
 
 [ Removed ]
 

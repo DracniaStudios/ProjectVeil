@@ -1,4 +1,5 @@
 #include "LockedBox.h"
+#include "SceneManager.h"
 
 void LockedBox::onEnable()
 {

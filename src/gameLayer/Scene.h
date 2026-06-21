@@ -61,7 +61,8 @@ typedef struct Scene {
 
 	GameMap gameMap = {}; // The GameMap of the Scene
 	MiniGame* miniGame = {}; // Current Mini Game Loaded
-	std::unordered_map<std::uint64_t, std::unique_ptr<Entity>> entities{};
+	std::unordered_map<std::uint64_t, std::unique_ptr<Entity>> entities{}; 
+	std::unordered_map<std::uint64_t, std::unique_ptr<InteractableObject>> interactables{}; 
 	InstanceID instanceHolder = {}; // All Instances Stored
 
 } Scene;

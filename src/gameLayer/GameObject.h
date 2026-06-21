@@ -58,7 +58,6 @@ struct GameObject
 	bool canBeSelected = true;
 	bool isAlive = true;
 	bool isDestructible = true;
-	bool isInteractable = false;
 
 	/// Physics
 	RigidBody3D rigidBody3D = {};
@@ -82,7 +81,6 @@ struct GameObject
 	virtual void render3D();
 	virtual void onEnable();
 	virtual void onDisable();
-	virtual void onInteract() { std::cout << name << "(base) was Interacted with.\n"; }
 
 	virtual void Destroy();
 	virtual void onDestroy(Scene* scene);
@@ -92,6 +90,12 @@ struct GameObject
 };
 
 /** Interfaces **/
+struct InteractableObject : GameObject
+{
+	bool isInteractable = true;
+	virtual void onInteract();
+};
+
 
 /** Global Check Functions **/
 inline ObjectType getType(void* object)
