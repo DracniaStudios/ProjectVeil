@@ -21,5 +21,7 @@ public:
 private:
 	ParticleSystem();
 	~ParticleSystem();
+
+	// Change To Pool Allocator
 	std::vector<Particle> particles;
 };

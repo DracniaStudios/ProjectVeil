@@ -50,20 +50,31 @@ struct InstanceID
 };
 
 typedef struct Scene {
+	// Details
 	const char* name = "Scene";
 
+	// Flags
 	bool is2DActive = false; // 2D Mode
 	bool isMiniActive = false;// Mini Game 
 
+	// Global Functions
 	updateSceneMethod update;
 	drawSceneMethod2D draw2D;
 	drawSceneMethod3D draw3D;
 
+	// Map Data
 	GameMap gameMap = {}; // The GameMap of the Scene
 	MiniGame* miniGame = {}; // Current Mini Game Loaded
-	std::unordered_map<std::uint64_t, std::unique_ptr<Entity>> entities{}; 
-	std::unordered_map<std::uint64_t, std::unique_ptr<InteractableObject>> interactables{}; 
-	InstanceID instanceHolder = {}; // All Instances Stored
+	
+	// Entity Data
+	Player* player = {};
+	PlayerCamera* camera = {};
+	std::unordered_map<std::uint64_t, std::unique_ptr<Entity>> entities{}; // Entities
+	std::unordered_map<std::uint64_t, std::unique_ptr<InteractableObject>> interactables{}; // Interactables
+	InstanceID instanceHolder = {}; // All IDs Stored
+
+
+	void SetMiniGame(int miniGame);
 
 } Scene;
 

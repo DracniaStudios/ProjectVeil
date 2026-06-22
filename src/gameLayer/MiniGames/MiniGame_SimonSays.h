@@ -6,8 +6,8 @@
 
 struct SimonSays : MiniGame
 {
-	static void render(void* player_ptr);
-	static void update(void* player_ptr, float deltaTime);
+	static void render(MiniGameData* data, void* player_ptr);
+	static void update(MiniGameData* data, void* player_ptr, float deltaTime);
 };
 
 #endif

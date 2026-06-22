@@ -90,8 +90,22 @@ struct GameObject
 };
 
 /** Interfaces **/
+
+enum InteractionType
+{
+	INTERACT_MINIGAME,
+	INTERACT_OBJECT,
+	INTERACT_ITEM,
+};
+
 struct InteractableObject : GameObject
 {
+private:
+	int interactType = 0;
+	int interactValue = 0;
+public:
+
+	InteractableObject(InteractionType type, int value = 0);
 	bool isInteractable = true;
 	virtual void onInteract();
 };

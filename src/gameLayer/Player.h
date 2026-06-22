@@ -5,8 +5,6 @@
 #include <raylib.h>
 #include <Entity.h>
 
-
-struct Player;
 struct PlayerCamera
 {
 	Vector3 forward;
@@ -20,22 +18,17 @@ struct PlayerCamera
 	float headTimer;
 
 
-	void UpdateCameraFPS(Camera* camera, Player* player);
+	void UpdateCameraFPS(Camera* camera);
 
 };
 
-struct Player : public Entity
+struct Player : Entity
 {
-public:
-
 	RigidBody2D rigidBody2D = {};
 	Vector2 moveDirection = {};
 
 	bool isFiring = false;
 	bool isCrouching = false;
-
-	/// Camera Data
-	PlayerCamera camera = {};
 
 	/// Functions
 

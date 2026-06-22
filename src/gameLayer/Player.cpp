@@ -50,8 +50,9 @@ void Player::render2D()
 void Player::render3D()
 {
 	if (!this->isEnabled) { return; }
+	auto camera = SceneManager::getInstance().currentScene->camera;
 
-	auto scene = SceneManager::getInstance().currentScene;
+
 	if (this->displayCollider)
 	{
 		DrawBoundingBox(rigidBody3D.collisionBox, WHITE);
@@ -72,9 +73,9 @@ void Player::render3D()
 		DrawSphere(rigidBody3D.down + rigidBody3D.translation, 0.1f, PURPLE);
 	}
 
-	Vector3 rayOffset = Vector3Add(camera.forward, rigidBody3D.right);
-	DrawSphere(camera.position + rayOffset, 0.1f, GREEN);
-	if (isFiring)	{	DrawRay(Ray{ camera.position + rayOffset, camera.forward }, GREEN);}
+	Vector3 rayOffset = Vector3Add(camera->forward, rigidBody3D.right);
+	DrawSphere(camera->position + rayOffset, 0.1f, GREEN);
+	if (isFiring)	{	DrawRay(Ray{ camera->position + rayOffset, camera->forward }, GREEN);}
 
 }
 
@@ -144,8 +145,8 @@ void Player::update3D(float deltaTime)
 	}
 
 	/// Clamp Player Health and Stamina
-	health = Clamp(health, 0, static_cast<float>(getMaxHealth()));
-	stamina = Clamp(stamina, 0, static_cast<float>(getMaxStamina()));
+	health = Clamp(health, 0, getMaxHealth());
+	stamina = Clamp(stamina, 0, getMaxStamina());
 
 	/// Update Player Actions
 	
@@ -160,8 +161,10 @@ void Player::update3D(float deltaTime)
 ///  Updates the camera's position to be at the player's head, and rotates based on mouse movement.
 ///  Also updates the player's direction vectors to match the camera's look direction.
 
-void PlayerCamera::UpdateCameraFPS(Camera* camera, Player* player)
+void PlayerCamera::UpdateCameraFPS(Camera* camera)
 {
+	auto player = SceneManager::getInstance().currentScene->player;
+
 	auto up = Vector3(0.0f, 1.0f, 0.0f);
 	offset = Vector3(0, player->rigidBody3D.scale.y / 2, 0); // Camera offset to be at player's head
 
@@ -220,8 +223,9 @@ void Player::Fire()
 
 void Player::FireLaser()
 {
+	auto camera = SceneManager::getInstance().currentScene->camera;
 	// Create Ray from Camera
-	Ray cameraRay = {camera.position, camera.forward};
+	Ray cameraRay = {camera->position, camera->forward};
 
 	// Check Ray Collision with Game Objects
 	
@@ -240,7 +244,7 @@ void Player::FireLaser()
 				entity->takeDamage(output);
 			}
 			
-			obj.rigidBody3D.AddForce(camera.forward, 0.1f);
+			obj.rigidBody3D.AddForce(camera->forward, 0.1f);
 		}
 	}
 }

@@ -1,25 +1,33 @@
 // Game Name: Subject Veil
-// Version: 0.1.42 
+// Version: 0.1.43 
 // Due: 2026-06-26 (MiniGames)
-// Date: 2026-06-21 (Current Development Date)
+// Date: 2026-06-22 (Current Development Date)
 
 [ Issues ]
 
 - Found an issue where the Mini Game scenes use only percentage placement for objects with no pixel optionality.
-- Found an issue where ImGui can't load unknown data ( stops at Scene->draw3D )
 - Found an issue where objects can't load object textures and return null ( just black )
-- Found an issue where MiniGame header can't acces Scene struct
 
 [ Added ]
 
-- Added new Interactable Objects to Scnene (similar to Entities)
-- Added new FindGameObjectByID to GameMap
+- Added new InteractionType to InteractableObject.
+- Added new InteractValue to InteractableObject for responces.
+- Added unique MiniGame constant IDs.
+- Added Player and Player Camera To Scene. (Scene Global Variable)
+- Added new SetMiniGame function to Scene.
 
 [ Updated ]
 
+- Updated MiniGame Game Methods to include active MiniGame data.
+- Updated MiniGame Obstacle Generation to be a lambdo inside update functions.
+- Updated Scene to update and render objects outside of (specific scene) control.
 
 [ Fixed ]
 
+// Unknown causes and Unknown Fixed. Not Seen Anymore
+- Fixed an issue where ImGui could load GameObject data.
+- Fixed an issue where MiniGame couldn't acces Scene.
 
 [ Removed ]
 
+- Removed MiniGame specific data variable (e.g. flappyData) from MiniGames.

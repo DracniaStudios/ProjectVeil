@@ -2,16 +2,14 @@
 
 #include <Objects/Interactable/LockedBox.h>
 
-auto player = Player();
-
 static GameObject* selectObject(const Camera& cam)
 {
-
 	auto scene = SceneManager::getInstance().currentScene;
+	auto player = scene->player;
 
 	Ray selectRay = {
 		cam.position,
-		player.camera.forward
+		scene->camera->forward
 	};
 
 	if (!scene->gameMap.gameObjects.empty())
@@ -42,29 +40,12 @@ void Scene_MainMenuUpdate(float deltaTime)
 {
 	auto manager = &SceneManager::getInstance();
 	auto scene = manager->currentScene;
-	auto& cam = manager->camera3D;
-
-	/// Update Scene Data
-	if (scene->is2DActive)
-	{
-		player.update2D(deltaTime);
-	}
-	else
-	{
-		player.update3D(deltaTime);
-		player.camera.UpdateCameraFPS(&cam, &player);
-	}
-
-	/** Possible Issue? **/
-	if (scene->isMiniActive && scene->miniGame != nullptr)
-	{
-		scene->miniGame->update(&player, deltaTime);
-	}
+	auto player = scene->player;
 
 	/// Player Select Objects
 	if (IsKeyPressed(KEY_F))
 	{
-		auto cameraRay = Ray(player.camera.position, player.camera.forward);
+		auto cameraRay = Ray(scene->camera->position, scene->camera->forward);
 		for (auto& interactable : scene->interactables)
 		{
 			auto obj = interactable.second.get();
@@ -85,21 +66,17 @@ void Scene_MainMenuUpdate(float deltaTime)
 		}
 	}
 
-	/// Switch to 2D Mode
-	if (IsKeyPressed(KEY_TAB)){ scene->is2DActive = !scene->is2DActive;}
-
 	/// Change Mini Game
-	if (scene->miniGame != nullptr) { scene->isMiniActive = true; }
-	if (IsKeyPressed(KEY_ONE)) { scene->miniGame = MiniGame_FlappyBird(&player); }
-	if (IsKeyPressed(KEY_TWO)) { scene->miniGame = MiniGame_Crane(&player); }
-	if (IsKeyPressed(KEY_THREE)) { scene->miniGame = MiniGame_Doctor(&player); }
-	if (IsKeyPressed(KEY_FOUR)) { scene->miniGame = MiniGame_SimonSays(&player); }
-	if (IsKeyPressed(KEY_FIVE)) { scene->miniGame = MiniGame_TimedSimonSays(&player); }
-	if (IsKeyPressed(KEY_SIX)) { scene->miniGame = MiniGame_Maze(&player); }
-	if (IsKeyPressed(KEY_SEVEN)) { scene->miniGame = MiniGame_RoShamBoo(&player); }
+	if (IsKeyPressed(KEY_ONE)) { scene->SetMiniGame(0);}
+	if (IsKeyPressed(KEY_TWO)) { scene->SetMiniGame(1);}
+	if (IsKeyPressed(KEY_THREE)) { scene->SetMiniGame(2);}
+	if (IsKeyPressed(KEY_FOUR)) { scene->SetMiniGame(3);}
+	if (IsKeyPressed(KEY_FIVE)) { scene->SetMiniGame(4); }
+	if (IsKeyPressed(KEY_SIX)) { scene->SetMiniGame(5); }
+	if (IsKeyPressed(KEY_SEVEN)) { scene->SetMiniGame(6);}
 
 #pragma region ImGui
-	DeveloperWindow::getInstance().update(&player);
+	DeveloperWindow::getInstance().update(player);
 	
 #pragma endregion
 }
@@ -109,22 +86,6 @@ void Scene_MainMenuDraw2D()
 	auto manager = &SceneManager::getInstance();
 	auto scene = manager->currentScene;
 
-	if (scene->is2DActive)
-	{
-		/// Background
-		DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{20, 20, 20, 200});
-		
-		/// Inventory
-		//inventory.render(assetManager);
-
-		/// Mini Games On Top
-		if (scene->isMiniActive && scene->miniGame != nullptr)
-		{
-			scene->miniGame->draw(&player);
-		}
-	}
-	player.render2D();
-	/// Always Render Player Last (On Top)
 };
 
 void Scene_MainMenuDraw3D()
@@ -133,14 +94,9 @@ void Scene_MainMenuDraw3D()
 	auto scene = manager->currentScene;
 
 	DrawGrid(100.0f, 1.0f);
-	
-	for (auto& object : scene->gameMap.gameObjects) {
-		object.render3D();
-	}
-	
 	// Weird Interaction Between Rendering Ray and layer Objects
 
-	player.render3D();
+	
 }
 
 Scene* Scene_MainMenuConstruct()
@@ -150,17 +106,16 @@ Scene* Scene_MainMenuConstruct()
 	scene->update = Scene_MainMenuUpdate;
 	scene->draw2D = Scene_MainMenuDraw2D;
 	scene->draw3D = Scene_MainMenuDraw3D;
-
 	scene->gameMap.create(Vector3(100, 1, 100));
 	
 	// Add Player To Objects
 
-	player.name = "Player";
-	player.type = OBJECT_PLAYER;
-	player.id = PLAYER_ID;
-	player.rigidBody3D.Teleport(Vector3(0, 5, 0));
-	player.onEnable();
-	scene->gameMap.saveEntity(player);
+	scene->player->name = "Player";
+	scene->player->type = OBJECT_PLAYER;
+	scene->player->id = PLAYER_ID;
+	scene->player->rigidBody3D.Teleport(Vector3(0, 5, 0));
+	scene->player->onEnable();
+	scene->gameMap.saveEntity(*scene->player);
 	
 	Entity enemy = {};
 	enemy.name = "Enemy";
@@ -182,7 +137,7 @@ Scene* Scene_MainMenuConstruct()
 	target.rigidBody3D.isStatic = true;
 	scene->gameMap.saveObject(target);
 	
-	LockedBox box = {};
+	auto box = InteractableObject(INTERACT_MINIGAME, 1);
 	box.name = "Locked Box";
 	box.type = OBJECT_GENERIC;
 	box.defaultColor = Color(255, 191, 0, 255);

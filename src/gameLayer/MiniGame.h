@@ -12,18 +12,18 @@
 struct Scene;
 struct Player;
 
-// Update Game Method
-typedef void (*updateGameMethod)(void* player_ptr, float deltaTime);
-typedef void (*drawGameMethod)(void* player_ptr);
-
 struct MiniGameData
 {
 	int score = 0;
-	int scoreGoal = 0;
+	int scoreGoal = 1;
 	std::vector<Rectangle> obstacles = {};
 	Rectangle screen = {};
 	Rectangle goal = {};
 };
+
+// Update Game Method
+typedef void (*updateGameMethod)(MiniGameData* data, void* player_ptr, float deltaTime);
+typedef void (*drawGameMethod)(MiniGameData* data, void* player_ptr);
 
 struct MiniGame
 {
@@ -118,12 +118,20 @@ inline void generateObstacleVertical(MiniGameData* data, Rectangle range, int co
 }
 
 /// Mini Game Constructors
+
+#define MINI_GAME_FLAPPY_BIRD_ID = 0
 MiniGame* MiniGame_FlappyBird(Player* player);
+#define MINI_GAME_CRANE_ID = 1
 MiniGame* MiniGame_Crane(Player* player);
+#define MINI_GAME_DOCTOR_ID = 2
 MiniGame* MiniGame_Doctor(Player* player);
+#define MINI_GAME_SIMON_SAYS_ID = 3
 MiniGame* MiniGame_SimonSays(Player* player);
+#define MINI_GAME_TIMED_SIMON_SAYS_ID = 4
 MiniGame* MiniGame_TimedSimonSays(Player* player);
+#define MINI_GAME_MAZE_ID = 5
 MiniGame* MiniGame_Maze(Player* player);
+#define MINI_GAME_RO_SHAM_BOO_ID = 6
 MiniGame* MiniGame_RoShamBoo(Player* player);// Rock Paper Scissors
 
 #endif

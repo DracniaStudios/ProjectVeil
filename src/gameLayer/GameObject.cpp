@@ -144,7 +144,38 @@ void GameObject::onCollision(const GameObject* collider)
 	// Collision Data Checks
 }
 
+//****** Interactable Objects *************//
+
+InteractableObject::InteractableObject(const InteractionType interact, int value)
+{
+	interactType = interact;
+	interactValue = value;
+}
+
 void InteractableObject::onInteract()
 {
-	std::cout << "Interacted \n";
+	auto rng = std::ranlux24_base(std::random_device{}());
+	defaultColor = Color{
+		static_cast<unsigned char>(getRandomInt(rng, 0, 255)),
+		static_cast<unsigned char>(getRandomInt(rng, 0, 255)),
+		static_cast<unsigned char>(getRandomInt(rng, 0, 255)),
+		255
+	};
+	if (interactType == INTERACT_MINIGAME)
+	{
+		SceneManager::getInstance().currentScene->SetMiniGame(interactValue);
+		return;
+	}
+	
+	if (interactType == INTERACT_OBJECT)
+	{
+		// Activate Specific Object ID
+		return;
+	}
+	
+	if (interactType == INTERACT_ITEM)
+	{
+		// Give Player Specific Item
+		return;
+	}
 }

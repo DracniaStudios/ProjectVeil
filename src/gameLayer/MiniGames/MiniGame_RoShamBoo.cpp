@@ -2,32 +2,26 @@
 
 #include <SceneManager.h>
 
-MiniGameData roShamBooData{
-	0,
-	5,
-	{},
-	{},
-	{},
-};
-
 MiniGame* MiniGame_RoShamBoo(Player* player)
 {
 	MiniGame* game = new MiniGame();
 	game->name = "RoShamBoo";
 	game->update = &RoShamBoo::update;
 	game->draw = &RoShamBoo::render;
-	game->data = &roShamBooData;
+	
+	game->data = new MiniGameData;
+	game->data->scoreGoal = 5;
 
 	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.4f, GetScreenHeight() * 0.4f));
 
 	auto rng = std::ranlux24_base(std::random_device{}());
-	roShamBooData.scoreGoal = getRandomInt(rng, 1, 3);
-	std::cout << game->name << " Goal: " << roShamBooData.scoreGoal << "\n";
+	game->data->scoreGoal = getRandomInt(rng, 1, 3);
+	std::cout << game->name << " Goal: " << game->data->scoreGoal << "\n";
 
 	return game;
 }
 
-void RoShamBoo::render(void* player_ptr)
+void RoShamBoo::render(MiniGameData* data, void* player_ptr)
 {
 	auto player = static_cast<Player*>(player_ptr);
 
@@ -42,16 +36,16 @@ void RoShamBoo::render(void* player_ptr)
 
 }
 
-void RoShamBoo::update(void* player_ptr, float delta)
+void RoShamBoo::update(MiniGameData* data, void* player_ptr, float delta)
 {
 	auto player = static_cast<Player*>(player_ptr);
 
 	// Select Left
-	if (IsKeyPressed(KEY_A)) { roShamBooData.score = 1; }
+	if (IsKeyPressed(KEY_A)) { data->score = 1; }
 	// Select Middle
-	if (IsKeyPressed(KEY_S)) { roShamBooData.score = 2; }
+	if (IsKeyPressed(KEY_S)) { data->score = 2; }
 	// Select Right
-	if (IsKeyPressed(KEY_D)) { roShamBooData.score = 3; }
+	if (IsKeyPressed(KEY_D)) { data->score = 3; }
 
 
 
