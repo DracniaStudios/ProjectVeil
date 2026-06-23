@@ -1,3 +1,5 @@
+#include <chrono>
+
 #include "scene.h"
 #include "SceneManager.h"
 
@@ -96,6 +98,7 @@ void Scene_updateScene(float delta) {
 		}
 	}
 
+
 	for (auto& object : scene->gameMap.gameObjects) {
 
 		object.update(scene, delta);
@@ -103,25 +106,30 @@ void Scene_updateScene(float delta) {
 	solveCollision(scene, delta, 8);
 
 	/** Update MiniGame **/
-	if (scene->miniGame != nullptr) { scene->isMiniActive = true; }
 	if (auto miniGame = scene->miniGame)
 	{
-		// Update
-
-		if (scene->isMiniActive)
+		scene->isMiniActive = true;
+		miniGame->update(miniGame->data, scene->player, delta);
+		
+		if (miniGame->data->isComplete)
 		{
-			miniGame->update(miniGame->data, scene->player, delta);
-		}
-
-		// Completed
-		if (miniGame->data->score == miniGame->data->scoreGoal)
-		{
-			std::cout << "Completed Mini Game: " << miniGame->name << "\n";
-			scene->isMiniActive = false;
+			std::cout << "Completed: " << miniGame->name << "\n";
 			scene->is2DActive = false;
-			// Apply Effects and Boosts
+			scene->isMiniActive = false;
 			scene->miniGame = nullptr;
 		}
+
+		if (miniGame->data->isReset)
+		{
+			std::cout << "Reset: " << miniGame->name << "\n";
+			scene->SetMiniGame(scene->GetLastMiniGame());
+		}
+
+
+	}
+	else
+	{
+		scene->isMiniActive = false;
 	}
 
 	// Pause To Inventory
@@ -147,9 +155,8 @@ void Scene_drawScene2D() {
 		{
 			scene->miniGame->draw(scene->miniGame->data, &scene->player);
 		}
+		scene->player->render2D();
 	}
-
-	scene->player->render2D();
 }
 
 void Scene_drawScene3D() {
@@ -167,6 +174,7 @@ void Scene_drawScene3D() {
 
 void Scene::SetMiniGame(int value)
 {
+	player->rigidBody2D = {};
 	is2DActive = true;
 	isMiniActive = true;
 	switch (value)
@@ -197,5 +205,6 @@ void Scene::SetMiniGame(int value)
 	}
 	if (miniGame) {
 		std::cout << "Start: "<< miniGame->name << "\n";
+		lastMiniGamePlayed = value;
 	}
 }

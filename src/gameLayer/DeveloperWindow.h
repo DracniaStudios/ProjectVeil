@@ -40,6 +40,7 @@ class DeveloperWindow
 
 	// Mini Game Inspector Data
 	int currentGameID = 0;
+	void* miniGameObject;
 
 	/** Window Data **/
 	void ShowGameData(Player* player);

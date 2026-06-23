@@ -9,6 +9,7 @@
 
 #include <randomStuff.h>
 
+
 struct Scene;
 struct Player;
 
@@ -16,6 +17,9 @@ struct MiniGameData
 {
 	int score = 0;
 	int scoreGoal = 1;
+	bool isReset = false;
+	bool isComplete = false;
+
 	std::vector<Rectangle> obstacles = {};
 	Rectangle screen = {};
 	Rectangle goal = {};
@@ -33,17 +37,36 @@ struct MiniGame
 	MiniGameData* data = {};
 
 	void SetGoal(const Rectangle rect) const { data->goal = rect; }
-	void Reset() { data = {}; }
 };
 
+
+/// Mini Game Constructors
+#define MINI_GAME_FLAPPY_BIRD_ID = 0
+MiniGame* MiniGame_FlappyBird(Player* player);
+#define MINI_GAME_CRANE_ID = 1
+MiniGame* MiniGame_Crane(Player* player);
+#define MINI_GAME_DOCTOR_ID = 2
+MiniGame* MiniGame_Doctor(Player* player);
+#define MINI_GAME_SIMON_SAYS_ID = 3
+MiniGame* MiniGame_SimonSays(Player* player);
+#define MINI_GAME_TIMED_SIMON_SAYS_ID = 4
+MiniGame* MiniGame_TimedSimonSays(Player* player);
+#define MINI_GAME_MAZE_ID = 5
+MiniGame* MiniGame_Maze(Player* player);
+#define MINI_GAME_RO_SHAM_BOO_ID = 6
+MiniGame* MiniGame_RoShamBoo(Player* player);// Rock Paper Scissors
+
+
+
+/*** Draw MiniGame ***/
 inline Rectangle generateScaleRect(Rectangle screen, Rectangle rect)
 {
-	Rectangle r = {};
-
-	r.x = screen.x * rect.x;
-	r.y = screen.y * rect.y;
-	r.width = screen.width * rect.width;
-	r.height = screen.height * rect.height;
+	Rectangle r = {
+		screen.x * rect.x,
+		screen.y * rect.y,
+		screen.width * rect.width,
+		screen.height * rect.height
+	};
 	return r;
 }
 
@@ -116,22 +139,5 @@ inline void generateObstacleVertical(MiniGameData* data, Rectangle range, int co
 
 
 }
-
-/// Mini Game Constructors
-
-#define MINI_GAME_FLAPPY_BIRD_ID = 0
-MiniGame* MiniGame_FlappyBird(Player* player);
-#define MINI_GAME_CRANE_ID = 1
-MiniGame* MiniGame_Crane(Player* player);
-#define MINI_GAME_DOCTOR_ID = 2
-MiniGame* MiniGame_Doctor(Player* player);
-#define MINI_GAME_SIMON_SAYS_ID = 3
-MiniGame* MiniGame_SimonSays(Player* player);
-#define MINI_GAME_TIMED_SIMON_SAYS_ID = 4
-MiniGame* MiniGame_TimedSimonSays(Player* player);
-#define MINI_GAME_MAZE_ID = 5
-MiniGame* MiniGame_Maze(Player* player);
-#define MINI_GAME_RO_SHAM_BOO_ID = 6
-MiniGame* MiniGame_RoShamBoo(Player* player);// Rock Paper Scissors
 
 #endif

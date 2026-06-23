@@ -72,7 +72,6 @@ void Doctor::update(MiniGameData* data, void* player_ptr, float delta)
 	auto player = static_cast<Player*>(player_ptr);
 	auto screen = data->screen;
 
-	
 	// Stop Movement When Key is Pressed
 	if (!IsKeyDown(KEY_A))
 	{
@@ -93,10 +92,12 @@ void Doctor::update(MiniGameData* data, void* player_ptr, float delta)
 
 	// Complete Game
 	auto playerRect = Rectangle{player->getPosition2D().x, player->getPosition2D().y, player->getSize2D().x, player->getSize2D().y};
-	if (CheckCollisionRecs(data->goal, playerRect))
+	bool isMoving = !(IsKeyDown(KEY_W) && IsKeyDown(KEY_A));
+
+	if (CheckCollisionRecs(data->goal, playerRect) && isMoving == false)
 	{
 		std::cout << "Scored \n";
-		data->score += 1;
+		data->isComplete = true;
 	}
 
 }

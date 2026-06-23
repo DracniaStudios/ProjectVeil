@@ -39,6 +39,7 @@ void DeveloperWindow::ShowMiniGameData(Player* player)
 		ImGui::Text("Score Goal: %d", scene->miniGame->data->scoreGoal);
 		ImGui::InputFloat4("Screen Size: %d", &scene->miniGame->data->screen.x);
 		ImGui::InputFloat4("Goal Size: %d", &scene->miniGame->data->goal.x);
+		ImGui::Separator();
 
 		ImGui::Text("Obstacles: %d", scene->miniGame->data->obstacles.size());
 		for (auto& obj : scene->miniGame->data->obstacles)
@@ -46,14 +47,22 @@ void DeveloperWindow::ShowMiniGameData(Player* player)
 			ImGui::PushID(&obj);
 			if (ImGui::Button(std::to_string(obj.x).c_str()))
 			{
-				ImGui::Text("Object: X %f", obj.x);
-				ImGui::Text("Object: Y %f", obj.y);
-				ImGui::Text("Object: Width %f", obj.width);
-				ImGui::Text("Object: Height %f", obj.height);
-
+				miniGameObject = &obj;
 			}
 			ImGui::PopID();
 		}
+		ImGui::Separator();
+
+		if (miniGameObject != nullptr)
+		{
+			auto obj = static_cast<Rectangle*>(miniGameObject);
+			ImGui::Text("Object: X %f", obj->x);
+			ImGui::Text("Object: Y %f", obj->y);
+			ImGui::Text("Object: Width %f", obj->width);
+			ImGui::Text("Object: Height %f", obj->height);
+		}
+		ImGui::Separator();
+
 	}
 
 	ImGui::End();

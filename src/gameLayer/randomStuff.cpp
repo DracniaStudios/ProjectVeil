@@ -59,3 +59,13 @@ Rarity GetRandomRarity(Rarity minRarity, Rarity maxRarity)
 	return static_cast<Rarity>(index);
 
 }
+
+Color getRandomColor(std::ranlux24_base& rng, int alpha)
+{
+	return Color{
+		static_cast<unsigned char>(getRandomInt(rng, 0, 255)),
+		static_cast<unsigned char>(getRandomInt(rng, 0, 255)),
+		static_cast<unsigned char>(getRandomInt(rng, 0, 255)),
+		static_cast<unsigned char>(alpha)
+	};
+}

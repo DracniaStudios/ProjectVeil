@@ -47,6 +47,6 @@ void RoShamBoo::update(MiniGameData* data, void* player_ptr, float delta)
 	// Select Right
 	if (IsKeyPressed(KEY_D)) { data->score = 3; }
 
-
+	if (data->score == data->scoreGoal) { data->isComplete = true; }
 
 }

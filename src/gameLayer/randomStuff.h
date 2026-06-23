@@ -28,4 +28,7 @@ int getRandomInt(std::ranlux24_base& rng, int min = -10, int max = 10);
 bool getRandomChance(std::ranlux24_base& rng, float chance);
 
 Rarity GetRandomRarity(Rarity minRarity = COMMON, Rarity maxRarity = ETERNAL);
+
+// Returns a Color
+Color getRandomColor(std::ranlux24_base& rng, int alpha = 255);
 #endif

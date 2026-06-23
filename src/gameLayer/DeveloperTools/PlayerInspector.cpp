@@ -18,7 +18,7 @@ void DeveloperWindow::ShowPlayerData(Player* player)
 	/// Show Rigidbody Data based on space
 	if (scene->is2DActive)
 	{
-		//ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody2D.isEnabled);
+		ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody2D.isEnabled);
 		ImGui::Text("Player Position 2D: (%.2f, %.2f)", player->rigidBody2D.translation.x, player->rigidBody2D.translation.y);
 		ImGui::Text("Player Velocity 2D: (%.2f, %.2f)", player->rigidBody2D.velocity.x, player->rigidBody2D.velocity.y);
 		ImGui::Text("Player Scale 2D: (%.2f, %.2f)", player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
@@ -26,7 +26,8 @@ void DeveloperWindow::ShowPlayerData(Player* player)
 	}
 	else
 	{
-		//ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody3D.SetActive());
+		ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody3D.isEnabled);
+		ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player->rigidBody3D.forward.x, player->rigidBody3D.forward.y, player->rigidBody3D.forward.z);
 		ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.translation.x, player->rigidBody3D.translation.y, player->rigidBody3D.translation.z);
 		ImGui::Text("Player Velocity 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.GetVelocity().x, player->rigidBody3D.GetVelocity().y, player->rigidBody3D.GetVelocity().z);
 		ImGui::Text("Player Scale 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.scale.x, player->rigidBody3D.scale.y, player->rigidBody3D.scale.z);
@@ -42,7 +43,6 @@ void DeveloperWindow::ShowPlayerData(Player* player)
 
 	/// Show Player Directional Data and Flags
 	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Flags");
-	ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player->rigidBody3D.forward.x, player->rigidBody3D.forward.y, player->rigidBody3D.forward.z);
 	ImGui::Checkbox("isEnabled", &player->rigidBody3D.isEnabled);
 	ImGui::Checkbox("isStatic", &player->rigidBody3D.isStatic);
 	ImGui::Checkbox("isVisible", &player->display3DModel);
@@ -55,12 +55,12 @@ void DeveloperWindow::ShowPlayerData(Player* player)
 	ImGui::Checkbox("Back Touch", &player->rigidBody3D.backTouch);
 	ImGui::Spacing();
 
-	ImGui::Text("Health: (%.2f)", &player->health);
+	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Status");
 	ImGui::Text("Max Health: (%.2f)", &player->maxHealth);
-	ImGui::Text("Stamina: (%.2f)", &player->stamina);
 	ImGui::Text("Max Stamina: (%.2f)", &player->maxStamina);
 	ImGui::Spacing();
 
+	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Combat");
 	ImGui::Checkbox("Is Firing: ", &player->isFiring);
 	ImGui::Checkbox("Force Firing: ", &player->forceFire);
 	ImGui::Spacing();
@@ -69,8 +69,9 @@ void DeveloperWindow::ShowPlayerData(Player* player)
 
 	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Change Data");
 	if (ImGui::Button("Hurt Player")) { player->health -= 1; }
+	if (ImGui::Button("Drain Stamina")) { player->stamina -= 1; }
 	ImGui::InputFloat("Player Health: ", &player->health, 1, 1);
-	ImGui::Checkbox("Is Firing", &player->isFiring);
+	ImGui::InputFloat("Player Stamina: ", &player->stamina, 1, 1);
 	ImGui::End();
 
 }

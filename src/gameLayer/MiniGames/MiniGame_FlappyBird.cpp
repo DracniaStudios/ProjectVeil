@@ -10,7 +10,7 @@ bool isRightGoalActive = true;
 
 MiniGame* MiniGame_FlappyBird(Player* player)
 {
-	MiniGame* game = new MiniGame();
+	auto* game = new MiniGame();
 	game->name = "Flappy Bird";
 	game->update = &FlappyBird::update;
 	game->draw = &FlappyBird::render;
@@ -64,12 +64,14 @@ void FlappyBird::render(MiniGameData* data, void* player_ptr)
 
 	for (auto &obj : data->obstacles)
 	{
-		Rectangle newSize = obj;
+		Rectangle newSize =
+		{
+			1 + obj.x,
+			1 + obj.y,
+			obj.width,
+			obj.height
+		};
 
-		newSize.x = 1 + obj.x;
-		newSize.y = 1 + obj.y;
-		newSize.width = obj.width;
-		newSize.height = obj.height;
 		// adjust object side accordingly
 
 		DrawRectangleRec(generateScaleRect(screen, newSize), RED);
@@ -105,11 +107,12 @@ void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
 			}
 		};
 
-	Rectangle screen = {};
-	screen.x = GetScreenWidth() * 0.25f;
-	screen.y = GetScreenHeight() * 0.3f;
-	screen.width = GetScreenWidth() * 0.5f;
-	screen.height = GetScreenHeight() * 0.5f;
+	Rectangle screen = {
+		GetScreenWidth() * 0.25f,
+	 GetScreenHeight() * 0.3f,
+	GetScreenWidth() * 0.5f,
+	GetScreenHeight() * 0.5f
+	};
 
 	// Game Logic
 	if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, leftGoal))
@@ -134,18 +137,17 @@ void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
 		generateObstacle(2 + data->score);
 	}
 
-	if (player->rigidBody2D.getPosition().x < screen.x) scene->miniGame->Reset();
-	if (player->rigidBody2D.getPosition().y < screen.y) scene->miniGame->Reset();
-	if (player->rigidBody2D.getPosition().x > screen.x + screen.width) scene->miniGame->Reset();
-	if (player->rigidBody2D.getPosition().y > screen.y + screen.height) scene->miniGame->Reset();
+	if (player->rigidBody2D.getPosition().x < screen.x) scene->miniGame->data->isReset = true;
+	if (player->rigidBody2D.getPosition().y < screen.y) scene->miniGame->data->isReset = true;
+	if (player->rigidBody2D.getPosition().x > screen.x + screen.width) scene->miniGame->data->isReset = true;
+	if (player->rigidBody2D.getPosition().y > screen.y + screen.height) scene->miniGame->data->isReset = true;
 
 	// Win Condition
 
 	if (data->score >= data->scoreGoal)
 	{
-		scene->isMiniActive = false;
 		player->health += 5;
-		std::cout << "Completed Mini Game \n";
+		data->isComplete = true;
 	}
 
 	// Player Logic
@@ -175,7 +177,7 @@ void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
 
 
 			ImGui::Text(std::to_string(obstacle.y).c_str());
-			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obstacle)) scene->miniGame->Reset();
+			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obstacle)) scene->miniGame->data->isReset = true;
 		}
 	}
 }

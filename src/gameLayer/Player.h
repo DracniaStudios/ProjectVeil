@@ -26,15 +26,13 @@ struct Player : Entity
 {
 	RigidBody2D rigidBody2D = {};
 	Vector2 moveDirection = {};
-
-	bool isFiring = false;
+	
+	// Flags
 	bool isCrouching = false;
 
-	/// Functions
-
 	// Render And Update
-	void render2D();
-	void render3D();
+	void render2D() override;
+	void render3D() override;
 	void onEnable() override;
 	void onDisable() override;
 	void update2D(float deltaTime, bool canMove = true);

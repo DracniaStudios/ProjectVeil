@@ -3,8 +3,6 @@
 
 #include "ProjectVeil.h"
 
-#include <mutex>
-
 using namespace std;
 
 static bool lockMouse;
@@ -15,13 +13,13 @@ int main()
 	SetTraceLogLevel(LOG_FATAL);
 #endif
 
-	SetConfigFlags(FLAG_WINDOW_MAXIMIZED);
+	//SetConfigFlags(FLAG_WINDOW_MAXIMIZED);
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 
 	SetExitKey(KEY_F9);
 	SetTargetFPS(60);
 
-	InitWindow(1920, 1080, "Project: Veil");
+	InitWindow(1600, 900, "Project: Veil");
 
 #pragma region ImGui
 	rlImGuiSetup(true);

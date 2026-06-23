@@ -52,5 +52,6 @@ void SimonSays::update(MiniGameData* data, void* player_ptr, float delta)
 	if (IsKeyPressed(KEY_S) && simonSaysOrder[data->score] == 2) { data->score++; }
 	if (IsKeyPressed(KEY_D) && simonSaysOrder[data->score] == 3) { data->score++; }
 	
+	if (data->score >= data->scoreGoal) { data->isComplete = true; }
 
 }

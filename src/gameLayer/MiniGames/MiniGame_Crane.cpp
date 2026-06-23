@@ -3,39 +3,80 @@
 #include <Player.h>
 #include <SceneManager.h>
 
+MiniGame* MiniGame_Crane(Player* player)
+{
+	MiniGame* game = new MiniGame();
+	game->name = "Crane";
+	game->update = &Crane::update;
+	game->draw = &Crane::render;
+	game->data = new MiniGameData;
+
+	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
+	player->rigidBody2D.scale = Vector3(5, 5, 5);
+
+	auto screen = game->data->screen = getScreenScale({ 0.25f, 0.2f, 0.5f, 0.7f });
+	// Generate Obstacles
+	{
+		game->data->obstacles = {};
+		auto rng = std::ranlux24_base(std::random_device{}());
+		
+		// Generate Obstacles
+		for (int i = 0; i < 9; i++)
+		{
+
+			// Create Y Offset For Obstacles
+			float width = getRandomFloat(rng, 0.1f, 0.4f);
+			float height = GetScreenHeight() * 0.03f;
+			float x = screen.x + (screen.x * getRandomFloat(rng, 0, 0.5f));
+			float y = screen.y + (screen.height * (i * 0.1f));
+			//float y = screen.y + (i * height);
+			// Gen Top Size
+			
+			Rectangle left = {
+				x,
+				y,
+				screen.width * width,
+				height
+			};
+
+			// Gen Bottom Size
+			x = screen.x + (screen.x * getRandomFloat(rng, 0.5f, 0.8f));
+			width = screen.width * width;
+			Rectangle right = {
+				(screen.x + screen.width) - width,
+				y,
+				width,
+				height
+			};
+
+			game->data->obstacles.push_back(left);
+			game->data->obstacles.push_back(right);
+		}
+	}
+	
+	/// Goal Line
+	game->data->goal = generateScaleRect(game->data->screen, { 1.0f, 1.0f, 1.0f, 0.1f });
+	game->data->goal.y = game->data->screen.y + game->data->screen.height - game->data->goal.height;
+	return game;
+}
+
 void Crane::render(MiniGameData* data, void* player_ptr)
 {
 	std::ranlux24_base rng(std::random_device{}());
 
 	/// Draw Background Screen
-	data->screen = getScreenScale({ 0.25f, 0.2f, 0.5f, 0.7f });
 	DrawRectangleRec(data->screen, BLACK);
-
-
-	/// Goal Line
-	data->goal = generateScaleRect(data->screen, { 1.0f, 1.0f, 1.0f, 0.1f });
-	data->goal.y = data->screen.y + data->screen.height - data->goal.height;
 	DrawRectangleRec(data->goal, BLUE);
 
 	for (auto& obj : data->obstacles)
 	{
-		Rectangle newSize = obj;
-
-		newSize.x = 1 + obj.x;
-		newSize.y = 1 + obj.y;
-		newSize.width = obj.width;
-		newSize.height = obj.height;
-		// adjust object side accordingly
-
-		DrawRectangleRec(generateScaleRect(data->screen, newSize), RED);
+		DrawRectangleRec(obj, RED);
 	}
 
 }
 
 void Crane::update(MiniGameData* data, void* player_ptr, float deltaTime)
 {
-	auto manager = &SceneManager::getInstance();
-	auto scene = manager->currentScene;
 	auto player = static_cast<Player*>(player_ptr);
 
 	/// Player Logic
@@ -55,48 +96,21 @@ void Crane::update(MiniGameData* data, void* player_ptr, float deltaTime)
 
 	}
 
+	for (auto obstacle : data->obstacles)
+	{
+		if (CheckCollisionCircleRec(player->getPosition2D(), player->rigidBody2D.scale.x, obstacle))
+		{
+			data->isReset = true;
+		}
+	}
+
 	/// Goal Logic
 	{
 		if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, data->goal))
 		{
-			scene->isMiniActive = false;
 			player->health += 5;
-			std::cout << "Completed Mini Game: Crane \n";
+			data->isComplete = true;
 		}
 	}
 
-}
-
-MiniGame* MiniGame_Crane(Player* player)
-{
-	MiniGame* game = new MiniGame();
-	game->name = "Crane";
-	game->update = &Crane::update;
-	game->draw = &Crane::render;
-	game->data = new MiniGameData;
-
-	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
-
-	// Generate Obstacles
-	{
-		game->data->obstacles = {};
-		auto rng = std::ranlux24_base(std::random_device{}());
-		// x 500 -> 1100
-		for (int i = 0; i < 6; i++)
-		{
-			float y = i * 0.5f + 0.2f;
-			float width = getRandomFloat(rng, 0.1f, 1.0f);
-
-			// Gen Top Size
-			Rectangle left = { 0, y, width * 0.4f, 0.05f };
-
-			// Gen Bottom Size
-			float rightOffset = 2.0f - width;
-			Rectangle right = { rightOffset, left.y, 1 - left.width, left.height };
-
-			game->data->obstacles.push_back(left);
-			game->data->obstacles.push_back(right);
-		}
-	}
-	return game;
 }

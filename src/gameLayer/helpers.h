@@ -19,5 +19,4 @@ inline bool WaitTimer(float& timer, bool& trait, int length = 1)
 	return false;
 }
 
-
 #endif

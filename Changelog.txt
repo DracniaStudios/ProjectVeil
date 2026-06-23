@@ -1,33 +1,39 @@
 // Game Name: Subject Veil
-// Version: 0.1.43 
+// Version: 0.1.44 
 // Due: 2026-06-26 (MiniGames)
-// Date: 2026-06-22 (Current Development Date)
+// Date: 2026-06-23 (Current Development Date)
+
+ I need to change my approach ro reading MiniGame Screen Obstacles
+ Either:
+	Store As Percentaged then convert to pixels
+	Convert and store as pixel then render
 
 [ Issues ]
 
-- Found an issue where the Mini Game scenes use only percentage placement for objects with no pixel optionality.
 - Found an issue where objects can't load object textures and return null ( just black )
 
 [ Added ]
 
-- Added new InteractionType to InteractableObject.
-- Added new InteractValue to InteractableObject for responces.
-- Added unique MiniGame constant IDs.
-- Added Player and Player Camera To Scene. (Scene Global Variable)
-- Added new SetMiniGame function to Scene.
+- Added GetLastMiniGame() to Scene.
+- Added new Complete function to MiniGame.
+- Added new Reset function to MiniGame
+- Added new getRandomColor function.
 
 [ Updated ]
 
-- Updated MiniGame Game Methods to include active MiniGame data.
-- Updated MiniGame Obstacle Generation to be a lambdo inside update functions.
-- Updated Scene to update and render objects outside of (specific scene) control.
+- Updated Player to override Render functions.
+- Updated MiniGame Inspector to show Selected Object data.
+- Updated Crane to use pixels to read object positions.
+- Updated Crane's gameplay to scale and position objects correctly across screen.
+- Updated Scene to read MiniGame's complete and reset status.
+
+- Refactored code to simplify initialized values ( int x = 1 + 2; instead of x += 1; right after ).
+- Altered Project Screen Size to 1600x900.
 
 [ Fixed ]
 
-// Unknown causes and Unknown Fixed. Not Seen Anymore
-- Fixed an issue where ImGui could load GameObject data.
-- Fixed an issue where MiniGame couldn't acces Scene.
+- Fixed an issue where MiniGames would read Objects based on percentage instead of pixel.
 
 [ Removed ]
 
-- Removed MiniGame specific data variable (e.g. flappyData) from MiniGames.
+- Removed auto Maximized Screen from Project.

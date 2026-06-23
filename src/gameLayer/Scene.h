@@ -50,6 +50,10 @@ struct InstanceID
 };
 
 typedef struct Scene {
+	
+private:
+	int lastMiniGamePlayed = 0;
+public:
 	// Details
 	const char* name = "Scene";
 
@@ -75,6 +79,7 @@ typedef struct Scene {
 
 
 	void SetMiniGame(int miniGame);
+	int GetLastMiniGame() const { return lastMiniGamePlayed; }
 
 } Scene;
 
