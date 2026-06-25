@@ -32,6 +32,15 @@ int main()
 
 #pragma endregion
 
+#pragma region FMOD
+
+	FMOD_RESULT result;
+	FMOD::System* pSystem = nullptr;
+
+	result = FMOD::System_create(&pSystem);
+
+#pragma endregion
+
 	if (!init_game())
 	{
 		std::cout << "Game Couldn't Load \n";

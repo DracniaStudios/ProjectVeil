@@ -18,7 +18,7 @@ MiniGame* MiniGame_FlappyBird(Player* player)
 
 	game->data->scoreGoal = 5;
 
-	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.2f));
+	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
 
 	// Generate Obstacle
 	{
@@ -175,8 +175,6 @@ void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
 
 			Rectangle obstacle = generateScaleRect(screen, newSize);
 
-
-			ImGui::Text(std::to_string(obstacle.y).c_str());
 			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obstacle)) scene->miniGame->data->isReset = true;
 		}
 	}

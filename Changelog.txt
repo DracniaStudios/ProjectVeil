@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
-// Version: 0.1.44 
+// Version: 0.1.45 
 // Due: 2026-06-26 (MiniGames)
-// Date: 2026-06-23 (Current Development Date)
+// Date: 2026-06-25 (Current Development Date)
 
  I need to change my approach ro reading MiniGame Screen Obstacles
  Either:
@@ -11,29 +11,18 @@
 [ Issues ]
 
 - Found an issue where objects can't load object textures and return null ( just black )
+- Found an issue where FMOD files aren't detected through interface
 
 [ Added ]
 
-- Added GetLastMiniGame() to Scene.
-- Added new Complete function to MiniGame.
-- Added new Reset function to MiniGame
-- Added new getRandomColor function.
+- Added FMOD into project
 
 [ Updated ]
 
-- Updated Player to override Render functions.
-- Updated MiniGame Inspector to show Selected Object data.
-- Updated Crane to use pixels to read object positions.
-- Updated Crane's gameplay to scale and position objects correctly across screen.
-- Updated Scene to read MiniGame's complete and reset status.
 
-- Refactored code to simplify initialized values ( int x = 1 + 2; instead of x += 1; right after ).
-- Altered Project Screen Size to 1600x900.
 
 [ Fixed ]
 
-- Fixed an issue where MiniGames would read Objects based on percentage instead of pixel.
 
 [ Removed ]
 
-- Removed auto Maximized Screen from Project.

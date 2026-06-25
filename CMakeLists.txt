@@ -6,6 +6,8 @@ cmake_minimum_required (VERSION 4.0)
 set(CMAKE_CXX_STANDARD 23)#Soon to be 26
 
 set(PRODUCTION_BUILD OFF CACHE BOOL "Production Build" FORCE)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
@@ -39,6 +41,7 @@ add_subdirectory(thirdparty/imgui-docking)
 add_subdirectory(thirdparty/rlImgui)
 add_subdirectory(thirdparty/FastNoise2-1.1.1)
 add_subdirectory(thirdparty/json-3.12.0) #Soon to me Customizable
+add_subdirectory(thirdparty/fmod-2.3.14)
 
 file (GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
@@ -91,5 +94,11 @@ endif()
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/")
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/platform/")
 
-target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE raylib_static imgui rlimgui FastNoise2 nlohmann_json)
+target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE 
+raylib_static 
+imgui 
+rlimgui 
+FastNoise2 
+nlohmann_json 
+FMOD)
 # TODO: Add tests and install targets if needed.

@@ -139,13 +139,19 @@ Scene* Scene_MainMenuConstruct()
 	target.rigidBody3D.isStatic = true;
 	scene->gameMap.saveObject(target);
 	
-	auto box = InteractableObject(INTERACT_MINIGAME, 1);
-	box.name = "Locked Box";
-	box.type = OBJECT_GENERIC;
-	box.defaultColor = Color(255, 191, 0, 255);
-	box.rigidBody3D.Teleport(Vector3(0, 3, 10));
-	box.rigidBody3D.scale = Vector3One();
-	scene->gameMap.saveInteractable(box);
+	for (int i = 0; i < 7; i++)
+	{
+		auto rng = std::ranlux24_base(std::random_device{}());
+		auto box = InteractableObject(INTERACT_MINIGAME, i);
+		std::string name = "Locked Box: ";
+		name += static_cast<char>(i);
+		box.name = name.c_str();
+		box.type = OBJECT_GENERIC;
+		box.defaultColor = getRandomColor(rng);
+		box.rigidBody3D.Teleport(Vector3(0, 3, 10));
+		box.rigidBody3D.scale = Vector3One();
+		scene->gameMap.saveInteractable(box);
+	}
 
 	return scene;
 }
