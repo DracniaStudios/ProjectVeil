@@ -39,7 +39,6 @@ struct MiniGame
 	void SetGoal(const Rectangle rect) const { data->goal = rect; }
 };
 
-
 /// Mini Game Constructors
 #define MINI_GAME_FLAPPY_BIRD_ID = 0
 MiniGame* MiniGame_FlappyBird(Player* player);
@@ -57,7 +56,7 @@ MiniGame* MiniGame_Maze(Player* player);
 MiniGame* MiniGame_RoShamBoo(Player* player);// Rock Paper Scissors
 
 
-
+/// Convert and store any objects as pixels before rendering
 /*** Draw MiniGame ***/
 inline Rectangle generateScaleRect(Rectangle screen, Rectangle rect)
 {

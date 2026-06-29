@@ -34,10 +34,7 @@ int main()
 
 #pragma region FMOD
 
-	FMOD_RESULT result;
-	FMOD::System* pSystem = nullptr;
-
-	result = FMOD::System_create(&pSystem);
+	
 
 #pragma endregion
 

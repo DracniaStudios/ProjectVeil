@@ -1,7 +1,7 @@
 #include "MainMenu.h"
 
 #include <Objects/Interactable/LockedBox.h>
-
+/*
 static GameObject* selectObject(const Camera& cam)
 {
 	auto scene = SceneManager::getInstance().currentScene;
@@ -35,52 +35,13 @@ static GameObject* selectObject(const Camera& cam)
 	return nullptr;
 
 }
-
+*/
 void Scene_MainMenuUpdate(float deltaTime)
 {
 	auto manager = &SceneManager::getInstance();
 	auto scene = manager->currentScene;
 	auto player = scene->player;
 
-	if (!scene->is2DActive) {
-		/// Player Select Objects
-		if (IsKeyPressed(KEY_F))
-		{
-			auto cameraRay = Ray(scene->camera->position, scene->camera->forward);
-			for (auto& interactable : scene->interactables)
-			{
-				auto obj = interactable.second.get();
-				GameObject* decoy;
-				for (auto& sceneObject : scene->gameMap.gameObjects) { if (sceneObject.id == obj->id) { decoy = &sceneObject; } }
-				std::cout << "Searching: " << obj->name << "\n";
-
-				auto collision = GetRayCollisionBox(cameraRay, decoy->rigidBody3D.collisionBox);
-				if (collision.hit)
-				{
-					std::cout << "Hit: " << obj->name << "\n";
-					if (obj->isInteractable)
-					{
-						std::cout << "Is Interactable: " << obj->name << "\n";
-						obj->onInteract();
-					}
-				}
-			}
-		}
-
-		/// Change Mini Game
-
-		if (IsKeyPressed(KEY_ONE)) { scene->SetMiniGame(0); }
-		if (IsKeyPressed(KEY_TWO)) { scene->SetMiniGame(1); }
-		if (IsKeyPressed(KEY_THREE)) { scene->SetMiniGame(2); }
-		if (IsKeyPressed(KEY_FOUR)) { scene->SetMiniGame(3); }
-		if (IsKeyPressed(KEY_FIVE)) { scene->SetMiniGame(4); }
-		if (IsKeyPressed(KEY_SIX)) { scene->SetMiniGame(5); }
-		if (IsKeyPressed(KEY_SEVEN)) { scene->SetMiniGame(6); }
-	}
-#pragma region ImGui
-	DeveloperWindow::getInstance().update(player);
-	
-#pragma endregion
 }
 
 void Scene_MainMenuDraw2D()
@@ -97,8 +58,6 @@ void Scene_MainMenuDraw3D()
 
 	DrawGrid(100.0f, 1.0f);
 	// Weird Interaction Between Rendering Ray and layer Objects
-
-	
 }
 
 Scene* Scene_MainMenuConstruct()

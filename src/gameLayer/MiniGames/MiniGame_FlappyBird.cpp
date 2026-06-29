@@ -18,6 +18,7 @@ MiniGame* MiniGame_FlappyBird(Player* player)
 
 	game->data->scoreGoal = 5;
 
+	player->rigidBody2D.scale = Vector3(5.0f, 5.0f, 5.0f);
 	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
 
 	// Generate Obstacle

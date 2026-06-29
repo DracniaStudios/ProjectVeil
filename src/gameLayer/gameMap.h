@@ -23,6 +23,7 @@ struct GameMap {
 	// Remove Data
 	void removeObject(GameObject* object);
 	void removeEntity(Entity* entity);
+	void removeInteractable(InteractableObject* object);
 
 	// Return Data
 	Vector3 getMapSize() const { return Vector3(size.x, size.y, size.z);}

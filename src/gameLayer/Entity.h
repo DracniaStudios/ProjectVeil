@@ -2,12 +2,11 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
-#include <iostream>
 #include <GameObject.h>
 
 struct Scene;
 
-struct Entity : public GameObject
+struct Entity : GameObject
 {
 private:
 	float attackStartTime = 1.0f;
@@ -30,9 +29,9 @@ public:
 
 	/** Functions **/
 
-	virtual void onEnable();
-	virtual void onDisable();
-	virtual void render3D();
+	virtual void onEnable() override;
+	virtual void onDisable() override;
+	virtual void render3D() override;
 	virtual void update(Scene* scene, float deltaTime) override;
 
 	/** Statuss **/

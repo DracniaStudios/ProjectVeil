@@ -149,13 +149,16 @@ void Player::update3D(float deltaTime)
 	health = Clamp(health, 0, getMaxHealth());
 	stamina = Clamp(stamina, 0, getMaxStamina());
 
-	/// Update Player Actions
 	
+	/// Update Player Input Actions
 	isFiring = IsMouseButtonDown(MOUSE_BUTTON_LEFT) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
 	if (!DeveloperWindow::getInstance().IsEnabled()) {
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) { Fire(); }
 		if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) { FireLaser(); }
 	}
+
+	if (IsKeyPressed(KEY_F)) { Interact(); }
+
 }
 
 ///  Camera Update Function for First-Person Style Camera. 
@@ -249,3 +252,27 @@ void Player::FireLaser()
 		}
 	}
 }
+
+void Player::Interact()
+{
+	auto scene = SceneManager::getInstance().currentScene;
+	if (scene->is2DActive) { return; }
+
+	const auto cameraRay = Ray(scene->camera->position, scene->camera->forward);
+	for (auto& interactable : scene->interactables)
+	{
+		const auto obj = interactable.second.get();
+		const GameObject* decoy = nullptr;
+		for (auto& sceneObject : scene->gameMap.gameObjects) { if (sceneObject.id == obj->id) { decoy = &sceneObject; } }
+
+		if (GetRayCollisionBox(cameraRay, decoy->rigidBody3D.collisionBox).hit)
+		{
+			if (obj->isInteractable)
+			{
+				obj->onInteract();
+			}
+		}
+	}
+}
+
+

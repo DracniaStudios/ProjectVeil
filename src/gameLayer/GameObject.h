@@ -49,9 +49,9 @@ struct GameObject
 	
 	/// Status
 	float lifeSpan = 0;
-	float endLife = 0;
-	float decayTime = 0;
-	void Decay(float time = 0) { decayTime = time; }
+	float endLife = 1;
+	float decayTime = 1;
+	void Decay(float time = 1) { decayTime = time; }
 
 	/// Flags
 	bool isEnabled = true;

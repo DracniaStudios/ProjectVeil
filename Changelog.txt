@@ -1,25 +1,33 @@
 // Game Name: Subject Veil
-// Version: 0.1.45 
-// Due: 2026-06-26 (MiniGames)
-// Date: 2026-06-25 (Current Development Date)
+// Version: 0.1.46 
+// Due: 2026-06-10 (Save System)
+// Date: 2026-06-29 (Current Development Date)
 
- I need to change my approach ro reading MiniGame Screen Obstacles
- Either:
-	Store As Percentaged then convert to pixels
-	Convert and store as pixel then render
+[Notice] Scene Camera3D can be changed and swith inbetween both cameras.
+[Notice] Player camera is held within the Player struct.
+[Notice] Editor camera can be created within the Developer Window.
 
 [ Issues ]
 
-- Found an issue where objects can't load object textures and return null ( just black )
-- Found an issue where FMOD files aren't detected through interface
+- Found an issue where objects can't load object textures and return null ( just black ).
+- Found an issue where FMOD files aren't detected through interface.
+- Found an issue where GameObjects are removed immediately instead of timed.
 
 [ Added ]
 
 - Added FMOD into project
 
+- Added new Remove Interactable to GameMap
+- Added Interact system to player struct.
+- Aaded new Save System
+
 [ Updated ]
 
-
+- Updated Player to contain Interact function
+- Updated Entites to default override functions
+- Updated GameMap to remore Entities from Scene directly
+- Updated GameObject's "endlife" and "decayTime" to 1.
+- Updated Flappybird to default player size to 5.
 
 [ Fixed ]
 

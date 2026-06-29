@@ -43,9 +43,9 @@ struct Player : Entity
 	// Status Functions
 
 	// Combat Functions
-	void Fire();
+	static void Fire();
 	void FireLaser();
-
+	static void Interact();
 };
 
 #endif

@@ -1,7 +1,7 @@
-#include <chrono>
-
-#include "scene.h"
+#include "Scene.h"
 #include "SceneManager.h"
+
+#include <chrono>
 
 Scene* Scene_new() {
 	Scene* scene = new Scene;
@@ -113,7 +113,6 @@ void Scene_updateScene(float delta) {
 		
 		if (miniGame->data->isComplete)
 		{
-			std::cout << "Completed: " << miniGame->name << "\n";
 			scene->is2DActive = false;
 			scene->isMiniActive = false;
 			scene->miniGame = nullptr;
@@ -121,7 +120,6 @@ void Scene_updateScene(float delta) {
 
 		if (miniGame->data->isReset)
 		{
-			std::cout << "Reset: " << miniGame->name << "\n";
 			scene->SetMiniGame(scene->GetLastMiniGame());
 		}
 
@@ -134,6 +132,9 @@ void Scene_updateScene(float delta) {
 
 	// Pause To Inventory
 	if (IsKeyPressed(KEY_TAB)) { scene->is2DActive = !scene->is2DActive; }
+
+	// Developer Window
+	DeveloperWindow::getInstance().update(scene->player);
 }
 
 void Scene_drawScene2D() {
@@ -204,7 +205,6 @@ void Scene::SetMiniGame(int value)
 			break;
 	}
 	if (miniGame) {
-		std::cout << "Start: "<< miniGame->name << "\n";
 		lastMiniGamePlayed = value;
 	}
 }

@@ -98,10 +98,17 @@ void GameMap::removeObject(GameObject* object) {
 	auto scene = SceneManager::getInstance().currentScene;
 	erase_if(scene->gameMap.gameObjects, [&](const GameObject& o) { return &o == object;});
 }
+
+
 void GameMap::removeEntity(Entity* entity)
 {
-	entity->health = -9999;
+	SceneManager::getInstance().currentScene->entities.erase(entity->id);
 	removeObject(entity);
+}
+void GameMap::removeInteractable(InteractableObject* object)
+{
+	SceneManager::getInstance().currentScene->interactables.erase(object->id);
+	removeObject(object);
 }
 
 // Find GameObjects
