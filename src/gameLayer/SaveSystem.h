@@ -3,6 +3,8 @@
 #define SAVE_SYSTEM_H
 #include <vector>
 
+struct GameObject;
+
 namespace SaveSystem
 {
 
@@ -13,13 +15,13 @@ namespace SaveSystem
 	void Init();
 	void Update();
 
-	bool SaveGame(void* data);
-	bool LoadGame(void* data);
+	static bool SaveGame(void* data);
+	static bool LoadGame(void* data);
 
 	bool SaveWorld(void* data);
 	bool LoadWorld(void* data);
 
-	bool SaveGameObjectsOnly(void* data);
+	bool SaveGameObjectsOnly(std::vector<GameObject> data, const char* fileName);
 	bool LoadGameObjectsOnly(void* data);
 
 	bool SaveSettings(void* data);

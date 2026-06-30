@@ -1,18 +1,18 @@
 #include <SaveSystem.h>
 
-#include <raylib.h>
-#include <nlohmann/json.hpp>
 #include <filesystem>
 #include <fstream>
 #include <SceneManager.h>
-
-#include "external/glfw/src/internal.h"
 
 constexpr int VERSION = 1;
 
 namespace SaveSystem
 {
 	using Json = nlohmann::json;
+
+	/** Data Parameters **/
+
+	/**  Data Functions **/
 
 	bool SaveGame(const char* fileName, void* data, size_t size)
 	{
@@ -40,7 +40,7 @@ namespace SaveSystem
 
 		// Read Data
 		file.seekg(0, std::ios_base::beg);
-		file.read(static_cast<char*>(data), std::min(size, readSize));
+		//file.read(static_cast<char*>(data), std::min(size, readSize));
 
 		auto* data_vec = static_cast<unsigned char*>(data);
 		std::vector vec(data_vec, data_vec + size);
@@ -58,9 +58,11 @@ namespace SaveSystem
 
 	bool SaveWorld(void* data)
 	{
+		auto scene = SceneManager::getInstance().currentScene;
 		std::error_code errorCode;
 		std::filesystem::create_directory(RESOURCES_PATH "../saves", errorCode);
 
+		SaveGameObjectsOnly(scene->gameMap.gameObjects, "World.bin");
 		// Save Block Data To File
 		// Files name is based on current level and save name
 
@@ -125,14 +127,43 @@ namespace SaveSystem
 		return true;
 	}
 
-	bool SaveGameObjectsOnly(void* data)
+	bool SaveGameObjectsOnly(std::vector<GameObject> data, const char* fileName)
 	{
 		std::error_code errorCode;
-		std::filesystem::create_directory(RESOURCES_PATH "../saves", errorCode);
 
+		//std::filesystem::create_directory(RESOURCES_PATH "../saves", errorCode);
+
+		std::cout << "Saving Game Objects \n";
+		std::ofstream file(fileName, std::ios::binary);
+
+		// Limit Number Of Objects
+		permaAssertDevelopement(data.size() >= OBJECT_LIMIT);
+		permaAssertDevelopement(!data.empty());
+
+		if (data.size() >= OBJECT_LIMIT) { return false; }
+
+		// Write Data
+		file.write(std::to_string(VERSION).c_str(), sizeof(VERSION));
 
 		// [Optional] Create "Save Only" functions for each type of data that needs to be saved.
 
+		file.write((char*)data.size(), sizeof(GameObject) * data.size());
+		
+		Json j;
+		for (auto& obj : data)
+		{
+			if (obj.type == OBJECT_PLAYER ||
+				obj.type == OBJECT_ENTITY) continue;
+
+			j[std::to_string(obj.id)] = obj.formatToJson();
+		}
+		/*
+		for (size_t i = 0; i < data.size(); i++)
+		{
+			auto obj = &data[i];
+			j[std::to_string(obj->id)] = obj->formatToJson();
+		}
+		*/
 		// ID Holder
 		{
 			std::ofstream file(RESOURCES_PATH "../saves/idHolder.txt.tmp");

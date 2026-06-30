@@ -1,5 +1,7 @@
 #include "DeveloperWindow.h"
 
+#include <SaveSystem.h>
+
 void DeveloperWindow::ShowGameData(Player* player)
 {
 	auto scene = SceneManager::getInstance().currentScene;
@@ -16,11 +18,17 @@ void DeveloperWindow::ShowGameData(Player* player)
 	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Game Map Data");
 
 	ImGui::Text("Game Objects: %d", static_cast<int>(scene->gameMap.gameObjects.size()));
-	ImGui::Text("Game Map Size: (%.2f, %.2f, %.2f)", &scene->gameMap.size.x);
+	ImGui::Text("Game Map Size: (%.2f, %.2f, %.2f)", &scene->gameMap.size.x, &scene->gameMap.size.y, &scene->gameMap.size.z);
 
 	/// Entity Data
 	ImGui::Text("Entity Count: %f", scene->entities.size());
 	ImGui::Text("Last ID Used: %f", &scene->instanceHolder.idCounter);
+	ImGui::Separator();
+
+
+	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Game Map Data");
+	
+	if (ImGui::Button("Save Game")) { SaveSystem::SaveWorld(&scene->gameMap); }
 
 	ImGui::End();
 }

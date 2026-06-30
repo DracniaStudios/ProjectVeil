@@ -3,7 +3,6 @@
 #define GAMEOBJECT_H
 
 #include <iostream>
-#include <raylib.h>
 #include <Physics.h>
 
 struct Scene;
@@ -75,6 +74,7 @@ struct GameObject
 	Vector3 getPosition() const { return rigidBody3D.translation; }
 	Quaternion getRotation() const { return rigidBody3D.rotation; }
 	Vector3 getSize() const { return rigidBody3D.scale; }
+	ObjectType getType() const { return static_cast<ObjectType>(type); }
 
 	virtual void update(Scene* scene, float deltaTime);
 	virtual void render2D();
@@ -82,10 +82,18 @@ struct GameObject
 	virtual void onEnable();
 	virtual void onDisable();
 
+	// Update State
 	virtual void Destroy();
 	virtual void onDestroy(Scene* scene);
-	
 	virtual void onCollision(const GameObject* collider);
+	
+
+	// Save Data
+	virtual Json formatToJson() { return {}; }
+	virtual bool loadFromJson(Json& j) { return true; }
+	void addCommonToJson(Json& j);
+	bool loadCommonFromJson(Json& j);
+
 
 };
 

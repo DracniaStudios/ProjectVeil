@@ -15,6 +15,7 @@ BoundingBox getBoundingBox(Model mdl, Vector3 pos)
 	return box;
 }
 
+#pragma region GameObject
 /** Initialization **/
 GameObject::GameObject()
 {
@@ -143,9 +144,10 @@ void GameObject::onCollision(const GameObject* collider)
 {
 	// Collision Data Checks
 }
-
+#pragma endregion
 //****** Interactable Objects *************//
 
+#pragma region Interactable Object
 InteractableObject::InteractableObject(const InteractionType interact, int value)
 {
 	interactType = interact;
@@ -179,3 +181,48 @@ void InteractableObject::onInteract()
 		return;
 	}
 }
+#pragma endregion
+/** GameObject Save Data **/
+#pragma region Save GameObject
+
+void GameObject::addCommonToJson(Json& j)
+{
+	// Load Common Object Data
+	j["RigidBody3D"] = rigidBody3D.formatToJson();
+	j["Life"] = lifeSpan;
+	j["ObjectType"] = getType();
+}
+
+bool GameObject::loadCommonFromJson(Json& j)
+{
+
+	if (j.contains("RigidBody3D"))
+	{
+		auto json = j["RigidBody3D"];
+
+		if (json.is_object())
+		{
+			if (!rigidBody3D.loadFromJson(j))
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return false;
+	}
+
+	if (j["Life"].is_number())
+	{
+		lifeSpan = j[lifeSpan];
+	}
+	return true;
+}
+
+
+#pragma endregion

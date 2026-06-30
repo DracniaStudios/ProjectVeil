@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
 // Version: 0.1.46 
-// Due: 2026-06-10 (Save System)
-// Date: 2026-06-29 (Current Development Date)
+// Due: 2026-07-10 (Save System)
+// Date: 2026-06-30 (Current Development Date)
 
 [Notice] Scene Camera3D can be changed and swith inbetween both cameras.
 [Notice] Player camera is held within the Player struct.
@@ -15,21 +15,19 @@
 
 [ Added ]
 
-- Added FMOD into project
-
-- Added new Remove Interactable to GameMap
-- Added Interact system to player struct.
-- Aaded new Save System
+- Added new FormatToJson() for GameObjects and RigidBody3D
+- Added new "GetType" to GameObject.
+- Added new "Save Game" button to Game Inspector
 
 [ Updated ]
 
-- Updated Player to contain Interact function
-- Updated Entites to default override functions
-- Updated GameMap to remore Entities from Scene directly
-- Updated GameObject's "endlife" and "decayTime" to 1.
-- Updated Flappybird to default player size to 5.
+- Updated GameMap to remove Entities based on ID.
+- Updated "SaveGameObjectsOnly" to use GameObject vector from GameMap.
+
 
 [ Fixed ]
+
+- Fixed an issue where the Game Inspector didn't load in the GameMap size.
 
 
 [ Removed ]

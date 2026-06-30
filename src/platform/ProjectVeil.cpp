@@ -61,6 +61,7 @@ int main()
 #pragma endregion
 
 		if (IsKeyPressed(KEY_F11)) { ToggleFullscreen(); }
+		
 		if (IsKeyPressed(KEY_GRAVE))
 		{
 			lockMouse = !lockMouse;
@@ -73,7 +74,6 @@ int main()
 				DisableCursor();
 			}
 		}
-		
 		if (!update_game())
 		{
 			close_game();

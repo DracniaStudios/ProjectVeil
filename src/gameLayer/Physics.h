@@ -4,6 +4,9 @@
 
 #include <raylib.h>
 #include <raymath.h>
+#include <nlohmann/json.hpp>
+
+using Json = nlohmann::json;
 
 #if defined(RAYMATH_DISABLE_CPP_OPERATORS)
 // Vector2 operator overloads (only defined when raymath C++ operators are disabled)
@@ -228,7 +231,7 @@ struct Transform3D : public Transform
 };
 
 
-struct RigidBody3D : public Transform3D
+struct RigidBody3D : Transform3D
 {
 private:
 	// pointer to owning GameObject
@@ -288,9 +291,13 @@ public:
 	void resolveConstrains(GameObject* self, GameObject* otherObject);
 	void resolveCollision(RigidBody3D& other);
 
+	// Save & Load Data
+	Json formatToJson();
+	bool loadFromJson(Json j);
+
 };
 
-struct Transform2D : public Transform
+struct Transform2D : Transform
 {
 	// translation
 	// rotation
@@ -338,7 +345,7 @@ struct Transform2D : public Transform
 	}
 };
 
-struct RigidBody2D : public Transform2D
+struct RigidBody2D : Transform2D
 {
 	Vector2 lastPosition = {};
 	Vector2 velocity = {};

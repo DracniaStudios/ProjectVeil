@@ -7,6 +7,7 @@
 #include <Entity.h>
 
 inline void* FindGameObjectByID(int id);
+inline constexpr int OBJECT_LIMIT = 10000;
 
 struct GameMap {
 

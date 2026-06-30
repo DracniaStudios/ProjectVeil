@@ -232,6 +232,7 @@ void RigidBody3D::resolveCollision(RigidBody3D& other)
 
 }
 #pragma endregion
+
 #pragma region Forces
 void RigidBody3D::UpdateForce(float deltaTime)
 {
@@ -315,4 +316,56 @@ void RigidBody3D::Jump(float force)
 	velocity.y = force;
 }
 
+#pragma endregion
+
+#pragma region SaveData
+
+Json RigidBody3D::formatToJson()
+{
+	Json j;
+
+	j["PosX"] = translation.x;
+	j["PosY"] = translation.y;
+	j["PosZ"] = translation.z;
+
+	j["ScaleX"] = scale.x;
+	j["ScaleY"] = scale.y;
+	j["ScaleZ"] = scale.z;
+
+	j["VelocityX"] = velocity.x;
+	j["VelocityY"] = velocity.y;
+	j["VelocityZ"] = velocity.z;
+
+	return j;
+}
+
+bool RigidBody3D::loadFromJson(Json j)
+{
+	*this = {};
+
+	if (!j.contains("PosX") || !j["PosX"].is_number()) { return false; }
+	if (!j.contains("PosY") || !j["PosY"].is_number()) { return false; }
+	if (!j.contains("PosZ") || !j["PosZ"].is_number()) { return false; }
+	
+	translation.x = j["PosX"];
+	translation.y = j["PosY"];
+	translation.z = j["PosZ"];
+
+	if (!j.contains("ScaleX") || !j["ScaleX"].is_number()) { return false; }
+	if (!j.contains("ScaleY") || !j["ScaleY"].is_number()) { return false; }
+	if (!j.contains("ScaleZ") || !j["ScaleZ"].is_number()) { return false; }
+	
+	translation.x = j["ScaleX"];
+	translation.y = j["ScaleY"];
+	translation.z = j["ScaleZ"];
+
+	if (!j.contains("VelocityX") && !j["VelocityX"].is_number()) { velocity.x = j["VelocityX"]; }
+	if (!j.contains("VelocityY") && !j["VelocityY"].is_number()) { velocity.y = j["VelocityY"]; }
+	if (!j.contains("VelocityZ") && !j["VelocityZ"].is_number()) { velocity.z = j["VelocityZ"]; }
+	
+	lastPosition = translation;
+
+	return true;
+
+}
 #pragma endregion
