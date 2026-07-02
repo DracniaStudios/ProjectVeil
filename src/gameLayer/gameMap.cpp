@@ -15,14 +15,11 @@ void GameMap::create(Vector3 size)
 	floor.name = "Floor";
 	floor.canBeSelected = false;
 	floor.isDestructible = false;
-
-	floor.meshVariant = MESH_CUBE;
-	floor.meshData = Vector4One();
-
 	floor.rigidBody3D.isStatic = true;
 	floor.rigidBody3D.translation = Vector3(0, -1, 0);
 	floor.rigidBody3D.scale = size;
 	floor.defaultColor = BLACK;
+	floor.texture = AssetManager::getInstance().asphalt_01;
 
 	saveObject(floor);
 
@@ -74,7 +71,6 @@ Entity* GameMap::saveEntity(Entity& entity)
 	scene->entities[entity.id] = std::move(entity_ptr);
 
 	std::cout << "Added Entity \n";
-	gameObjects.push_back(entity);
 	return scene->entities[entity.id].get();
 }
 

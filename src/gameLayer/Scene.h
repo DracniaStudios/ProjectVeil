@@ -60,6 +60,7 @@ public:
 	// Flags
 	bool is2DActive = false; // 2D Mode
 	bool isMiniActive = false;// Mini Game 
+	bool limitYBounds = false; // Limit Y Bounds
 
 	// Global Functions
 	updateSceneMethod update;

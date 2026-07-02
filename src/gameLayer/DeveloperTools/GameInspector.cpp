@@ -12,6 +12,7 @@ void DeveloperWindow::ShowGameData(Player* player)
 
 	ImGui::Checkbox("Is 2D Active", &scene->is2DActive);
 	ImGui::Checkbox("Is Mini Game Active", &scene->isMiniActive);
+	ImGui::Checkbox("Limit Y Bounds", &scene->limitYBounds);
 	ImGui::Separator();
 
 	/// Show Game Map Data
@@ -28,7 +29,10 @@ void DeveloperWindow::ShowGameData(Player* player)
 
 	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Game Map Data");
 	
-	if (ImGui::Button("Save Game")) { SaveSystem::SaveWorld(&scene->gameMap); }
-
+	if (ImGui::Button("Save Game")) { SaveSystem::SaveGame("game.bin", &scene->gameMap, sizeof(scene->gameMap)); }
+	if (ImGui::Button("Load Game")) { SaveSystem::LoadGame("game.bin", &scene->gameMap, sizeof(scene->gameMap)); }
+	if (ImGui::Button("Save World")) { SaveSystem::SaveWorld(scene); }
+	if (ImGui::Button("Load World")) { SaveSystem::LoadWorld(*scene); }
+	
 	ImGui::End();
 }

@@ -7,22 +7,9 @@
 
 struct Scene;
 
-enum MeshType
+enum ObjectType : uint8_t
 {
-	MESH_CUSTOM = 0,
-	MESH_POLY,
-	MESH_PLANE,
-	MESH_CUBE,
-	MESH_SPHERE,
-	MESH_HEMISPHERE,
-	MESH_CYLINDER,
-	MESH_CONE,
-	MESH_COUNT
-};
-
-enum ObjectType
-{
-	OBJECT_GENERIC = 0,
+	OBJECT_GENERIC,
 	OBJECT_PLAYER,
 	OBJECT_ENTITY,
 	OBJECT_ITEM,
@@ -62,14 +49,10 @@ struct GameObject
 	RigidBody3D rigidBody3D = {};
 
 	/// Renderer
-	Model* model = new Model{};
-	Mesh* mesh = new Mesh{};
+	Model model = {};
+	Mesh mesh = {};
+	Texture2D texture = {};
 	Color defaultColor = WHITE;
-	Vector4 meshData = Vector4One();
-	int meshVariant = MESH_CUBE;
-	
-	// Developer Menu Texture Test
-	int blockID = -1;
 
 	Vector3 getPosition() const { return rigidBody3D.translation; }
 	Quaternion getRotation() const { return rigidBody3D.rotation; }

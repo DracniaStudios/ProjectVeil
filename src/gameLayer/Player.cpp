@@ -60,8 +60,8 @@ void Player::render3D()
 	}
 
 	if (this->display3DModel) {
-		DrawModel(*model, rigidBody3D.translation, 1.0f, Color{ 20, 30, 30, 255 });
-		DrawModelWires(*model, rigidBody3D.translation, 1.0f, BLACK);
+		DrawModel(model, rigidBody3D.translation, 1.0f, Color{ 20, 30, 30, 255 });
+		DrawModelWires(model, rigidBody3D.translation, 1.0f, BLACK);
 	}
 
 	if (this->displayDirection) {
@@ -222,7 +222,7 @@ void PlayerCamera::UpdateCameraFPS(Camera* camera)
 // Projectile Variant
 void Player::Fire()
 {
-	std::cout << "Player Attacked\n";
+	//
 }
 
 void Player::FireLaser()
@@ -276,3 +276,36 @@ void Player::Interact()
 }
 
 
+static GameObject* selectObject(const Camera& cam)
+{
+	auto scene = SceneManager::getInstance().currentScene;
+	auto player = scene->player;
+
+	Ray selectRay = {
+		cam.position,
+		scene->camera->forward
+	};
+
+	if (!scene->gameMap.gameObjects.empty())
+	{
+		for (auto& object : scene->gameMap.gameObjects)
+		{
+			if (object.isEnabled)
+			{
+				BoundingBox objectBox = {
+					object.getPosition() - object.getSize() / 2,
+					object.getPosition() + object.getSize() / 2
+				};
+				if (GetRayCollisionBox(selectRay, objectBox).hit)
+				{
+					if (!object.canBeSelected) { continue; }
+
+					return &object;
+				}
+			}
+		}
+	}
+
+	return nullptr;
+
+}

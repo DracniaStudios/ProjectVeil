@@ -37,7 +37,7 @@ void Entity::update(Scene* scene, float deltaTime)
 void Entity::onHit(const Entity* collider)
 {
 	if (collider->type == OBJECT_PROJECTILE || collider->type == OBJECT_ENTITY) {
-		auto entity = static_cast<const Entity&>(*collider);
+		auto& entity = static_cast<const Entity&>(*collider);
 		health -= entity.baseDamage;
 		std::cout << "Entity hit! Health: " << health << " @ Entity.cpp \n";
 	}
@@ -57,7 +57,7 @@ void Entity::Attack()
 	
 	projectile.rigidBody3D.Teleport(rigidBody3D.translation + rigidBody3D.forward);
 	projectile.rigidBody3D.scale = Vector3(0.2f, 0.2f, 0.2f);
-	projectile.meshVariant = MESH_CUBE;
+	projectile.mesh = GenMeshSphere(0.2f, 16, 16);
 
 	projectile.rigidBody3D.SetVelocity(Vector3Scale(rigidBody3D.forward, projectile.baseSpeed * 10));
 	

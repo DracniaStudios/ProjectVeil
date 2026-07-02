@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
-// Version: 0.1.46 
+// Version: 0.1.48 
 // Due: 2026-07-10 (Save System)
-// Date: 2026-06-30 (Current Development Date)
+// Date: 2026-07-02 (Current Development Date)
 
 [Notice] Scene Camera3D can be changed and swith inbetween both cameras.
 [Notice] Player camera is held within the Player struct.
@@ -15,20 +15,25 @@
 
 [ Added ]
 
-- Added new FormatToJson() for GameObjects and RigidBody3D
-- Added new "GetType" to GameObject.
-- Added new "Save Game" button to Game Inspector
+- Added new Skeleton Model.
+- Added Save/Load button to Game Inspector.
+- Added new LimitYBounds to Scene (Forces All Objects from going below 0).
 
 [ Updated ]
 
-- Updated GameMap to remove Entities based on ID.
-- Updated "SaveGameObjectsOnly" to use GameObject vector from GameMap.
+- Updated Asset Manager to load Ice texture.
+- Updated GameObject to load models from GenMeshCube if there are none (Will Change GameObject Constructor to require Mesh). 
+- Updated GameObject ObjectType to use uint8_t base as enum.
+- Updated Player to hold selectObject from Camera.
+- Updated Player to initialize PlayerCamera data.
+- Updated Save System to load world data by ID Holder, GameObject, then Entiteis from Json format.
+- Updated Scene to load Entities seperately from GameObjects.
+- Updated Main Menu constructed Objects.
 
 
 [ Fixed ]
 
-- Fixed an issue where the Game Inspector didn't load in the GameMap size.
-
 
 [ Removed ]
 
+- Removed auto classification of Meshes by Mesh Type.

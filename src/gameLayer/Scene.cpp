@@ -1,7 +1,5 @@
 #include "Scene.h"
-#include "SceneManager.h"
-
-#include <chrono>
+#include <SceneManager.h>
 
 Scene* Scene_new() {
 	Scene* scene = new Scene;
@@ -24,11 +22,12 @@ std::uint64_t InstanceID::getIdAndIncrement()
 }
 
 /** Physics Solutions **/
-void solveCollision(Scene* scene, float delta, int solverIterations = 6)
+static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 {
 	solverIterations = static_cast<int>(Clamp(solverIterations, 4, 8));
 	for (int iter = 0; iter < solverIterations; iter++)
 	{
+		// Update Game Objects Vs. Game Objects
 		for (auto& bodyA : scene->gameMap.gameObjects)
 		{
 			//permaAssertComment(&bodyA == nullptr, "Null bodyA @ Scene.cpp");
@@ -47,6 +46,28 @@ void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 			bodyA.rigidBody3D.collisionBox = {
 				Vector3Subtract(bodyA.rigidBody3D.translation, Vector3Scale(bodyA.rigidBody3D.scale, 0.5f)),
 				Vector3Add(bodyA.rigidBody3D.translation,      Vector3Scale(bodyA.rigidBody3D.scale, 0.5f))
+			};
+		}
+
+		// Update Entities Vs. Game Objects
+		for (auto bodyA = scene->entities.begin(); bodyA != scene->entities.end(); ++bodyA)
+		{
+			//permaAssertComment(&bodyA == nullptr, "Null bodyA @ Scene.cpp");
+			for (auto& bodyB : scene->gameMap.gameObjects)
+			{
+				//permaAssertComment(&bodyB == nullptr, "Null bodyB @ Scene.cpp");
+
+				if (CheckCollisionBoxes(bodyA->second->rigidBody3D.collisionBox, bodyB.rigidBody3D.collisionBox))
+				{
+					bodyA->second->rigidBody3D.resolveConstrains(bodyA->second.get(), &bodyB);
+				}
+			}
+
+			// Refresh the collision box after each correction so subsequent
+			// iterations use the updated position rather than the stale one
+			bodyA->second->rigidBody3D.collisionBox = {
+				Vector3Subtract(bodyA->second->rigidBody3D.translation, Vector3Scale(bodyA->second->rigidBody3D.scale, 0.5f)),
+				Vector3Add(bodyA->second->rigidBody3D.translation,      Vector3Scale(bodyA->second->rigidBody3D.scale, 0.5f))
 			};
 		}
 	}
@@ -69,12 +90,23 @@ void Scene_updateScene(float delta) {
 		{
 			player->update3D(delta);
 			scene->camera->UpdateCameraFPS(&manager->camera3D);
+		
+			// Clamp Y Bounds
+			if (player->rigidBody3D.translation.y < -1000.0f) {
+				player->rigidBody3D.Teleport(Vector3{ 0, 5, 0 });
+			}
+			if (player->rigidBody3D.translation.y < 0 && scene->limitYBounds) {
+				player->rigidBody3D.translation.y = 0;
+			}
+
 		}
 	}
 
 	/** Update GameObjects **/
 	for (auto entity = scene->entities.begin(); entity != scene->entities.end();)
 	{
+		if (scene->entities.empty()) return;
+
 		// Update Data
 		entity->second->id = entity->first;
 		
@@ -94,14 +126,29 @@ void Scene_updateScene(float delta) {
 		else
 		{
 			entity->second->update(scene, delta);
+			// Clamp Y Bounds
+			if (entity->second->rigidBody3D.translation.y < -1000.0f) {
+				entity->second->rigidBody3D.Teleport(Vector3{ 0, 5, 0 });
+			}
+			if (entity->second->rigidBody3D.translation.y < 0 && scene->limitYBounds) {
+				entity->second->rigidBody3D.translation.y = 0;
+			}
 			++entity;
 		}
 	}
 
 
 	for (auto& object : scene->gameMap.gameObjects) {
-
 		object.update(scene, delta);
+		
+		// Clamp Y Bounds
+		if (object.rigidBody3D.translation.y < -1000.0f) {
+			object.rigidBody3D.Teleport(Vector3{ 0, 5, 0 });
+		}
+		if (object.rigidBody3D.translation.y < -1 && scene->limitYBounds) {
+			object.rigidBody3D.Teleport(Vector3{ object.getPosition().x, 5, object.getPosition().z });
+			std::cout << "Reset " << object.name << "'s Position \n";
+		}
 	}
 	solveCollision(scene, delta, 8);
 
@@ -139,24 +186,26 @@ void Scene_updateScene(float delta) {
 
 void Scene_drawScene2D() {
 	auto manager = &SceneManager::getInstance();
-	auto scene = manager->currentScene;
-	if (scene != nullptr) { scene->draw2D(); }
+	
+	if (auto scene = manager->currentScene) {
+		scene->draw2D();
 
-	// Inventory
-	if (scene->is2DActive)
-	{
-		/// Background
-		DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{ 20, 20, 20, 200 });
-
-		/// Inventory
-		//inventory.render(assetManager);
-
-		/// Mini Games On Top
-		if (scene->isMiniActive && scene->miniGame != nullptr)
+		if (scene->is2DActive)
 		{
-			scene->miniGame->draw(scene->miniGame->data, &scene->player);
+			/// Background
+			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{ 20, 20, 20, 200 });
+
+			/// Inventory
+			//inventory.render(assetManager);
+
+			/// Mini Games On Top
+			if (scene->isMiniActive && scene->miniGame != nullptr)
+			{
+				scene->miniGame->draw(scene->miniGame->data, &scene->player);
+			}
+			scene->player->render2D();
 		}
-		scene->player->render2D();
+
 	}
 }
 
@@ -168,7 +217,11 @@ void Scene_drawScene3D() {
 	for (auto& object : scene->gameMap.gameObjects) {
 		object.render3D();
 	}
-	
+
+	for (auto& entity : scene->entities) {
+		entity.second->render3D();
+	}
+
 	scene->player->render3D();
 }
 

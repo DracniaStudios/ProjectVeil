@@ -13,7 +13,9 @@ void AssetManager::loadAll()
 	grass_01 = LoadTexture(RESOURCES_PATH "blocks/Grass001/Grass001_4K-PNG_Color.png");
 	gravel_01 = LoadTexture(RESOURCES_PATH "blocks/Gravel041/Gravel041_4K-PNG_Color.png");
 	ground_01 = LoadTexture(RESOURCES_PATH "blocks/Ground088/Ground088_4K-PNG_Color.png");
+	*/
 	ice_01 = LoadTexture(RESOURCES_PATH "blocks/Ice002/Ice002_4K-PNG_Color.png");
+	/*
 	marble_01 = LoadTexture(RESOURCES_PATH "blocks/Marble016/Marble016_4K-PNG_Color.png");
 	marble_02 = LoadTexture(RESOURCES_PATH "blocks/Marble021/Marble021_4K-PNG_Color.png");
 	marble_03 = LoadTexture(RESOURCES_PATH "blocks/Marble023/Marble023_4K-PNG_Color.png");

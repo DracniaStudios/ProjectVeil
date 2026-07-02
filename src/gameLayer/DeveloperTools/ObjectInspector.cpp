@@ -98,12 +98,8 @@ void DeveloperWindow::ShowObjectInspector()
 			ImGui::Text("Object Data:");
 			ImGui::InputFloat3("Position: ", &object->rigidBody3D.translation.x);
 			ImGui::InputFloat3("Scale: ", &object->rigidBody3D.scale.x);
-			ImGui::InputInt("Mesh Variant", &object->meshVariant, 1, 1);
-			object->meshVariant = Clamp(object->meshVariant, 0, MESH_COUNT);
 			ImGui::Spacing();
 
-			// Texture Data
-			ImGui::InputInt("Block ID: ", &object->blockID);
 
 			// Object Flags
 			ImGui::TextColored(ImVec4(100, 0, 0, 255), "Flags");
