@@ -23,30 +23,7 @@ Rectangle getInventoryRectangle()
 
 void InventorySlot::render(AssetManager& assetManager, Inventory& inventory, Rectangle rect)
 {
-
 	rect = shrinkRectanglePercentage(rect, 0.1f, 0.1f);
-
-
-	if (CheckCollisionPointRec(GetMousePosition(), rect)) {
-		DrawTexturePro(
-			assetManager.frame,
-			{ 0, 0, static_cast<float>(assetManager.frame.width), static_cast<float>(assetManager.frame.height) },
-			rect,
-			{ 0, 0 },
-			0.0f,
-			{ 220, 255, 220, 255 }
-		);
-	}
-	else {
-		DrawTexturePro(
-			assetManager.frame,
-			{ 0, 0, static_cast<float>(assetManager.frame.width), static_cast<float>(assetManager.frame.height) },
-			rect,
-			{ 0, 0 },
-			0.0f,
-			{ 180, 180, 200, 240 }
-		);
-	}
 }
 
 void InventorySlot::update()
@@ -91,7 +68,7 @@ void Inventory::render(AssetManager& assetManager)
 
 			// Debug
 			DrawRectangle(r.x, r.y, r.width, r.height, BLUE);
-
+			/*
 			if (CheckCollisionPointRec(GetMousePosition(), r))
 			{
 				DrawTexturePro(
@@ -114,6 +91,7 @@ void Inventory::render(AssetManager& assetManager)
 					{ 180,180,200,240 } // tint
 				);
 			}
+			*/
 
 		}
 

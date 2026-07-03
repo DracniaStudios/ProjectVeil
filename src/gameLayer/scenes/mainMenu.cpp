@@ -50,9 +50,10 @@ Scene* Scene_MainMenuConstruct()
 	target.name = "Target";
 	target.type = OBJECT_GENERIC;
 	target.defaultColor = RED;
-	target.rigidBody3D.Teleport(Vector3(5, 3, 5));
+	target.rigidBody3D.Teleport(Vector3(5, 2, 5));
 	target.rigidBody3D.scale = Vector3One();
 	target.rigidBody3D.isStatic = true;
+	target.texture = &AssetManager::getInstance().bricks_01;
 	scene->gameMap.saveObject(target);
 	
 	for (auto i = 0; i < 10; i++)
@@ -61,12 +62,16 @@ Scene* Scene_MainMenuConstruct()
 		enemy.name = "Random Entity";
 		enemy.type = OBJECT_ENTITY;
 		enemy.defaultColor = RED;
-		enemy.rigidBody3D.Teleport(Vector3(5, 3, 0));
+		enemy.rigidBody3D.Teleport(Vector3(i * 2, 1, 7));
 		enemy.rigidBody3D.scale = Vector3One();
 		enemy.rigidBody3D.rotation = QuaternionFromVector3ToVector3(enemy.getPosition(), Vector3Subtract(enemy.getPosition(), enemy.rigidBody3D.down));
 		enemy.rigidBody3D.isStatic = true;
+		
+		enemy.texture = &AssetManager::getInstance().metal_01;
 		enemy.model = LoadModelFromMesh(GenMeshCube(1, 1, 1));
 		enemy.forceFire = false;
+
+
 		scene->gameMap.saveEntity(enemy);
 	}
 
@@ -78,22 +83,26 @@ Scene* Scene_MainMenuConstruct()
 		box.name = "Random Box";
 		box.type = OBJECT_GENERIC;
 		box.defaultColor = getRandomColor(rng);
-		box.rigidBody3D.Teleport(Vector3(0, 3, 10));
+		box.rigidBody3D.Teleport(Vector3(i * 2, 3, 10));
 		box.rigidBody3D.scale = Vector3One();
+		box.rigidBody3D.isStatic = true;
+
+		box.texture = &AssetManager::getInstance().plastic_01;
 		box.model = LoadModelFromMesh(GenMeshCube(1, 1, 1));
 		scene->gameMap.saveInteractable(box);
 	}
 
+	
 	Entity skeleton = {};
 	skeleton.name = "Skeleton";
 	skeleton.type = OBJECT_ENTITY;
-	skeleton.texture = AssetManager::getInstance().ice_01;
+	skeleton.texture = &AssetManager::getInstance().ice_01;
 	skeleton.model = LoadModel(RESOURCES_PATH "models/Skeleton/FullHumanSkeleton.obj");
 	skeleton.defaultColor = WHITE;
 	skeleton.rigidBody3D.Teleport(Vector3(10, 30, 10));
 	skeleton.rigidBody3D.scale = Vector3One();
 	scene->gameMap.saveEntity(skeleton);
-
+	
 
 	return scene;
 }

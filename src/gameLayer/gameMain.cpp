@@ -4,9 +4,9 @@ bool lockMouse = true;
 
 bool init_game()
 {
+	AssetManager::getInstance().loadAll();
 	InitAudioDevice();
 	SceneManager_init(&SceneManager::getInstance());
-	AssetManager::getInstance().loadAll();
 	
 	// Camera
 	SceneManager::getInstance().camera3D.position = Vector3{ 0, 10, 10 };

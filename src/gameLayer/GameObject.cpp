@@ -24,10 +24,15 @@ GameObject::GameObject()
 	rigidBody3D = {};
 
 	// Load Model else Cube
-	if (model.meshCount < 1)
+	if (model.meshCount == 0)
 	{
 		model = LoadModelFromMesh(GenMeshCube(1, 1, 1));
 	}
+
+	if (texture == nullptr) {
+		texture = &AssetManager::getInstance().frame;
+	}
+
 
 	// Set Initial Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
@@ -45,6 +50,8 @@ void GameObject::onEnable()
 	// Set Initial Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
 
+	model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture->texture;
+
 	lifeSpan = 0;
 	endLife = 1;
 }
@@ -52,7 +59,7 @@ void GameObject::onEnable()
 void GameObject::onDisable()
 {
 	isEnabled = false;
-	UnloadTexture(texture);
+	UnloadTexture(model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture);
 	UnloadMesh(mesh);
 	UnloadModel(model);
 }

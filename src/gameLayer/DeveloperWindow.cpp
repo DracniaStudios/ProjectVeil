@@ -17,6 +17,7 @@ void DeveloperWindow::update(Player* player)
 	if (IsKeyPressed(KEY_F4)) { isInspectorActive = !isInspectorActive; inspectObject = nullptr; }
 	if (IsKeyPressed(KEY_F5)) { isMiniGameActive = !isMiniGameActive; }
 	if (IsKeyPressed(KEY_F6)) { isEntityActive = !isEntityActive; }
+	if (IsKeyPressed(KEY_F7)) { isAssetActive = !isAssetActive; }
 
 	/// Update Game Data Windows
 	if (isPlayerActive) ShowPlayerData(player);
@@ -25,7 +26,7 @@ void DeveloperWindow::update(Player* player)
 	if (isEntityActive) ShowEntityInspector();
 	if (isMiniGameActive) ShowMiniGameData(player);
 	if (isGameDataActive) ShowGameData(player);
-
+	if (isAssetActive) ShowAssetData();
 }
 
 void DeveloperWindow::ShowInspector(int inspectorID, bool isEnabled)
@@ -37,6 +38,7 @@ void DeveloperWindow::ShowInspector(int inspectorID, bool isEnabled)
 		case 3: isInspectorActive = isEnabled; break;
 		case 4: isEntityActive = isEnabled; break;
 		case 5: isMiniGameActive = isEnabled; break;
+		case 6: isAssetActive = isEnabled; break;
 		default: isGameDataActive = isEnabled; break;
 	}
 }

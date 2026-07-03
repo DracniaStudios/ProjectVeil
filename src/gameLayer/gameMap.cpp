@@ -11,6 +11,8 @@ void GameMap::create(Vector3 size)
 {
 	this->size = size;
 
+	auto rng = std::ranlux24_base(std::random_device{}());
+
 	GameObject floor{};
 	floor.name = "Floor";
 	floor.canBeSelected = false;
@@ -18,8 +20,10 @@ void GameMap::create(Vector3 size)
 	floor.rigidBody3D.isStatic = true;
 	floor.rigidBody3D.translation = Vector3(0, -1, 0);
 	floor.rigidBody3D.scale = size;
-	floor.defaultColor = BLACK;
-	floor.texture = AssetManager::getInstance().asphalt_01;
+	floor.defaultColor = getRandomColor(rng);
+
+	floor.texture = &AssetManager::getInstance().asphalt_01;
+	floor.model = LoadModelFromMesh(GenMeshCube(size.x, 1, size.z));
 
 	saveObject(floor);
 

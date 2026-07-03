@@ -26,7 +26,7 @@ class DeveloperWindow
 	bool isEntityActive = false;
 	bool isMiniGameActive = false;
 	bool isGameDataActive = false;
-
+	bool isAssetActive = false;
 
 	// Object & Entity Inspector Data
 	/** Object Inspector Data **/
@@ -49,6 +49,7 @@ class DeveloperWindow
 	void ShowObjectInspector();
 	void ShowEntityInspector();
 	void ShowMiniGameData(Player* player);
+	void ShowAssetData();
 public:
 	// Singleton Pattern Implementation
 	DeveloperWindow(const DeveloperWindow&) = delete;

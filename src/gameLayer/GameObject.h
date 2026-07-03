@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <Physics.h>
+#include <AssetManager.h>
 
 struct Scene;
 
@@ -51,7 +52,7 @@ struct GameObject
 	/// Renderer
 	Model model = {};
 	Mesh mesh = {};
-	Texture2D texture = {};
+	Asset* texture = {};
 	Color defaultColor = WHITE;
 
 	Vector3 getPosition() const { return rigidBody3D.translation; }

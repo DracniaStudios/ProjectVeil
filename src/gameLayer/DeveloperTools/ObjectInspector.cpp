@@ -29,6 +29,11 @@ void DeveloperWindow::ShowObjectInspector()
 			ImGui::Text("Type: %s", objectTypeString);
 			ImGui::Text("ID: %d", static_cast<int>(object->id));
 			ImGui::Spacing();
+		
+			ImGui::TextColored(ImVec4(255, 255, 0, 255), "Texture");
+			ImGui::Image((ImTextureRef)(intptr_t)object->model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture.id, ImVec2(64, 64));
+
+			ImGui::Spacing();
 
 			// RigidBody Data
 			ImGui::TextColored(ImVec4(0, 255, 255, 255), "Rigidbody");

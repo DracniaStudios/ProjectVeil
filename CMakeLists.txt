@@ -101,4 +101,14 @@ rlimgui
 FastNoise2 
 nlohmann_json 
 FMOD)
+
+
 # TODO: Add tests and install targets if needed.
+
+# Automate the copying of resources to the build directory
+add_custom_command(
+	TARGET "${CMAKE_PROJECT_NAME}" POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+		"${CMAKE_CURRENT_SOURCE_DIR}/resources"
+		"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources"
+)
