@@ -4,6 +4,7 @@
 #include <gameMap.h>
 #include <AssetManager.h>
 #include <SceneManager.h>
+#include <AudioManager.h>
 
 static BoundingBox getBoundingBox(Model mdl, Vector3 pos)
 {
@@ -153,6 +154,9 @@ void InteractableObject::onInteract()
 		static_cast<unsigned char>(getRandomInt(rng, 0, 255)),
 		255
 	};
+
+	AudioManager::getInstance().Play("anime_wow");
+
 	if (interactType == INTERACT_MINIGAME)
 	{
 		SceneManager::getInstance().currentScene->SetMiniGame(interactValue);

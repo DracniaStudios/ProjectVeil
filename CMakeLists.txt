@@ -112,3 +112,12 @@ add_custom_command(
 		"${CMAKE_CURRENT_SOURCE_DIR}/resources"
 		"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources"
 )
+
+# Copy shared library dependencies (e.g. fmod.dll/fmodL.dll) next to the executable
+add_custom_command(
+	TARGET "${CMAKE_PROJECT_NAME}" POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy -t
+		"$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>"
+		"$<TARGET_RUNTIME_DLLS:${CMAKE_PROJECT_NAME}>"
+	COMMAND_EXPAND_LISTS
+)
