@@ -5,6 +5,7 @@ bool lockMouse = true;
 bool init_game()
 {
 	AssetManager::getInstance().loadAll();
+	AudioManager::getInstance().loadAll();
 	InitAudioDevice();
 	SceneManager_init(&SceneManager::getInstance());
 	

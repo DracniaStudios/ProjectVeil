@@ -6,6 +6,7 @@
 #include <fstream>
 #include <SceneManager.h>
 #include <AssetManager.h>
+#include <AudioManager.h>
 
 bool init_game();
 bool update_game();

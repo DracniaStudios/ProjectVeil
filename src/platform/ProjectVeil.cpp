@@ -34,7 +34,7 @@ int main()
 
 #pragma region FMOD
 
-	
+	AudioManager::getInstance().init();
 
 #pragma endregion
 
@@ -74,6 +74,8 @@ int main()
 				DisableCursor();
 			}
 		}
+		AudioManager::getInstance().update();
+
 		if (!update_game())
 		{
 			close_game();
@@ -84,6 +86,8 @@ int main()
 		rlImGuiEnd();
 		EndDrawing();
 	}
+
+	AudioManager::getInstance().shutdown();
 
 	rlImGuiShutdown();
 

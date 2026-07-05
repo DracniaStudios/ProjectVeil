@@ -12,3 +12,4 @@
 #include <fmod.h>
 #include <gameMain.h>
 #include <SceneManager.h>
+#include <AudioManager.h>
