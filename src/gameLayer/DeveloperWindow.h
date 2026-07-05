@@ -30,10 +30,13 @@ class DeveloperWindow
 	bool isWorldEditorActive = false;
 
 	// Object & Entity Inspector Data
+
 	/** Object Inspector Data **/
 	GameObject* inspectObject;
 	Entity* inspectEntity;
-	void* newObject;
+
+	GameObject newObject;
+	Entity newEntity;
 	Vector4 colorHolder = Vector4(0, 0, 0, 255);
 	char inputName[128] = "New Object";
 	bool isCreatingObject = false;

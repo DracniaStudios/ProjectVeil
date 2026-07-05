@@ -33,7 +33,7 @@ struct GameObject
 	/// Debug Display
 	bool display3DModel = true;
 	bool displayDirection = false;
-	bool displayCollider = false;
+	bool displayCollider = true;
 	
 	/// Status
 	float lifeSpan = 0;
@@ -72,7 +72,6 @@ struct GameObject
 	virtual void onDestroy(Scene* scene);
 	virtual void onCollision(const GameObject* collider);
 	
-
 	// Save Data
 	virtual Json formatToJson();
 	virtual bool loadFromJson(Json& j);

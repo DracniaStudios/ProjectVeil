@@ -7,8 +7,8 @@
 #include <vector>
 
 struct Asset {
-	const char* name = "";
-	const char* path = "";
+	std::string name = "";
+	std::string path = "";
 	Texture2D texture = {};
 };
 
@@ -82,7 +82,7 @@ inline Asset* GetAssetPtrByName(const std::string& name)
 {
 	for (auto& asset : AssetManager::getInstance().assets)
 	{
-		if (asset.name != nullptr && name == asset.name)
+		if (!asset.name.empty() && name == asset.name)
 		{
 			return &asset;
 		}

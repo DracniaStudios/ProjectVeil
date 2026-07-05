@@ -31,7 +31,6 @@ Scene* Scene_MainMenuConstruct()
 	Scene* scene = Scene_new();
 
 	// Load Main Menu World
-
 	scene->name = "Main Menu";
 	scene->update = Scene_MainMenuUpdate;
 	scene->draw2D = Scene_MainMenuDraw2D;

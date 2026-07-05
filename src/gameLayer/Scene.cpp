@@ -267,14 +267,12 @@ void Scene::SetMiniGame(int value)
 		case 3:
 			miniGame = MiniGame_SimonSays(player);
 			break;
-		/*
 		case 4:
-			//miniGame = MiniGame_TimedSimonSays(player);
+			miniGame = MiniGame_TimedSimonSays(player);
 			break;
 		case 5:
-			//miniGame = MiniGame_Maze(player);
+			miniGame = MiniGame_Maze(player);
 			break;
-		*/
 		case 6:
 			miniGame = MiniGame_RoShamBoo(player);
 			break;

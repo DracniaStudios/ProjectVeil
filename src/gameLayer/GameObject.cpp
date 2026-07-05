@@ -6,6 +6,8 @@
 #include <SceneManager.h>
 #include <AudioManager.h>
 
+static Color colliderColor;
+
 static BoundingBox getBoundingBox(Model mdl, Vector3 pos)
 {
 	permaAssertComment(mdl.meshes == nullptr, "No Meshes In Model");
@@ -27,7 +29,7 @@ GameObject::GameObject()
 	// Load Model else Cube
 	if (model.meshCount == 0)
 	{
-		model = LoadModelFromMesh(GenMeshCube(1, 1, 1));
+		model = LoadModelFromMesh(GenMeshCube(rigidBody3D.scale.x, rigidBody3D.scale.y, rigidBody3D.scale.z));
 	}
 
 	if (texture == nullptr) {
@@ -40,7 +42,7 @@ GameObject::GameObject()
 	
 	lifeSpan = 0;
 	endLife = 1;
-
+	
 }
 
 /** Lifecycle **/
@@ -48,6 +50,8 @@ GameObject::GameObject()
 void GameObject::onEnable()
 {
 	isEnabled = true;
+	auto rng = std::ranlux24_base(std::random_device{}());
+	colliderColor = getRandomColor(rng);
 	// Set Initial Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
 
@@ -74,7 +78,7 @@ void GameObject::render3D()
 {
 	if (!isEnabled) { return; }
 
-	if (displayCollider) { DrawBoundingBox(rigidBody3D.collisionBox, WHITE); }
+	if (displayCollider) { DrawBoundingBox(rigidBody3D.collisionBox, colliderColor); }
 
 	if (display3DModel) {
 		DrawModel(model, rigidBody3D.translation, 1.0f, defaultColor);
@@ -194,7 +198,7 @@ void GameObject::addCommonToJson(Json& j)
 
 	// Renderer
 	j["Color"] = { defaultColor.r, defaultColor.g, defaultColor.b, defaultColor.a };
-	if (texture != nullptr && texture->name != nullptr)
+	if (texture != nullptr && !texture->name.empty())
 	{
 		j["Texture"] = texture->name;
 	}

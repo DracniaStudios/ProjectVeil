@@ -1,5 +1,7 @@
 #include "SceneManager.h"
 
+#include <WorldEditor.h>
+
 SceneManager* SceneManager_new() {
 	SceneManager* manager = (SceneManager*)malloc(sizeof(SceneManager));
 	return manager;
@@ -19,6 +21,8 @@ void SceneManager_init(SceneManager* manager) {
 }
 
 void SceneManager_update(SceneManager* manager, float delta) {
+
+
 	// Update Transition
 	if (manager->transition->direction != NONE) {
 		if (manager->transition->direction == OUT) {
@@ -47,14 +51,7 @@ void SceneManager_draw(SceneManager* manager) {
 	// Draw Scene 2D
 	BeginMode2D(manager->camera2D);
 	if (manager->currentScene) Scene_drawScene2D();
-
-	std::string displayText = "( ";
-	displayText += std::to_string(GetMousePosition().x);
-	displayText += "), (";
-	displayText += std::to_string(GetMousePosition().y);
-	displayText += ")";
-
-	DrawText(displayText.c_str(), GetMousePosition().x + 10, GetMousePosition().y + 10, 10, WHITE);
+	if (WorldEditor::getInstance().IsEnabled && WorldEditor::getInstance().isActive) WorldEditor::getInstance().Draw2D();
 
 	EndMode2D();
 

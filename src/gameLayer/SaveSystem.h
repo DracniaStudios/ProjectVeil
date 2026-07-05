@@ -16,9 +16,5 @@ namespace SaveSystem
 	bool SaveGame(const char* fileName, Scene* scene);
 	bool LoadGame(const char* fileName, Scene& scene);
 
-	// Save/Load the default world file (falls back to backup on load)
-	bool SaveWorld(void* data);
-	bool LoadWorld(Scene& scene);
-
 }
 #endif

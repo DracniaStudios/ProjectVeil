@@ -205,7 +205,7 @@ namespace SaveSystem
 		}
 
 		// Write to a temp file first so a crash mid-save never corrupts the real one
-		std::ofstream file(tmpPath);
+		std::ofstream file(tmpPath, std::ios::binary);
 		if (!file.is_open()) { return false; }
 
 		file << SceneToJson(scene).dump(2);
@@ -222,7 +222,7 @@ namespace SaveSystem
 
 	bool LoadGame(const char* fileName, Scene& scene)
 	{
-		std::ifstream file(fileName);
+		std::ifstream file(fileName, std::ios::binary);
 
 		if (!file.is_open())
 		{

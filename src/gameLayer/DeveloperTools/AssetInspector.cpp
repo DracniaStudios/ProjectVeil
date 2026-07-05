@@ -9,10 +9,11 @@ void DeveloperWindow::ShowAssetData()
 
 	for (const auto& asset : assetManager.assets)
 	{
-		if (ImGui::TreeNode(asset.name))
+		if (ImGui::TreeNode(asset.name.c_str()))
 		{
 			ImGui::Text("Asset Name: %s", asset.name);
 			ImGui::Text("Asset Path: %s", asset.path);
+			ImGui::Text("Asset Path: %s", std::to_string(asset.texture.id));
 			ImGui::Image((ImTextureRef)(intptr_t)asset.texture.id, ImVec2(64, 64));
 			ImGui::TreePop();
 		}

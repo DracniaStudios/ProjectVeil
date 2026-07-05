@@ -136,7 +136,7 @@ void DeveloperWindow::ShowEntityInspector()
 
 	/// List Game Objects
 	ImGui::BeginChild("Entity List", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.2f));
-	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Game Objects");
+	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Entites");
 	for (auto& entity : scene->entities)
 	{
 		ImGui::PushID(&entity);
@@ -170,24 +170,23 @@ void DeveloperWindow::ShowEntityInspector()
 	if (ImGui::Button("Create New Entity"))
 	{
 		isCreatingEntity = !isCreatingEntity;
-		newObject = new Entity();
+		newEntity = {};
 	}
 
 	if (isCreatingEntity)
 	{
 		/// Create Game Object Window 
 		ImGui::Begin("Create Entity");
-		auto object = static_cast<Entity*>(newObject);
 
 		/** Base Object Data **/
-		saveObjectData(object);
+		saveObjectData(&newEntity);
 
 		// Spawn Object Button
 		if (ImGui::Button("Spawn Entity"))
 		{
-			object->rigidBody3D.Teleport(object->getPosition());
-			inspectEntity = scene->gameMap.saveEntity(*object);
-			newObject = {};
+			newEntity.rigidBody3D.Teleport(newEntity.getPosition());
+			inspectEntity = scene->gameMap.saveEntity(newEntity);
+			newEntity = {};
 			isCreatingEntity = false;
 		}
 		ImGui::End();

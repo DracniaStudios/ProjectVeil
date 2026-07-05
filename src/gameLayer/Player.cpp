@@ -20,7 +20,9 @@ void Player::onEnable()
 	stamina = getMaxStamina();
 	rigidBody2D.translation = Vector3(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f, 0);
 	maxHealth = 100.0f;
-	std::cout << rigidBody2D.translation.x << "\n";
+
+	display3DModel = false;
+
 	Entity::onEnable();
 }
 

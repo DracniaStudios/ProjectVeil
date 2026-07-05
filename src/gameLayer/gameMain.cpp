@@ -1,7 +1,5 @@
 #include "gameMain.h"
 
-bool lockMouse = true;
-
 bool init_game()
 {
 	AssetManager::getInstance().loadAll();
@@ -40,17 +38,6 @@ bool update_game()
 
 	SceneManager_draw(&SceneManager::getInstance());
 	
-	if (IsKeyPressed(KEY_F1)) { lockMouse = !lockMouse; }
-	/*
-	if (lockMouse)
-	{
-		DisableCursor();
-	}
-	else
-	{
-		EnableCursor();
-	}
-	*/
 	DrawFPS(10, 10);
 	return true;
 }
