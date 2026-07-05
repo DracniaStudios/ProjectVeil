@@ -70,6 +70,28 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 				Vector3Add(bodyA->second->rigidBody3D.translation,      Vector3Scale(bodyA->second->rigidBody3D.scale, 0.5f))
 			};
 		}
+
+		// Update Entities Vs. Entity
+		for (auto bodyA = scene->entities.begin(); bodyA != scene->entities.end(); ++bodyA)
+		{
+			//permaAssertComment(&bodyA == nullptr, "Null bodyA @ Scene.cpp");
+			for (auto bodyB = scene->entities.begin(); bodyB != scene->entities.end(); ++bodyB)
+			{
+				//permaAssertComment(&bodyB == nullptr, "Null bodyB @ Scene.cpp");
+
+				if (CheckCollisionBoxes(bodyA->second->rigidBody3D.collisionBox, bodyB->second->rigidBody3D.collisionBox))
+				{
+					bodyA->second->rigidBody3D.resolveConstrains(bodyA->second.get(), bodyB->second.get());
+				}
+			}
+
+			// Refresh the collision box after each correction so subsequent
+			// iterations use the updated position rather than the stale one
+			bodyA->second->rigidBody3D.collisionBox = {
+				Vector3Subtract(bodyA->second->rigidBody3D.translation, Vector3Scale(bodyA->second->rigidBody3D.scale, 0.5f)),
+				Vector3Add(bodyA->second->rigidBody3D.translation,      Vector3Scale(bodyA->second->rigidBody3D.scale, 0.5f))
+			};
+		}
 	}
 }
 

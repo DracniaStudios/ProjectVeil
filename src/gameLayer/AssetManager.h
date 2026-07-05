@@ -77,6 +77,19 @@ inline Asset LoadAsset(const char* name, const char* path)
 	return asset;
 };
 
+// Pointer is valid until the asset list is modified — only look up after loadAll()
+inline Asset* GetAssetPtrByName(const std::string& name)
+{
+	for (auto& asset : AssetManager::getInstance().assets)
+	{
+		if (asset.name != nullptr && name == asset.name)
+		{
+			return &asset;
+		}
+	}
+	return nullptr;
+};
+
 inline Asset GetAssetByName(const std::string& name)
 {
 	for (const auto& asset : AssetManager::getInstance().assets)

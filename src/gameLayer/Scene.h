@@ -15,6 +15,7 @@
 #include <Inventory.h>
 #include <DeveloperWindow.h>
 #include <asserts.h>
+#include <SaveSystem.h>
 
 #include <stdlib.h>
 #include <iostream>
@@ -108,9 +109,9 @@ void Scene_drawScene3D();
  * Define an construction method for all Scene
  */
 
-#define SCENE_COUNT 1
+inline constexpr int SCENE_COUNT = 1;
 
-#define SCENE_MAIN_MENU 0
+inline constexpr int SCENE_MAIN_MENU = 0;
 Scene* Scene_MainMenuConstruct();
 
 #endif 

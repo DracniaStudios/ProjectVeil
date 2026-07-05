@@ -54,7 +54,6 @@ endif()
 
 # Define Absolute Project Path
 if (PRODUCTION_BUILD)
-
 	# Setup the ASSETS_PATH macro to the final assets directory when you share the project
 	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="./resources/")
 	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC PRODUCTION_BUILD=1)

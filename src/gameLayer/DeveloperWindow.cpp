@@ -9,8 +9,14 @@ void DeveloperWindow::update(Player* player)
 		isCameraActive ||
 		isInspectorActive ||
 		isMiniGameActive ||
-		isGameDataActive;
+		isGameDataActive||
+		isWorldEditorActive ||
+		isAssetActive
+		;
 
+	if (IsKeyPressed(KEY_F1)) { isWorldEditorActive = !isWorldEditorActive; }
+	
+	/*
 	if (IsKeyPressed(KEY_F1)) { isGameDataActive = !isGameDataActive; }
 	if (IsKeyPressed(KEY_F2)) { isPlayerActive = !isPlayerActive; }
 	if (IsKeyPressed(KEY_F3)) { isCameraActive = !isCameraActive; }
@@ -18,6 +24,8 @@ void DeveloperWindow::update(Player* player)
 	if (IsKeyPressed(KEY_F5)) { isMiniGameActive = !isMiniGameActive; }
 	if (IsKeyPressed(KEY_F6)) { isEntityActive = !isEntityActive; }
 	if (IsKeyPressed(KEY_F7)) { isAssetActive = !isAssetActive; }
+	*/
+
 
 	/// Update Game Data Windows
 	if (isPlayerActive) ShowPlayerData(player);
@@ -27,19 +35,5 @@ void DeveloperWindow::update(Player* player)
 	if (isMiniGameActive) ShowMiniGameData(player);
 	if (isGameDataActive) ShowGameData(player);
 	if (isAssetActive) ShowAssetData();
+	if (isWorldEditorActive) ShowWorldEditor();
 }
-
-void DeveloperWindow::ShowInspector(int inspectorID, bool isEnabled)
-{
-	switch (inspectorID)
-	{
-		case 1: isPlayerActive = isEnabled; break;
-		case 2: isCameraActive = isEnabled; break;
-		case 3: isInspectorActive = isEnabled; break;
-		case 4: isEntityActive = isEnabled; break;
-		case 5: isMiniGameActive = isEnabled; break;
-		case 6: isAssetActive = isEnabled; break;
-		default: isGameDataActive = isEnabled; break;
-	}
-}
-

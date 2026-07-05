@@ -181,10 +181,23 @@ void InteractableObject::onInteract()
 
 void GameObject::addCommonToJson(Json& j)
 {
-	// Load Common Object Data
+	// Save Common Object Data
 	j["RigidBody3D"] = rigidBody3D.formatToJson();
 	j["Life"] = lifeSpan;
 	j["ObjectType"] = getType();
+	j["Name"] = name;
+
+	// Flags
+	j["IsEnabled"] = isEnabled;
+	j["CanBeSelected"] = canBeSelected;
+	j["IsDestructible"] = isDestructible;
+
+	// Renderer
+	j["Color"] = { defaultColor.r, defaultColor.g, defaultColor.b, defaultColor.a };
+	if (texture != nullptr && texture->name != nullptr)
+	{
+		j["Texture"] = texture->name;
+	}
 }
 
 bool GameObject::loadCommonFromJson(Json& j)
@@ -211,12 +224,68 @@ bool GameObject::loadCommonFromJson(Json& j)
 		return false;
 	}
 
-	if (j["Life"].is_number())
+	if (j.contains("Life") && j["Life"].is_number())
 	{
-		lifeSpan = j[lifeSpan];
+		lifeSpan = j["Life"];
 	}
+
+	type = j.value("ObjectType", static_cast<int>(OBJECT_GENERIC));
+	name = j.value("Name", name);
+
+	// Flags
+	isEnabled = j.value("IsEnabled", true);
+	canBeSelected = j.value("CanBeSelected", true);
+	isDestructible = j.value("IsDestructible", true);
+
+	// Renderer
+	if (j.contains("Color") && j["Color"].is_array() && j["Color"].size() == 4)
+	{
+		defaultColor.r = j["Color"][0];
+		defaultColor.g = j["Color"][1];
+		defaultColor.b = j["Color"][2];
+		defaultColor.a = j["Color"][3];
+	}
+
+	if (j.contains("Texture") && j["Texture"].is_string())
+	{
+		if (auto asset = GetAssetPtrByName(j["Texture"].get<std::string>()))
+		{
+			texture = asset;
+		}
+	}
+
 	return true;
 }
 
+Json GameObject::formatToJson()
+{
+	Json j;
+	addCommonToJson(j);
+	return j;
+}
+
+bool GameObject::loadFromJson(Json& j)
+{
+	return loadCommonFromJson(j);
+}
+
+Json InteractableObject::formatToJson()
+{
+	Json j;
+	addCommonToJson(j);
+	j["InteractType"] = interactType;
+	j["InteractValue"] = interactValue;
+	j["IsInteractable"] = isInteractable;
+	return j;
+}
+
+bool InteractableObject::loadFromJson(Json& j)
+{
+	if (!loadCommonFromJson(j)) { return false; }
+	interactType = j.value("InteractType", 0);
+	interactValue = j.value("InteractValue", 0);
+	isInteractable = j.value("IsInteractable", true);
+	return true;
+}
 
 #pragma endregion

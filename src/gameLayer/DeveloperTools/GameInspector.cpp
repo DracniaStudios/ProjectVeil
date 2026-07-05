@@ -29,10 +29,10 @@ void DeveloperWindow::ShowGameData(Player* player)
 
 	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Game Map Data");
 	
-	if (ImGui::Button("Save Game")) { SaveSystem::SaveGame("game.bin", &scene->gameMap, sizeof(scene->gameMap)); }
-	if (ImGui::Button("Load Game")) { SaveSystem::LoadGame("game.bin", &scene->gameMap, sizeof(scene->gameMap)); }
-	if (ImGui::Button("Save World")) { SaveSystem::SaveWorld(scene); }
-	if (ImGui::Button("Load World")) { SaveSystem::LoadWorld(*scene); }
+	if (ImGui::Button("Save Game")) { SaveSystem::SaveGame(RESOURCES_PATH "../saves/game.json", scene); }
+	if (ImGui::Button("Load Game")) { SaveSystem::LoadGame(RESOURCES_PATH "../saves/game.json", *scene); }
+	//if (ImGui::Button("Save World")) { SaveSystem::SaveWorld(scene); }
+	//if (ImGui::Button("Load World")) { SaveSystem::LoadWorld(*scene); }
 	
 	ImGui::End();
 }

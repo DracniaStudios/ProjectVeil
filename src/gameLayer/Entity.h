@@ -38,6 +38,10 @@ public:
 	float getMaxHealth() const { return maxHealth; }
 	float getMaxStamina() const { return maxStamina; }
 
+	/** Save Data **/
+	Json formatToJson() override;
+	bool loadFromJson(Json& j) override;
+
 	/** Combat Functions **/
 	virtual void onHit(const Entity* collider);
 	void takeDamage(const float& damage)

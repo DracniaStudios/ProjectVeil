@@ -67,3 +67,33 @@ void Entity::Attack()
 
 	SceneManager::getInstance().currentScene->gameMap.saveObject(projectile);
 }
+
+/** Save Data **/
+
+Json Entity::formatToJson()
+{
+	Json j = GameObject::formatToJson();
+
+	j["Health"] = health;
+	j["MaxHealth"] = maxHealth;
+	j["Stamina"] = stamina;
+	j["MaxStamina"] = maxStamina;
+	j["BaseDamage"] = baseDamage;
+	j["BaseSpeed"] = baseSpeed;
+
+	return j;
+}
+
+bool Entity::loadFromJson(Json& j)
+{
+	if (!GameObject::loadFromJson(j)) { return false; }
+
+	maxHealth = j.value("MaxHealth", maxHealth);
+	maxStamina = j.value("MaxStamina", maxStamina);
+	health = j.value("Health", maxHealth);
+	stamina = j.value("Stamina", maxStamina);
+	baseDamage = j.value("BaseDamage", baseDamage);
+	baseSpeed = j.value("BaseSpeed", baseSpeed);
+
+	return true;
+}

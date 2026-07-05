@@ -3,18 +3,20 @@
 #define SAVE_SYSTEM_H
 
 #include <vector>
+#include <string>
 struct Scene;
-enum ObjectType : uint8_t;
 
 namespace SaveSystem
 {
 
-	inline const char* saveName;
-	inline std::vector<const char*> game_saves = {};
+	inline std::string saveName = "Default Save";
+	inline std::vector<std::string> game_saves = {};
 
-	bool SaveGame(const char* fileName, void* data, size_t size);
-	bool LoadGame(const char* fileName, void* data, size_t size);
+	// Save/Load the full Scene to a named file
+	bool SaveGame(const char* fileName, Scene* scene);
+	bool LoadGame(const char* fileName, Scene& scene);
 
+	// Save/Load the default world file (falls back to backup on load)
 	bool SaveWorld(void* data);
 	bool LoadWorld(Scene& scene);
 

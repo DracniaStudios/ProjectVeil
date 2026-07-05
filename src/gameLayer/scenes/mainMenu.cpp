@@ -1,7 +1,5 @@
 #include "MainMenu.h"
 
-#include <format>
-
 #include <Objects/Interactable/LockedBox.h>
 
 void Scene_MainMenuUpdate(float deltaTime)
@@ -31,13 +29,13 @@ void Scene_MainMenuDraw3D()
 Scene* Scene_MainMenuConstruct()
 {
 	Scene* scene = Scene_new();
+
+	// Load Main Menu World
+
 	scene->name = "Main Menu";
 	scene->update = Scene_MainMenuUpdate;
 	scene->draw2D = Scene_MainMenuDraw2D;
 	scene->draw3D = Scene_MainMenuDraw3D;
-	scene->gameMap.create(Vector3(100, 1, 100));
-	
-	// Add Player To Objects
 
 	scene->player->name = "Player";
 	scene->player->type = OBJECT_PLAYER;
@@ -45,64 +43,8 @@ Scene* Scene_MainMenuConstruct()
 	scene->player->rigidBody3D.Teleport(Vector3(0, 5, 0));
 	scene->player->onEnable();
 	scene->gameMap.saveEntity(*scene->player);
-	
-	GameObject target = {};
-	target.name = "Target";
-	target.type = OBJECT_GENERIC;
-	target.defaultColor = RED;
-	target.rigidBody3D.Teleport(Vector3(5, 2, 5));
-	target.rigidBody3D.scale = Vector3One();
-	target.rigidBody3D.isStatic = true;
-	target.texture = &AssetManager::getInstance().bricks_01;
-	scene->gameMap.saveObject(target);
-	
-	for (auto i = 0; i < 10; i++)
-	{
-		Entity enemy = {};
-		enemy.name = "Random Entity";
-		enemy.type = OBJECT_ENTITY;
-		enemy.defaultColor = RED;
-		enemy.rigidBody3D.Teleport(Vector3(i * 2, 1, 7));
-		enemy.rigidBody3D.scale = Vector3One();
-		enemy.rigidBody3D.rotation = QuaternionFromVector3ToVector3(enemy.getPosition(), Vector3Subtract(enemy.getPosition(), enemy.rigidBody3D.down));
-		enemy.rigidBody3D.isStatic = true;
-		
-		enemy.texture = &AssetManager::getInstance().metal_01;
-		enemy.model = LoadModelFromMesh(GenMeshCube(1, 1, 1));
-		enemy.forceFire = false;
 
-
-		scene->gameMap.saveEntity(enemy);
-	}
-
-	for (int i = 0; i < 7; i++)
-	{
-		auto rng = std::ranlux24_base(std::random_device{}());
-		auto box = InteractableObject(INTERACT_MINIGAME, i);
-
-		box.name = "Random Box";
-		box.type = OBJECT_GENERIC;
-		box.defaultColor = getRandomColor(rng);
-		box.rigidBody3D.Teleport(Vector3(i * 2, 3, 10));
-		box.rigidBody3D.scale = Vector3One();
-		box.rigidBody3D.isStatic = true;
-
-		box.texture = &AssetManager::getInstance().plastic_01;
-		box.model = LoadModelFromMesh(GenMeshCube(1, 1, 1));
-		scene->gameMap.saveInteractable(box);
-	}
-
-	
-	Entity skeleton = {};
-	skeleton.name = "Skeleton";
-	skeleton.type = OBJECT_ENTITY;
-	skeleton.texture = &AssetManager::getInstance().ice_01;
-	skeleton.model = LoadModel(RESOURCES_PATH "models/Skeleton/FullHumanSkeleton.obj");
-	skeleton.defaultColor = WHITE;
-	skeleton.rigidBody3D.Teleport(Vector3(10, 30, 10));
-	skeleton.rigidBody3D.scale = Vector3One();
-	scene->gameMap.saveEntity(skeleton);
-	
+	SaveSystem::LoadGame(RESOURCES_PATH "../saves/mainMenu.json", *scene);
 
 	return scene;
 }

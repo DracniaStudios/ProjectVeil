@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
-// Version: 0.1.50 
+// Version: 0.1.51 
 // Due: 2026-07-10 (Save System)
-// Date: 2026-07-03 (Current Development Date)
+// Date: 2026-07-05 (Current Development Date)
 
 [Notice] Scene Camera3D can be changed and swith inbetween both cameras.
 [Notice] Player camera is held within the Player struct.
@@ -9,24 +9,24 @@
 
 [ Issues ]
 
-- Found an issue where objects can't load object textures and return null ( just black ).
-- Found an issue where FMOD files aren't detected through interface.
 - Found an issue where GameObjects are removed immediately instead of timed.
 
 [ Added ]
 
-- Added new Asset struct to hold asset data and information.
-- Added new Load Asset function to load assets from the Asset Manager.
-- Added new GetAssetByName function to get assets from the Asset Manager.
-- Added new Asset Inspector to show all assets in the Asset Manager.
+- New Github Workflow for automatic builds and testing.
+
+- Added new World Editor System for creating and editing GameObjects in the scene.
+
 
 [ Updated ]
 
-- Updated Object Inspector to show Object textures.
-- Updated GameObjects to load Textures OnEnable.
+- Updated Github Workflow to include automatic builds and testing.
+- Updated Save System to save all Scene Data.
+- Updated Scene to check for Entity V.S. Entity collisions and trigger events.
+- Updated Main Menu Scene to load from a save file if one exists, otherwise create a new save file.
 
 [ Fixed ]
 
-- Fixed an issue where Assets Manager was not loading all assets before the game started.
+- Fixed an issue where GameObject names are loaded as characters instead of strings.
 
 [ Removed ]

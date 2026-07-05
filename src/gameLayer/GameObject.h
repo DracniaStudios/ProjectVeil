@@ -3,6 +3,7 @@
 #define GAMEOBJECT_H
 
 #include <iostream>
+#include <string>
 #include <Physics.h>
 #include <AssetManager.h>
 
@@ -25,7 +26,7 @@ struct GameObject
 	GameObject();
 
 	/// Data
-	const char* name = "GameObject";
+	std::string name = "GameObject";
 	std::uint64_t id = 0;
 
 	int type = OBJECT_GENERIC;
@@ -73,8 +74,8 @@ struct GameObject
 	
 
 	// Save Data
-	virtual Json formatToJson() { return {}; }
-	virtual bool loadFromJson(Json& j) { return true; }
+	virtual Json formatToJson();
+	virtual bool loadFromJson(Json& j);
 	void addCommonToJson(Json& j);
 	bool loadCommonFromJson(Json& j);
 
@@ -100,6 +101,10 @@ public:
 	InteractableObject(InteractionType type, int value = 0);
 	bool isInteractable = true;
 	virtual void onInteract();
+
+	// Save Data
+	Json formatToJson() override;
+	bool loadFromJson(Json& j) override;
 };
 
 

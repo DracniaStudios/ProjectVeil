@@ -22,7 +22,7 @@ void DeveloperWindow::ShowEntityInspector()
 			dataString += " Data";
 			ImGui::TextColored(ImVec4(255, 255, 0, 255), dataString.c_str());
 
-			ImGui::Text("Name: %s", &object->name);
+			ImGui::Text("Name: %s", object->name.c_str());
 			ImGui::Text("Type: %s", objectTypeString);
 			ImGui::Text("ID: %d", static_cast<int>(object->id));
 			ImGui::Spacing();
@@ -62,8 +62,6 @@ void DeveloperWindow::ShowEntityInspector()
 			ImGui::Checkbox("Is Firing: ", &object->isFiring);
 			ImGui::Checkbox("Force Firing: ", &object->forceFire);
 
-			ImGui::Text("Is Firing: %s", boolToString(object->isFiring));
-			ImGui::Text("Force Firing: %s", boolToString(object->forceFire));
 			ImGui::PopID();
 		};
 
@@ -142,7 +140,7 @@ void DeveloperWindow::ShowEntityInspector()
 	for (auto& entity : scene->entities)
 	{
 		ImGui::PushID(&entity);
-		if (ImGui::Button(entity.second->name)) { inspectEntity = entity.second.get(); }
+		if (ImGui::Button(entity.second->name.c_str())) { inspectEntity = entity.second.get(); }
 		ImGui::PopID();
 	}
 	ImGui::EndChild();

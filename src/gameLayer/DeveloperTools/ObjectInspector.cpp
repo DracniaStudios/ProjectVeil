@@ -1,5 +1,7 @@
 #include "DeveloperWindow.h"
 
+int textureId = 0; // Global variable to hold the texture ID
+
 void DeveloperWindow::ShowObjectInspector()
 {
 	auto scene = SceneManager::getInstance().currentScene;
@@ -25,7 +27,7 @@ void DeveloperWindow::ShowObjectInspector()
 			std::string dataString = objectTypeString;
 			dataString += " Data";
 			ImGui::TextColored(ImVec4(255, 255, 0, 255), dataString.c_str());
-			ImGui::Text("Name: %s", &object->name);
+			ImGui::Text("Name: %s", object->name.c_str());
 			ImGui::Text("Type: %s", objectTypeString);
 			ImGui::Text("ID: %d", static_cast<int>(object->id));
 			ImGui::Spacing();
@@ -103,6 +105,12 @@ void DeveloperWindow::ShowObjectInspector()
 			ImGui::Text("Object Data:");
 			ImGui::InputFloat3("Position: ", &object->rigidBody3D.translation.x);
 			ImGui::InputFloat3("Scale: ", &object->rigidBody3D.scale.x);
+
+			ImGui::TextColored(ImVec4(255, 255, 0, 255), "Texture");
+			ImGui::InputInt("Texture ID: ", &textureId);
+			ImGui::Image((ImTextureRef)(intptr_t)AssetManager::getInstance().assets[textureId].texture.id, ImVec2(64, 64));
+			// Load Texture based on texture ID
+			
 			ImGui::Spacing();
 
 
@@ -134,7 +142,7 @@ void DeveloperWindow::ShowObjectInspector()
 	{
 		if (getType(&object) == OBJECT_PROJECTILE) continue;
 		ImGui::PushID(&object);
-		if (ImGui::Button(object.name))
+		if (ImGui::Button(object.name.c_str()))
 		{
 			if (getType(&object) == OBJECT_ENTITY)
 			{

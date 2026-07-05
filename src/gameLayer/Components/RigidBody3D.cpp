@@ -332,9 +332,17 @@ Json RigidBody3D::formatToJson()
 	j["ScaleY"] = scale.y;
 	j["ScaleZ"] = scale.z;
 
+	j["RotX"] = rotation.x;
+	j["RotY"] = rotation.y;
+	j["RotZ"] = rotation.z;
+	j["RotW"] = rotation.w;
+
 	j["VelocityX"] = velocity.x;
 	j["VelocityY"] = velocity.y;
 	j["VelocityZ"] = velocity.z;
+
+	j["IsStatic"] = isStatic;
+	j["IsEnabled"] = isEnabled;
 
 	return j;
 }
@@ -354,15 +362,23 @@ bool RigidBody3D::loadFromJson(Json j)
 	if (!j.contains("ScaleX") || !j["ScaleX"].is_number()) { return false; }
 	if (!j.contains("ScaleY") || !j["ScaleY"].is_number()) { return false; }
 	if (!j.contains("ScaleZ") || !j["ScaleZ"].is_number()) { return false; }
-	
-	translation.x = j["ScaleX"];
-	translation.y = j["ScaleY"];
-	translation.z = j["ScaleZ"];
 
-	if (!j.contains("VelocityX") && !j["VelocityX"].is_number()) { velocity.x = j["VelocityX"]; }
-	if (!j.contains("VelocityY") && !j["VelocityY"].is_number()) { velocity.y = j["VelocityY"]; }
-	if (!j.contains("VelocityZ") && !j["VelocityZ"].is_number()) { velocity.z = j["VelocityZ"]; }
-	
+	scale.x = j["ScaleX"];
+	scale.y = j["ScaleY"];
+	scale.z = j["ScaleZ"];
+
+	rotation.x = j.value("RotX", 0.0f);
+	rotation.y = j.value("RotY", 0.0f);
+	rotation.z = j.value("RotZ", 0.0f);
+	rotation.w = j.value("RotW", 1.0f);
+
+	if (j.contains("VelocityX") && j["VelocityX"].is_number()) { velocity.x = j["VelocityX"]; }
+	if (j.contains("VelocityY") && j["VelocityY"].is_number()) { velocity.y = j["VelocityY"]; }
+	if (j.contains("VelocityZ") && j["VelocityZ"].is_number()) { velocity.z = j["VelocityZ"]; }
+
+	isStatic = j.value("IsStatic", false);
+	isEnabled = j.value("IsEnabled", true);
+
 	lastPosition = translation;
 
 	return true;

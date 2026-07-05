@@ -10,7 +10,7 @@ void DeveloperWindow::ShowPlayerData(Player* player)
 	std::string dataString = "Player";
 	dataString += " Data";
 	ImGui::TextColored(ImVec4(255, 255, 0, 255), dataString.c_str());
-	ImGui::Text("Name: %s", &player->name);
+	ImGui::Text("Name: %s", player->name.c_str());
 	ImGui::Text("ID: %d", static_cast<int>(player->id));
 	ImGui::Spacing();
 
