@@ -179,13 +179,13 @@ void DeveloperWindow::ShowEntityInspector()
 		ImGui::Begin("Create Entity");
 
 		/** Base Object Data **/
-		saveObjectData(&newEntity);
+		saveObjectData(newEntity);
 
 		// Spawn Object Button
 		if (ImGui::Button("Spawn Entity"))
 		{
-			newEntity.rigidBody3D.Teleport(newEntity.getPosition());
-			inspectEntity = scene->gameMap.saveEntity(newEntity);
+			newEntity->rigidBody3D.Teleport(newEntity->getPosition());
+			inspectEntity = scene->gameMap.saveEntity(*newEntity);
 			newEntity = {};
 			isCreatingEntity = false;
 		}

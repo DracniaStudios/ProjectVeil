@@ -50,11 +50,13 @@ GameObject::GameObject()
 void GameObject::onEnable()
 {
 	isEnabled = true;
-	auto rng = std::ranlux24_base(std::random_device{}());
-	colliderColor = getRandomColor(rng);
+
 	// Set Initial Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
 
+	if (texture == nullptr) {
+		texture = &AssetManager::getInstance().frame;
+	}
 	model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture->texture;
 
 	lifeSpan = 0;
@@ -152,14 +154,11 @@ InteractableObject::InteractableObject(const InteractionType interact, int value
 void InteractableObject::onInteract()
 {
 	auto rng = std::ranlux24_base(std::random_device{}());
-	defaultColor = Color{
-		static_cast<unsigned char>(getRandomInt(rng, 0, 255)),
-		static_cast<unsigned char>(getRandomInt(rng, 0, 255)),
-		static_cast<unsigned char>(getRandomInt(rng, 0, 255)),
-		255
-	};
+	defaultColor = getRandomColor(rng);
 
-	AudioManager::getInstance().Play("anime_wow");
+	//AudioManager::getInstance().Play("anime_wow");
+	AudioManager::getInstance().PlayEvent("event:/ui/hello_fmod");
+
 
 	if (interactType == INTERACT_MINIGAME)
 	{

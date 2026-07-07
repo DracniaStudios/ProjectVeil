@@ -27,7 +27,6 @@ class DeveloperWindow
 	bool isMiniGameActive = false;
 	bool isGameDataActive = false;
 	bool isAssetActive = false;
-	bool isWorldEditorActive = false;
 
 	// Object & Entity Inspector Data
 
@@ -35,8 +34,8 @@ class DeveloperWindow
 	GameObject* inspectObject;
 	Entity* inspectEntity;
 
-	GameObject newObject;
-	Entity newEntity;
+	GameObject* newObject;
+	Entity* newEntity;
 	Vector4 colorHolder = Vector4(0, 0, 0, 255);
 	char inputName[128] = "New Object";
 	bool isCreatingObject = false;
@@ -54,7 +53,6 @@ class DeveloperWindow
 	void ShowEntityInspector();
 	void ShowMiniGameData(Player* player);
 	void ShowAssetData();
-	void ShowWorldEditor();
 public:
 	// Singleton Pattern Implementation
 	DeveloperWindow(const DeveloperWindow&) = delete;

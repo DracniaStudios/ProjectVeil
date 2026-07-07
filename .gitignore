@@ -23,7 +23,6 @@
 *.dll
 *.so.*
 
-
 # Fortran module files
 *.mod
 *.smod
@@ -45,6 +44,10 @@ Build/
 build-*/
 out/
 .vs/
+
+# Additive Directories
+.fmod/
+.claude/
 
 # CMake generated files
 CMakeFiles/

@@ -108,11 +108,12 @@ void DeveloperWindow::ShowObjectInspector()
 
 			ImGui::TextColored(ImVec4(255, 255, 0, 255), "Texture");
 			ImGui::InputInt("Texture ID: ", &textureId);
-			ImGui::Image((ImTextureRef)(intptr_t)AssetManager::getInstance().assets[textureId].texture.id, ImVec2(64, 64));
+			object->texture = &AssetManager::getInstance().assets[textureId];
+
+			ImGui::Image((ImTextureRef)(intptr_t)&AssetManager::getInstance().assets[textureId].texture.id, ImVec2(64, 64));
 			// Load Texture based on texture ID
 			
 			ImGui::Spacing();
-
 
 			// Object Flags
 			ImGui::TextColored(ImVec4(100, 0, 0, 255), "Flags");
@@ -180,24 +181,23 @@ void DeveloperWindow::ShowObjectInspector()
 	if (ImGui::Button("Create New Object"))
 	{
 		isCreatingObject = !isCreatingObject;
-		newObject = new GameObject();
+		newObject = new GameObject;
 	}
 
 	if (isCreatingObject)
 	{
 		/// Create Game Object Window 
 		ImGui::Begin("Create Object");
-		auto object = static_cast<GameObject*>(newObject);
 
 		/** Base Object Data **/
-		saveObjectData(object);
+		saveObjectData(newObject);
 
 		// Spawn Object Button
 		if (ImGui::Button("Spawn Game Object"))
 		{
-			object->rigidBody3D.Teleport(object->getPosition());
-			inspectObject = scene->gameMap.saveObject(*object);
-			newObject = {};
+			newObject->rigidBody3D.Teleport(newObject->getPosition());
+			inspectObject = scene->gameMap.saveObject(*newObject);
+			newObject = nullptr;
 			isCreatingObject = false;
 		}
 		ImGui::End();
