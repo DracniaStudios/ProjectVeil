@@ -6,6 +6,7 @@
 #include <string>
 #include <Physics.h>
 #include <AssetManager.h>
+#include <AudioManager.h>
 
 struct Scene;
 
@@ -56,8 +57,13 @@ struct GameObject
 	Asset* texture = {};
 	Color defaultColor = WHITE;
 
+	// Audio
+	FMOD::Studio::EventInstance* soundInstance = nullptr;
+	FMOD_3D_ATTRIBUTES get3DAttributes() const;
+
 	Vector3 getPosition() const { return rigidBody3D.translation; }
 	Quaternion getRotation() const { return rigidBody3D.rotation; }
+	Vector3 getVelocity() const { return rigidBody3D.GetVelocity(); }
 	Vector3 getSize() const { return rigidBody3D.scale; }
 	ObjectType getType() const { return static_cast<ObjectType>(type); }
 
@@ -95,6 +101,7 @@ struct InteractableObject : GameObject
 private:
 	int interactType = 0;
 	int interactValue = 0;
+	std::string interactSound = "event:/ui/hello_fmod";
 public:
 
 	InteractableObject(InteractionType type, int value = 0);

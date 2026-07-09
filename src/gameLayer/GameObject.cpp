@@ -107,17 +107,29 @@ void GameObject::update(Scene* scene, float deltaTime)
 {
 	if (!isEnabled) { return; }
 
-	// Update Data
-	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
-	rigidBody3D.Update(deltaTime);
+	// Rigidbody Data
+	{
+		rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
+		rigidBody3D.Update(deltaTime);
+	}
+	// Sound Data
+	{
+		if (soundInstance != nullptr && soundInstance->isValid()) {
+			FMOD_3D_ATTRIBUTES attributes = get3DAttributes();
+			soundInstance->set3DAttributes(&attributes);
+		}
+	}
 
-	lifeSpan += deltaTime;
 
-	if (isAlive) { endLife += deltaTime; }
+	// Destroy Object
+	{
+		lifeSpan += deltaTime;
+		if (isAlive) { endLife += deltaTime; }
 
-	if (!isAlive) {
-		if (lifeSpan > endLife) {
-			Destroy();
+		if (!isAlive) {
+			if (lifeSpan > endLife) {
+				Destroy();
+			}
 		}
 	}
 }
@@ -134,16 +146,28 @@ void GameObject::Destroy()
 void GameObject::onDestroy(Scene* scene)
 {
 	scene->gameMap.removeObject(this);
-	std::cout << "Destroy Object: " << name << "\n";
 }
 
 void GameObject::onCollision(const GameObject* collider)
 {
 	// Collision Data Checks
 }
-#pragma endregion
-//****** Interactable Objects *************//
 
+// FMOD requires forward and up to be normalized and perpendicular
+FMOD_3D_ATTRIBUTES GameObject::get3DAttributes() const
+{
+	FMOD_3D_ATTRIBUTES attributes = {};
+	attributes.position = Vector3ToFMOD(getPosition());
+	attributes.velocity = Vector3ToFMOD(getVelocity());
+	attributes.forward = Vector3ToFMOD(Vector3Normalize(rigidBody3D.forward));
+	attributes.up = Vector3ToFMOD(Vector3Normalize(rigidBody3D.up));
+	return attributes;
+}
+#pragma endregion
+
+
+
+//****** Interactable Objects *************//
 #pragma region Interactable Object
 InteractableObject::InteractableObject(const InteractionType interact, int value)
 {
@@ -157,8 +181,8 @@ void InteractableObject::onInteract()
 	defaultColor = getRandomColor(rng);
 
 	//AudioManager::getInstance().Play("anime_wow");
-	AudioManager::getInstance().PlayEvent("event:/ui/hello_fmod");
-
+	AudioManager::getInstance().PlayEvent3D(interactSound, *this);
+	AudioManager::getInstance().Play("anime_wow");
 
 	if (interactType == INTERACT_MINIGAME)
 	{
@@ -179,6 +203,9 @@ void InteractableObject::onInteract()
 	}
 }
 #pragma endregion
+
+
+
 /** GameObject Save Data **/
 #pragma region Save GameObject
 

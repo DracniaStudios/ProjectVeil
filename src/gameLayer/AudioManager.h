@@ -6,6 +6,22 @@
 #include <fmod.hpp>
 #include <string>
 #include <unordered_map>
+#include <GameObject.h>
+
+inline Vector3 FMODToVector3(FMOD_VECTOR vector) {
+	Vector3 vec = {};
+	vec.x = vector.x;
+	vec.y = vector.y;
+	vec.z = vector.z;
+	return vec;
+}
+inline FMOD_VECTOR Vector3ToFMOD(Vector3 vector) {
+	FMOD_VECTOR vec = {};
+	vec.x = vector.x;
+	vec.y = vector.y;
+	vec.z = vector.z;
+	return vec;
+}
 
 class AudioManager
 {
@@ -29,8 +45,10 @@ public:
 	void update();
 	void shutdown();
 
-	void Play(const std::string& name, float volume = 1.0f);
+	void Play(const std::string& name,float volume = 1.0f);
+	void Play3D(const std::string& name, GameObject& object, float volume = 1.0f);
 	void PlayEvent(const std::string& eventPath);
+	void PlayEvent3D(const std::string& eventPath, GameObject& object);
 
 private:
 	FMOD::System* system = nullptr;

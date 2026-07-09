@@ -17,7 +17,6 @@ struct PlayerCamera
 	float walkLerp = {};
 	float headTimer = {};
 
-
 	void UpdateCameraFPS(Camera* camera);
 
 };
@@ -26,7 +25,8 @@ struct Player : Entity
 {
 	RigidBody2D rigidBody2D = {};
 	Vector2 moveDirection = {};
-	
+	PlayerCamera camera = {};
+
 	// Flags
 	bool isCrouching = false;
 
@@ -40,6 +40,10 @@ struct Player : Entity
 
 	Vector2 getPosition2D() const { return Vector2{ rigidBody2D.translation.x, rigidBody2D.translation.y }; }
 	Vector2 getSize2D() const { return Vector2{ rigidBody2D.scale.x, rigidBody2D.scale.y }; }
+	
+	// Audio
+	FMOD_3D_ATTRIBUTES getListener();
+
 	// Status Functions
 
 	// Combat Functions
