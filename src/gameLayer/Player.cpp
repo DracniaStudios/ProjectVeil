@@ -235,22 +235,27 @@ void Player::FireLaser()
 
 	// Check Ray Collision with Game Objects
 	
-	for (auto& obj : SceneManager::getInstance().currentScene->gameMap.gameObjects)
-	{
-		auto collider = GetRayCollisionBox(cameraRay, obj.rigidBody3D.collisionBox);
+	auto scene = SceneManager::getInstance().currentScene;
 
-		// If Collision, Apply Damage to Object
-		if (collider.hit)
+	// gameMap.gameObjects stores plain GameObjects (anything saved there was
+	// sliced), so casting them to Entity* to deal damage wrote past the end
+	// of the object — only push them around
+	for (auto& obj : scene->gameMap.gameObjects)
+	{
+		if (GetRayCollisionBox(cameraRay, obj.rigidBody3D.collisionBox).hit)
 		{
 			obj.onCollision(this);
-
-			if (auto entity = (Entity*)&obj)
-			{
-				auto output = baseDamage * 0.1f;
-				entity->takeDamage(output);
-			}
-			
 			obj.rigidBody3D.AddForce(camera->forward, 0.1f);
+		}
+	}
+
+	// Real entities live in scene->entities and can take damage
+	for (auto& [id, entity] : scene->entities)
+	{
+		if (GetRayCollisionBox(cameraRay, entity->rigidBody3D.collisionBox).hit)
+		{
+			entity->takeDamage(baseDamage * 0.1f);
+			entity->rigidBody3D.AddForce(camera->forward, 0.1f);
 		}
 	}
 }
@@ -266,6 +271,7 @@ void Player::Interact()
 		const auto obj = interactable.second.get();
 		const GameObject* decoy = nullptr;
 		for (auto& sceneObject : scene->gameMap.gameObjects) { if (sceneObject.id == obj->id) { decoy = &sceneObject; } }
+		if (decoy == nullptr) { continue; }
 
 		if (GetRayCollisionBox(cameraRay, decoy->rigidBody3D.collisionBox).hit)
 		{

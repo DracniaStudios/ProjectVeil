@@ -104,7 +104,7 @@ void GameMap::removeEntity(Entity* entity)
 {
 	auto scene = SceneManager::getInstance().currentScene;
 	scene->entities.erase(entity->id);
-	erase_if(scene->gameMap.gameObjects, [&](const GameObject& o) { return &o.id == &entity->id;});
+	erase_if(scene->gameMap.gameObjects, [&](const GameObject& o) { return o.id == entity->id;});
 	//removeObject(entity);
 }
 void GameMap::removeInteractable(InteractableObject* object)

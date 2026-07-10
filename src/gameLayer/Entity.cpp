@@ -34,11 +34,21 @@ void Entity::update(Scene* scene, float deltaTime)
 
 /** Combat Functions **/
 
+// Damage reactions live here (virtual dispatch) instead of in the physics
+// solver so only real Entity instances ever take damage — the solver used to
+// C-cast arbitrary GameObjects to Entity*, which corrupted memory
+void Entity::onCollision(const GameObject* collider)
+{
+	if (collider->type == OBJECT_PROJECTILE)
+	{
+		takeDamage(collider->baseDamage);
+	}
+}
+
 void Entity::onHit(const Entity* collider)
 {
 	if (collider->type == OBJECT_PROJECTILE || collider->type == OBJECT_ENTITY) {
-		auto& entity = static_cast<const Entity&>(*collider);
-		health -= entity.baseDamage;
+		health -= collider->baseDamage;
 		std::cout << "Entity hit! Health: " << health << " @ Entity.cpp \n";
 	}
 }
