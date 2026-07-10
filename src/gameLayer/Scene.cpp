@@ -1,5 +1,7 @@
 #include "Scene.h"
+
 #include <SceneManager.h>
+#include <AudioManager.h>
 
 #include <iterator>
 
@@ -172,7 +174,7 @@ void Scene_updateScene(float delta) {
 		}
 	}
 
-
+	/* Limit GameObject Positions */
 	for (auto& object : scene->gameMap.gameObjects) {
 		object.update(scene, delta);
 		
@@ -194,6 +196,7 @@ void Scene_updateScene(float delta) {
 		return true;
 	});
 
+	/* Update Collisions */
 	solveCollision(scene, delta, 8);
 
 	/** Update MiniGame **/

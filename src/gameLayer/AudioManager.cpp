@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <iostream>
+#include <SceneManager.h>
 
 void AudioManager::init()
 {
@@ -27,10 +28,7 @@ void AudioManager::init()
 	// Load Core System
 	studioSystem->getCoreSystem(&system);
 
-	// Initialize Bankj
-	FMOD::Studio::Bank* bank;
-	studioSystem->loadBankFile(RESOURCES_PATH "banks/Master.string.bank", FMOD_STUDIO_LOAD_BANK_NORMAL, &bank);
-	banks.push_back(bank);
+	// Banks (including Master.bank and Master.strings.bank) are loaded in loadAll()
 }
 
 void AudioManager::loadAll()
@@ -69,7 +67,8 @@ void AudioManager::loadAll()
 			const std::string path = entry.path().string();
 
 			FMOD::Sound* sound = nullptr;
-			FMOD_RESULT result = system->createSound(path.c_str(), FMOD_DEFAULT, nullptr, &sound);
+			// FMOD_3D so Play3D can spatialize; Play switches its channel back to 2D
+			FMOD_RESULT result = system->createSound(path.c_str(), FMOD_3D, nullptr, &sound);
 			if (result != FMOD_OK)
 			{
 				std::cout << "[AudioManager] Failed to load " << path << ": " << FMOD_ErrorString(result) << "\n";
@@ -120,7 +119,15 @@ void AudioManager::loadAll()
 
 void AudioManager::update()
 {
-	if (studioSystem) studioSystem->update();
+	if (!studioSystem) return;
+
+	const auto scene = SceneManager::getInstance().currentScene;
+	if (scene && scene->player)
+	{
+		FMOD_3D_ATTRIBUTES listener = scene->player->getListener();
+		studioSystem->setListenerAttributes(0, &listener);
+	}
+	studioSystem->update();
 }
 
 void AudioManager::shutdown()
@@ -149,8 +156,37 @@ void AudioManager::Play(const std::string& name, float volume)
 	}
 
 	FMOD::Channel* channel = nullptr;
-	//system->playSound(it->second, nullptr, false, &channel);
-	if (channel) channel->setVolume(volume);
+	system->playSound(it->second, nullptr, true, &channel);
+	if (channel)
+	{
+		channel->setMode(FMOD_2D); // sounds are loaded as 3D; play this one flat
+		channel->setVolume(volume);
+		channel->setPaused(false);
+	}
+}
+void AudioManager::Play3D(const std::string& name, GameObject& object, float volume)
+{
+	if (!system) return;
+
+	const auto it = sounds.find(name);
+	if (it == sounds.end())
+	{
+		std::cout << "[AudioManager] No sound loaded with name \"" << name << "\"\n";
+		return;
+	}
+
+	// Start paused so the sound is positioned before the first audible frame
+	FMOD::Channel* channel = nullptr;
+	system->playSound(it->second, nullptr, true, &channel);
+
+	if (channel)
+	{
+		FMOD_VECTOR pos = Vector3ToFMOD(object.getPosition());
+		FMOD_VECTOR vel = Vector3ToFMOD(object.getVelocity());
+		channel->set3DAttributes(&pos, &vel);
+		channel->setVolume(volume);
+		channel->setPaused(false);
+	}
 }
 
 void AudioManager::PlayEvent(const std::string& eventPath) {
@@ -169,4 +205,38 @@ void AudioManager::PlayEvent(const std::string& eventPath) {
 	description->createInstance(&instance);
 	instance->start();
 	instance->release(); // Destroy when finished playing sound
+}
+
+void AudioManager::PlayEvent3D(const std::string& eventPath, GameObject& object) {
+	if (!studioSystem) return;
+
+	FMOD::Studio::EventDescription* description = nullptr;
+	FMOD_RESULT result = studioSystem->getEvent(eventPath.c_str(),
+		&description);
+
+	if (result != FMOD_OK) {
+		std::cout << "[Audio Manager] No event \"" << eventPath << "\": " << FMOD_ErrorString(result) << "\n";
+		return;
+	}
+
+	// Stop the previous event on this object before starting a new one
+	if (object.soundInstance != nullptr) {
+		if (object.soundInstance->isValid()) {
+			object.soundInstance->stop(FMOD_STUDIO_STOP_ALLOWFADEOUT);
+		}
+		object.soundInstance = nullptr;
+	}
+
+	result = description->createInstance(&object.soundInstance);
+	if (result != FMOD_OK || object.soundInstance == nullptr) {
+		std::cout << "[Audio Manager] Failed to create instance for \"" << eventPath << "\": " << FMOD_ErrorString(result) << "\n";
+		return;
+	}
+
+	// Position the event before it starts so the first frame is already spatialized
+	FMOD_3D_ATTRIBUTES attributes = object.get3DAttributes();
+	object.soundInstance->set3DAttributes(&attributes);
+
+	object.soundInstance->start();
+	object.soundInstance->release(); // Destroy when finished playing sound
 }

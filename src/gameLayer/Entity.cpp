@@ -55,9 +55,6 @@ void Entity::onHit(const Entity* collider)
 
 void Entity::Attack()
 {
-	std::cout << "Start Attack: " << name << "\n";
-	//if (!WaitTimer(attackStartTime, canAttack, 3)) return;
-
 	canAttack = false;
 	Entity projectile = {};
 	projectile.name = "Projectile";

@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
 // Version: 0.1.53 
 // Due: 2026-07-17 (Audio System)
-// Date: 2026-07-07 (Current Development Date)
+// Date: 2026-07-09 (Current Development Date)
 
 [Notice] Scene Camera3D can be changed and swith inbetween both cameras.
 [Notice] Player camera is held within the Player struct.
@@ -14,17 +14,15 @@
 
 [ Added ]
 
-- Added new FMOD audio banks (test);
-- Added new PlayEvent() to Audio Manager for banks.
 
 [ Updated ]
 
-- Updated Audio Manager to use FMOD Studio.
-- Updated Audio Manager to load all FMOD banks from directory.
-- Updated Asset Inspector to show TextureID.
-- Updated Object/Entity Inspector to use their own Struct pointers.
-- Updated GameObject to use getRandomColor().
-- Updated InteractableObject to play "hello_fmod" on interact.
+- Updated Audio Manager to Convert Vector3 values between FMOD and Raylib
+- Updated Audio Manager to include optional 2D and 3D Play Sounds.
+- Updated GameObjects to use a custom Sound Instance for playing sounds at their position.
+- Updated GameObjects to return a 3DAttributed value for FMOD sound properties.
+- Updated InteractableObjects to have a default interact sound.
+- Updated Player to return an Audio Listener for the FMOD system.
 
 
 [ Fixed ]
