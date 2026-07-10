@@ -80,9 +80,9 @@ inline Vector2& operator/=(Vector2& a, float scalar)
 
 inline Vector3& operator/=(Vector3& a, float scalar)
 {
-	a.x *= scalar;
-	a.y *= scalar;
-	a.z *= scalar;
+	a.x /= scalar;
+	a.y /= scalar;
+	a.z /= scalar;
 	return a;
 }
 
@@ -255,6 +255,7 @@ public:
 	bool isStatic = false;
 
 	BoundingBox collisionBox = {};
+	Vector3 angularVelocity = {}; // radians/sec, axis = spin axis
 	bool upTouch = false;
 	bool downTouch = false; // isGrounded
 	bool frontTouch = false; // X+1
@@ -293,7 +294,7 @@ public:
 
 	// Save & Load Data
 	Json formatToJson();
-	bool loadFromJson(Json j);
+	bool loadFromJson(const Json& j);
 
 };
 

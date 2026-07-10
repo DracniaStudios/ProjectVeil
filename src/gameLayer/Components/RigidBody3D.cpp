@@ -32,13 +32,15 @@ void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 	float hy = scale.y * 0.5f;
 	float hz = scale.z * 0.5f;
 
-	// Check each face with a raycast and update touch flags accordingly
-	upTouch = hitWithinRange(generateRay({ c.x, c.y + hy, c.z }, up));
-	downTouch = hitWithinRange(generateRay({ c.x, c.y - hy, c.z }, down));
-	frontTouch = hitWithinRange(generateRay({ c.x, c.y, c.z + hz }, forward));
-	backTouch = hitWithinRange(generateRay({ c.x, c.y, c.z - hz }, back));
-	rightTouch = hitWithinRange(generateRay({ c.x + hx, c.y, c.z }, right));
-	leftTouch = hitWithinRange(generateRay({ c.x - hx, c.y, c.z }, left));
+	// Check each face with a raycast and accumulate touch flags so testing
+	// against several bodies doesn't overwrite earlier hits (cleared once
+	// per frame in UpdateForce)
+	upTouch |= hitWithinRange(generateRay({ c.x, c.y + hy, c.z }, up));
+	downTouch |= hitWithinRange(generateRay({ c.x, c.y - hy, c.z }, down));
+	frontTouch |= hitWithinRange(generateRay({ c.x, c.y, c.z + hz }, forward));
+	backTouch |= hitWithinRange(generateRay({ c.x, c.y, c.z - hz }, back));
+	rightTouch |= hitWithinRange(generateRay({ c.x + hx, c.y, c.z }, right));
+	leftTouch |= hitWithinRange(generateRay({ c.x - hx, c.y, c.z }, left));
 }
 
 bool RigidBody3D::isCollidingWith(const RigidBody3D& other) const
@@ -91,20 +93,13 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 
 	if (isCollidingWith(other->rigidBody3D))
 	{
-
-		// Call Collision Event on Owner
-		self->onCollision(other);
-
-		if (self->type == OBJECT_ENTITY)
+		// Call Collision Event on Owner only on first contact with this object;
+		// the solver runs several iterations per frame and damage/events must
+		// not fire on every pass. Type-specific reactions (e.g. projectile
+		// damage) live in onCollision overrides so no unchecked casts happen here.
+		if (collidingWith != other)
 		{
-			auto obj = (Entity*)other;
-		}
-
-		if (other->type == OBJECT_PROJECTILE)
-		{
-			auto obj = (Entity*)other;
-			auto selfEntity = (Entity*)self;
-			selfEntity->takeDamage(obj->baseDamage);
+			self->onCollision(other);
 		}
 
 		// Set colliding with to other object's owner
@@ -160,40 +155,14 @@ void RigidBody3D::resolveCollision(RigidBody3D& other)
 	}
 
 	// ── Velocity response ──────────────────────────────────────────────────
+	// normal points from this body toward other, and relativeVelocity is
+	// this-minus-other, so a POSITIVE dot product means the bodies are
+	// closing in on each other
 	Vector3 relativeVelocity = velocity - other.velocity;
 	float velocityAlongNormal = Vector3DotProduct(relativeVelocity, normal);
 
 	// Only respond if objects are still moving toward each other
-	if (velocityAlongNormal >= 0) return;
-
-	// Clamp small closing velocities to prevent jitter
-	const float restingThreshold = 0.1f;
-	if (std::abs(velocityAlongNormal) < restingThreshold)
-	{
-		// Fixes jittering across the Y Velocity
-		if (!isStatic && !other.isStatic)
-		{
-
-			float avgX = (velocity.x + other.velocity.x) * 0.5f;
-			velocity.x = avgX;
-			other.velocity.x = avgX;
-
-			float avgY = (velocity.y + other.velocity.y) * 0.5f;
-			velocity.y = avgY;
-			other.velocity.y = avgY;
-
-			float avgZ = (velocity.z + other.velocity.z) * 0.5f;
-			velocity.z = avgZ;
-			other.velocity.z = avgZ;
-
-		}
-		else if (!isStatic)
-		{
-			velocity.x = 0;
-			velocity.y = 0;
-			velocity.z = 0;
-		}
-	}
+	if (velocityAlongNormal <= 0) return;
 
 	const float restitution = 0.0f; // 0 = no bounce, 1 = perfectly elastic
 	float impulse = -(1.0f + restitution) * velocityAlongNormal;
@@ -228,6 +197,24 @@ void RigidBody3D::resolveCollision(RigidBody3D& other)
 		{
 			velocity -= tangentDir * frictionImpulse;
 		}
+
+		// Friction acts at the contact face, not the center of mass, so it
+		// applies a torque that makes bodies tumble (visual only — the
+		// collision box stays axis-aligned)
+		Vector3 frictionVec = tangentDir * -frictionImpulse;
+		Vector3 lever = normal * (std::abs(Vector3DotProduct(scale, normal)) * 0.5f);
+		Vector3 angularImpulse = Vector3CrossProduct(lever, frictionVec);
+
+		if (!isStatic)
+		{
+			float inertia = Vector3LengthSqr(scale) / 6.0f; // box inertia, unit mass
+			if (inertia > 0.0001f) angularVelocity += angularImpulse / inertia;
+		}
+		if (!other.isStatic)
+		{
+			float inertia = Vector3LengthSqr(other.scale) / 6.0f;
+			if (inertia > 0.0001f) other.angularVelocity -= angularImpulse / inertia;
+		}
 	}
 
 }
@@ -242,16 +229,11 @@ void RigidBody3D::UpdateForce(float deltaTime)
 	if (downTouch) { airTime = 0; }
 	else { airTime += deltaTime; }
 
-	if (airTime > 0)
-	{
-		velocity.y += deltaTime;
-	}
-
 	// Apply acceleration to velocity
 	velocity += acceleration * deltaTime;
 
-	// Limit velocity to max speed
-	if (Vector3Length(velocity) > 999)
+	// Limit velocity to max speed (squared compare avoids the sqrt)
+	if (Vector3LengthSqr(velocity) > 999.0f * 999.0f)
 	{
 		velocity = Vector3Scale(Vector3Normalize(velocity), 999);
 	}
@@ -259,14 +241,27 @@ void RigidBody3D::UpdateForce(float deltaTime)
 	// Apply velocity to position
 	translation += velocity * deltaTime;
 
-	// Apply drag to velocity
-	velocity *= drag;
+	// Apply drag to velocity (normalized so damping is framerate-independent,
+	// tuned to match the old per-frame factor at 60 FPS)
+	velocity *= powf(drag, deltaTime * 60.0f);
 
 	// Reset acceleration for the next frame
 	acceleration = {};
 
+	// Rebuild touch flags: clear once, then accumulate across nearby bodies.
+	// The cheap AABB test gates the 6 raycasts so distant objects cost nothing.
+	upTouch = downTouch = frontTouch = backTouch = leftTouch = rightTouch = false;
+
+	const float touchMargin = 0.15f;
+	BoundingBox nearBox = {
+		{ translation.x - scale.x * 0.5f - touchMargin, translation.y - scale.y * 0.5f - touchMargin, translation.z - scale.z * 0.5f - touchMargin },
+		{ translation.x + scale.x * 0.5f + touchMargin, translation.y + scale.y * 0.5f + touchMargin, translation.z + scale.z * 0.5f + touchMargin }
+	};
+
 	for (auto& obj : gameMap->gameObjects)
 	{
+		if (&obj.rigidBody3D == this) { continue; } // rays from our own faces always hit our own box
+		if (!CheckCollisionBoxes(nearBox, obj.rigidBody3D.collisionBox)) { continue; }
 		checkRayCollision(obj.rigidBody3D);
 	}
 }
@@ -274,15 +269,28 @@ void RigidBody3D::UpdateForce(float deltaTime)
 void RigidBody3D::Update(float deltaTime)
 {
 	if (scale == Vector3Zero()) { scale = Vector3One(); }
+	if (rotation == Quaternion{ 0, 0, 0, 0 }) { rotation = QuaternionIdentity(); }
 	if (!isEnabled) return;
 	if (!isStatic) {
 		if (useGravity) ApplyGravity();
 		UpdateForce(deltaTime);
+
+		// Integrate angular velocity into the rotation quaternion
+		float angSpeed = Vector3Length(angularVelocity);
+		if (angSpeed > 0.001f)
+		{
+			Quaternion spin = QuaternionFromAxisAngle(angularVelocity / angSpeed, angSpeed * deltaTime);
+			rotation = QuaternionNormalize(QuaternionMultiply(spin, rotation));
+		}
+
+		// Angular drag; settle quickly once grounded
+		angularVelocity *= expf((downTouch ? -6.0f : -0.4f) * deltaTime);
 	}
 	else
 	{
 		velocity = {};
 		acceleration = {};
+		angularVelocity = {};
 	}
 	lastPosition = translation;
 
@@ -347,7 +355,7 @@ Json RigidBody3D::formatToJson()
 	return j;
 }
 
-bool RigidBody3D::loadFromJson(Json j)
+bool RigidBody3D::loadFromJson(const Json& j)
 {
 	*this = {};
 

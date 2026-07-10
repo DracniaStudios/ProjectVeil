@@ -26,10 +26,12 @@ GameObject::GameObject()
 
 	rigidBody3D = {};
 
-	// Load Model else Cube
+	// Load Model else Cube. rigidBody3D.scale is still zero-initialized here
+	// (it defaults to One later), so building the cube from it produced a
+	// degenerate, invisible mesh — use a unit cube to match the default scale
 	if (model.meshCount == 0)
 	{
-		model = LoadModelFromMesh(GenMeshCube(rigidBody3D.scale.x, rigidBody3D.scale.y, rigidBody3D.scale.z));
+		model = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
 	}
 
 	if (texture == nullptr) {
@@ -83,6 +85,8 @@ void GameObject::render3D()
 	if (displayCollider) { DrawBoundingBox(rigidBody3D.collisionBox, colliderColor); }
 
 	if (display3DModel) {
+		// Apply the body's orientation so spinning/tumbling objects render rotated
+		model.transform = QuaternionToMatrix(rigidBody3D.rotation);
 		DrawModel(model, rigidBody3D.translation, 1.0f, defaultColor);
 		DrawModelWires(model, rigidBody3D.translation, 1.0f, BLACK);
 	}
@@ -107,9 +111,8 @@ void GameObject::update(Scene* scene, float deltaTime)
 {
 	if (!isEnabled) { return; }
 
-	// Rigidbody Data
+	// Rigidbody Data (Update() refreshes collisionBox from translation/scale)
 	{
-		rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
 		rigidBody3D.Update(deltaTime);
 	}
 	// Sound Data
@@ -138,14 +141,18 @@ static float setLife(float life, int time) { return static_cast<float>(life + ti
 
 void GameObject::Destroy()
 {
+	// Removal is deferred: Destroy() can be called from inside the update
+	// loop that iterates gameMap.gameObjects, and erasing there invalidates
+	// the iterators. The scene sweeps pendingDestroy objects after updating.
 	isAlive = false;
-	onDestroy(SceneManager::getInstance().currentScene);
+	pendingDestroy = true;
 }
 
-// Destroy Object After Delay (in milliseconds)
 void GameObject::onDestroy(Scene* scene)
 {
-	scene->gameMap.removeObject(this);
+	// Removal happens in the scene's pendingDestroy sweep (Scene_updateScene);
+	// erasing here would invalidate the update loop's iterators
+	std::cout << "Destroy Object: " << name << "\n";
 }
 
 void GameObject::onCollision(const GameObject* collider)

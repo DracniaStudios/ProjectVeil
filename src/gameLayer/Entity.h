@@ -19,7 +19,6 @@ public:
 	float stamina = 1.0f;
 	float maxStamina = 100.0f;
 
-	float baseDamage = 1.0f;
 	float baseSpeed = 1.0f;
 
 	/** Flags **/
@@ -33,6 +32,7 @@ public:
 	virtual void onDisable() override;
 	virtual void render3D() override;
 	virtual void update(Scene* scene, float deltaTime) override;
+	virtual void onCollision(const GameObject* collider) override;
 
 	/** Statuss **/
 	float getMaxHealth() const { return maxHealth; }

@@ -40,6 +40,9 @@ struct GameObject
 	float lifeSpan = 0;
 	float endLife = 1;
 	float decayTime = 1;
+	// Lives on GameObject (not Entity) so projectiles stored by value in
+	// GameMap::gameObjects keep their damage after slicing to GameObject
+	float baseDamage = 1.0f;
 	void Decay(float time = 1) { decayTime = time; }
 
 	/// Flags
@@ -47,6 +50,7 @@ struct GameObject
 	bool canBeSelected = true;
 	bool isAlive = true;
 	bool isDestructible = true;
+	bool pendingDestroy = false; // removal is deferred to the end of the frame
 
 	/// Physics
 	RigidBody3D rigidBody3D = {};
