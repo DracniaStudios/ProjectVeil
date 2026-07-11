@@ -37,8 +37,8 @@ struct GameObject
 	bool displayCollider = true;
 	
 	/// Status
-	float lifeSpan = 0;
-	float endLife = 1;
+	float lifeTime = 0;
+	float deathTime = 1;
 	float decayTime = 1;
 	// Lives on GameObject (not Entity) so projectiles stored by value in
 	// GameMap::gameObjects keep their damage after slicing to GameObject

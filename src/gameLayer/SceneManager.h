@@ -10,7 +10,6 @@ typedef struct SceneManager
 {
 private:
 	SceneManager() = default; // Private constructor to prevent instantiation
-	
 public:
 	// Delete, copy, and move functions to prevent duplication
 	SceneManager(const SceneManager&) = delete;

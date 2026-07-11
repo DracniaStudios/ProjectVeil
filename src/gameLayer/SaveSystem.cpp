@@ -84,7 +84,7 @@ namespace SaveSystem
 	{
 		if (j.value("Version", 0) > VERSION)
 		{
-			std::cerr << "Save version is newer than the game supports.\n";
+			std::cerr << "[Save System] Save version is newer than the game supports.\n";
 			return false;
 		}
 
@@ -120,7 +120,7 @@ namespace SaveSystem
 
 				if (!obj.loadFromJson(objData))
 				{
-					std::cerr << "Failed to load GameObject with ID: " << key << "\n";
+					std::cerr << "[Save System] Failed to load GameObject with ID: " << key << "\n";
 					continue;
 				}
 
@@ -139,7 +139,7 @@ namespace SaveSystem
 
 				if (!entity->loadFromJson(entData))
 				{
-					std::cerr << "Failed to load Entity with ID: " << key << "\n";
+					std::cerr << "[Save System] Failed to load Entity with ID: " << key << "\n";
 					continue;
 				}
 
@@ -158,7 +158,7 @@ namespace SaveSystem
 
 				if (!interactable.loadFromJson(intData))
 				{
-					std::cerr << "Failed to load Interactable with ID: " << key << "\n";
+					std::cerr << "[Save System] Failed to load Interactable with ID: " << key << "\n";
 					continue;
 				}
 
@@ -215,7 +215,7 @@ namespace SaveSystem
 		std::filesystem::rename(path, bakPath, errorCode);
 		std::filesystem::rename(tmpPath, path, errorCode);
 
-		std::cout << "Saved Game: " << path.string() << "\n";
+		std::cout << "[Save System] Saved Game: " << path.string() << "\n";
 		saveName = path.string();
 		return true;
 	}
@@ -226,7 +226,7 @@ namespace SaveSystem
 
 		if (!file.is_open())
 		{
-			std::cerr << "Failed to open save file: " << fileName << "\n";
+			std::cerr << "[Save System] Failed to open save file: " << fileName << "\n";
 			return false;
 		}
 
@@ -235,13 +235,13 @@ namespace SaveSystem
 
 		if (j.is_discarded())
 		{
-			std::cerr << "Save file is corrupted: " << fileName << "\n";
+			std::cerr << "[Save System] Save file is corrupted: " << fileName << "\n";
 			return false;
 		}
 
 		if (!ApplyJsonToScene(j, scene)) { return false; }
 
-		std::cout << "Loaded Game: " << fileName << "\n";
+		std::cout << "[Save System] Loaded Game: " << fileName << "\n";
 		saveName = fileName;
 		return true;
 	}

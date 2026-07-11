@@ -9,25 +9,22 @@
 
 [ Issues ]
 
-- Found an issue where GameObjects are removed immediately instead of timed.
 - Found an issue where created GameObjects are missing intented data.
 
 [ Added ]
 
+- Added new Hierarchy Window.
+- Added new Settings Class.
+- Added new InputSystem Class.
+
 
 [ Updated ]
 
-- Updated Audio Manager to Convert Vector3 values between FMOD and Raylib
-- Updated Audio Manager to include optional 2D and 3D Play Sounds.
-- Updated GameObjects to use a custom Sound Instance for playing sounds at their position.
-- Updated GameObjects to return a 3DAttributed value for FMOD sound properties.
-- Updated InteractableObjects to have a default interact sound.
-- Updated Player to return an Audio Listener for the FMOD system.
+- Updated GameObject Life and Death Time to lifeTime and deathTime naming.
+- Updated Save System to include "Save System" in debug messages.
 
 
 [ Fixed ]
 
 
 [ Removed ]
-
-- Removed World Editor (temportary).

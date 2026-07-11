@@ -42,8 +42,8 @@ GameObject::GameObject()
 	// Set Initial Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
 	
-	lifeSpan = 0;
-	endLife = 1;
+	lifeTime = 0;
+	deathTime = 1;
 	
 }
 
@@ -61,8 +61,8 @@ void GameObject::onEnable()
 	}
 	model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture->texture;
 
-	lifeSpan = 0;
-	endLife = 1;
+	lifeTime = 0;
+	deathTime = 1;
 }
 
 void GameObject::onDisable()
@@ -126,11 +126,11 @@ void GameObject::update(Scene* scene, float deltaTime)
 
 	// Destroy Object
 	{
-		lifeSpan += deltaTime;
-		if (isAlive) { endLife += deltaTime; }
+		lifeTime += deltaTime;
+		if (isAlive) { deathTime += deltaTime; }
 
 		if (!isAlive) {
-			if (lifeSpan > endLife) {
+			if (lifeTime > deathTime) {
 				Destroy();
 			}
 		}
@@ -220,7 +220,7 @@ void GameObject::addCommonToJson(Json& j)
 {
 	// Save Common Object Data
 	j["RigidBody3D"] = rigidBody3D.formatToJson();
-	j["Life"] = lifeSpan;
+	j["Life"] = lifeTime;
 	j["ObjectType"] = getType();
 	j["Name"] = name;
 
@@ -263,7 +263,7 @@ bool GameObject::loadCommonFromJson(Json& j)
 
 	if (j.contains("Life") && j["Life"].is_number())
 	{
-		lifeSpan = j["Life"];
+		lifeTime = j["Life"];
 	}
 
 	type = j.value("ObjectType", static_cast<int>(OBJECT_GENERIC));
