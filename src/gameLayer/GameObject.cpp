@@ -189,7 +189,7 @@ void InteractableObject::onInteract()
 
 	//AudioManager::getInstance().Play("anime_wow");
 	AudioManager::getInstance().PlayEvent3D(interactSound, *this);
-	AudioManager::getInstance().Play("anime_wow");
+	soundInstance->setParameterByName("Intensity", soundParameter);
 
 	if (interactType == INTERACT_MINIGAME)
 	{

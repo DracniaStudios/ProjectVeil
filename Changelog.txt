@@ -13,18 +13,17 @@
 
 [ Added ]
 
-- Added new Hierarchy Window.
-- Added new Settings Class.
-- Added new InputSystem Class.
+
+- Added soundParameters to InteractableObjects.
 
 
 [ Updated ]
 
-- Updated GameObject Life and Death Time to lifeTime and deathTime naming.
-- Updated Save System to include "Save System" in debug messages.
-
+- Updated Main Gameloop to load Asset Manager Last. 
+- Updated Audio Manager to load Master banks first.
 
 [ Fixed ]
 
+- Fixed an issue where Audio Listener was reversed on ear sides.
 
 [ Removed ]

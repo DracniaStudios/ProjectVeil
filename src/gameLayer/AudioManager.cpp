@@ -90,18 +90,18 @@ void AudioManager::loadAll()
 			return;
 		}
 
-		for (const auto& entry : fs::directory_iterator(bankDir)) {
-			if (!entry.is_regular_file()) continue;
+		// Load Master banks first so events/strings are available to other banks
+		const fs::path masterBankPath = bankDir / "Master.bank";
+		const fs::path masterStringBankPath = bankDir / "Master.strings.bank";
 
-			if (entry.path().extension() != ".bank") continue;
-
+		auto tryLoadBank = [&](const fs::path& path) {
+			if (!fs::exists(path) || !fs::is_regular_file(path)) return;
 			FMOD::Studio::Bank* bank = nullptr;
 			FMOD_RESULT result = studioSystem->loadBankFile(
-				entry.path().string().c_str(),
+				path.string().c_str(),
 				FMOD_STUDIO_LOAD_BANK_NORMAL, &bank);
-
 			if (result == FMOD_OK) {
-				std::cout << "Successfully loaded bank: " << entry.path().string() << "\n";
+				std::cout << "[Audio Manager] 1 Successfully loaded bank: " << path.string() << "\n";
 				banks.push_back(bank);
 
 				// OPTIONAL: Automatically load sample data into memory immediately.
@@ -109,7 +109,38 @@ void AudioManager::loadAll()
 				bank->loadSampleData();
 			}
 			else {
-				std::cerr << "Failed to load bank: " << entry.path().string() << " | Error: " << result << "\n";
+				std::cerr << "[Audio Manager] Failed to load bank: " << path.string() << " | Error: " << result << "\n";
+			}
+		};
+
+		// Attempt to load Master banks first (order: Master.bank, then Master.string.bank)
+		tryLoadBank(masterBankPath);
+		tryLoadBank(masterStringBankPath);
+
+		for (const auto& entry : fs::directory_iterator(bankDir)) {
+			if (!entry.is_regular_file()) continue;
+
+			if (entry.path().extension() != ".bank") continue;
+
+			// Skip the master banks since we've already attempted to load them
+			if (entry.path().filename() == masterBankPath.filename() ||
+				entry.path().filename() == masterStringBankPath.filename()) continue;
+
+			FMOD::Studio::Bank* bank = nullptr;
+			FMOD_RESULT result = studioSystem->loadBankFile(
+				entry.path().string().c_str(),
+				FMOD_STUDIO_LOAD_BANK_NORMAL, &bank);
+
+			if (result == FMOD_OK) {
+				std::cout << "[Audio Manager] Successfully loaded bank: " << entry.path().string() << "\n";
+				banks.push_back(bank);
+
+				// OPTIONAL: Automatically load sample data into memory immediately.
+				// If skipped, sample data loads on-demand when an event plays.
+				bank->loadSampleData();
+			}
+			else {
+				std::cerr << "[Audio Manager] Failed to load bank: " << entry.path().string() << " | Error: " << result << "\n";
 				continue;
 			}
 

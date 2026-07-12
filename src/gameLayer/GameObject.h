@@ -105,7 +105,8 @@ struct InteractableObject : GameObject
 private:
 	int interactType = 0;
 	int interactValue = 0;
-	std::string interactSound = "event:/ui/hello_fmod";
+	int soundParameter = 0;
+	std::string interactSound = "event:/Param";
 public:
 
 	InteractableObject(InteractionType type, int value = 0);

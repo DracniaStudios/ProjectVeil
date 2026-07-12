@@ -3,9 +3,10 @@
 bool init_game()
 {
 	Settings::getInstance().Init();
-	AssetManager::getInstance().loadAll();
 	AudioManager::getInstance().loadAll();
 	InitAudioDevice();
+
+	AssetManager::getInstance().loadAll();
 	SceneManager_init(&SceneManager::getInstance());
 	
 	// Camera
