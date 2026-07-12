@@ -7,6 +7,7 @@
 #include <SceneManager.h>
 #include <AssetManager.h>
 #include <AudioManager.h>
+#include <Settings.h>
 
 bool init_game();
 bool update_game();

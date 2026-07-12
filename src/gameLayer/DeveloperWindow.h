@@ -26,7 +26,7 @@ class DeveloperWindow
 	// Object & Entity Inspector Data
 
 	/** Object Inspector Data **/
-	GameObject* inspectObject;
+	void* inspectObject;
 	Entity* inspectEntity;
 
 	GameObject* newObject;
@@ -48,6 +48,7 @@ class DeveloperWindow
 	void ShowEntityInspector();
 	void ShowMiniGameData(Player* player);
 	void ShowAssetData();
+	void Hierarchy();
 public:
 	// Singleton Pattern Implementation
 	DeveloperWindow(const DeveloperWindow&) = delete;

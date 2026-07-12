@@ -6,6 +6,7 @@
 #include <string>
 #include <Physics.h>
 #include <AssetManager.h>
+#include <AudioManager.h>
 
 struct Scene;
 
@@ -36,9 +37,12 @@ struct GameObject
 	bool displayCollider = true;
 	
 	/// Status
-	float lifeSpan = 0;
-	float endLife = 1;
+	float lifeTime = 0;
+	float deathTime = 1;
 	float decayTime = 1;
+	// Lives on GameObject (not Entity) so projectiles stored by value in
+	// GameMap::gameObjects keep their damage after slicing to GameObject
+	float baseDamage = 1.0f;
 	void Decay(float time = 1) { decayTime = time; }
 
 	/// Flags
@@ -46,6 +50,7 @@ struct GameObject
 	bool canBeSelected = true;
 	bool isAlive = true;
 	bool isDestructible = true;
+	bool pendingDestroy = false; // removal is deferred to the end of the frame
 
 	/// Physics
 	RigidBody3D rigidBody3D = {};
@@ -56,8 +61,13 @@ struct GameObject
 	Asset* texture = {};
 	Color defaultColor = WHITE;
 
+	// Audio
+	FMOD::Studio::EventInstance* soundInstance = nullptr;
+	FMOD_3D_ATTRIBUTES get3DAttributes() const;
+
 	Vector3 getPosition() const { return rigidBody3D.translation; }
 	Quaternion getRotation() const { return rigidBody3D.rotation; }
+	Vector3 getVelocity() const { return rigidBody3D.GetVelocity(); }
 	Vector3 getSize() const { return rigidBody3D.scale; }
 	ObjectType getType() const { return static_cast<ObjectType>(type); }
 
@@ -95,6 +105,7 @@ struct InteractableObject : GameObject
 private:
 	int interactType = 0;
 	int interactValue = 0;
+	std::string interactSound = "event:/ui/hello_fmod";
 public:
 
 	InteractableObject(InteractionType type, int value = 0);

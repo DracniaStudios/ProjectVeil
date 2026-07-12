@@ -1,6 +1,10 @@
 #include "Scene.h"
+
 #include <SceneManager.h>
 #include <WorldEditor.h>
+#include <AudioManager.h>
+
+#include <iterator>
 
 Scene* Scene_new() {
 	Scene* scene = new Scene;
@@ -23,75 +27,88 @@ std::uint64_t InstanceID::getIdAndIncrement()
 }
 
 /** Physics Solutions **/
+
+// Refresh a body's collision box after a positional correction so subsequent
+// solver iterations use the updated position rather than the stale one
+static void refreshCollisionBox(RigidBody3D& body)
+{
+	body.collisionBox = {
+		Vector3Subtract(body.translation, Vector3Scale(body.scale, 0.5f)),
+		Vector3Add(body.translation,      Vector3Scale(body.scale, 0.5f))
+	};
+}
+
 static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 {
-	solverIterations = static_cast<int>(Clamp(solverIterations, 4, 8));
+	solverIterations = static_cast<int>(Clamp(static_cast<float>(solverIterations), 4, 8));
+
+	auto& objects = scene->gameMap.gameObjects;
+
 	for (int iter = 0; iter < solverIterations; iter++)
 	{
-		// Update Game Objects Vs. Game Objects
-		for (auto& bodyA : scene->gameMap.gameObjects)
+		// Game Objects Vs. Game Objects — each unordered pair once (j starts
+		// at i+1); resolveConstrains already moves both bodies, so visiting
+		// (A,B) and (B,A) doubled every correction and collision event
+		for (size_t i = 0; i < objects.size(); i++)
 		{
-			//permaAssertComment(&bodyA == nullptr, "Null bodyA @ Scene.cpp");
-			for (auto& bodyB : scene->gameMap.gameObjects)
+			for (size_t j = i + 1; j < objects.size(); j++)
 			{
-				//permaAssertComment(&bodyB == nullptr, "Null bodyB @ Scene.cpp");
+				auto& bodyA = objects[i];
+				auto& bodyB = objects[j];
+
+				if (bodyA.rigidBody3D.isStatic && bodyB.rigidBody3D.isStatic) { continue; }
 
 				if (CheckCollisionBoxes(bodyA.rigidBody3D.collisionBox, bodyB.rigidBody3D.collisionBox))
 				{
 					bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
+					refreshCollisionBox(bodyA.rigidBody3D);
+					refreshCollisionBox(bodyB.rigidBody3D);
 				}
 			}
-
-			// Refresh the collision box after each correction so subsequent
-			// iterations use the updated position rather than the stale one
-			bodyA.rigidBody3D.collisionBox = {
-				Vector3Subtract(bodyA.rigidBody3D.translation, Vector3Scale(bodyA.rigidBody3D.scale, 0.5f)),
-				Vector3Add(bodyA.rigidBody3D.translation,      Vector3Scale(bodyA.rigidBody3D.scale, 0.5f))
-			};
 		}
 
-		// Update Entities Vs. Game Objects
-		for (auto bodyA = scene->entities.begin(); bodyA != scene->entities.end(); ++bodyA)
+		// Entities Vs. Game Objects
+		for (auto& [id, entity] : scene->entities)
 		{
-			//permaAssertComment(&bodyA == nullptr, "Null bodyA @ Scene.cpp");
-			for (auto& bodyB : scene->gameMap.gameObjects)
+			for (auto& bodyB : objects)
 			{
-				//permaAssertComment(&bodyB == nullptr, "Null bodyB @ Scene.cpp");
-
-				if (CheckCollisionBoxes(bodyA->second->rigidBody3D.collisionBox, bodyB.rigidBody3D.collisionBox))
+				if (CheckCollisionBoxes(entity->rigidBody3D.collisionBox, bodyB.rigidBody3D.collisionBox))
 				{
-					bodyA->second->rigidBody3D.resolveConstrains(bodyA->second.get(), &bodyB);
+					entity->rigidBody3D.resolveConstrains(entity.get(), &bodyB);
+					refreshCollisionBox(entity->rigidBody3D);
+					refreshCollisionBox(bodyB.rigidBody3D);
 				}
 			}
-
-			// Refresh the collision box after each correction so subsequent
-			// iterations use the updated position rather than the stale one
-			bodyA->second->rigidBody3D.collisionBox = {
-				Vector3Subtract(bodyA->second->rigidBody3D.translation, Vector3Scale(bodyA->second->rigidBody3D.scale, 0.5f)),
-				Vector3Add(bodyA->second->rigidBody3D.translation,      Vector3Scale(bodyA->second->rigidBody3D.scale, 0.5f))
-			};
 		}
 
-		// Update Entities Vs. Entity
+		// Entities Vs. Entities — each unordered pair once
 		for (auto bodyA = scene->entities.begin(); bodyA != scene->entities.end(); ++bodyA)
 		{
-			//permaAssertComment(&bodyA == nullptr, "Null bodyA @ Scene.cpp");
-			for (auto bodyB = scene->entities.begin(); bodyB != scene->entities.end(); ++bodyB)
+			for (auto bodyB = std::next(bodyA); bodyB != scene->entities.end(); ++bodyB)
 			{
-				//permaAssertComment(&bodyB == nullptr, "Null bodyB @ Scene.cpp");
-
 				if (CheckCollisionBoxes(bodyA->second->rigidBody3D.collisionBox, bodyB->second->rigidBody3D.collisionBox))
 				{
 					bodyA->second->rigidBody3D.resolveConstrains(bodyA->second.get(), bodyB->second.get());
+					refreshCollisionBox(bodyA->second->rigidBody3D);
+					refreshCollisionBox(bodyB->second->rigidBody3D);
 				}
 			}
+		}
 
-			// Refresh the collision box after each correction so subsequent
-			// iterations use the updated position rather than the stale one
-			bodyA->second->rigidBody3D.collisionBox = {
-				Vector3Subtract(bodyA->second->rigidBody3D.translation, Vector3Scale(bodyA->second->rigidBody3D.scale, 0.5f)),
-				Vector3Add(bodyA->second->rigidBody3D.translation,      Vector3Scale(bodyA->second->rigidBody3D.scale, 0.5f))
-			};
+		// Player Vs. Entities — the player lives outside both containers, so
+		// without this pass it walks straight through every entity (it already
+		// resolves against gameObjects in Player::update3D)
+		if (auto player = scene->player)
+		{
+			for (auto& [id, entity] : scene->entities)
+			{
+				if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, entity->rigidBody3D.collisionBox))
+				{
+					player->rigidBody3D.resolveConstrains(player, entity.get());
+					refreshCollisionBox(player->rigidBody3D);
+					refreshCollisionBox(entity->rigidBody3D);
+				}
+			}
 		}
 	}
 }
@@ -128,8 +145,6 @@ void Scene_updateScene(float delta) {
 	/** Update GameObjects **/
 	for (auto entity = scene->entities.begin(); entity != scene->entities.end();)
 	{
-		if (scene->entities.empty()) return;
-
 		// Update Data
 		entity->second->id = entity->first;
 		
@@ -160,7 +175,7 @@ void Scene_updateScene(float delta) {
 		}
 	}
 
-
+	/* Limit GameObject Positions */
 	for (auto& object : scene->gameMap.gameObjects) {
 		object.update(scene, delta);
 		
@@ -173,6 +188,16 @@ void Scene_updateScene(float delta) {
 			std::cout << "Reset " << object.name << "'s Position \n";
 		}
 	}
+
+	// Sweep objects flagged by Destroy() — removal must happen outside the
+	// update loop above, since erasing mid-iteration invalidates it
+	std::erase_if(scene->gameMap.gameObjects, [&](GameObject& object) {
+		if (!object.pendingDestroy) { return false; }
+		object.onDestroy(scene);
+		return true;
+	});
+
+	/* Update Collisions */
 	solveCollision(scene, delta, 8);
 
 	/** Update MiniGame **/

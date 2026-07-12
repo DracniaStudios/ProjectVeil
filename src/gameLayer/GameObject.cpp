@@ -26,10 +26,12 @@ GameObject::GameObject()
 
 	rigidBody3D = {};
 
-	// Load Model else Cube
+	// Load Model else Cube. rigidBody3D.scale is still zero-initialized here
+	// (it defaults to One later), so building the cube from it produced a
+	// degenerate, invisible mesh — use a unit cube to match the default scale
 	if (model.meshCount == 0)
 	{
-		model = LoadModelFromMesh(GenMeshCube(rigidBody3D.scale.x, rigidBody3D.scale.y, rigidBody3D.scale.z));
+		model = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
 	}
 
 	if (texture == nullptr) {
@@ -40,8 +42,8 @@ GameObject::GameObject()
 	// Set Initial Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
 	
-	lifeSpan = 0;
-	endLife = 1;
+	lifeTime = 0;
+	deathTime = 1;
 	
 }
 
@@ -59,8 +61,8 @@ void GameObject::onEnable()
 	}
 	model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture->texture;
 
-	lifeSpan = 0;
-	endLife = 1;
+	lifeTime = 0;
+	deathTime = 1;
 }
 
 void GameObject::onDisable()
@@ -83,6 +85,8 @@ void GameObject::render3D()
 	if (displayCollider) { DrawBoundingBox(rigidBody3D.collisionBox, colliderColor); }
 
 	if (display3DModel) {
+		// Apply the body's orientation so spinning/tumbling objects render rotated
+		model.transform = QuaternionToMatrix(rigidBody3D.rotation);
 		DrawModel(model, rigidBody3D.translation, 1.0f, defaultColor);
 		DrawModelWires(model, rigidBody3D.translation, 1.0f, BLACK);
 	}
@@ -107,17 +111,28 @@ void GameObject::update(Scene* scene, float deltaTime)
 {
 	if (!isEnabled) { return; }
 
-	// Update Data
-	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
-	rigidBody3D.Update(deltaTime);
+	// Rigidbody Data (Update() refreshes collisionBox from translation/scale)
+	{
+		rigidBody3D.Update(deltaTime);
+	}
+	// Sound Data
+	{
+		if (soundInstance != nullptr && soundInstance->isValid()) {
+			FMOD_3D_ATTRIBUTES attributes = get3DAttributes();
+			soundInstance->set3DAttributes(&attributes);
+		}
+	}
 
-	lifeSpan += deltaTime;
 
-	if (isAlive) { endLife += deltaTime; }
+	// Destroy Object
+	{
+		lifeTime += deltaTime;
+		if (isAlive) { deathTime += deltaTime; }
 
-	if (!isAlive) {
-		if (lifeSpan > endLife) {
-			Destroy();
+		if (!isAlive) {
+			if (lifeTime > deathTime) {
+				Destroy();
+			}
 		}
 	}
 }
@@ -126,14 +141,17 @@ static float setLife(float life, int time) { return static_cast<float>(life + ti
 
 void GameObject::Destroy()
 {
+	// Removal is deferred: Destroy() can be called from inside the update
+	// loop that iterates gameMap.gameObjects, and erasing there invalidates
+	// the iterators. The scene sweeps pendingDestroy objects after updating.
 	isAlive = false;
-	onDestroy(SceneManager::getInstance().currentScene);
+	pendingDestroy = true;
 }
 
-// Destroy Object After Delay (in milliseconds)
 void GameObject::onDestroy(Scene* scene)
 {
-	scene->gameMap.removeObject(this);
+	// Removal happens in the scene's pendingDestroy sweep (Scene_updateScene);
+	// erasing here would invalidate the update loop's iterators
 	std::cout << "Destroy Object: " << name << "\n";
 }
 
@@ -141,9 +159,22 @@ void GameObject::onCollision(const GameObject* collider)
 {
 	// Collision Data Checks
 }
-#pragma endregion
-//****** Interactable Objects *************//
 
+// FMOD requires forward and up to be normalized and perpendicular
+FMOD_3D_ATTRIBUTES GameObject::get3DAttributes() const
+{
+	FMOD_3D_ATTRIBUTES attributes = {};
+	attributes.position = Vector3ToFMOD(getPosition());
+	attributes.velocity = Vector3ToFMOD(getVelocity());
+	attributes.forward = Vector3ToFMOD(Vector3Normalize(rigidBody3D.forward));
+	attributes.up = Vector3ToFMOD(Vector3Normalize(rigidBody3D.up));
+	return attributes;
+}
+#pragma endregion
+
+
+
+//****** Interactable Objects *************//
 #pragma region Interactable Object
 InteractableObject::InteractableObject(const InteractionType interact, int value)
 {
@@ -157,8 +188,8 @@ void InteractableObject::onInteract()
 	defaultColor = getRandomColor(rng);
 
 	//AudioManager::getInstance().Play("anime_wow");
-	AudioManager::getInstance().PlayEvent("event:/ui/hello_fmod");
-
+	AudioManager::getInstance().PlayEvent3D(interactSound, *this);
+	AudioManager::getInstance().Play("anime_wow");
 
 	if (interactType == INTERACT_MINIGAME)
 	{
@@ -179,6 +210,9 @@ void InteractableObject::onInteract()
 	}
 }
 #pragma endregion
+
+
+
 /** GameObject Save Data **/
 #pragma region Save GameObject
 
@@ -186,7 +220,7 @@ void GameObject::addCommonToJson(Json& j)
 {
 	// Save Common Object Data
 	j["RigidBody3D"] = rigidBody3D.formatToJson();
-	j["Life"] = lifeSpan;
+	j["Life"] = lifeTime;
 	j["ObjectType"] = getType();
 	j["Name"] = name;
 
@@ -229,7 +263,7 @@ bool GameObject::loadCommonFromJson(Json& j)
 
 	if (j.contains("Life") && j["Life"].is_number())
 	{
-		lifeSpan = j["Life"];
+		lifeTime = j["Life"];
 	}
 
 	type = j.value("ObjectType", static_cast<int>(OBJECT_GENERIC));

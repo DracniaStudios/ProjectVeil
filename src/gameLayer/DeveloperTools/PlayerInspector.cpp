@@ -37,8 +37,8 @@ void DeveloperWindow::ShowPlayerData(Player* player)
 
 	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Status");
 	ImGui::Checkbox("Is Alive", &player->isAlive);
-	ImGui::Text("Life Span: %f", player->lifeSpan);
-	ImGui::Text("Life End: %f", player->endLife);
+	ImGui::Text("Life Span: %f", player->lifeTime);
+	ImGui::Text("Life End: %f", player->deathTime);
 	ImGui::Spacing();
 
 	/// Show Player Directional Data and Flags

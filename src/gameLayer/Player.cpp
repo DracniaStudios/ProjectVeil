@@ -96,7 +96,6 @@ void Player::update2D(float deltaTime, bool canMove)
 	
 	auto speed = IsKeyDown(KEY_LEFT_SHIFT) ? baseSpeed * 2 : baseSpeed;
 	
-	//if (canMove) { rigidBody2D.translation += Vector3(moveDirection.x, moveDirection.y) * speed; }
 	rigidBody2D.update(deltaTime);
 }
 
@@ -236,22 +235,27 @@ void Player::FireLaser()
 
 	// Check Ray Collision with Game Objects
 	
-	for (auto& obj : SceneManager::getInstance().currentScene->gameMap.gameObjects)
-	{
-		auto collider = GetRayCollisionBox(cameraRay, obj.rigidBody3D.collisionBox);
+	auto scene = SceneManager::getInstance().currentScene;
 
-		// If Collision, Apply Damage to Object
-		if (collider.hit)
+	// gameMap.gameObjects stores plain GameObjects (anything saved there was
+	// sliced), so casting them to Entity* to deal damage wrote past the end
+	// of the object — only push them around
+	for (auto& obj : scene->gameMap.gameObjects)
+	{
+		if (GetRayCollisionBox(cameraRay, obj.rigidBody3D.collisionBox).hit)
 		{
 			obj.onCollision(this);
-
-			if (auto entity = (Entity*)&obj)
-			{
-				auto output = baseDamage * 0.1f;
-				entity->takeDamage(output);
-			}
-			
 			obj.rigidBody3D.AddForce(camera->forward, 0.1f);
+		}
+	}
+
+	// Real entities live in scene->entities and can take damage
+	for (auto& [id, entity] : scene->entities)
+	{
+		if (GetRayCollisionBox(cameraRay, entity->rigidBody3D.collisionBox).hit)
+		{
+			entity->takeDamage(baseDamage * 0.1f);
+			entity->rigidBody3D.AddForce(camera->forward, 0.1f);
 		}
 	}
 }
@@ -267,6 +271,7 @@ void Player::Interact()
 		const auto obj = interactable.second.get();
 		const GameObject* decoy = nullptr;
 		for (auto& sceneObject : scene->gameMap.gameObjects) { if (sceneObject.id == obj->id) { decoy = &sceneObject; } }
+		if (decoy == nullptr) { continue; }
 
 		if (GetRayCollisionBox(cameraRay, decoy->rigidBody3D.collisionBox).hit)
 		{
@@ -278,6 +283,23 @@ void Player::Interact()
 	}
 }
 
+FMOD_3D_ATTRIBUTES Player::getListener() {
+	const auto camera = SceneManager::getInstance().currentScene->camera;
+
+	// FMOD requires forward and up to be normalized and perpendicular
+	Vector3 forward = Vector3Normalize(camera->forward);
+	if (Vector3LengthSqr(forward) < 0.0001f) { forward = Vector3(0, 0, 1); }
+	Vector3 right = Vector3CrossProduct(Vector3(0, 1, 0), forward);
+	if (Vector3LengthSqr(right) < 0.0001f) { right = Vector3(1, 0, 0); } // looking straight up/down
+	Vector3 up = Vector3Normalize(Vector3CrossProduct(forward, right));
+
+	FMOD_3D_ATTRIBUTES listenerAttributes = {};
+	listenerAttributes.position = Vector3ToFMOD(camera->position);
+	listenerAttributes.velocity = Vector3ToFMOD(getVelocity());
+	listenerAttributes.forward = Vector3ToFMOD(forward);
+	listenerAttributes.up = Vector3ToFMOD(up);
+	return listenerAttributes;
+}
 
 static GameObject* selectObject(const Camera& cam)
 {

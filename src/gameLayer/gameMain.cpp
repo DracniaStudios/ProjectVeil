@@ -2,6 +2,7 @@
 
 bool init_game()
 {
+	Settings::getInstance().Init();
 	AssetManager::getInstance().loadAll();
 	AudioManager::getInstance().loadAll();
 	InitAudioDevice();

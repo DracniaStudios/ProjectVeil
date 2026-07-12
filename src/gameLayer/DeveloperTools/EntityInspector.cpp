@@ -32,8 +32,8 @@ void DeveloperWindow::ShowEntityInspector()
 
 			ImGui::TextColored(ImVec4(0, 255, 255, 255), "Status");
 			ImGui::Checkbox("Is Alive", &object->isAlive);
-			ImGui::Text("Life Span: %f", object->lifeSpan);
-			ImGui::Text("Life End: %f", object->endLife);
+			ImGui::Text("Life Span: %f", object->lifeTime);
+			ImGui::Text("Life End: %f", object->deathTime);
 
 			// Object Flags 
 			ImGui::TextColored(ImVec4(0, 255, 255, 255), "Flags");
