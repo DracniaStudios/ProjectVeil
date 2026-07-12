@@ -1,5 +1,6 @@
 #include "Scene.h"
 #include <SceneManager.h>
+#include <WorldEditor.h>
 
 Scene* Scene_new() {
 	Scene* scene = new Scene;
@@ -204,6 +205,9 @@ void Scene_updateScene(float delta) {
 
 	// Developer Window
 	DeveloperWindow::getInstance().update(scene->player);
+
+	// World Editor
+	WorldEditor::getInstance().update(scene->player);
 }
 
 void Scene_drawScene2D() {

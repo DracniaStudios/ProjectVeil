@@ -19,20 +19,18 @@ void DeveloperWindow::ShowGameData(Player* player)
 	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Game Map Data");
 
 	ImGui::Text("Game Objects: %d", static_cast<int>(scene->gameMap.gameObjects.size()));
-	ImGui::Text("Game Map Size: (%.2f, %.2f, %.2f)", &scene->gameMap.size.x, &scene->gameMap.size.y, &scene->gameMap.size.z);
+	ImGui::Text("Game Map Size: (%.2f, %.2f, %.2f)", scene->gameMap.size.x, scene->gameMap.size.y, scene->gameMap.size.z);
 
 	/// Entity Data
-	ImGui::Text("Entity Count: %f", scene->entities.size());
-	ImGui::Text("Last ID Used: %f", &scene->instanceHolder.idCounter);
+	ImGui::Text("Entity Count: %d", static_cast<int>(scene->entities.size()));
+	ImGui::Text("Last ID Used: %llu", static_cast<unsigned long long>(scene->instanceHolder.idCounter));
 	ImGui::Separator();
 
 
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Game Map Data");
-	
+	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Save Data");
+
 	if (ImGui::Button("Save Game")) { SaveSystem::SaveGame(RESOURCES_PATH "../saves/game.json", scene); }
 	if (ImGui::Button("Load Game")) { SaveSystem::LoadGame(RESOURCES_PATH "../saves/game.json", *scene); }
-	//if (ImGui::Button("Save World")) { SaveSystem::SaveWorld(scene); }
-	//if (ImGui::Button("Load World")) { SaveSystem::LoadWorld(*scene); }
 	
 	ImGui::End();
 }

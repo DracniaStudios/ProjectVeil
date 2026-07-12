@@ -2,6 +2,7 @@
 
 #include <raymath.h>
 #include <SceneManager.h>
+#include <WorldEditor.h>
 
 /// <summary>
 ///  Player Functions
@@ -154,7 +155,7 @@ void Player::update3D(float deltaTime)
 	
 	/// Update Player Input Actions
 	isFiring = IsMouseButtonDown(MOUSE_BUTTON_LEFT) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
-	if (!DeveloperWindow::getInstance().IsEnabled()) {
+	if (!DeveloperWindow::getInstance().IsEnabled() && !WorldEditor::getInstance().IsEnabled()) {
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) { Fire(); }
 		if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) { FireLaser(); }
 	}
