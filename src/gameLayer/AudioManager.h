@@ -45,10 +45,10 @@ public:
 	void update();
 	void shutdown();
 
-	void Play(const std::string& name,float volume = 1.0f);
-	void Play3D(const std::string& name, GameObject& object, float volume = 1.0f);
-	void PlayEvent(const std::string& eventPath);
-	void PlayEvent3D(const std::string& eventPath, GameObject& object);
+	bool Play(const std::string& name,float volume = 1.0f);
+	bool Play3D(const std::string& name, GameObject& object, float volume = 1.0f);
+	bool PlayEvent(const std::string& eventPath);
+	bool PlayEvent3D(const std::string& eventPath, GameObject& object);
 
 private:
 	FMOD::System* system = nullptr;

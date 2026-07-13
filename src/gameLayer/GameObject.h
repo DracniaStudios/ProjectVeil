@@ -63,6 +63,9 @@ struct GameObject
 
 	// Audio
 	FMOD::Studio::EventInstance* soundInstance = nullptr;
+	std::string defaultSound = "test_beep";
+	std::string soundParameterName = "Parameter";
+	int soundParameterValue = 0;
 	FMOD_3D_ATTRIBUTES get3DAttributes() const;
 
 	Vector3 getPosition() const { return rigidBody3D.translation; }
@@ -105,8 +108,6 @@ struct InteractableObject : GameObject
 private:
 	int interactType = 0;
 	int interactValue = 0;
-	int soundParameter = 0;
-	std::string interactSound = "event:/Param";
 public:
 
 	InteractableObject(InteractionType type, int value = 0);

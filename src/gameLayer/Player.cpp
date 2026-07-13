@@ -3,16 +3,6 @@
 #include <raymath.h>
 #include <SceneManager.h>
 
-/// <summary>
-///  Player Functions
-///  
-///  Enable
-///  Disable
-///  Render
-///  Update
-///  Camera
-///  
-/// </summary>
 
 void Player::onEnable()
 {

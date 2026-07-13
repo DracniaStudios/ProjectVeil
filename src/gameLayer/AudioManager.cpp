@@ -27,8 +27,6 @@ void AudioManager::init()
 	
 	// Load Core System
 	studioSystem->getCoreSystem(&system);
-
-	// Banks (including Master.bank and Master.strings.bank) are loaded in loadAll()
 }
 
 void AudioManager::loadAll()
@@ -101,7 +99,7 @@ void AudioManager::loadAll()
 				path.string().c_str(),
 				FMOD_STUDIO_LOAD_BANK_NORMAL, &bank);
 			if (result == FMOD_OK) {
-				std::cout << "[Audio Manager] 1 Successfully loaded bank: " << path.string() << "\n";
+				std::cout << "[Audio Manager] Successfully loaded bank: " << path.string() << "\n";
 				banks.push_back(bank);
 
 				// OPTIONAL: Automatically load sample data into memory immediately.
@@ -175,15 +173,15 @@ void AudioManager::shutdown()
 	}
 }
 
-void AudioManager::Play(const std::string& name, float volume)
+bool AudioManager::Play(const std::string& name, float volume)
 {
-	if (!system) return;
+	if (!system) return false;
 
 	const auto it = sounds.find(name);
 	if (it == sounds.end())
 	{
 		std::cout << "[AudioManager] No sound loaded with name \"" << name << "\"\n";
-		return;
+		return false;
 	}
 
 	FMOD::Channel* channel = nullptr;
@@ -194,16 +192,17 @@ void AudioManager::Play(const std::string& name, float volume)
 		channel->setVolume(volume);
 		channel->setPaused(false);
 	}
+	return true;
 }
-void AudioManager::Play3D(const std::string& name, GameObject& object, float volume)
+bool AudioManager::Play3D(const std::string& name, GameObject& object, float volume)
 {
-	if (!system) return;
+	if (!system) return false;
 
 	const auto it = sounds.find(name);
 	if (it == sounds.end())
 	{
 		std::cout << "[AudioManager] No sound loaded with name \"" << name << "\"\n";
-		return;
+		return false;
 	}
 
 	// Start paused so the sound is positioned before the first audible frame
@@ -218,10 +217,11 @@ void AudioManager::Play3D(const std::string& name, GameObject& object, float vol
 		channel->setVolume(volume);
 		channel->setPaused(false);
 	}
+	return true;
 }
 
-void AudioManager::PlayEvent(const std::string& eventPath) {
-	if (!studioSystem) return;
+bool AudioManager::PlayEvent(const std::string& eventPath) {
+	if (!studioSystem) return false;
 
 	FMOD::Studio::EventDescription* description = nullptr;
 	FMOD_RESULT result = studioSystem->getEvent(eventPath.c_str(),
@@ -229,17 +229,18 @@ void AudioManager::PlayEvent(const std::string& eventPath) {
 
 	if (result != FMOD_OK) {
 		std::cout << "[Audio Manager] No event \"" << eventPath << "\": " << FMOD_ErrorString(result) << "\n";
-		return;
+		return false;
 	}
 
 	FMOD::Studio::EventInstance* instance = nullptr;
 	description->createInstance(&instance);
 	instance->start();
 	instance->release(); // Destroy when finished playing sound
+	return true;
 }
 
-void AudioManager::PlayEvent3D(const std::string& eventPath, GameObject& object) {
-	if (!studioSystem) return;
+bool AudioManager::PlayEvent3D(const std::string& eventPath, GameObject& object) {
+	if (!studioSystem) return false;
 
 	FMOD::Studio::EventDescription* description = nullptr;
 	FMOD_RESULT result = studioSystem->getEvent(eventPath.c_str(),
@@ -247,7 +248,7 @@ void AudioManager::PlayEvent3D(const std::string& eventPath, GameObject& object)
 
 	if (result != FMOD_OK) {
 		std::cout << "[Audio Manager] No event \"" << eventPath << "\": " << FMOD_ErrorString(result) << "\n";
-		return;
+		return false;
 	}
 
 	// Stop the previous event on this object before starting a new one
@@ -261,7 +262,7 @@ void AudioManager::PlayEvent3D(const std::string& eventPath, GameObject& object)
 	result = description->createInstance(&object.soundInstance);
 	if (result != FMOD_OK || object.soundInstance == nullptr) {
 		std::cout << "[Audio Manager] Failed to create instance for \"" << eventPath << "\": " << FMOD_ErrorString(result) << "\n";
-		return;
+		return false;
 	}
 
 	// Position the event before it starts so the first frame is already spatialized
@@ -270,4 +271,5 @@ void AudioManager::PlayEvent3D(const std::string& eventPath, GameObject& object)
 
 	object.soundInstance->start();
 	object.soundInstance->release(); // Destroy when finished playing sound
+	return true;
 }

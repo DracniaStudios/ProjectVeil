@@ -9,6 +9,7 @@
 #include <randomStuff.h>
 
 #include <gameMap.h>
+#include <InputSystem.h>
 #include <Player.h>
 #include <AssetManager.h>
 #include <MiniGame.h>

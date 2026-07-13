@@ -45,5 +45,13 @@ Scene* Scene_MainMenuConstruct()
 
 	SaveSystem::LoadGame(RESOURCES_PATH "../saves/mainMenu.json", *scene);
 
+	auto BGM = InteractableObject(INTERACT_OBJECT, 0);
+	BGM.name = "BGM";
+	BGM.defaultSound = "Calabases";
+	BGM.rigidBody3D.isStatic = true;
+	BGM.rigidBody3D.Teleport(Vector3(0, 2, 0));
+	scene->gameMap.saveInteractable(BGM);
+	BGM.onInteract();
+
 	return scene;
 }

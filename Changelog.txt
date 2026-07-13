@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
 // Version: 0.1.53 
-// Due: 2026-07-17 (Audio System)
-// Date: 2026-07-09 (Current Development Date)
+// Due: 2026-07-24 (Input System)
+// Date: 2026-07-13 (Current Development Date)
 
 [Notice] Scene Camera3D can be changed and swith inbetween both cameras.
 [Notice] Player camera is held within the Player struct.
@@ -9,21 +9,19 @@
 
 [ Issues ]
 
-- Found an issue where created GameObjects are missing intented data.
 
 [ Added ]
 
-
-- Added soundParameters to InteractableObjects.
-
+- Added InputAction struct to Input System.
+- Added ActionType to Input System.
 
 [ Updated ]
 
-- Updated Main Gameloop to load Asset Manager Last. 
-- Updated Audio Manager to load Master banks first.
+- Updated InputSystem to hold new InputActions based on ID, Key, and Button values.
+- Updated InputSystem to return boolean based on InputAction activations.
 
 [ Fixed ]
 
-- Fixed an issue where Audio Listener was reversed on ear sides.
+
 
 [ Removed ]

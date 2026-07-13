@@ -190,8 +190,8 @@ void InteractableObject::onInteract()
 	defaultColor = getRandomColor(rng);
 
 	//AudioManager::getInstance().Play("anime_wow");
-	AudioManager::getInstance().PlayEvent3D(interactSound, *this);
-	soundInstance->setParameterByName("Intensity", soundParameter);
+	AudioManager::getInstance().PlayEvent3D(defaultSound, *this);
+	soundInstance->setParameterByName(soundParameterName.c_str(), soundParameterValue);
 
 	if (interactType == INTERACT_MINIGAME)
 	{
