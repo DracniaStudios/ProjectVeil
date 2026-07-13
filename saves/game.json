@@ -36,7 +36,7 @@
         "VelocityZ": 0.0
       },
       "Stamina": 100.0,
-      "Texture": "Ice 01"
+      "Texture": "Ice002"
     }
   },
   "IdCounter": 24,
@@ -74,7 +74,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Plastic 01"
+      "Texture": "Plastic013A"
     },
     "16": {
       "CanBeSelected": true,
@@ -109,7 +109,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Plastic 01"
+      "Texture": "Plastic013A"
     },
     "17": {
       "CanBeSelected": true,
@@ -144,7 +144,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Plastic 01"
+      "Texture": "Plastic013A"
     },
     "18": {
       "CanBeSelected": true,
@@ -179,7 +179,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Plastic 01"
+      "Texture": "Plastic013A"
     },
     "19": {
       "CanBeSelected": true,
@@ -214,7 +214,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Plastic 01"
+      "Texture": "Plastic013A"
     },
     "20": {
       "CanBeSelected": true,
@@ -249,7 +249,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Plastic 01"
+      "Texture": "Plastic013A"
     },
     "21": {
       "CanBeSelected": true,
@@ -284,7 +284,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Plastic 01"
+      "Texture": "Plastic013A"
     }
   },
   "Map": {
@@ -323,7 +323,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Asphalt 01"
+      "Texture": "Asphalt031"
     },
     "23": {
       "CanBeSelected": true,
@@ -355,7 +355,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Metal 01"
+      "Texture": "Metal030"
     },
     "4": {
       "CanBeSelected": true,
@@ -387,7 +387,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Bricks 01"
+      "Texture": "Bricks058"
     }
   },
   "Player": {
@@ -428,7 +428,7 @@
       "VelocityZ": 0.0
     },
     "Stamina": 100.0,
-    "Texture": "Frame"
+    "Texture": "frame"
   },
   "Scene": {
     "Is2DActive": false,
