@@ -13,14 +13,10 @@ void DeveloperWindow::ShowEntityInspector()
 			if (object == nullptr) return;
 			ImGui::PushID(object);
 
-			const char* objectTypeString =
-				object->type == OBJECT_PLAYER ? "Player" :
-				object->type == OBJECT_PROJECTILE ? "Projectile" :
-				"Entity"
-				;
+			const char* objectTypeString = objectTypeToString(object->type);
 			std::string dataString = objectTypeString;
 			dataString += " Data";
-			ImGui::TextColored(ImVec4(255, 255, 0, 255), dataString.c_str());
+			ImGui::TextColored(ImVec4(255, 255, 0, 255), "%s", dataString.c_str());
 
 			ImGui::Text("Name: %s", object->name.c_str());
 			ImGui::Text("Type: %s", objectTypeString);
@@ -54,10 +50,10 @@ void DeveloperWindow::ShowEntityInspector()
 			ImGui::Spacing();
 
 			// Entity Data
-			ImGui::Text("Health: (%.2f)", &object->health);
-			ImGui::Text("Max Health: (%.2f)", &object->maxHealth);
-			ImGui::Text("Stamina: (%.2f)", &object->stamina);
-			ImGui::Text("Max Stamina: (%.2f)", &object->maxStamina);
+			ImGui::Text("Health: (%.2f)", object->health);
+			ImGui::Text("Max Health: (%.2f)", object->maxHealth);
+			ImGui::Text("Stamina: (%.2f)", object->stamina);
+			ImGui::Text("Max Stamina: (%.2f)", object->maxStamina);
 
 			ImGui::Checkbox("Is Firing: ", &object->isFiring);
 			ImGui::Checkbox("Force Firing: ", &object->forceFire);
@@ -78,13 +74,8 @@ void DeveloperWindow::ShowEntityInspector()
 				object->name = inputName;
 			}
 			ImGui::InputInt("Entity Type: ", &object->type, 1, 1);
-			object->type = Clamp(object->type, 0, OBJECT_COUNT);
-			const char* objectTypeString =
-				object->type == OBJECT_PLAYER ? "Player" :
-				object->type == OBJECT_PROJECTILE ? "Projectile" :
-				"Entity"
-				;
-			ImGui::Text(objectTypeString);
+			object->type = Clamp(object->type, 0, OBJECT_COUNT - 1);
+			ImGui::Text("%s", objectTypeToString(object->type));
 
 			// Color ( float to unsigned char conversion )
 			{

@@ -4,12 +4,7 @@
 
 #include <SceneManager.h>
 #include <Player.h>
-
-inline const char* boolToString(bool boolean)
-{
-	if (boolean) { return "True"; }
-	return "false";
-}
+#include <EditorUtils.h>
 
 class DeveloperWindow
 {
@@ -68,7 +63,6 @@ public:
 
 	/** Functions **/
 	void update(Player* player);
-	void ShowInspector(int inspectorID, bool isEnabled = true);
 
 	bool IsEnabled() const { return isActive; }
 };

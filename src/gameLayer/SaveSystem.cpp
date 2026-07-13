@@ -1,5 +1,6 @@
 #include "SaveSystem.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <SceneManager.h>
@@ -7,14 +8,13 @@
 constexpr int VERSION = 2;
 
 constexpr const char* WORLD_SAVE_PATH = RESOURCES_PATH "../saves/world.json";
-constexpr const char* WORLD_SAVE_BAK = RESOURCES_PATH "../saves/world.json.bak";
 
 namespace SaveSystem
 {
 	using Json = nlohmann::json;
 
 	// Rebuild renderer data that cannot be serialized (model + texture binding)
-	static void RestoreVisuals(GameObject& obj)
+	void RestoreVisuals(GameObject& obj)
 	{
 		Vector3 scale = obj.rigidBody3D.scale;
 		obj.model = LoadModelFromMesh(GenMeshCube(scale.x, scale.y, scale.z));
@@ -23,6 +23,52 @@ namespace SaveSystem
 		{
 			obj.model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = obj.texture->texture;
 		}
+	}
+
+	// Write json to a temp file first so a crash mid-save never corrupts the real one,
+	// keeping the previous save as a backup
+	static bool WriteJsonAtomic(const std::filesystem::path& path, const Json& j)
+	{
+		const std::filesystem::path tmpPath = path.string() + ".tmp";
+		const std::filesystem::path bakPath = path.string() + ".bak";
+
+		std::error_code errorCode;
+		if (path.has_parent_path())
+		{
+			std::filesystem::create_directories(path.parent_path(), errorCode);
+		}
+
+		std::ofstream file(tmpPath, std::ios::binary);
+		if (!file.is_open()) { return false; }
+
+		file << j.dump(2);
+		file.close();
+
+		std::filesystem::rename(path, bakPath, errorCode);
+		std::filesystem::rename(tmpPath, path, errorCode);
+		return true;
+	}
+
+	static bool ReadJsonFromFile(const char* fileName, Json& out)
+	{
+		std::ifstream file(fileName, std::ios::binary);
+
+		if (!file.is_open())
+		{
+			std::cerr << "[Save System] Failed to open save file: " << fileName << "\n";
+			return false;
+		}
+
+		out = Json::parse(file, nullptr, false);
+		file.close();
+
+		if (out.is_discarded())
+		{
+			std::cerr << "[Save System] Save file is corrupted: " << fileName << "\n";
+			return false;
+		}
+
+		return true;
 	}
 
 	static Json SceneToJson(Scene* scene)
@@ -195,25 +241,7 @@ namespace SaveSystem
 		if (scene->gameMap.gameObjects.size() > OBJECT_LIMIT) { return false; }
 
 		const std::filesystem::path path = fileName;
-		const std::filesystem::path tmpPath = path.string() + ".tmp";
-		const std::filesystem::path bakPath = path.string() + ".bak";
-
-		std::error_code errorCode;
-		if (path.has_parent_path())
-		{
-			std::filesystem::create_directories(path.parent_path(), errorCode);
-		}
-
-		// Write to a temp file first so a crash mid-save never corrupts the real one
-		std::ofstream file(tmpPath, std::ios::binary);
-		if (!file.is_open()) { return false; }
-
-		file << SceneToJson(scene).dump(2);
-		file.close();
-
-		// Keep the previous save as a backup, then swap the new one in
-		std::filesystem::rename(path, bakPath, errorCode);
-		std::filesystem::rename(tmpPath, path, errorCode);
+		if (!WriteJsonAtomic(path, SceneToJson(scene))) { return false; }
 
 		std::cout << "[Save System] Saved Game: " << path.string() << "\n";
 		saveName = path.string();
@@ -222,27 +250,127 @@ namespace SaveSystem
 
 	bool LoadGame(const char* fileName, Scene& scene)
 	{
-		std::ifstream file(fileName, std::ios::binary);
-
-		if (!file.is_open())
-		{
-			std::cerr << "[Save System] Failed to open save file: " << fileName << "\n";
-			return false;
-		}
-
-		Json j = Json::parse(file, nullptr, false);
-		file.close();
-
-		if (j.is_discarded())
-		{
-			std::cerr << "[Save System] Save file is corrupted: " << fileName << "\n";
-			return false;
-		}
+		Json j;
+		if (!ReadJsonFromFile(fileName, j)) { return false; }
 
 		if (!ApplyJsonToScene(j, scene)) { return false; }
 
 		std::cout << "[Save System] Loaded Game: " << fileName << "\n";
 		saveName = fileName;
+		return true;
+	}
+
+	bool SaveWorld(Scene* scene)
+	{
+		if (scene == nullptr) { return false; }
+
+		// Check For Object Limit
+		if (scene->gameMap.gameObjects.size() > OBJECT_LIMIT) { return false; }
+
+		Json j;
+
+		// Primary Data
+		j["Version"] = VERSION;
+		j["WorldOnly"] = true;
+		j["IdCounter"] = scene->instanceHolder.idCounter;
+
+		// Map Data
+		j["Map"]["SizeX"] = scene->gameMap.size.x;
+		j["Map"]["SizeY"] = scene->gameMap.size.y;
+		j["Map"]["SizeZ"] = scene->gameMap.size.z;
+
+		// Game Objects (interactables live in their own section, projectiles are transient)
+		Json objects = Json::object();
+		for (auto& obj : scene->gameMap.gameObjects)
+		{
+			if (scene->interactables.contains(obj.id)) { continue; }
+			if (obj.type == OBJECT_PROJECTILE) { continue; }
+			objects[std::to_string(obj.id)] = obj.formatToJson();
+		}
+		j["Objects"] = objects;
+
+		// Interactables
+		Json interactables = Json::object();
+		for (auto& [id, interactable] : scene->interactables)
+		{
+			interactables[std::to_string(id)] = interactable->formatToJson();
+		}
+		j["Interactables"] = interactables;
+
+		if (!WriteJsonAtomic(WORLD_SAVE_PATH, j)) { return false; }
+
+		std::cout << "[Save System] Saved World: " << WORLD_SAVE_PATH << "\n";
+		return true;
+	}
+
+	bool LoadWorld(Scene& scene)
+	{
+		Json j;
+		if (!ReadJsonFromFile(WORLD_SAVE_PATH, j)) { return false; }
+
+		if (j.value("Version", 0) > VERSION)
+		{
+			std::cerr << "[Save System] World save version is newer than the game supports.\n";
+			return false;
+		}
+
+		// Reset world geometry only — entities and player are untouched
+		// (entities live in scene.entities, not gameMap.gameObjects; live projectiles are discarded)
+		scene.gameMap.gameObjects.clear();
+		scene.interactables.clear();
+
+		// Map Data
+		if (j.contains("Map"))
+		{
+			scene.gameMap.size.x = j["Map"].value("SizeX", scene.gameMap.size.x);
+			scene.gameMap.size.y = j["Map"].value("SizeY", scene.gameMap.size.y);
+			scene.gameMap.size.z = j["Map"].value("SizeZ", scene.gameMap.size.z);
+		}
+
+		// Load Game Objects
+		if (j.contains("Objects"))
+		{
+			for (auto& [key, objData] : j["Objects"].items())
+			{
+				GameObject obj = {};
+				obj.id = std::stoull(key);
+
+				if (!obj.loadFromJson(objData))
+				{
+					std::cerr << "[Save System] Failed to load GameObject with ID: " << key << "\n";
+					continue;
+				}
+
+				RestoreVisuals(obj);
+				scene.gameMap.gameObjects.push_back(obj);
+			}
+		}
+
+		// Load Interactables
+		if (j.contains("Interactables"))
+		{
+			for (auto& [key, intData] : j["Interactables"].items())
+			{
+				InteractableObject interactable(INTERACT_MINIGAME);
+				interactable.id = std::stoull(key);
+
+				if (!interactable.loadFromJson(intData))
+				{
+					std::cerr << "[Save System] Failed to load Interactable with ID: " << key << "\n";
+					continue;
+				}
+
+				RestoreVisuals(interactable);
+				scene.interactables[interactable.id] = std::make_unique<InteractableObject>(interactable);
+				scene.gameMap.gameObjects.push_back(interactable);
+			}
+		}
+
+		// Avoid id collisions with entities/objects created since the save
+		scene.instanceHolder.idCounter =
+			std::max(scene.instanceHolder.idCounter, j.value("IdCounter", scene.instanceHolder.idCounter));
+
+		std::cout << "[Save System] Loaded World: " << WORLD_SAVE_PATH << "\n";
 		return true;
 	}
 }

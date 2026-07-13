@@ -68,17 +68,10 @@ void DeveloperWindow::ShowObjectInspector()
 
 			ImGui::PushID(object);
 
-			const char* objectTypeString =
-				object->type == OBJECT_PLAYER ? "Player" :
-				object->type == OBJECT_ENTITY ? "Entity" :
-				object->type == OBJECT_ITEM ? "Item" :
-				object->type == OBJECT_PROJECTILE ? "Projectile" :
-				object->type == OBJECT_ENVIRONMENT ? "Environment" :
-				"Generic"
-				;
+			const char* objectTypeString = objectTypeToString(object->type);
 			std::string dataString = objectTypeString;
 			dataString += " Data";
-			ImGui::TextColored(ImVec4(255, 255, 0, 255), dataString.c_str());
+			ImGui::TextColored(ImVec4(255, 255, 0, 255), "%s", dataString.c_str());
 			ImGui::Text("Name: %s", object->name.c_str());
 			ImGui::Text("Type: %s", objectTypeString);
 			ImGui::Text("ID: %d", static_cast<int>(object->id));
@@ -131,16 +124,8 @@ void DeveloperWindow::ShowObjectInspector()
 				object->name = inputName;
 			}
 			ImGui::InputInt("Object Type: ", &object->type, 1, 1);
-			object->type = Clamp(object->type, 0, OBJECT_COUNT);
-			const char* objectTypeString =
-				object->type == OBJECT_PLAYER ? "Player" :
-				object->type == OBJECT_ENTITY ? "Entity" :
-				object->type == OBJECT_ITEM ? "Item" :
-				object->type == OBJECT_PROJECTILE ? "Projectile" :
-				object->type == OBJECT_ENVIRONMENT ? "Environment" :
-				"Generic"
-				;
-			ImGui::Text(objectTypeString);
+			object->type = Clamp(object->type, 0, OBJECT_COUNT - 1);
+			ImGui::Text("%s", objectTypeToString(object->type));
 
 			// Color ( float to unsigned char conversion )
 			{
@@ -160,9 +145,10 @@ void DeveloperWindow::ShowObjectInspector()
 
 			ImGui::TextColored(ImVec4(255, 255, 0, 255), "Texture");
 			ImGui::InputInt("Texture ID: ", &textureId);
+			textureId = Clamp(textureId, 0, static_cast<int>(AssetManager::getInstance().assets.size()) - 1);
 			object->texture = &AssetManager::getInstance().assets[textureId];
 
-			ImGui::Image((ImTextureRef)(intptr_t)&AssetManager::getInstance().assets[textureId].texture.id, ImVec2(64, 64));
+			ImGui::Image((ImTextureRef)(intptr_t)AssetManager::getInstance().assets[textureId].texture.id, ImVec2(64, 64));
 			// Load Texture based on texture ID
 			
 			ImGui::Spacing();

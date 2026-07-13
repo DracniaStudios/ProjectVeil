@@ -6,8 +6,10 @@
 void DeveloperWindow::update(Player* player)
 {
 	isActive =
+		isPlayerActive ||
 		isCameraActive ||
 		isInspectorActive ||
+		isEntityActive ||
 		isMiniGameActive ||
 		isGameDataActive||
 		isAssetActive

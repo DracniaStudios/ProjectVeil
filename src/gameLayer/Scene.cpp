@@ -1,6 +1,7 @@
 #include "Scene.h"
 
 #include <SceneManager.h>
+#include <WorldEditor.h>
 #include <AudioManager.h>
 
 #include <iterator>
@@ -229,6 +230,9 @@ void Scene_updateScene(float delta) {
 
 	// Developer Window
 	DeveloperWindow::getInstance().update(scene->player);
+
+	// World Editor
+	WorldEditor::getInstance().update(scene->player);
 }
 
 void Scene_drawScene2D() {
