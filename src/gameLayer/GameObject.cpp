@@ -35,7 +35,7 @@ GameObject::GameObject()
 	}
 
 	if (texture == nullptr) {
-		texture = &AssetManager::getInstance().frame;
+		texture = GetAssetPtrByName("frame");
 	}
 
 
@@ -57,9 +57,11 @@ void GameObject::onEnable()
 	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
 
 	if (texture == nullptr) {
-		texture = &AssetManager::getInstance().frame;
+		texture = GetAssetPtrByName("frame");
 	}
-	model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture->texture;
+	if (texture != nullptr) {
+		model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture->texture;
+	}
 
 	lifeTime = 0;
 	deathTime = 1;
