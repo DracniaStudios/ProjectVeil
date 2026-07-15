@@ -21,8 +21,8 @@ namespace SaveSystem
 	bool SaveWorld(Scene* scene);
 	bool LoadWorld(Scene& scene);
 
-	// Rebuild renderer data that cannot be serialized (model + texture binding)
-	void RestoreVisuals(GameObject& obj);
-
+	// Save Settings Data
+	//bool SaveSettings(const char* fileName);
+	//bool LoadSettings(const char* fileName);
 }
 #endif

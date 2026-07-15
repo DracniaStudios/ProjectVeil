@@ -34,6 +34,7 @@ bool update_game()
 	ClearBackground(WHITE);
 
 	// Update Input System
+	InputSystem::getInstance().Update();
 
 	/// Update and Draw Scene
 	SceneManager_update(&SceneManager::getInstance(), deltaTime);
@@ -48,7 +49,7 @@ void close_game()
 {
 	std::cout << "Close Game \n";
 	std::ofstream f(RESOURCES_PATH "debug.log");
-
+	SaveSystem::SaveGame("backup.json", SceneManager::getInstance().currentScene);
 	f << "\n CLOSED\n";
 	f.close();
 }

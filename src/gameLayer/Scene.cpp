@@ -158,8 +158,9 @@ void Scene_updateScene(float delta) {
 		if (shouldKill)
 		{
 			// Check If Item
-			//if (entity.second->type != OBJECT_ITEM) { continue; }
-			entity = scene->entities.erase(entity);
+			if (entity->second->type != OBJECT_ITEM) { continue; }
+			scene->gameMap.removeEntity(entity->second.get());
+			//entity = scene->entities.erase(entity);
 		}
 		else
 		{
@@ -297,12 +298,9 @@ void Scene::SetMiniGame(int value)
 			miniGame = MiniGame_SimonSays(player);
 			break;
 		case 4:
-			miniGame = MiniGame_TimedSimonSays(player);
-			break;
-		case 5:
 			miniGame = MiniGame_Maze(player);
 			break;
-		case 6:
+		case 5:
 			miniGame = MiniGame_RoShamBoo(player);
 			break;
 	}

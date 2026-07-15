@@ -34,12 +34,13 @@ struct GameObject
 	/// Debug Display
 	bool display3DModel = true;
 	bool displayDirection = false;
-	bool displayCollider = true;
+	bool displayCollider = false;
 	
 	/// Status
 	float lifeTime = 0;
 	float deathTime = 1;
 	float decayTime = 1;
+
 	// Lives on GameObject (not Entity) so projectiles stored by value in
 	// GameMap::gameObjects keep their damage after slicing to GameObject
 	float baseDamage = 1.0f;
@@ -56,10 +57,21 @@ struct GameObject
 	RigidBody3D rigidBody3D = {};
 
 	/// Renderer
+	// Assets are referenced by AssetManager name so they can be saved and
+	// reloaded; the raylib handles below are rebound from them at runtime
+	std::string modelName = "";   // empty = generated unit cube
+	std::string textureName = ""; // empty = material default
 	Model model = {};
+	bool ownsModel = false; // generated primitive (unloadable) vs shared AssetManager model
 	Mesh mesh = {};
-	Asset* texture = {};
+	Texture texture = {};
 	Color defaultColor = WHITE;
+
+	// Record the asset by name and rebind the runtime handle
+	void setModel(const std::string& assetName);
+	void setTexture(const std::string& assetName);
+	// Rebind model + texture handles from modelName/textureName
+	void loadVisuals();
 
 	// Audio
 	FMOD::Studio::EventInstance* soundInstance = nullptr;

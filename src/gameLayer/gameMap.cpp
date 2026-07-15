@@ -22,8 +22,8 @@ void GameMap::create(Vector3 size)
 	floor.rigidBody3D.scale = size;
 	floor.defaultColor = getRandomColor(rng);
 
-	floor.texture = GetAssetPtrByName("Gravel041");
-	floor.model = LoadModelFromMesh(GenMeshCube(size.x, 1, size.z));
+	// Named asset reference — bound in onEnable() and saved with the object
+	floor.textureName = "Gravel041";
 
 	saveObject(floor);
 

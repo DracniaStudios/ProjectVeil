@@ -13,18 +13,6 @@ namespace SaveSystem
 {
 	using Json = nlohmann::json;
 
-	// Rebuild renderer data that cannot be serialized (model + texture binding)
-	void RestoreVisuals(GameObject& obj)
-	{
-		Vector3 scale = obj.rigidBody3D.scale;
-		obj.model = LoadModelFromMesh(GenMeshCube(scale.x, scale.y, scale.z));
-
-		if (obj.texture != nullptr)
-		{
-			obj.model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = obj.texture->texture;
-		}
-	}
-
 	// Write json to a temp file first so a crash mid-save never corrupts the real one,
 	// keeping the previous save as a backup
 	static bool WriteJsonAtomic(const std::filesystem::path& path, const Json& j)
@@ -170,7 +158,6 @@ namespace SaveSystem
 					continue;
 				}
 
-				RestoreVisuals(obj);
 				scene.gameMap.gameObjects.push_back(obj);
 			}
 		}
@@ -189,7 +176,6 @@ namespace SaveSystem
 					continue;
 				}
 
-				RestoreVisuals(*entity);
 				scene.entities[entity->id] = std::move(entity);
 			}
 		}
@@ -208,7 +194,6 @@ namespace SaveSystem
 					continue;
 				}
 
-				RestoreVisuals(interactable);
 				scene.interactables[interactable.id] = std::make_unique<InteractableObject>(interactable);
 				scene.gameMap.gameObjects.push_back(interactable);
 			}
@@ -240,7 +225,8 @@ namespace SaveSystem
 		// Check For Object Limit
 		if (scene->gameMap.gameObjects.size() > OBJECT_LIMIT) { return false; }
 
-		const std::filesystem::path path = fileName;
+		const std::string savePath = RESOURCES_PATH "../saves/";
+		const std::filesystem::path path = savePath + fileName;
 		if (!WriteJsonAtomic(path, SceneToJson(scene))) { return false; }
 
 		std::cout << "[Save System] Saved Game: " << path.string() << "\n";
@@ -251,10 +237,14 @@ namespace SaveSystem
 	bool LoadGame(const char* fileName, Scene& scene)
 	{
 		Json j;
+		
+		scene.gameMap.gameObjects.clear();
+		scene.entities.clear();
+		scene.instanceHolder.idCounter = 0;
 		if (!ReadJsonFromFile(fileName, j)) { return false; }
 
 		if (!ApplyJsonToScene(j, scene)) { return false; }
-
+		
 		std::cout << "[Save System] Loaded Game: " << fileName << "\n";
 		saveName = fileName;
 		return true;
@@ -318,6 +308,8 @@ namespace SaveSystem
 		// (entities live in scene.entities, not gameMap.gameObjects; live projectiles are discarded)
 		scene.gameMap.gameObjects.clear();
 		scene.interactables.clear();
+		scene.entities.clear();
+		scene.instanceHolder.idCounter = 0;
 
 		// Map Data
 		if (j.contains("Map"))
@@ -341,7 +333,6 @@ namespace SaveSystem
 					continue;
 				}
 
-				RestoreVisuals(obj);
 				scene.gameMap.gameObjects.push_back(obj);
 			}
 		}
@@ -360,7 +351,6 @@ namespace SaveSystem
 					continue;
 				}
 
-				RestoreVisuals(interactable);
 				scene.interactables[interactable.id] = std::make_unique<InteractableObject>(interactable);
 				scene.gameMap.gameObjects.push_back(interactable);
 			}

@@ -20,6 +20,7 @@ class WorldEditor
 	/** Selection State **/
 	std::uint64_t selectedObjectId = 0; // Id instead of pointer — survives gameObjects reallocation
 	int activeTextureIndex = -1; // Index into AssetManager::assets
+	int activeModelIndex = -1; // Index into AssetManager::assets
 
 	/** Placement State **/
 	GameObject stagingObject = {};
@@ -39,6 +40,7 @@ class WorldEditor
 	/** Helpers **/
 	GameObject* getSelectedObject();
 	Asset* getActiveTexture();
+	Asset* getActiveModel();
 public:
 	// Singleton Pattern Implementation
 	WorldEditor(const WorldEditor&) = delete;

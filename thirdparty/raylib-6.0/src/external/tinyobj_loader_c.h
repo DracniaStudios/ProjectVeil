@@ -128,7 +128,12 @@ extern void tinyobj_materials_free(tinyobj_material_t *materials,
 #define TINYOBJ_FREE free
 #endif
 
-#define TINYOBJ_MAX_FACES_PER_F_LINE (16)
+/* Raised from 16: Blender n-gon exports commonly exceed the stock limit,
+   overflowing the f[] parse buffer. AssetManager rejects .obj files whose
+   faces would still not fit. */
+#ifndef TINYOBJ_MAX_FACES_PER_F_LINE
+#define TINYOBJ_MAX_FACES_PER_F_LINE (64)
+#endif
 
 #define IS_SPACE(x) (((x) == ' ') || ((x) == '\t'))
 #define IS_DIGIT(x) ((unsigned int)((x) - '0') < (unsigned int)(10))

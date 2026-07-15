@@ -45,6 +45,7 @@ int main()
 	}
 
 	SetWindowFocused();
+	SetExitKey(KEY_NULL);
 	while (!WindowShouldClose())
 	{
 

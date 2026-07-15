@@ -3,10 +3,11 @@
 #define INPUT_SYSTEM_H
 
 #include <raylib.h>
+#include <cstdint>
 #include <vector>
 #include <string>
 
-typedef enum ActionType : uint8_t {
+enum ActionType : uint8_t {
 	NO_ACTION = 0,
 
 	// Move Actions
@@ -17,28 +18,28 @@ typedef enum ActionType : uint8_t {
 
 	ACTION_MOVE_CROUCH,
 	ACTION_MOVE_SPRINT,
-	
+
 	// Menu Actions
 	ACTION_UI_PAUSE,
-	
+
 	MAX_ACTION
 };
 
 struct InputAction {
-
-	InputAction();
-	InputAction(int id, int k, int b);
 	std::string name = "";
 	bool isEnabled = true;
-	int id = 0;
-	int key = 0;
-	int button = 0;
+	int id = NO_ACTION;
+	int key = KEY_NULL;
+	int button = -1; // -1 = no gamepad binding
 };
 
 class InputSystem
 {
 private:
 	InputSystem();
+
+	std::vector<int> pressedKeys; // Keys pressed this frame, in press order
+	std::vector<int> heldKeys;    // Keys currently held down
 public:
 	InputSystem(const InputSystem&) = delete;
 	InputSystem& operator=(const InputSystem&) = delete;
@@ -49,17 +50,27 @@ public:
 		static InputSystem instance;
 		return instance;
 	}
-	std::vector<InputAction> inputActions;
+	std::vector<InputAction> inputActions; // Indexed by ActionType
 	int gamepadIndex = 0;
 
-	// Functions
-	bool IsActionDown(int action) { return IsKeyDown(inputActions[action].key) || IsGamepadButtonDown(gamepadIndex, inputActions[action].button); }
-	bool IsActionPressed(int action) { return IsKeyPressed(inputActions[action].key) || IsGamepadButtonPressed(gamepadIndex, inputActions[action].button); }
-	bool IsActionReleased(int action) { return IsKeyReleased(inputActions[action].key) || IsGamepadButtonReleased(gamepadIndex, inputActions[action].button); }
+	// Call once per frame, before the scene update
+	void Update();
+
+	// Action Functions
+	bool IsActionDown(int action);
+	bool IsActionPressed(int action);
+	bool IsActionReleased(int action);
+
+	InputAction* GetAction(int action);
 
 	void SetDefaultActions(void);
 	void SetAction(int action, int key, int button);
-	void CreateAction(int action, int key, int button);
+	void CreateAction(int action, const std::string& name, int key, int button);
+
+	// Key Functions
+	const std::vector<int>& GetPressedKeys() const { return pressedKeys; } // Keys pressed this frame
+	const std::vector<int>& GetHeldKeys() const { return heldKeys; }       // Keys currently held down
+	int GetLastPressedKey() const { return pressedKeys.empty() ? KEY_NULL : pressedKeys.back(); } // KEY_NULL if none this frame
 };
 
 #endif

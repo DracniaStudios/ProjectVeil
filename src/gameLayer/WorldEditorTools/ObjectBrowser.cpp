@@ -1,7 +1,5 @@
 #include "WorldEditor.h"
 
-#include <SaveSystem.h>
-
 void WorldEditor::ShowObjectBrowser()
 {
 	auto scene = SceneManager::getInstance().currentScene;
@@ -56,21 +54,32 @@ void WorldEditor::ShowObjectBrowser()
 	{
 		object->rigidBody3D.Teleport(position);
 	}
+	// Scale is applied through the model transform each frame — no mesh regen needed
 	ImGui::InputFloat3("Scale: ", &object->rigidBody3D.scale.x);
-	if (ImGui::IsItemDeactivatedAfterEdit())
-	{
-		SaveSystem::RestoreVisuals(*object); // Regenerate the cube mesh at the new scale
-	}
 	ImGui::Spacing();
 
 	// Texture
 	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Texture");
 	ImGui::Image((ImTextureRef)(intptr_t)object->model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture.id, ImVec2(64, 64));
+	ImGui::Text("Texture: %s", object->textureName.empty() ? "None" : object->textureName.c_str());
 	Asset* activeTexture = getActiveTexture();
 	if (activeTexture != nullptr && ImGui::Button("Apply Active Texture"))
 	{
-		object->texture = activeTexture;
-		SaveSystem::RestoreVisuals(*object);
+		object->setTexture(activeTexture->name);
+	}
+	ImGui::Spacing();
+
+	// Model
+	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Model");
+	ImGui::Text("Model: %s", object->modelName.empty() ? "Cube" : object->modelName.c_str());
+	Asset* activeModel = getActiveModel();
+	if (activeModel != nullptr && ImGui::Button("Apply Active Model"))
+	{
+		object->setModel(activeModel->name);
+	}
+	if (!object->modelName.empty() && ImGui::Button("Reset To Cube"))
+	{
+		object->setModel("");
 	}
 	ImGui::Spacing();
 
@@ -88,9 +97,9 @@ void WorldEditor::ShowObjectBrowser()
 		GameObject copy = *object;
 		copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), Vector3(1, 0, 0)));
 
-		// saveObject may reallocate gameObjects — object is stale after this call
+		// saveObject may reallocate gameObjects — object is stale after this call.
+		// onEnable() rebinds visuals, giving the copy its own model instead of sharing meshes
 		GameObject* spawned = scene->gameMap.saveObject(copy);
-		SaveSystem::RestoreVisuals(*spawned); // Give the copy its own model instead of sharing meshes
 		selectedObjectId = spawned->id;
 		statusMessage = "Duplicated: " + spawned->name;
 	}

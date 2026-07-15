@@ -22,9 +22,8 @@ void DeveloperWindow::ShowMiniGameData(Player* player)
 			case 1: scene->miniGame = MiniGame_Crane(player);break;
 			case 2: scene->miniGame = MiniGame_Doctor(player);break;
 			case 3: scene->miniGame = MiniGame_SimonSays(player);break;
-			case 4: scene->miniGame = MiniGame_TimedSimonSays(player);break;
-			case 5: scene->miniGame = MiniGame_Maze(player);break;
-			case 6: scene->miniGame = MiniGame_RoShamBoo(player);break;
+			case 4: scene->miniGame = MiniGame_Maze(player);break;
+			case 5: scene->miniGame = MiniGame_RoShamBoo(player);break;
 			default: scene->miniGame = MiniGame_FlappyBird(player); break;
 		}
 	}

@@ -58,3 +58,10 @@ Asset* WorldEditor::getActiveTexture()
 	if (activeTextureIndex < 0 || activeTextureIndex >= static_cast<int>(assets.size())) { return nullptr; }
 	return &assets[activeTextureIndex];
 }
+
+Asset* WorldEditor::getActiveModel()
+{
+	auto& assets = AssetManager::getInstance().assets;
+	if (activeModelIndex < 0 || activeModelIndex >= static_cast<int>(assets.size())) { return nullptr; }
+	return &assets[activeModelIndex];
+}

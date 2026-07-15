@@ -1,10 +1,6 @@
 #include "GameObject.h"
 
-#include <asserts.h>
-#include <gameMap.h>
-#include <AssetManager.h>
 #include <SceneManager.h>
-#include <AudioManager.h>
 
 static Color colliderColor;
 
@@ -26,25 +22,84 @@ GameObject::GameObject()
 
 	rigidBody3D = {};
 
-	// Load Model else Cube. rigidBody3D.scale is still zero-initialized here
-	// (it defaults to One later), so building the cube from it produced a
-	// degenerate, invisible mesh — use a unit cube to match the default scale
+	// Fallback unit cube so the object renders before assets are bound.
+	// Scale is applied through model.transform in render3D, so the mesh
+	// itself never needs to be regenerated when the object is resized
 	if (model.meshCount == 0)
 	{
 		model = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
+		ownsModel = true;
 	}
-
-	if (texture == nullptr) {
-		texture = GetAssetPtrByName("frame");
-	}
-
 
 	// Set Initial Data
-	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
-	
+	rigidBody3D.collisionBox = GetMeshBoundingBox(model.meshes[0]);
+
 	lifeTime = 0;
 	deathTime = 1;
-	
+
+}
+
+/** Asset Binding **/
+
+void GameObject::loadVisuals()
+{
+	// Model: shared AssetManager handle when one is named, else a unit cube
+	Asset* modelAsset = modelName.empty() ? nullptr : GetAssetPtrByName(modelName, ASSET_MODEL);
+	if (modelAsset != nullptr && modelAsset->model.meshCount > 0)
+	{
+		model = modelAsset->model;
+		ownsModel = false;
+	}
+	else
+	{
+		if (!modelName.empty())
+		{
+			std::cerr << "Missing model asset '" << modelName << "' on " << name << " — using cube\n";
+		}
+		// Fresh cube per rebind: object copies share the previous handle
+		// (and its material), so it can be neither reused nor unloaded here
+		model = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
+		ownsModel = true;
+	}
+
+	// Texture: only applied to owned primitives — an asset model's materials
+	// are shared by every object using it, and it brings its own .mtl textures
+	Asset* textureAsset = textureName.empty() ? nullptr : GetAssetPtrByName(textureName, ASSET_TEXTURE);
+	if (textureAsset != nullptr)
+	{
+		texture = textureAsset->texture;
+	}
+	else if (!textureName.empty())
+	{
+		std::cerr << "Missing texture asset '" << textureName << "' on " << name << "\n";
+	}
+
+	if (ownsModel && texture.id != 0)
+	{
+		model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
+	}
+}
+
+void GameObject::setModel(const std::string& assetName)
+{
+	if (modelName == assetName && model.meshCount > 0) { return; }
+	modelName = assetName;
+	loadVisuals();
+}
+
+void GameObject::setTexture(const std::string& assetName)
+{
+	textureName = assetName;
+
+	// Bind without regenerating the model — safe to call every frame
+	if (Asset* asset = GetAssetPtrByName(assetName, ASSET_TEXTURE))
+	{
+		texture = asset->texture;
+		if (ownsModel && texture.id != 0)
+		{
+			model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
+		}
+	}
 }
 
 /** Lifecycle **/
@@ -53,15 +108,12 @@ void GameObject::onEnable()
 {
 	isEnabled = true;
 
-	// Set Initial Data
-	rigidBody3D.collisionBox = GetMeshBoundingBox(mesh);
+	loadVisuals();
 
-	if (texture == nullptr) {
-		texture = GetAssetPtrByName("frame");
-	}
-	if (texture != nullptr) {
-		model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture->texture;
-	}
+	// Set Initial Data (Update() refreshes this from translation/scale)
+	rigidBody3D.collisionBox = mesh.vertexCount > 0
+		? GetMeshBoundingBox(mesh)
+		: GetMeshBoundingBox(model.meshes[0]);
 
 	lifeTime = 0;
 	deathTime = 1;
@@ -70,9 +122,20 @@ void GameObject::onEnable()
 void GameObject::onDisable()
 {
 	isEnabled = false;
-	UnloadTexture(model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture);
-	UnloadMesh(mesh);
-	UnloadModel(model);
+
+	// Textures and named models belong to the AssetManager — only unload
+	// primitives this object generated for itself
+	if (ownsModel && model.meshCount > 0)
+	{
+		UnloadModel(model);
+		model = {};
+		ownsModel = false;
+	}
+	if (mesh.vertexCount > 0)
+	{
+		UnloadMesh(mesh);
+		mesh = {};
+	}
 }
 
 
@@ -87,8 +150,12 @@ void GameObject::render3D()
 	if (displayCollider) { DrawBoundingBox(rigidBody3D.collisionBox, colliderColor); }
 
 	if (display3DModel) {
-		// Apply the body's orientation so spinning/tumbling objects render rotated
-		model.transform = QuaternionToMatrix(rigidBody3D.rotation);
+		// Bake scale + orientation into the transform — meshes stay unit-sized,
+		// so both generated cubes and .obj models follow rigidBody3D.scale
+		Vector3 scale = rigidBody3D.scale;
+		model.transform = MatrixMultiply(
+			MatrixScale(scale.x, scale.y, scale.z),
+			QuaternionToMatrix(rigidBody3D.rotation));
 		DrawModel(model, rigidBody3D.translation, 1.0f, defaultColor);
 		DrawModelWires(model, rigidBody3D.translation, 1.0f, BLACK);
 	}
@@ -177,43 +244,6 @@ FMOD_3D_ATTRIBUTES GameObject::get3DAttributes() const
 
 
 //****** Interactable Objects *************//
-#pragma region Interactable Object
-InteractableObject::InteractableObject(const InteractionType interact, int value)
-{
-	interactType = interact;
-	interactValue = value;
-}
-
-void InteractableObject::onInteract()
-{
-	auto rng = std::ranlux24_base(std::random_device{}());
-	defaultColor = getRandomColor(rng);
-
-	//AudioManager::getInstance().Play("anime_wow");
-	AudioManager::getInstance().PlayEvent3D(defaultSound, *this);
-	soundInstance->setParameterByName(soundParameterName.c_str(), soundParameterValue);
-
-	if (interactType == INTERACT_MINIGAME)
-	{
-		SceneManager::getInstance().currentScene->SetMiniGame(interactValue);
-		return;
-	}
-	
-	if (interactType == INTERACT_OBJECT)
-	{
-		// Activate Specific Object ID
-		return;
-	}
-	
-	if (interactType == INTERACT_ITEM)
-	{
-		// Give Player Specific Item
-		return;
-	}
-}
-#pragma endregion
-
-
 
 /** GameObject Save Data **/
 #pragma region Save GameObject
@@ -233,10 +263,9 @@ void GameObject::addCommonToJson(Json& j)
 
 	// Renderer
 	j["Color"] = { defaultColor.r, defaultColor.g, defaultColor.b, defaultColor.a };
-	if (texture != nullptr && !texture->name.empty())
-	{
-		j["Texture"] = texture->name;
-	}
+
+	if (!textureName.empty()) { j["Texture"] = textureName; }
+	if (!modelName.empty()) { j["Model"] = modelName; }
 }
 
 bool GameObject::loadCommonFromJson(Json& j)
@@ -287,11 +316,16 @@ bool GameObject::loadCommonFromJson(Json& j)
 
 	if (j.contains("Texture") && j["Texture"].is_string())
 	{
-		if (auto asset = GetAssetPtrByName(j["Texture"].get<std::string>()))
-		{
-			texture = asset;
-		}
+		textureName = j["Texture"].get<std::string>();
 	}
+
+	if (j.contains("Model") && j["Model"].is_string())
+	{
+		modelName = j["Model"].get<std::string>();
+	}
+
+	// Rebind the runtime handles from the loaded asset names
+	loadVisuals();
 
 	return true;
 }

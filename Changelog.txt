@@ -12,16 +12,38 @@
 
 [ Added ]
 
-- Added InputAction struct to Input System.
-- Added ActionType to Input System.
+- GameObjects reference their model and texture by asset name (modelName/textureName) and save/load both with the world.
+- GameObject::setModel / setTexture / loadVisuals for binding assets at runtime.
+
+- Object Browser can apply the active model to an object or reset it to a cube.
+- Placement Panel can clear the active texture/model selection.
+- Texture Palette shows model assets as labeled buttons and highlights the active model.
+
+- Calabases audio track.
+- Rubix Cube Object.
+
 
 [ Updated ]
 
-- Updated InputSystem to hold new InputActions based on ID, Key, and Button values.
-- Updated InputSystem to return boolean based on InputAction activations.
+- Asset Manager classifies files by extension: models (.obj/.glb/.gltf) and textures (.png/.jpg/.jpeg/.bmp/.tga); companion files (.mtl) are skipped instead of registered as empty assets.
+- Object scale is applied through the model transform, so .obj models scale with the object and scale edits no longer rebuild meshes.
+- Loading a save rebinds each object's model and texture from the Asset Manager.
+- Closing the program automatically saves a backup.
+- Playing sounds automatically transfer to bank checks if names don't match.
+- Input System creates ACtions based of of name, action, key, and gamepad.
+- Input system scans all keys to see what is triggered.
+- Interactable object is moved to a custom script.
+- World Editor now has selectable Models.
 
 [ Fixed ]
 
-
+- .obj models failed to load because their .mtl sibling claimed the asset name first.
+- Spawning from the Placement Panel crashed when no texture was selected.
+- Disabling an object unloaded textures still owned by the Asset Manager.
+- Loading scenes didn't clear entities or reset IDHolder counter.
 
 [ Removed ]
+
+- SaveSystem::RestoreVisuals (objects rebuild their own visuals on load).
+- GameObject::usedAssets / modelPath / texturePath.
+- MiniGame: Timed Simin Says.

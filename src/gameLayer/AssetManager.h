@@ -6,10 +6,20 @@
 #include <string>
 #include <vector>
 
+enum AssetType {
+	ASSET_NONE,
+	ASSET_TEXTURE,
+	ASSET_MODEL,
+};
+
 struct Asset {
+	unsigned int assetID = 0;
 	std::string name = "";
 	std::string path = "";
+	AssetType type = ASSET_NONE;
+
 	Texture2D texture = {};
+	Model model = {};
 };
 
 class AssetManager
@@ -33,11 +43,9 @@ public:
 	std::vector<Asset> assets;
 	void loadAll();
 
-	// Loads every supported texture file found under RESOURCES_PATH/folder
+	// Loads every supported texture/model file found under RESOURCES_PATH/folder
 	void loadFolder(const char* folder, bool recursive);
 };
-
-#include <iostream>
 
 // Pointer is valid until the asset list is modified — only look up after loadAll()
 inline Asset* GetAssetPtrByName(const std::string& name)
@@ -52,17 +60,18 @@ inline Asset* GetAssetPtrByName(const std::string& name)
 	return nullptr;
 };
 
-inline Asset GetAssetByName(const std::string& name)
+// Type-aware lookup — a model and a texture may legally share a name
+// (e.g. "Crate" the .obj and "Crate" the .png)
+inline Asset* GetAssetPtrByName(const std::string& name, AssetType type)
 {
-	for (const auto& asset : AssetManager::getInstance().assets)
+	for (auto& asset : AssetManager::getInstance().assets)
 	{
-		if (asset.name == name)
+		if (asset.type == type && !asset.name.empty() && name == asset.name)
 		{
-			std::cout << asset.path << "\n";
-			return asset;
+			return &asset;
 		}
 	}
-	return Asset();
+	return nullptr;
 };
 
 #endif

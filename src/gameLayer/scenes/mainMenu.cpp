@@ -43,7 +43,8 @@ Scene* Scene_MainMenuConstruct()
 	scene->player->onEnable();
 	scene->gameMap.saveEntity(*scene->player);
 
-	SaveSystem::LoadGame(RESOURCES_PATH "../saves/mainMenu.json", *scene);
+	//SaveSystem::LoadGame(RESOURCES_PATH "../saves/mainMenu.json", *scene);
+	SaveSystem::LoadGame(RESOURCES_PATH "../saves/world.json", *scene);
 
 	auto BGM = InteractableObject(INTERACT_OBJECT, 0);
 	BGM.name = "BGM";
@@ -52,6 +53,18 @@ Scene* Scene_MainMenuConstruct()
 	BGM.rigidBody3D.Teleport(Vector3(0, 2, 0));
 	scene->gameMap.saveInteractable(BGM);
 	BGM.onInteract();
+
+	for (int i = 0; i < 6; i++) {
+		InteractableObject newMiniGame = InteractableObject(INTERACT_MINIGAME, i);
+		newMiniGame.name = "MiniGame Player";
+		newMiniGame.defaultColor = WHITE;
+		newMiniGame.defaultSound = "anime_wow";
+		newMiniGame.texture = GetAssetPtrByName("Chip001")->texture;
+		newMiniGame.rigidBody3D.Teleport(Vector3(0, 5, -15 + (i * 5)));
+		newMiniGame.rigidBody3D.scale = Vector3Ones;
+		newMiniGame.rigidBody3D.isStatic = true;
+		scene->gameMap.saveInteractable(newMiniGame);
+	}
 
 	return scene;
 }

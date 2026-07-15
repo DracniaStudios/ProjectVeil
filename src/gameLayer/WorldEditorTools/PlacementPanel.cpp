@@ -1,7 +1,5 @@
 #include "WorldEditor.h"
 
-#include <SaveSystem.h>
-
 void WorldEditor::ShowPlacementPanel()
 {
 	auto scene = SceneManager::getInstance().currentScene;
@@ -42,10 +40,25 @@ void WorldEditor::ShowPlacementPanel()
 	{
 		ImGui::Text("Active: %s", activeTexture->name.c_str());
 		ImGui::Image((ImTextureRef)(intptr_t)activeTexture->texture.id, ImVec2(64, 64));
+		if (ImGui::Button("Clear Texture")) { activeTextureIndex = -1; }
 	}
 	else
 	{
 		ImGui::Text("No texture selected (open the Texture Palette)");
+	}
+	ImGui::Spacing();
+
+	// Active Model from the Palette
+	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Model");
+	Asset* activeModel = getActiveModel();
+	if (activeModel != nullptr)
+	{
+		ImGui::Text("Active: %s", activeModel->name.c_str());
+		if (ImGui::Button("Clear Model")) { activeModelIndex = -1; }
+	}
+	else
+	{
+		ImGui::Text("No model selected (open the Texture Palette)");
 	}
 	ImGui::Spacing();
 
@@ -62,12 +75,15 @@ void WorldEditor::ShowPlacementPanel()
 	auto spawnAt = [&](Vector3 position)
 		{
 			GameObject object = stagingObject;
-			object.texture = getActiveTexture();
+
+			// Record assets by name — saveObject() binds them via onEnable()
+			if (Asset* texture = getActiveTexture()) { object.textureName = texture->name; }
+			if (Asset* model = getActiveModel()) { object.modelName = model->name; }
+
 			object.rigidBody3D.translation = position;
 			object.rigidBody3D.Teleport(position);
 
 			GameObject* spawned = scene->gameMap.saveObject(object);
-			SaveSystem::RestoreVisuals(*spawned);
 			selectedObjectId = spawned->id;
 			statusMessage = "Spawned: " + spawned->name;
 		};

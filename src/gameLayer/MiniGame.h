@@ -9,7 +9,6 @@
 
 #include <randomStuff.h>
 
-
 struct Scene;
 struct Player;
 
@@ -48,11 +47,9 @@ MiniGame* MiniGame_Crane(Player* player);
 MiniGame* MiniGame_Doctor(Player* player);
 #define MINI_GAME_SIMON_SAYS_ID = 3
 MiniGame* MiniGame_SimonSays(Player* player);
-#define MINI_GAME_TIMED_SIMON_SAYS_ID = 4
-MiniGame* MiniGame_TimedSimonSays(Player* player);
-#define MINI_GAME_MAZE_ID = 5
+#define MINI_GAME_MAZE_ID = 4
 MiniGame* MiniGame_Maze(Player* player);
-#define MINI_GAME_RO_SHAM_BOO_ID = 6
+#define MINI_GAME_RO_SHAM_BOO_ID = 5
 MiniGame* MiniGame_RoShamBoo(Player* player);// Rock Paper Scissors
 
 

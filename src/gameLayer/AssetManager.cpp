@@ -3,18 +3,64 @@
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <sstream>
 
 namespace fs = std::filesystem;
 
-// Texture file types picked up when scanning a folder
-static bool isTextureFile(const fs::path& path)
+static std::string lowerExtension(const fs::path& path)
 {
 	std::string ext = path.extension().string();
 	std::transform(ext.begin(), ext.end(), ext.begin(),
 		[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+	return ext;
+}
 
+// Texture file types picked up when scanning a folder
+static bool isTextureFile(const fs::path& path)
+{
+	const std::string ext = lowerExtension(path);
 	return ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp" || ext == ".tga";
+}
+
+// Object/model file types picked up when scanning a folder.
+// Companion files (.mtl materials, textures referenced by them) are loaded
+// by raylib as part of LoadModel and must not become assets of their own.
+static bool isModelFile(const fs::path& path)
+{
+	const std::string ext = lowerExtension(path);
+	return ext == ".obj" || ext == ".glb" || ext == ".gltf";
+}
+
+// raylib's tinyobj triangulates each face into a fixed 64-index buffer
+// (TINYOBJ_MAX_FACES_PER_F_LINE) and overflows the stack past it — reject
+// .obj files with bigger faces instead of crashing (re-export triangulated)
+static constexpr int MAX_OBJ_FACE_VERTS = 21; // 3 * 21 stays under the 64-index buffer
+
+static bool objFacesFitLoader(const fs::path& path)
+{
+	std::ifstream file(path);
+	if (!file.is_open()) { return false; }
+
+	std::string line;
+	while (std::getline(file, line))
+	{
+		if (line.size() < 2 || line[0] != 'f' || (line[1] != ' ' && line[1] != '\t')) { continue; }
+
+		std::istringstream tokens(line);
+		std::string token;
+		int vertexCount = -1; // first token is the "f" keyword
+		while (tokens >> token) { vertexCount++; }
+
+		if (vertexCount > MAX_OBJ_FACE_VERTS)
+		{
+			std::cerr << "Model has a face with " << vertexCount << " vertices (max "
+				<< MAX_OBJ_FACE_VERTS << "): " << path.string() << " — re-export triangulated\n";
+			return false;
+		}
+	}
+	return true;
 }
 
 // Material maps (AmbientCG naming) are named after their folder:
@@ -49,33 +95,68 @@ void AssetManager::loadFolder(const char* folder, bool recursive)
 	{
 		for (const auto& entry : fs::recursive_directory_iterator(root, errorCode))
 		{
-			if (entry.is_regular_file() && isTextureFile(entry.path())) { files.push_back(entry.path()); }
+			if (entry.is_regular_file()) { files.push_back(entry.path()); }
 		}
 	}
 	else
 	{
 		for (const auto& entry : fs::directory_iterator(root, errorCode))
 		{
-			if (entry.is_regular_file() && isTextureFile(entry.path())) { files.push_back(entry.path()); }
+			if (entry.is_regular_file()) { files.push_back(entry.path()); }
 		}
 	}
 	std::sort(files.begin(), files.end());
 
+
 	for (const auto& file : files)
 	{
+		const AssetType type =
+			isModelFile(file) ? ASSET_MODEL :
+			isTextureFile(file) ? ASSET_TEXTURE :
+			ASSET_NONE;
+
+		// Unsupported files (.mtl and friends) are companions, not assets
+		if (type == ASSET_NONE) { continue; }
+
 		Asset asset;
 		asset.name = assetNameFor(file);
 		asset.path = file.string();
+		asset.type = type;
 
-		if (GetAssetPtrByName(asset.name) != nullptr)
+		if (GetAssetPtrByName(asset.name, asset.type) != nullptr)
 		{
 			std::cerr << "Duplicate asset name '" << asset.name << "' from " << asset.path << " — skipped\n";
 			continue;
 		}
 
-		asset.texture = LoadTexture(asset.path.c_str());
-		std::cout << asset.path << "\n";
+		
+		if (type == ASSET_MODEL)
+		{
+			if (lowerExtension(file) == ".obj" && !objFacesFitLoader(file)) { continue; }
 
+			std::cout << "Load Object: " << asset.path << "\n";
+			asset.model = LoadModel(asset.path.c_str());
+
+			if (asset.model.meshCount == 0)
+			{
+				std::cerr << "Failed to load model: " << asset.path << "\n";
+				continue;
+			}
+		}
+
+		if (type == ASSET_TEXTURE)
+		{
+			std::cout << "Load Texture: " << asset.path << "\n";
+			asset.texture = LoadTexture(asset.path.c_str());
+
+			if (asset.texture.id == 0)
+			{
+				std::cerr << "Failed to load texture: " << asset.path << "\n";
+				continue;
+			}
+		}
+		
+		asset.assetID = static_cast<unsigned int>(assets.size());
 		assets.push_back(asset);
 	}
 }
@@ -87,4 +168,8 @@ void AssetManager::loadAll()
 
 	/// Blocks
 	loadFolder("blocks", true);
+
+	// Models
+	loadFolder("models", true);
+
 }

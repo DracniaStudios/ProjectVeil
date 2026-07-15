@@ -19,12 +19,17 @@ void WorldEditor::ShowTexturePalette()
 	{
 		ImGui::PushID(i);
 
-		bool isSelected = (i == activeTextureIndex);
+		bool isSelected = (i == activeTextureIndex) || (i == activeModelIndex);
 		if (isSelected) { ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f)); }
 
-		if (ImGui::ImageButton("##texture", (ImTextureRef)(intptr_t)assets[i].texture.id, ImVec2(thumbSize, thumbSize)))
+		// Models have no thumbnail texture — show a labeled button instead
+		bool clicked = assets[i].type == ASSET_MODEL
+			? ImGui::Button(assets[i].name.c_str(), ImVec2(thumbSize, thumbSize))
+			: ImGui::ImageButton("##texture", (ImTextureRef)(intptr_t)assets[i].texture.id, ImVec2(thumbSize, thumbSize));
+		if (clicked)
 		{
-			activeTextureIndex = i;
+			if (assets[i].type == ASSET_TEXTURE) activeTextureIndex = i;
+			if (assets[i].type == ASSET_MODEL) activeModelIndex = i;
 		}
 
 		if (isSelected) { ImGui::PopStyleColor(); }

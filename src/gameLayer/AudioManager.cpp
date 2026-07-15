@@ -181,6 +181,7 @@ bool AudioManager::Play(const std::string& name, float volume)
 	if (it == sounds.end())
 	{
 		std::cout << "[AudioManager] No sound loaded with name \"" << name << "\"\n";
+		PlayEvent(name);
 		return false;
 	}
 
@@ -202,6 +203,7 @@ bool AudioManager::Play3D(const std::string& name, GameObject& object, float vol
 	if (it == sounds.end())
 	{
 		std::cout << "[AudioManager] No sound loaded with name \"" << name << "\"\n";
+		PlayEvent3D(name, object);
 		return false;
 	}
 

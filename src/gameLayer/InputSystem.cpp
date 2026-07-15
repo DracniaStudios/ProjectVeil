@@ -1,47 +1,81 @@
 #include "InputSystem.h"
 
+#include <algorithm>
 #include <iostream>
 
-InputAction::InputAction() {
-	InputSystem::getInstance().inputActions.push_back(*this);
-}
-
-InputAction::InputAction(int id, int k, int b) {
-	this->id = id;
-	key = k;
-	button = b;
-	InputSystem::getInstance().inputActions.push_back(*this);
-}
-
 InputSystem::InputSystem() {
+	inputActions.resize(MAX_ACTION); // One slot per ActionType, indexed by action id
+
 	// Load From File else Set Default
 	SetDefaultActions();
 }
 
-void InputSystem::SetAction(int action, int key, int button) {
-	if (auto input = &inputActions[action]) {
-		input->key = key;
-		input->button = button;
+void InputSystem::Update() {
+	pressedKeys.clear();
+
+	// Drain raylib's key queue to get every key pressed this frame
+	for (int key = GetKeyPressed(); key != KEY_NULL; key = GetKeyPressed()) {
+		pressedKeys.push_back(key);
+		if (std::find(heldKeys.begin(), heldKeys.end(), key) == heldKeys.end()) {
+			heldKeys.push_back(key);
+		}
 	}
-	else { CreateAction(action, key, button); }
+
+	std::erase_if(heldKeys, [](int key) { return !IsKeyDown(key); });
 }
 
-void InputSystem::CreateAction(int action, int key, int button) {
-	if (inputActions[action].id == action) { std::cout << "Existing Action: " << action << "\n"; return; }
-	InputAction newAction(action, key, button);
+InputAction* InputSystem::GetAction(int action) {
+	if (action <= NO_ACTION || action >= MAX_ACTION) { return nullptr; }
+	return &inputActions[action];
+}
+
+bool InputSystem::IsActionDown(int action) {
+	const auto input = GetAction(action);
+	if (!input || !input->isEnabled) { return false; }
+	return IsKeyDown(input->key) || (input->button >= 0 && IsGamepadButtonDown(gamepadIndex, input->button));
+}
+
+bool InputSystem::IsActionPressed(int action) {
+	const auto input = GetAction(action);
+	if (!input || !input->isEnabled) { return false; }
+	return IsKeyPressed(input->key) || (input->button >= 0 && IsGamepadButtonPressed(gamepadIndex, input->button));
+}
+
+bool InputSystem::IsActionReleased(int action) {
+	const auto input = GetAction(action);
+	if (!input || !input->isEnabled) { return false; }
+	return IsKeyReleased(input->key) || (input->button >= 0 && IsGamepadButtonReleased(gamepadIndex, input->button));
+}
+
+void InputSystem::SetAction(int action, int key, int button) {
+	const auto input = GetAction(action);
+	if (!input) { std::cout << "Unknown Action: " << action << "\n"; return; }
+	input->key = key;
+	input->button = button;
+}
+
+void InputSystem::CreateAction(int action, const std::string& name, int key, int button) {
+	const auto input = GetAction(action);
+	if (!input) { std::cout << "Invalid Action: " << action << "\n"; return; }
+	if (input->id != NO_ACTION) { std::cout << "Existing Action: " << input->name << "\n"; return; }
+
+	input->id = action;
+	input->name = name;
+	input->key = key;
+	input->button = button;
 }
 
 void InputSystem::SetDefaultActions() {
 
 	// Move Action
-	CreateAction(ACTION_MOVE_FORWARD, KEY_W, GAMEPAD_AXIS_LEFT_Y);
-	CreateAction(ACTION_MOVE_BACKWARD, KEY_S, GAMEPAD_AXIS_LEFT_Y);
-	CreateAction(ACTION_MOVE_RIGHT, KEY_D, GAMEPAD_AXIS_LEFT_X);
-	CreateAction(ACTION_MOVE_LEFT, KEY_A, GAMEPAD_AXIS_LEFT_X);
-	CreateAction(ACTION_MOVE_CROUCH, KEY_LEFT_CONTROL , GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
-	CreateAction(ACTION_MOVE_SPRINT, KEY_LEFT_SHIFT , GAMEPAD_AXIS_RIGHT_TRIGGER);
-	
+	CreateAction(ACTION_MOVE_FORWARD, "Move Forward", KEY_W, GAMEPAD_BUTTON_LEFT_FACE_UP);
+	CreateAction(ACTION_MOVE_BACKWARD, "Move Backward", KEY_S, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
+	CreateAction(ACTION_MOVE_RIGHT, "Move Right", KEY_D, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
+	CreateAction(ACTION_MOVE_LEFT, "Move Left", KEY_A, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
+	CreateAction(ACTION_MOVE_CROUCH, "Crouch", KEY_LEFT_CONTROL, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
+	CreateAction(ACTION_MOVE_SPRINT, "Sprint", KEY_LEFT_SHIFT, GAMEPAD_BUTTON_LEFT_THUMB);
+
 	// UI Action
-	CreateAction(ACTION_UI_PAUSE, KEY_TAB , GAMEPAD_BUTTON_MIDDLE_RIGHT);
-	
+	CreateAction(ACTION_UI_PAUSE, "Pause", KEY_TAB, GAMEPAD_BUTTON_MIDDLE_RIGHT);
+
 }

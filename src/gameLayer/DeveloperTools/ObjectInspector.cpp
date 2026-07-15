@@ -41,10 +41,9 @@ void DisplayObject(GameObject& object)
 	// Physics
 
 	// Renderer
-	// Model Data
-	// Mesh Data
-	ImGui::Text("Texture: ", &object.texture->name);
-	ImGui::Text("Texture ID: ", static_cast<int>(object.texture->texture.id));
+	ImGui::Text("Model: %s", object.modelName.empty() ? "Cube" : object.modelName.c_str());
+	ImGui::Text("Texture: %s", object.textureName.empty() ? "None" : object.textureName.c_str());
+	ImGui::Text("Texture ID: %u", object.texture.id);
 
 	
 	
@@ -144,11 +143,17 @@ void DeveloperWindow::ShowObjectInspector()
 			ImGui::InputFloat3("Scale: ", &object->rigidBody3D.scale.x);
 
 			ImGui::TextColored(ImVec4(255, 255, 0, 255), "Texture");
-			ImGui::InputInt("Texture ID: ", &textureId);
-			textureId = Clamp(textureId, 0, static_cast<int>(AssetManager::getInstance().assets.size()) - 1);
-			object->texture = &AssetManager::getInstance().assets[textureId];
+			auto& assets = AssetManager::getInstance().assets;
+			if (!assets.empty())
+			{
+				ImGui::InputInt("Texture ID: ", &textureId);
+				textureId = Clamp(textureId, 0, static_cast<int>(assets.size()) - 1);
 
-			ImGui::Image((ImTextureRef)(intptr_t)AssetManager::getInstance().assets[textureId].texture.id, ImVec2(64, 64));
+				// setTexture records the asset name so the choice survives save/load
+				if (assets[textureId].type == ASSET_TEXTURE) { object->setTexture(assets[textureId].name); }
+
+				ImGui::Image((ImTextureRef)(intptr_t)assets[textureId].texture.id, ImVec2(64, 64));
+			}
 			// Load Texture based on texture ID
 			
 			ImGui::Spacing();
