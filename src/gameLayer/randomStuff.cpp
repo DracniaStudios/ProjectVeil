@@ -5,6 +5,7 @@ float getRandomFloat(std::ranlux24_base& rng, float min, float max)
 	std::uniform_real_distribution<> dis(min, max);
 	return dis(rng);
 }
+
 int getRandomInt(std::ranlux24_base& rng, int min, int max)
 {
 	if (min > max)
@@ -19,10 +20,21 @@ int getRandomInt(std::ranlux24_base& rng, int min, int max)
 	}
 
 }
+
 bool getRandomChance(std::ranlux24_base& rng, float chance)
 {
 	float dice = getRandomFloat(rng, 0.0f, 1.0f);
 	return dice <= chance;
+}
+
+Vector3 getRandomVector3(std::ranlux24_base& rng, Vector3 min, Vector3 max) {
+
+	Vector3 newVector{
+		getRandomFloat(rng, min.x, max.x),
+		getRandomFloat(rng, min.y, max.y),
+		getRandomFloat(rng, min.z, max.z),
+	};
+	return newVector;
 }
 
 Rarity GetRandomRarity(Rarity minRarity, Rarity maxRarity)

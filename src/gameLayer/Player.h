@@ -4,10 +4,16 @@
 
 #include <raylib.h>
 #include <Entity.h>
+#include <random>
 
 struct PlayerCamera
 {
 	Vector3 forward = {};
+	Vector3 back = {};
+	Vector3 right = {};
+	Vector3 left = {};
+	Vector3 up = {};
+	Vector3 down = {};
 	Vector3 offset = {};
 	Vector3 position = {};
 	Vector2 sensitivity = Vector2{ 0.01f, 0.01f };
@@ -26,9 +32,12 @@ struct Player : Entity
 	RigidBody2D rigidBody2D = {};
 	Vector2 moveDirection = {};
 	PlayerCamera camera = {};
+	GameObject* artifact = {};
+	int artifactMode = 0;
 
 	// Flags
 	bool isCrouching = false;
+	bool isSprinting = false;
 
 	// Render And Update
 	void render2D() override;
@@ -45,11 +54,15 @@ struct Player : Entity
 	FMOD_3D_ATTRIBUTES getListener();
 
 	// Status Functions
+	std::ranlux24_base rng;
 
 	// Combat Functions
-	static void Fire();
+	void Fire();
 	void FireLaser();
-	static void Interact();
+	void Interact();
+
+private:
+	
 };
 
 #endif

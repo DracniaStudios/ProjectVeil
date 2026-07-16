@@ -27,6 +27,8 @@ int getRandomInt(std::ranlux24_base& rng, int min = -10, int max = 10);
 // Gets a Chance
 bool getRandomChance(std::ranlux24_base& rng, float chance);
 
+Vector3 getRandomVector3(std::ranlux24_base& rng, Vector3 min = Vector3(0.1f, 0.1f, 0.1f), Vector3 max = Vector3(1, 1, 1));
+
 Rarity GetRandomRarity(Rarity minRarity = COMMON, Rarity maxRarity = ETERNAL);
 
 // Returns a Color

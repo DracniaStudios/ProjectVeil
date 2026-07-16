@@ -56,6 +56,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 				auto& bodyA = objects[i];
 				auto& bodyB = objects[j];
 
+				if (bodyA.rigidBody3D.canCollide == false || bodyB.rigidBody3D.canCollide == false) { continue; }
 				if (bodyA.rigidBody3D.isStatic && bodyB.rigidBody3D.isStatic) { continue; }
 
 				if (CheckCollisionBoxes(bodyA.rigidBody3D.collisionBox, bodyB.rigidBody3D.collisionBox))
@@ -283,6 +284,9 @@ void Scene::SetMiniGame(int value)
 	player->rigidBody2D = {};
 	is2DActive = true;
 	isMiniActive = true;
+	
+	player->artifactMode = value;
+
 	switch (value)
 	{
 		case 0:
@@ -304,6 +308,8 @@ void Scene::SetMiniGame(int value)
 			miniGame = MiniGame_RoShamBoo(player);
 			break;
 	}
+
+
 	if (miniGame) {
 		lastMiniGamePlayed = value;
 	}

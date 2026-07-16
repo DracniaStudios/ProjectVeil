@@ -12,38 +12,26 @@
 
 [ Added ]
 
-- GameObjects reference their model and texture by asset name (modelName/textureName) and save/load both with the world.
-- GameObject::setModel / setTexture / loadVisuals for binding assets at runtime.
-
-- Object Browser can apply the active model to an object or reset it to a cube.
-- Placement Panel can clear the active texture/model selection.
-- Texture Palette shows model assets as labeled buttons and highlights the active model.
-
-- Calabases audio track.
-- Rubix Cube Object.
-
+- [InputSystem.h 21-26, InputSystem.cpp 78-87]  New Interact, Jump, Artifact Interact, and Artifact Select actions.
+- [Player.h, Player.cpp] New Artifact functions and rotation.
+	- Artifact can activate mini games while active.
+	- Artifact had a constant rotation on display.
+- [randomStuff.cpp, 30-39] New getRandomVector3 function.
 
 [ Updated ]
 
-- Asset Manager classifies files by extension: models (.obj/.glb/.gltf) and textures (.png/.jpg/.jpeg/.bmp/.tga); companion files (.mtl) are skipped instead of registered as empty assets.
-- Object scale is applied through the model transform, so .obj models scale with the object and scale edits no longer rebuild meshes.
-- Loading a save rebinds each object's model and texture from the Asset Manager.
-- Closing the program automatically saves a backup.
-- Playing sounds automatically transfer to bank checks if names don't match.
-- Input System creates ACtions based of of name, action, key, and gamepad.
-- Input system scans all keys to see what is triggered.
-- Interactable object is moved to a custom script.
-- World Editor now has selectable Models.
+- [Player.cpp 7-85] Updated Player to use InputSystem
+- [Player.cpp 144-325, PlayerActions.cpp, PlayerCamera.cpp] Refactored PlayerActions & PlayerCamera into seperate scripts.
+- [Player.h 12-16] PlayerCamera now returns direction values.
+- [PlayerInspector.cpp, 30-33, 40-42] Player Inspector displays artifact mode;
+- [Physics.h] RigidBody3D alters Velocity and Gravity with Set functions.
+- [RigidBody3D.cpp, 312] RigidBody3D Teleport now takes floats.
+- [Scene.cpp 59] RigidBody3D are checked to see if collidable.
+- [ObjectBrowser.cpp 57-84] RigidBody3D factors are now displayed.
+
 
 [ Fixed ]
 
-- .obj models failed to load because their .mtl sibling claimed the asset name first.
-- Spawning from the Placement Panel crashed when no texture was selected.
-- Disabling an object unloaded textures still owned by the Asset Manager.
-- Loading scenes didn't clear entities or reset IDHolder counter.
+- Artifact's center of mass was not in center.
 
 [ Removed ]
-
-- SaveSystem::RestoreVisuals (objects rebuild their own visuals on load).
-- GameObject::usedAssets / modelPath / texturePath.
-- MiniGame: Timed Simin Says.

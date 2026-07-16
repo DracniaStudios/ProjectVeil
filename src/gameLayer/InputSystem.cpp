@@ -67,13 +67,24 @@ void InputSystem::CreateAction(int action, const std::string& name, int key, int
 
 void InputSystem::SetDefaultActions() {
 
+	// Future Game Pad Errors
+	// Implement Axis Movement
+
 	// Move Action
 	CreateAction(ACTION_MOVE_FORWARD, "Move Forward", KEY_W, GAMEPAD_BUTTON_LEFT_FACE_UP);
 	CreateAction(ACTION_MOVE_BACKWARD, "Move Backward", KEY_S, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
 	CreateAction(ACTION_MOVE_RIGHT, "Move Right", KEY_D, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
 	CreateAction(ACTION_MOVE_LEFT, "Move Left", KEY_A, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
+
 	CreateAction(ACTION_MOVE_CROUCH, "Crouch", KEY_LEFT_CONTROL, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
 	CreateAction(ACTION_MOVE_SPRINT, "Sprint", KEY_LEFT_SHIFT, GAMEPAD_BUTTON_LEFT_THUMB);
+	CreateAction(ACTION_MOVE_INTERACT, "Interact", KEY_F, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
+	CreateAction(ACTION_MOVE_JUMP, "Jump", KEY_SPACE, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
+
+
+	CreateAction(ACTION_USE_ARTIFACT, "Artifact_Interact", KEY_F, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
+	CreateAction(ACTION_USE_ARTIFACT_RIGHT, "Artifact_Right", KEY_E, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
+	CreateAction(ACTION_USE_ARTIFACT_LEFT, "Artifact_Left", KEY_Q, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
 
 	// UI Action
 	CreateAction(ACTION_UI_PAUSE, "Pause", KEY_TAB, GAMEPAD_BUTTON_MIDDLE_RIGHT);

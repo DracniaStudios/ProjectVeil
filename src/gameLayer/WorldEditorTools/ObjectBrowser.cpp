@@ -54,8 +54,32 @@ void WorldEditor::ShowObjectBrowser()
 	{
 		object->rigidBody3D.Teleport(position);
 	}
+	Vector4 rotation = object->getRotation();
+	if (ImGui::InputFloat4("Rotaton: ", &rotation.x))
+	{
+		object->rigidBody3D.rotation = rotation;
+	}
 	// Scale is applied through the model transform each frame — no mesh regen needed
 	ImGui::InputFloat3("Scale: ", &object->rigidBody3D.scale.x);
+	ImGui::Spacing();
+
+	// RigidBody
+	ImGui::TextColored(ImVec4(0, 255, 255, 255), "RigidBody");
+	Vector3 velocity = object->rigidBody3D.GetVelocity();
+	if (ImGui::InputFloat3("Velocity: ", &velocity.x))
+	{
+		object->rigidBody3D.velocity = velocity;
+	}
+	Vector3 acceleration = object->rigidBody3D.GetAcceleration();
+	if (ImGui::InputFloat3("Acceleration: ", &acceleration.x))
+	{
+		object->rigidBody3D.acceleration = acceleration;
+	}
+	Vector3 angularVelocity = object->rigidBody3D.angularVelocity;
+	if (ImGui::InputFloat3("Angular Velocity: ", &angularVelocity.x))
+	{
+		object->rigidBody3D.angularVelocity = angularVelocity;
+	}
 	ImGui::Spacing();
 
 	// Texture

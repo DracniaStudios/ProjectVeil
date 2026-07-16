@@ -36,6 +36,8 @@ Scene* Scene_MainMenuConstruct()
 	scene->draw2D = Scene_MainMenuDraw2D;
 	scene->draw3D = Scene_MainMenuDraw3D;
 
+	SaveSystem::LoadGame(RESOURCES_PATH "../saves/world.json", *scene);
+	
 	scene->player->name = "Player";
 	scene->player->type = OBJECT_PLAYER;
 	scene->player->id = PLAYER_ID;
@@ -43,28 +45,19 @@ Scene* Scene_MainMenuConstruct()
 	scene->player->onEnable();
 	scene->gameMap.saveEntity(*scene->player);
 
+	GameObject artifact = {};
+	artifact.name = "Artifact";
+	artifact.isDestructible = false;
+	artifact.rigidBody3D.scale = Vector3(0.1f, 0.1f, 0.1f);
+	artifact.rigidBody3D.canCollide = false;
+	artifact.rigidBody3D.SetGravity(0, 0, 0);
+	artifact.setModel("RubixCube");
+	artifact.defaultSound = "Artifact_Load_Up";
+	scene->player->artifact = scene->gameMap.saveObject(artifact);
+
+
 	//SaveSystem::LoadGame(RESOURCES_PATH "../saves/mainMenu.json", *scene);
-	SaveSystem::LoadGame(RESOURCES_PATH "../saves/world.json", *scene);
 
-	auto BGM = InteractableObject(INTERACT_OBJECT, 0);
-	BGM.name = "BGM";
-	BGM.defaultSound = "Calabases";
-	BGM.rigidBody3D.isStatic = true;
-	BGM.rigidBody3D.Teleport(Vector3(0, 2, 0));
-	scene->gameMap.saveInteractable(BGM);
-	BGM.onInteract();
-
-	for (int i = 0; i < 6; i++) {
-		InteractableObject newMiniGame = InteractableObject(INTERACT_MINIGAME, i);
-		newMiniGame.name = "MiniGame Player";
-		newMiniGame.defaultColor = WHITE;
-		newMiniGame.defaultSound = "anime_wow";
-		newMiniGame.texture = GetAssetPtrByName("Chip001")->texture;
-		newMiniGame.rigidBody3D.Teleport(Vector3(0, 5, -15 + (i * 5)));
-		newMiniGame.rigidBody3D.scale = Vector3Ones;
-		newMiniGame.rigidBody3D.isStatic = true;
-		scene->gameMap.saveInteractable(newMiniGame);
-	}
 
 	return scene;
 }

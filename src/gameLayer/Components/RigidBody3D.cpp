@@ -309,6 +309,7 @@ void RigidBody3D::Teleport(Vector3 newPosition)
 	translation = newPosition;
 	lastPosition = newPosition;
 }
+void RigidBody3D::Teleport(float x, float y, float z) { Teleport(Vector3(x, y, z)); }
 
 void RigidBody3D::AddForce(Vector3 forceDirection, float force)
 {

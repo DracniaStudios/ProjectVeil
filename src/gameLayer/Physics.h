@@ -238,8 +238,6 @@ private:
 	GameObject* collidingWith = nullptr;
 
 	Vector3 lastPosition = {};
-	Vector3 velocity = {};
-	Vector3 acceleration = {};
 	Vector3 appliedGravity = Vector3{0, 20, 0};
 
 	float maxSpeed = 200.0f;
@@ -253,9 +251,13 @@ public:
 
 	bool isEnabled = true;
 	bool isStatic = false;
+	bool canCollide = true;
 
 	BoundingBox collisionBox = {};
 	Vector3 angularVelocity = {}; // radians/sec, axis = spin axis
+	Vector3 velocity = {};
+	Vector3 acceleration = {};
+	
 	bool upTouch = false;
 	bool downTouch = false; // isGrounded
 	bool frontTouch = false; // X+1
@@ -263,10 +265,11 @@ public:
 	bool leftTouch = false; // Z-1
 	bool rightTouch = false; // Z+1
 
+	// Set Values
 	void SetGravity(Vector3 gravity) { appliedGravity = gravity; }
-	Vector3 GetGravity() const { return appliedGravity; }
-
-	void SetVelocity(Vector3 value) { velocity = value; }
+	void SetGravity(float x, float y, float z) { SetGravity(Vector3(x, y, z)); }
+	void SetVelocity(Vector3 velocity) { this->velocity = velocity; }
+	void SetVelocity(float x, float y, float z) { SetVelocity(Vector3(x, y, z)); }
 
 	/// Get Values
 	GameObject* GetCollider() const { return collidingWith; }
@@ -277,6 +280,7 @@ public:
 	/// Force Application
 	void ApplyGravity();
 	void Teleport(Vector3 newPosition);
+	void Teleport(float x, float y, float z);
 	void AddForce(Vector3 forceDirection, float force);
 	void Jump(float force);
 	void UpdateForce(float deltaTime);
