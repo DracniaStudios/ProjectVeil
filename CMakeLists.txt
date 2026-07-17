@@ -1,7 +1,7 @@
 ﻿# CMakeList.txt : CMake project for ProjectVeil, include source and define
 # project specific logic here.
 #
-cmake_minimum_required (VERSION 4.0)
+cmake_minimum_required (VERSION 3.28)
 
 set(CMAKE_CXX_STANDARD 23)#Soon to be 26
 

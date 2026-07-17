@@ -1,4 +1,4 @@
-#include "MainMenu.h"
+#include "mainMenu.h"
 
 #include <Objects/Interactable/LockedBox.h>
 

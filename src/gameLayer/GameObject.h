@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <string>
-#include <Helpers.h>
+#include <helpers.h>
 #include <Physics.h>
 #include <AssetManager.h>
 #include <AudioManager.h>

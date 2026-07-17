@@ -1,6 +1,6 @@
 #include "Physics.h"
 
-#include <GameMap.h>
+#include <gameMap.h>
 #include <iostream>
 #include <SceneManager.h>
 
