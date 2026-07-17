@@ -7,9 +7,19 @@
 
 void Entity::onEnable()
 {
-	GameObject::onEnable();
 	health = getMaxHealth();
 	stamina = getMaxStamina();
+
+	// Reset Buffs
+	buffTimers.clear();
+	// All Buffs Last 30 seconds
+	// Change Manually when needed
+	for (int i = 0; i < MAX_BUFF; i++) {
+		auto buff = CooldownTimer(30);
+		buff.cooldownID = i;
+		buffTimers.push_back(buff);
+	}
+	GameObject::onEnable();
 }
 
 void Entity::onDisable()
@@ -103,4 +113,21 @@ bool Entity::loadFromJson(Json& j)
 	baseSpeed = j.value("BaseSpeed", baseSpeed);
 
 	return true;
+}
+
+bool Entity::useBuff(int id) {
+
+	auto& buff = buffTimers.at(id);
+	std::cout << "[Entity.cpp] Use Buff With ID: " << id << "\n";
+	return buff.use();
+}
+
+CooldownTimer* Entity::getBuff(int id) {
+	for (auto& buff : buffTimers) {
+		if (buff.cooldownID == id) {
+			return &buff;
+		}
+	}
+	std::cout << "[Entity.cpp] No Buff With ID: " << id << "\n";
+	return nullptr;
 }

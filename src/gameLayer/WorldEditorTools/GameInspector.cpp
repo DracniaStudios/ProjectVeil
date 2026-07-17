@@ -1,8 +1,8 @@
-#include "DeveloperWindow.h"
+#include "WorldEditor.h"
 
 #include <SaveSystem.h>
 
-void DeveloperWindow::ShowGameData(Player* player)
+void WorldEditor::ShowGameData(Player* player)
 {
 	auto scene = SceneManager::getInstance().currentScene;
 	ImGui::Begin("Game Data");

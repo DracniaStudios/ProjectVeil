@@ -1,6 +1,6 @@
-#include "DeveloperWindow.h"
+#include "WorldEditor.h"
 
-void DeveloperWindow::ShowCameraData(Player* player)
+void WorldEditor::ShowCameraData(Player* player)
 {
 	auto camera = *SceneManager::getInstance().currentScene->camera;
 	/// Show Camera Data Window

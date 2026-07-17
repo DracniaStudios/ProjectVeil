@@ -1,6 +1,6 @@
-#include "DeveloperWindow.h"
+#include "WorldEditor.h"
 
-void DeveloperWindow::ShowPlayerData(Player* player)
+void WorldEditor::ShowPlayerData(Player* player)
 {
 	auto scene = SceneManager::getInstance().currentScene;
 
@@ -27,19 +27,19 @@ void DeveloperWindow::ShowPlayerData(Player* player)
 	else
 	{
 		ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody3D.isEnabled);
-		ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", &player->rigidBody3D.forward.x, player->rigidBody3D.forward.y, player->rigidBody3D.forward.z);
-		ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", &player->rigidBody3D.translation.x, player->rigidBody3D.translation.y, player->rigidBody3D.translation.z);
+		ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player->rigidBody3D.forward.x, player->rigidBody3D.forward.y, player->rigidBody3D.forward.z);
+		ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.translation.x, player->rigidBody3D.translation.y, player->rigidBody3D.translation.z);
 		ImGui::Text("Player Velocity 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.GetVelocity().x, player->rigidBody3D.GetVelocity().y, player->rigidBody3D.GetVelocity().z);
-		ImGui::Text("Player Scale 3D: (%.2f, %.2f, %.2f)", &player->rigidBody3D.scale.x, player->rigidBody3D.scale.y, player->rigidBody3D.scale.z);
+		ImGui::Text("Player Scale 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.scale.x, player->rigidBody3D.scale.y, player->rigidBody3D.scale.z);
 
 	}
 	ImGui::Spacing();
 
 	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Status");
 	ImGui::Checkbox("Is Alive", &player->isAlive);
-	ImGui::Text("Life Span: %f", &player->lifeTime);
-	ImGui::Text("Life End: %f", &player->deathTime);
-	ImGui::Text("Artifact Mode: %f", &player->artifactMode);
+	ImGui::Text("Life Span: %f", player->lifeSpan);
+	ImGui::Text("Life End: %f", player->deathSpan);
+	ImGui::Text("Artifact Mode: %f", player->artifactMode);
 	ImGui::Spacing();
 
 	/// Show Player Directional Data and Flags
@@ -57,8 +57,10 @@ void DeveloperWindow::ShowPlayerData(Player* player)
 	ImGui::Spacing();
 
 	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Status");
-	ImGui::Text("Max Health: (%.2f)", &player->maxHealth);
-	ImGui::Text("Max Stamina: (%.2f)", &player->maxStamina);
+	ImGui::Text("Max Health: (%.2f)", player->maxHealth);
+	ImGui::Text("Max Stamina: (%.2f)", player->maxStamina);
+	ImGui::Text("Base Speed: (%.2f)", player->baseSpeed);
+	ImGui::Text("Current Speed: (%.2f)", player->currentSpeed);
 	ImGui::Spacing();
 
 	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Combat");

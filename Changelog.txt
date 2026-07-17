@@ -6,32 +6,36 @@
 [Notice] Scene Camera3D can be changed and swith inbetween both cameras.
 [Notice] Player camera is held within the Player struct.
 [Notice] Editor camera can be created within the Developer Window.
+[Notice] Change Save System to read all types of data files from Json and return the Json data when called.
 
 [ Issues ]
 
 
 [ Added ]
 
-- [InputSystem.h 21-26, InputSystem.cpp 78-87]  New Interact, Jump, Artifact Interact, and Artifact Select actions.
-- [Player.h, Player.cpp] New Artifact functions and rotation.
-	- Artifact can activate mini games while active.
-	- Artifact had a constant rotation on display.
-- [randomStuff.cpp, 30-39] New getRandomVector3 function.
+- Entities can now be buffed.
+- CooldownTimers are now added.
 
 [ Updated ]
 
-- [Player.cpp 7-85] Updated Player to use InputSystem
-- [Player.cpp 144-325, PlayerActions.cpp, PlayerCamera.cpp] Refactored PlayerActions & PlayerCamera into seperate scripts.
-- [Player.h 12-16] PlayerCamera now returns direction values.
-- [PlayerInspector.cpp, 30-33, 40-42] Player Inspector displays artifact mode;
-- [Physics.h] RigidBody3D alters Velocity and Gravity with Set functions.
-- [RigidBody3D.cpp, 312] RigidBody3D Teleport now takes floats.
-- [Scene.cpp 59] RigidBody3D are checked to see if collidable.
-- [ObjectBrowser.cpp 57-84] RigidBody3D factors are now displayed.
+- Combined World Editor and Developer Tools.
 
+- Entities can run at double speed with SpeedBuff.
+- Entities hold buff container based on cooldown Timer.
+- Lowered the Goal Score in FlappyBird minigame.
+- FlappyBird minigame increases Player movement. (needs nerfing)
+- Player is now initlaized on scene initialization.
+- Gamemap resets on scene initalization.
+- Object Inspector now shoes Model, Direction, and Type.
 
 [ Fixed ]
 
-- Artifact's center of mass was not in center.
+- Fixed an issue where the Artifact's center of mass was not in center.
+- Fixed an issue where the Player in FlappyBird now inverts speed instead of resetting.
+- Fixed an issue where the Object/Player inspector didn't load float to text propertly.
 
 [ Removed ]
+
+- DeveloperWindow.cpp (Combined File)
+- Physics.cpp (Header Only File)
+- Helpers.cpp (Header Only File)

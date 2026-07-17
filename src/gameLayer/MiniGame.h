@@ -3,10 +3,10 @@
 #define MINIGAME_H
 
 #include <iostream>
-#include <random>
 #include <raylib.h>
 #include <vector>
 
+#include <Helpers.h>
 #include <randomStuff.h>
 
 struct Scene;

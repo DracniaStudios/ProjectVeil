@@ -45,7 +45,9 @@ void WorldEditor::ShowObjectBrowser()
 	ImGui::TextColored(ImVec4(255, 255, 0, 255), "%s", dataString.c_str());
 	ImGui::Text("Name: %s", object->name.c_str());
 	ImGui::Text("ID: %llu", static_cast<unsigned long long>(object->id));
+	ImGui::Text("Type: %f", static_cast<int>(object->type));
 	ImGui::Spacing();
+
 
 	// Transform (Teleport keeps the collision box in sync with the new position)
 	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Transform");
@@ -113,9 +115,17 @@ void WorldEditor::ShowObjectBrowser()
 	ImGui::Checkbox("isStatic", &object->rigidBody3D.isStatic);
 	ImGui::Checkbox("isVisible", &object->display3DModel);
 	ImGui::Checkbox("isDestructible", &object->isDestructible);
+
+	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Debug");
 	ImGui::Checkbox("Show Collider", &object->displayCollider);
+	ImGui::Checkbox("Show Model", &object->display3DModel);
+	ImGui::Checkbox("Show Direction", &object->displayDirection);
 	ImGui::Separator();
 
+	// Status
+	ImGui::Text("Life Span: %f", &object->lifeSpan);
+	ImGui::Text("Death Span: %f", &object->deathSpan);
+	ImGui::Spacing();
 	if (ImGui::Button("Duplicate Object"))
 	{
 		GameObject copy = *object;

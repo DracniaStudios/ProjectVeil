@@ -1,4 +1,4 @@
-#include "DeveloperWindow.h"
+#include "WorldEditor.h"
 
 int textureId = 0; // Global variable to hold the texture ID
 const char* decoyName;
@@ -34,8 +34,8 @@ void DisplayObject(GameObject& object)
 	// Status Data
 	ImGui::Checkbox("Alive", &object.isAlive);
 	ImGui::Checkbox("Pending Destroy", &object.pendingDestroy);
-	ImGui::InputFloat("Life Time", &object.lifeTime);
-	ImGui::InputFloat("Death Time", &object.deathTime);
+	ImGui::InputFloat("Life Time", &object.lifeSpan);
+	ImGui::InputFloat("Death Time", &object.deathSpan);
 	ImGui::InputFloat("Decay Time", &object.decayTime);
 
 	// Physics
@@ -53,7 +53,7 @@ void DisplayObject(GameObject& object)
 
 }
 
-void DeveloperWindow::ShowObjectInspector()
+void WorldEditor::ShowObjectInspector()
 {
 	auto scene = SceneManager::getInstance().currentScene;
 
@@ -90,8 +90,8 @@ void DeveloperWindow::ShowObjectInspector()
 
 			ImGui::TextColored(ImVec4(0, 255, 255, 255), "Status");
 			ImGui::Checkbox("Is Alive", &object->isAlive);
-			ImGui::Text("Life Span: %f", object->lifeTime);
-			ImGui::Text("Life End: %f", object->deathTime);
+			ImGui::Text("Life Span: %f", object->lifeSpan);
+			ImGui::Text("Life End: %f", object->deathSpan);
 
 			// Object Flags 
 			ImGui::TextColored(ImVec4(0, 255, 255, 255), "Flags");
@@ -118,9 +118,9 @@ void DeveloperWindow::ShowObjectInspector()
 			ImGui::PushID(object);
 
 			/** Base Object Data **/
-			ImGui::InputText("Name: ", inputName, 128);
+			ImGui::InputText("Name: ", createName, 128);
 			{
-				object->name = inputName;
+				object->name = createName;
 			}
 			ImGui::InputInt("Object Type: ", &object->type, 1, 1);
 			object->type = Clamp(object->type, 0, OBJECT_COUNT - 1);
@@ -128,12 +128,12 @@ void DeveloperWindow::ShowObjectInspector()
 
 			// Color ( float to unsigned char conversion )
 			{
-				ImGui::InputFloat4("Color", &colorHolder.x);
+				ImGui::InputFloat4("Color", &createColorHolder.x);
 				object->defaultColor = Color(
-					static_cast<unsigned char>(Clamp(colorHolder.x, 0, 255)),
-					static_cast<unsigned char>(Clamp(colorHolder.y, 0, 255)),
-					static_cast<unsigned char>(Clamp(colorHolder.z, 0, 255)),
-					static_cast<unsigned char>(Clamp(colorHolder.w, 0, 255))
+					static_cast<unsigned char>(Clamp(createColorHolder.x, 0, 255)),
+					static_cast<unsigned char>(Clamp(createColorHolder.y, 0, 255)),
+					static_cast<unsigned char>(Clamp(createColorHolder.z, 0, 255)),
+					static_cast<unsigned char>(Clamp(createColorHolder.w, 0, 255))
 				);
 			}
 
@@ -192,8 +192,9 @@ void DeveloperWindow::ShowObjectInspector()
 			{
 				isEntityActive = true;
 				isInspectorActive = false;
+				inspectEntityId = object.id; // Entities share their id with the gameObjects shadow
 			}
-			inspectObject = &object;
+			inspectObjectId = object.id;
 		}
 		ImGui::PopID();
 	}
@@ -202,15 +203,14 @@ void DeveloperWindow::ShowObjectInspector()
 	ImGui::Separator();
 
 	ImGui::BeginChild("Selector", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.8f));
-	/// Show Selected Object Data
-	if (inspectObject != nullptr) {
+	/// Show Selected Object Data (resolved by id each frame — spawns/destroys move objects around)
+	if (GameObject* check = findGameObject(inspectObjectId)) {
 
-		auto check = static_cast<GameObject*>(inspectObject);
-		//loadObjectData(inspectObject);
+		//loadObjectData(check);
 		if (ImGui::Button("Delete Object"))
 		{
 			scene->gameMap.removeObject(check);
-			inspectObject = nullptr;
+			inspectObjectId = 0;
 		}
 	}
 	ImGui::EndChild();
@@ -224,7 +224,8 @@ void DeveloperWindow::ShowObjectInspector()
 	if (ImGui::Button("Create New Object"))
 	{
 		isCreatingObject = !isCreatingObject;
-		newObject = new GameObject;
+		delete newObject; // Reclaim any previous staging object
+		newObject = isCreatingObject ? new GameObject : nullptr;
 	}
 
 	if (isCreatingObject)
@@ -239,7 +240,8 @@ void DeveloperWindow::ShowObjectInspector()
 		if (ImGui::Button("Spawn Game Object"))
 		{
 			newObject->rigidBody3D.Teleport(newObject->getPosition());
-			inspectObject = scene->gameMap.saveObject(*newObject);
+			inspectObjectId = scene->gameMap.saveObject(*newObject)->id;
+			delete newObject; // saveObject stored a copy; the staging object is done
 			newObject = nullptr;
 			isCreatingObject = false;
 		}

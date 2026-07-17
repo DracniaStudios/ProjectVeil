@@ -8,7 +8,25 @@
 
 Scene* Scene_new() {
 	Scene* scene = new Scene;
+	scene->gameMap = {};
+
+	// Default Settings For Scene
 	scene->player = new Player;
+	scene->player->type = OBJECT_PLAYER;
+	scene->player->id = PLAYER_ID;
+	scene->player->onEnable();
+	//scene->gameMap.saveEntity(*scene->player);
+	
+	scene->player->artifact = new GameObject;
+	scene->player->artifact->name = "Artifact";
+	scene->player->artifact->isDestructible = false;
+	scene->player->artifact->rigidBody3D.scale = Vector3(0.1f, 0.1f, 0.1f);
+	scene->player->artifact->rigidBody3D.canCollide = false;
+	scene->player->artifact->rigidBody3D.SetGravity(0, 0, 0);
+	scene->player->artifact->setModel("RubixCube");
+	scene->player->artifact->defaultSound = "Artifact_Load_Up";
+	//scene->player->artifact = scene->gameMap.saveObject(*scene->player->artifact);
+
 	scene->camera = new PlayerCamera;
 
 	SceneManager::getInstance().currentScene = scene;
@@ -230,10 +248,7 @@ void Scene_updateScene(float delta) {
 	// Pause To Inventory
 	if (IsKeyPressed(KEY_TAB)) { scene->is2DActive = !scene->is2DActive; }
 
-	// Developer Window
-	DeveloperWindow::getInstance().update(scene->player);
-
-	// World Editor
+	// World Editor (includes the developer tool windows)
 	WorldEditor::getInstance().update(scene->player);
 }
 

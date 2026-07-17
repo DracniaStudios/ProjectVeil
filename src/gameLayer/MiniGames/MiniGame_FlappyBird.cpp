@@ -16,7 +16,7 @@ MiniGame* MiniGame_FlappyBird(Player* player)
 	game->draw = &FlappyBird::render;
 	game->data = new MiniGameData;
 
-	game->data->scoreGoal = 5;
+	game->data->scoreGoal = 3;
 
 	player->rigidBody2D.scale = Vector3(5.0f, 5.0f, 5.0f);
 	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
@@ -110,9 +110,9 @@ void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
 
 	Rectangle screen = {
 		GetScreenWidth() * 0.25f,
-	 GetScreenHeight() * 0.3f,
-	GetScreenWidth() * 0.5f,
-	GetScreenHeight() * 0.5f
+		GetScreenHeight() * 0.3f,
+		GetScreenWidth() * 0.5f,
+		GetScreenHeight() * 0.5f
 	};
 
 	// Game Logic
@@ -123,7 +123,7 @@ void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
 		data->score++;
 		isRightGoalActive = true;
 		isLeftGoalActive = false;
-		player->rigidBody2D.velocity = {};
+		player->rigidBody2D.velocity = Vector2Negate(player->rigidBody2D.velocity);
 		generateObstacle(2 + data->score);
 
 	}
@@ -134,7 +134,7 @@ void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
 		data->score++;
 		isLeftGoalActive = true;
 		isRightGoalActive = false;
-		player->rigidBody2D.velocity = {};
+		player->rigidBody2D.velocity = Vector2Negate(player->rigidBody2D.velocity);
 		generateObstacle(2 + data->score);
 	}
 
@@ -148,12 +148,14 @@ void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
 	if (data->score >= data->scoreGoal)
 	{
 		player->health += 5;
+		// Create new player Buff
+		player->useBuff(0);
 		data->isComplete = true;
 	}
 
 	// Player Logic
 	{
-		static int speed = 15;
+		static int speed = 50;
 		
 		player->rigidBody2D.applyGravity();
 		if (IsKeyPressed(KEY_SPACE)) { player->rigidBody2D.jump(50); }

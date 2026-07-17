@@ -15,7 +15,16 @@ class WorldEditor
 	bool isWorldSettingsActive = true;
 	bool isObjectBrowserActive = false;
 	bool isPlacementActive = false;
-	bool isPaletteActive = false;
+	bool isHierarchyActive = false;
+
+	/** Developer Tool Flags **/
+	bool isGameDataActive = false;
+	bool isPlayerActive = false;
+	bool isCameraActive = false;
+	bool isInspectorActive = false;
+	bool isEntityActive = false;
+	bool isMiniGameActive = false;
+	bool isAssetActive = false;
 
 	/** Selection State **/
 	std::uint64_t selectedObjectId = 0; // Id instead of pointer — survives gameObjects reallocation
@@ -27,6 +36,21 @@ class WorldEditor
 	char inputName[128] = "New Block";
 	Vector4 colorHolder = Vector4(255, 255, 255, 255);
 
+	/** Object & Entity Inspector State **/
+	std::uint64_t inspectObjectId = 0; // Ids instead of pointers — survive gameObjects reallocation
+	std::uint64_t inspectEntityId = 0; // and entity removal (gameplay death, Load Game)
+
+	GameObject* newObject = nullptr;
+	Entity* newEntity = nullptr;
+	Vector4 createColorHolder = Vector4(0, 0, 0, 255);
+	char createName[128] = "New Object";
+	bool isCreatingObject = false;
+	bool isCreatingEntity = false;
+
+	/** Mini Game Inspector State **/
+	int currentGameID = 0;
+	int miniGameObstacleIndex = -1; // Index instead of pointer — obstacles vector reallocates during play
+
 	/** Feedback **/
 	std::string statusMessage;
 
@@ -35,9 +59,20 @@ class WorldEditor
 	void ShowWorldSettings();
 	void ShowObjectBrowser();
 	void ShowPlacementPanel();
-	void ShowTexturePalette();
+	void ShowHierarchy();
+
+	/** Developer Tool Windows **/
+	void ShowGameData(Player* player);
+	void ShowPlayerData(Player* player);
+	void ShowCameraData(Player* player);
+	void ShowObjectInspector();
+	void ShowEntityInspector();
+	void ShowMiniGameData(Player* player);
+	void ShowAssetData();
 
 	/** Helpers **/
+	GameObject* findGameObject(std::uint64_t id);
+	Entity* findEntity(std::uint64_t id);
 	GameObject* getSelectedObject();
 	Asset* getActiveTexture();
 	Asset* getActiveModel();

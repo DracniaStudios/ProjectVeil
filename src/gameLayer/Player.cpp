@@ -8,7 +8,13 @@
 #pragma region Static Functions
 void SetMoveDirection(Player* player) {
 	/// Player Movement
-	auto speed = player->isSprinting ? player->baseSpeed * 2 : player->isCrouching ? player->baseSpeed / 2 : player->baseSpeed;
+	auto& speed = player->currentSpeed;
+	speed = player->isSprinting ? player->baseSpeed * 2 : player->isCrouching ? player->baseSpeed / 2 : player->baseSpeed;
+
+	if (player->getBuff(BUFF_MOVEMENT)->remaining_time() > 0) { speed *= 2; }
+	// Always Trying to use
+	// Check if remainint time is less than duration time
+	if (player->buffTimers[BUFF_MOVEMENT].remaining_time() > 0.1f) { speed *= 2; };
 
 	// Player Movement Input
 	player->moveDirection = Vector2Zero();
@@ -27,7 +33,7 @@ void UpdateActions(Player* player) {
 	player->isSprinting = InputSystem::getInstance().IsActionDown(ACTION_MOVE_SPRINT);
 	player->isFiring = IsMouseButtonDown(MOUSE_BUTTON_LEFT) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
 
-	if (!DeveloperWindow::getInstance().IsEnabled() && !WorldEditor::getInstance().IsEnabled()) {
+	if (!WorldEditor::getInstance().IsEnabled()) {
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) { player->Fire(); }
 		if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) { player->FireLaser(); }
 	}
@@ -86,13 +92,14 @@ void updateArtifact(Player* player) {
 
 void Player::onEnable()
 {
+	maxHealth = 100.0f;
+
 	id = PLAYER_ID;
 	stamina = getMaxStamina();
 	rigidBody2D.translation = Vector3(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f, 0);
-	maxHealth = 100.0f;
 	rng = std::ranlux24_base(std::random_device{}());
-
 	display3DModel = false;
+
 
 	Entity::onEnable();
 }

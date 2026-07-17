@@ -1,6 +1,6 @@
-#include "DeveloperWindow.h"
+#include "WorldEditor.h"
 
-void DeveloperWindow::ShowEntityInspector()
+void WorldEditor::ShowEntityInspector()
 {
 	auto scene = SceneManager::getInstance().currentScene;
 
@@ -32,8 +32,8 @@ void DeveloperWindow::ShowEntityInspector()
 
 			ImGui::TextColored(ImVec4(0, 255, 255, 255), "Status");
 			ImGui::Checkbox("Is Alive", &object->isAlive);
-			ImGui::Text("Life Span: %f", object->lifeTime);
-			ImGui::Text("Life End: %f", object->deathTime);
+			ImGui::Text("Life Span: %f", object->lifeSpan);
+			ImGui::Text("Death Span: %f", object->deathSpan);
 
 			// Object Flags 
 			ImGui::TextColored(ImVec4(0, 255, 255, 255), "Flags");
@@ -69,9 +69,9 @@ void DeveloperWindow::ShowEntityInspector()
 			ImGui::PushID(object);
 
 			/** Base Object Data **/
-			ImGui::InputText("Name: ", inputName, 128);
+			ImGui::InputText("Name: ", createName, 128);
 			{
-				object->name = inputName;
+				object->name = createName;
 			}
 			ImGui::InputInt("Entity Type: ", &object->type, 1, 1);
 			object->type = Clamp(object->type, 0, OBJECT_COUNT - 1);
@@ -79,12 +79,12 @@ void DeveloperWindow::ShowEntityInspector()
 
 			// Color ( float to unsigned char conversion )
 			{
-				ImGui::InputFloat4("Color", &colorHolder.x);
+				ImGui::InputFloat4("Color", &createColorHolder.x);
 				object->defaultColor = Color(
-					static_cast<unsigned char>(Clamp(colorHolder.x, 0, 255)),
-					static_cast<unsigned char>(Clamp(colorHolder.y, 0, 255)),
-					static_cast<unsigned char>(Clamp(colorHolder.z, 0, 255)),
-					static_cast<unsigned char>(Clamp(colorHolder.w, 0, 255))
+					static_cast<unsigned char>(Clamp(createColorHolder.x, 0, 255)),
+					static_cast<unsigned char>(Clamp(createColorHolder.y, 0, 255)),
+					static_cast<unsigned char>(Clamp(createColorHolder.z, 0, 255)),
+					static_cast<unsigned char>(Clamp(createColorHolder.w, 0, 255))
 				);
 			}
 
@@ -131,21 +131,21 @@ void DeveloperWindow::ShowEntityInspector()
 	for (auto& entity : scene->entities)
 	{
 		ImGui::PushID(&entity);
-		if (ImGui::Button(entity.second->name.c_str())) { inspectEntity = entity.second.get(); }
+		if (ImGui::Button(entity.second->name.c_str())) { inspectEntityId = entity.first; }
 		ImGui::PopID();
 	}
 	ImGui::EndChild();
 	ImGui::Separator();
 
 	ImGui::BeginChild("Selector", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.8f));
-	/// Show Selected Object Data
-	if (inspectEntity != nullptr) {
+	/// Show Selected Object Data (resolved by id each frame — the entity may have died or been cleared by Load Game)
+	if (Entity* inspectEntity = findEntity(inspectEntityId)) {
 
 		loadObjectData(inspectEntity);
 		if (ImGui::Button("Delete Object"))
 		{
 			scene->gameMap.removeEntity(inspectEntity);
-			inspectEntity = nullptr;
+			inspectEntityId = 0;
 		}
 	}
 
@@ -161,7 +161,8 @@ void DeveloperWindow::ShowEntityInspector()
 	if (ImGui::Button("Create New Entity"))
 	{
 		isCreatingEntity = !isCreatingEntity;
-		newEntity = {};
+		delete newEntity; // Reclaim any previous staging entity
+		newEntity = isCreatingEntity ? new Entity : nullptr; // A null member would crash Spawn — the lambda only patches its local copy
 	}
 
 	if (isCreatingEntity)
@@ -176,8 +177,9 @@ void DeveloperWindow::ShowEntityInspector()
 		if (ImGui::Button("Spawn Entity"))
 		{
 			newEntity->rigidBody3D.Teleport(newEntity->getPosition());
-			inspectEntity = scene->gameMap.saveEntity(*newEntity);
-			newEntity = {};
+			inspectEntityId = scene->gameMap.saveEntity(*newEntity)->id;
+			delete newEntity; // saveEntity stored a copy; the staging entity is done
+			newEntity = nullptr;
 			isCreatingEntity = false;
 		}
 		ImGui::End();

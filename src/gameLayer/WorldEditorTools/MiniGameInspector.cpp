@@ -1,6 +1,6 @@
-#include <DeveloperWindow.h>
+#include <WorldEditor.h>
 
-void DeveloperWindow::ShowMiniGameData(Player* player)
+void WorldEditor::ShowMiniGameData(Player* player)
 {
 	auto scene = SceneManager::getInstance().currentScene;
 
@@ -16,6 +16,7 @@ void DeveloperWindow::ShowMiniGameData(Player* player)
 	/// Launch Mini Game Button
 	if (ImGui::Button("Launch Mini Game"))
 	{
+		miniGameObstacleIndex = -1; // Selection belongs to the previous game's obstacle list
 		switch (currentGameID)
 		{
 			// Select Mini Game
@@ -40,25 +41,27 @@ void DeveloperWindow::ShowMiniGameData(Player* player)
 		ImGui::InputFloat4("Goal Size: %d", &scene->miniGame->data->goal.x);
 		ImGui::Separator();
 
-		ImGui::Text("Obstacles: %d", scene->miniGame->data->obstacles.size());
-		for (auto& obj : scene->miniGame->data->obstacles)
+		auto& obstacles = scene->miniGame->data->obstacles;
+		ImGui::Text("Obstacles: %d", static_cast<int>(obstacles.size()));
+		for (int i = 0; i < static_cast<int>(obstacles.size()); i++)
 		{
-			ImGui::PushID(&obj);
-			if (ImGui::Button(std::to_string(obj.x).c_str()))
+			ImGui::PushID(i);
+			if (ImGui::Button(std::to_string(obstacles[i].x).c_str()))
 			{
-				miniGameObject = &obj;
+				miniGameObstacleIndex = i;
 			}
 			ImGui::PopID();
 		}
 		ImGui::Separator();
 
-		if (miniGameObject != nullptr)
+		// Index re-validated every frame — games clear and refill the obstacle list during play
+		if (miniGameObstacleIndex >= 0 && miniGameObstacleIndex < static_cast<int>(obstacles.size()))
 		{
-			auto obj = static_cast<Rectangle*>(miniGameObject);
-			ImGui::Text("Object: X %f", obj->x);
-			ImGui::Text("Object: Y %f", obj->y);
-			ImGui::Text("Object: Width %f", obj->width);
-			ImGui::Text("Object: Height %f", obj->height);
+			Rectangle& obj = obstacles[miniGameObstacleIndex];
+			ImGui::Text("Object: X %f", obj.x);
+			ImGui::Text("Object: Y %f", obj.y);
+			ImGui::Text("Object: Width %f", obj.width);
+			ImGui::Text("Object: Height %f", obj.height);
 		}
 		ImGui::Separator();
 

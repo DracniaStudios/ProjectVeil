@@ -110,6 +110,7 @@ void Crane::update(MiniGameData* data, void* player_ptr, float deltaTime)
 		{
 			player->health += 5;
 			data->isComplete = true;
+			CooldownTimer buffTime = CooldownTimer(30.0f);
 		}
 	}
 

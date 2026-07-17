@@ -37,27 +37,6 @@ Scene* Scene_MainMenuConstruct()
 	scene->draw3D = Scene_MainMenuDraw3D;
 
 	SaveSystem::LoadGame(RESOURCES_PATH "../saves/world.json", *scene);
-	
-	scene->player->name = "Player";
-	scene->player->type = OBJECT_PLAYER;
-	scene->player->id = PLAYER_ID;
-	scene->player->rigidBody3D.Teleport(Vector3(0, 5, 0));
-	scene->player->onEnable();
-	scene->gameMap.saveEntity(*scene->player);
-
-	GameObject artifact = {};
-	artifact.name = "Artifact";
-	artifact.isDestructible = false;
-	artifact.rigidBody3D.scale = Vector3(0.1f, 0.1f, 0.1f);
-	artifact.rigidBody3D.canCollide = false;
-	artifact.rigidBody3D.SetGravity(0, 0, 0);
-	artifact.setModel("RubixCube");
-	artifact.defaultSound = "Artifact_Load_Up";
-	scene->player->artifact = scene->gameMap.saveObject(artifact);
-
-
 	//SaveSystem::LoadGame(RESOURCES_PATH "../saves/mainMenu.json", *scene);
-
-
 	return scene;
 }

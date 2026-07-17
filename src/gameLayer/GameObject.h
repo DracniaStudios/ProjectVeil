@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <string>
+#include <Helpers.h>
 #include <Physics.h>
 #include <AssetManager.h>
 #include <AudioManager.h>
@@ -37,8 +38,8 @@ struct GameObject
 	bool displayCollider = false;
 	
 	/// Status
-	float lifeTime = 0;
-	float deathTime = 1;
+	float lifeSpan = 0;
+	float deathSpan = 1;
 	float decayTime = 1;
 
 	// Lives on GameObject (not Entity) so projectiles stored by value in

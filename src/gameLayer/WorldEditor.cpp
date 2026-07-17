@@ -11,15 +11,33 @@ void WorldEditor::update(Player* player)
 		if (IsKeyPressed(KEY_ONE)) { isWorldSettingsActive = !isWorldSettingsActive; }
 		if (IsKeyPressed(KEY_TWO)) { isObjectBrowserActive = !isObjectBrowserActive; }
 		if (IsKeyPressed(KEY_THREE)) { isPlacementActive = !isPlacementActive; }
-		if (IsKeyPressed(KEY_FOUR)) { isPaletteActive = !isPaletteActive; }
+		if (IsKeyPressed(KEY_FIVE)) { isHierarchyActive = !isHierarchyActive; }
 	}
+
+	// Developer tool shortcuts, kept from the standalone Developer Window
+	if (IsKeyPressed(KEY_F1)) { isGameDataActive = !isGameDataActive; }
+	if (IsKeyPressed(KEY_F2)) { isPlayerActive = !isPlayerActive; }
+	if (IsKeyPressed(KEY_F3)) { isCameraActive = !isCameraActive; }
+	if (IsKeyPressed(KEY_F4)) { isInspectorActive = !isInspectorActive; inspectObjectId = 0; }
+	if (IsKeyPressed(KEY_F5)) { isMiniGameActive = !isMiniGameActive; }
+	if (IsKeyPressed(KEY_F6)) { isEntityActive = !isEntityActive; }
+	if (IsKeyPressed(KEY_F7)) { isAssetActive = !isAssetActive; }
 
 	/// Update World Editor Windows
 	ShowEditorHub();
 	if (isWorldSettingsActive) ShowWorldSettings();
 	if (isObjectBrowserActive) ShowObjectBrowser();
 	if (isPlacementActive) ShowPlacementPanel();
-	if (isPaletteActive) ShowTexturePalette();
+	if (isHierarchyActive) ShowHierarchy();
+
+	/// Update Developer Tool Windows
+	if (isGameDataActive) ShowGameData(player);
+	if (isPlayerActive) ShowPlayerData(player);
+	if (isCameraActive) ShowCameraData(player);
+	if (isInspectorActive) ShowObjectInspector();
+	if (isEntityActive) ShowEntityInspector();
+	if (isMiniGameActive) ShowMiniGameData(player);
+	if (isAssetActive) ShowAssetData();
 }
 
 void WorldEditor::ShowEditorHub()
@@ -30,7 +48,17 @@ void WorldEditor::ShowEditorHub()
 	ImGui::Checkbox("World Settings (Ctrl+1)", &isWorldSettingsActive);
 	ImGui::Checkbox("Object Browser (Ctrl+2)", &isObjectBrowserActive);
 	ImGui::Checkbox("Placement (Ctrl+3)", &isPlacementActive);
-	ImGui::Checkbox("Texture Palette (Ctrl+4)", &isPaletteActive);
+	ImGui::Checkbox("Hierarchy (Ctrl+5)", &isHierarchyActive);
+	ImGui::Separator();
+
+	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Developer Tools");
+	ImGui::Checkbox("Game Data (F1)", &isGameDataActive);
+	ImGui::Checkbox("Player Data (F2)", &isPlayerActive);
+	ImGui::Checkbox("Camera Data (F3)", &isCameraActive);
+	ImGui::Checkbox("Object Inspector (F4)", &isInspectorActive);
+	ImGui::Checkbox("Mini Game Data (F5)", &isMiniGameActive);
+	ImGui::Checkbox("Entity Inspector (F6)", &isEntityActive);
+	ImGui::Checkbox("Asset Data (F7)", &isAssetActive);
 	ImGui::Separator();
 
 	if (!statusMessage.empty()) { ImGui::Text("%s", statusMessage.c_str()); }
@@ -40,16 +68,31 @@ void WorldEditor::ShowEditorHub()
 	ImGui::End();
 }
 
-GameObject* WorldEditor::getSelectedObject()
+GameObject* WorldEditor::findGameObject(std::uint64_t id)
 {
-	if (selectedObjectId == 0) { return nullptr; }
+	if (id == 0) { return nullptr; }
 
 	auto scene = SceneManager::getInstance().currentScene;
 	for (auto& object : scene->gameMap.gameObjects)
 	{
-		if (object.id == selectedObjectId) { return &object; }
+		if (object.id == id) { return &object; }
 	}
 	return nullptr;
+}
+
+Entity* WorldEditor::findEntity(std::uint64_t id)
+{
+	if (id == 0) { return nullptr; }
+
+	auto& entities = SceneManager::getInstance().currentScene->entities;
+	auto entity = entities.find(id);
+	if (entity == entities.end()) { return nullptr; }
+	return entity->second.get();
+}
+
+GameObject* WorldEditor::getSelectedObject()
+{
+	return findGameObject(selectedObjectId);
 }
 
 Asset* WorldEditor::getActiveTexture()
