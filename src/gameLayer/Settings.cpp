@@ -15,13 +15,6 @@ constexpr int VERSION = 1;
 constexpr const char* SETTINGS_SAVE_PATH = RESOURCES_PATH "../saves/settings.json";
 constexpr const char* SETTINGS_SAVE_BAK = RESOURCES_PATH "../saves/settings.json.bak";
 
-static Json SettingsToJson(GameSettings* settings) {
-	Json j;
-	j[settings->name] = settings->value;
-	std::cout << "[Settings] Saved: " << settings->name << " With Value: " << settings->value << "\n";
-	return j;
-}
-
 static bool JsonToSettings(Json& j, std::vector<GameSettings*> list) {
 	if (j.value("Version", 0) > VERSION) {
 		std::cerr << "[Settings] Save version is newer than the game supports.\n";
@@ -53,11 +46,13 @@ bool Settings::Save() {
 
 	Json j;
 	j["Version"] = VERSION;
-	file << j.dump(2);
 
 	for (auto& setting : settingsList) {
-		file << SettingsToJson(setting).dump(2);
+		j[setting->name] = setting->value;
+		std::cout << "[Settings] Saved: " << setting->name << " With Value: " << setting->value << "\n";
 	}
+
+	file << j.dump(2);
 	file.close();
 
 	std::filesystem::rename(path, bakPath, errorCode);
@@ -137,9 +132,9 @@ void Settings::Init() {
 		
 		hudSize.name = "HudSize";
 		settingsList.push_back(&hudSize);
-		
-		hudSize.name = "hideHUD";
-		settingsList.push_back(&hudSize);
+
+		hideHUD.name = "hideHUD";
+		settingsList.push_back(&hideHUD);
 	}
 
 	/* Video */
