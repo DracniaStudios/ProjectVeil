@@ -59,13 +59,10 @@ class WorldEditor
 	void ShowWorldSettings();
 	void ShowObjectBrowser();
 	void ShowPlacementPanel();
-	void ShowHierarchy();
 
 	/** Developer Tool Windows **/
-	void ShowGameData(Player* player);
 	void ShowPlayerData(Player* player);
 	void ShowCameraData(Player* player);
-	void ShowObjectInspector();
 	void ShowEntityInspector();
 	void ShowMiniGameData(Player* player);
 	void ShowAssetData();

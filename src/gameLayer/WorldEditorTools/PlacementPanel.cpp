@@ -4,6 +4,8 @@ void WorldEditor::ShowPlacementPanel()
 {
 	auto scene = SceneManager::getInstance().currentScene;
 
+	// Add Type Creation Variant
+
 	/// Show Placement Window
 	ImGui::Begin("Placement");
 

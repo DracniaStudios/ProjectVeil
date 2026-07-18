@@ -1,59 +1,31 @@
 {
-  "Version": 1
-}{
-  "Difficulty": 0.0
-}{
-  "InvertedCameraYAxis": 0.0
-}{
-  "InvertedCameraXAxis": 0.0
-}{
-  "CameraSpeed": 0.0
-}{
-  "CameraSmoothEffect": 0.0
-}{
-  "CameraShadeEffect": 0.0
-}{
-  "HideClueVFX": 0.0
-}{
-  "Resolution": 0.0
-}{
-  "RenderResolution": 0.0
-}{
-  "Luminosity": 0.0
-}{
-  "DisplayMode": 0.0
-}{
-  "Vsync": 1.0
-}{
+  "AntiAliasing": 0.0,
+  "CameraShadeEffect": 0.0,
+  "CameraSmoothEffect": 0.0,
+  "CameraSpeed": 0.0,
+  "DialogueVolume": 1.0,
+  "Difficulty": 0.0,
+  "DisplayMode": 0.0,
+  "Effects": 4.0,
+  "Foliage": 4.0,
+  "GameplaySFX": 1.0,
+  "HideClueVFX": 0.0,
+  "HighContrastDisplay": 0.0,
+  "HudSize": 0.0,
+  "InvertedCameraXAxis": 0.0,
+  "InvertedCameraYAxis": 0.0,
+  "Luminosity": 0.0,
+  "MasterVolume": 0.75,
+  "MonoOnly": 0.0,
+  "MusicVolume": 1.0,
+  "PostProcessing": 4.0,
+  "RenderResolution": 0.0,
+  "Resolution": 0.0,
+  "SFXVolume": 1.0,
+  "Shadows": 4.0,
+  "Textures": 4.0,
+  "Version": 1,
+  "ViewDistance": 4.0,
+  "Vsync": 1.0,
   "hideHUD": 0.0
-}{
-  "hideHUD": 0.0
-}{
-  "HighContrastDisplay": 0.0
-}{
-  "Shadows": 4.0
-}{
-  "Textures": 4.0
-}{
-  "ViewDistance": 4.0
-}{
-  "Effects": 4.0
-}{
-  "PostProcessing": 4.0
-}{
-  "Foliage": 4.0
-}{
-  "AntiAliasing": 0.0
-}{
-  "MasterVolume": 0.75
-}{
-  "MusicVolume": 1.0
-}{
-  "SFXVolume": 1.0
-}{
-  "DialogueVolume": 1.0
-}{
-  "GameplaySFX": 1.0
-}{
-  "MonoOnly": 0.0
 }

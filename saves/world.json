@@ -256,7 +256,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
-      "Life": 2251.379638671875,
+      "Life": 2365.15576171875,
       "Name": "Floor",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -288,7 +288,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1698.780517578125,
+      "Life": 1813.246337890625,
       "Name": "Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -320,7 +320,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1664.881591796875,
+      "Life": 1779.347412109375,
       "Name": "Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -352,7 +352,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1656.6187744140625,
+      "Life": 1771.0845947265625,
       "Name": "Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -384,7 +384,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1608.5540771484375,
+      "Life": 1723.0198974609375,
       "Name": "Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -416,7 +416,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1208.8876953125,
+      "Life": 1323.353515625,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -448,7 +448,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1183.9189453125,
+      "Life": 1298.384765625,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -480,7 +480,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1171.1402587890625,
+      "Life": 1285.6060791015625,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -512,7 +512,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1164.4832763671875,
+      "Life": 1278.9490966796875,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -544,7 +544,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1156.2547607421875,
+      "Life": 1270.7205810546875,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -576,7 +576,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1118.81103515625,
+      "Life": 1233.27685546875,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -608,7 +608,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 973.4780883789063,
+      "Life": 1087.8133544921875,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -640,7 +640,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 961.8973999023438,
+      "Life": 1076.19287109375,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -672,7 +672,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 954.232177734375,
+      "Life": 1068.502197265625,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -704,7 +704,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 949.1832885742188,
+      "Life": 1063.43603515625,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -736,7 +736,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 945.4673461914063,
+      "Life": 1059.7078857421875,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -768,7 +768,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 939.8849487304688,
+      "Life": 1054.10693359375,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -800,7 +800,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 912.5714111328125,
+      "Life": 1026.701416015625,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -821,38 +821,6 @@
         "VelocityZ": 0.0
       },
       "Texture": "Metal030"
-    },
-    "68": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": false,
-      "IsEnabled": true,
-      "Life": 258.1889953613281,
-      "Model": "RubixCube",
-      "Name": "Artifact",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": false,
-        "IsStatic": false,
-        "PosX": 1.5882757902145386,
-        "PosY": 1.1388236284255981,
-        "PosZ": 3.51523494720459,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 0.10000000149011612,
-        "ScaleY": 0.10000000149011612,
-        "ScaleZ": 0.10000000149011612,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      }
     }
   },
   "Version": 2,

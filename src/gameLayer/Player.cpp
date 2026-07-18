@@ -71,8 +71,8 @@ void updateArtifact(Player* player) {
 	auto camera = scene->camera;
 	auto offset = Vector3Add(camera->forward, player->rigidBody3D.left);//camera->left / 2);
 	player->artifact->rigidBody3D.translation = Vector3Add(camera->position, offset);
-
 	player->artifact->rigidBody3D.angularVelocity = Vector3(0.1f, 0, 0.1f);
+	player->artifact->update(scene, GetFrameTime());
 	
 	
 	// All Sides need to face the player, these are direct references for current position

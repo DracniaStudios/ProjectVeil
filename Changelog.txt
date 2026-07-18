@@ -19,7 +19,6 @@
 [ Updated ]
 
 - Combined World Editor and Developer Tools.
-
 - Entities can run at double speed with SpeedBuff.
 - Entities hold buff container based on cooldown Timer.
 - Lowered the Goal Score in FlappyBird minigame.

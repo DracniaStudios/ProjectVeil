@@ -257,7 +257,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
-      "Life": 2340.33447265625,
+      "Life": 2410.623291015625,
       "Name": "Floor",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -289,7 +289,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1788.2764892578125,
+      "Life": 1858.936279296875,
       "Name": "Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -321,7 +321,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1754.3775634765625,
+      "Life": 1825.037353515625,
       "Name": "Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -353,7 +353,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1746.11474609375,
+      "Life": 1816.7745361328125,
       "Name": "Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -385,7 +385,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1698.050048828125,
+      "Life": 1768.7098388671875,
       "Name": "Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -417,7 +417,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1298.3836669921875,
+      "Life": 1369.04345703125,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -449,7 +449,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1273.4149169921875,
+      "Life": 1344.07470703125,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -481,7 +481,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1260.63623046875,
+      "Life": 1331.2960205078125,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -513,7 +513,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1253.979248046875,
+      "Life": 1324.6390380859375,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -545,7 +545,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1245.750732421875,
+      "Life": 1316.4105224609375,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -577,7 +577,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1208.3070068359375,
+      "Life": 1278.966796875,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -609,7 +609,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1062.8424072265625,
+      "Life": 1133.5032958984375,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -641,7 +641,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1051.219970703125,
+      "Life": 1121.8828125,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -673,7 +673,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1043.52783203125,
+      "Life": 1114.192138671875,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -705,7 +705,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1038.4608154296875,
+      "Life": 1109.1259765625,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -737,7 +737,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1034.7318115234375,
+      "Life": 1105.3978271484375,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -769,7 +769,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1029.1295166015625,
+      "Life": 1099.796875,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -801,7 +801,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 1001.7981567382813,
+      "Life": 1072.391357421875,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -822,38 +822,6 @@
         "VelocityZ": 0.0
       },
       "Texture": "Metal030"
-    },
-    "68": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": false,
-      "IsEnabled": true,
-      "Life": 347.41619873046875,
-      "Model": "RubixCube",
-      "Name": "Artifact",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": false,
-        "IsStatic": false,
-        "PosX": 1.5882757902145386,
-        "PosY": 1.1388236284255981,
-        "PosZ": 3.51523494720459,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 0.10000000149011612,
-        "ScaleY": 0.10000000149011612,
-        "ScaleZ": 0.10000000149011612,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      }
     }
   },
   "Player": {
@@ -874,30 +842,30 @@
     "MaxStamina": 100.0,
     "Name": "GameObject",
     "ObjectType": 1,
-    "Pos2X": 320.0,
-    "Pos2Y": 189.22947692871094,
+    "Pos2X": 800.0,
+    "Pos2Y": 450.0,
     "RigidBody3D": {
       "IsEnabled": true,
       "IsStatic": false,
-      "PosX": 30.450244903564453,
-      "PosY": 0.47703415155410767,
-      "PosZ": 1.4185971021652222,
-      "RotW": 1.0,
-      "RotX": 0.0,
-      "RotY": 0.0,
-      "RotZ": 0.0,
+      "PosX": 12.611310005187988,
+      "PosY": 0.477030873298645,
+      "PosZ": -31.138750076293945,
+      "RotW": 0.9997188448905945,
+      "RotX": 0.023243948817253113,
+      "RotY": 5.213078324572962e-08,
+      "RotZ": -0.0046902988106012344,
       "ScaleX": 1.0,
       "ScaleY": 2.0,
       "ScaleZ": 1.0,
-      "VelocityX": 0.0,
+      "VelocityX": -5.605193857299268e-45,
       "VelocityY": 0.0,
-      "VelocityZ": 0.0
+      "VelocityZ": -5.605193857299268e-45
     },
     "Stamina": 100.0
   },
   "Scene": {
     "Is2DActive": false,
-    "IsMiniActive": true,
+    "IsMiniActive": false,
     "LimitYBounds": false
   },
   "Version": 2

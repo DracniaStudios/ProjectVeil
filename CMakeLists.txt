@@ -3,7 +3,8 @@
 #
 cmake_minimum_required (VERSION 3.28)
 
-set(CMAKE_CXX_STANDARD 23)#Soon to be 26
+set(CMAKE_CXX_STANDARD 23)
+
 
 set(PRODUCTION_BUILD OFF CACHE BOOL "Production Build" FORCE)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/game")
@@ -18,7 +19,7 @@ endif()
 if (MSVC)
 	set(CMAKE_MSVC_RUNTINE_LIBRARY "<MultiThreaded$<$<CONFIG:Debug>:Debug>")
 	set(CMAKE_MSVC_RUNTINE_LIBRARY "<MultiThreaded$<$<CONFIG:Release>:Release>")
-	add_compile_options(arch/AVX2)
+	#add_compile_options(arch/AVX2)
 else()
 	#add_compile_options(0mavx2 -CMakeFindDependencyMacro)
 endif()
