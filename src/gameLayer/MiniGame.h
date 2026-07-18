@@ -6,7 +6,7 @@
 #include <raylib.h>
 #include <vector>
 
-#include <Helpers.h>
+#include <helpers.h>
 #include <randomStuff.h>
 
 struct Scene;

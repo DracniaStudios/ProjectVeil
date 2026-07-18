@@ -279,18 +279,19 @@ void Scene_drawScene2D() {
 
 void Scene_drawScene3D() {
 	auto manager = &SceneManager::getInstance();
-	auto scene = manager->currentScene;
-	if (scene != nullptr) { scene->draw3D(); }
+	if (auto scene = manager->currentScene) {
+		scene->draw3D();
 
-	for (auto& object : scene->gameMap.gameObjects) {
-		object.render3D();
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.render3D();
+		}
+
+		for (auto& entity : scene->entities) {
+			entity.second->render3D();
+		}
+
+		scene->player->render3D();
 	}
-
-	for (auto& entity : scene->entities) {
-		entity.second->render3D();
-	}
-
-	scene->player->render3D();
 }
 
 

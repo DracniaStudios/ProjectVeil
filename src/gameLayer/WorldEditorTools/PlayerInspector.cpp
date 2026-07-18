@@ -9,7 +9,7 @@ void WorldEditor::ShowPlayerData(Player* player)
 
 	std::string dataString = "Player";
 	dataString += " Data";
-	ImGui::TextColored(ImVec4(255, 255, 0, 255), dataString.c_str());
+	ImGui::TextColored(ImVec4(255, 255, 0, 255), "%s", dataString.c_str());
 	ImGui::Text("Name: %s", player->name.c_str());
 	ImGui::Text("ID: %d", static_cast<int>(player->id));
 	ImGui::Spacing();
@@ -39,7 +39,7 @@ void WorldEditor::ShowPlayerData(Player* player)
 	ImGui::Checkbox("Is Alive", &player->isAlive);
 	ImGui::Text("Life Span: %f", player->lifeSpan);
 	ImGui::Text("Life End: %f", player->deathSpan);
-	ImGui::Text("Artifact Mode: %f", player->artifactMode);
+	ImGui::Text("Artifact Mode: %d", player->artifactMode);
 	ImGui::Spacing();
 
 	/// Show Player Directional Data and Flags

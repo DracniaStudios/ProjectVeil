@@ -9,8 +9,8 @@ void DisplayObject(GameObject& object)
 
 	// Generic Data
 	//ImGui::InputText(object.name.c_str(), &object.name.c_str());
-	ImGui::Text(object.name.c_str());
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), std::to_string(object.id).c_str());
+	ImGui::Text("%s", object.name.c_str());
+	ImGui::TextColored(ImVec4(255, 0, 255, 255), "%s", std::to_string(object.id).c_str());
 	ImGui::Checkbox("Enabled", &object.isEnabled);
 	ImGui::Checkbox("Selected", &object.canBeSelected);
 	ImGui::Checkbox("Destroyable", &object.isDestructible);
@@ -24,7 +24,7 @@ void DisplayObject(GameObject& object)
 		object.type == OBJECT_ENVIRONMENT ? "Environment" :
 		"Generic"
 		;
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), objectTypeString);
+	ImGui::TextColored(ImVec4(255, 0, 255, 255), "%s", objectTypeString);
 
 	// Debug Display
 	ImGui::Checkbox("Show Model", &object.display3DModel);

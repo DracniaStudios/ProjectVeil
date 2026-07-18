@@ -11,10 +11,7 @@ void SetMoveDirection(Player* player) {
 	auto& speed = player->currentSpeed;
 	speed = player->isSprinting ? player->baseSpeed * 2 : player->isCrouching ? player->baseSpeed / 2 : player->baseSpeed;
 
-	if (player->getBuff(BUFF_MOVEMENT)->remaining_time() > 0) { speed *= 2; }
-	// Always Trying to use
-	// Check if remainint time is less than duration time
-	if (player->buffTimers[BUFF_MOVEMENT].remaining_time() > 0.1f) { speed *= 2; };
+	if (auto* movementBuff = player->getBuff(BUFF_MOVEMENT); movementBuff && movementBuff->remaining_time() > 0) { speed *= 2; }
 
 	// Player Movement Input
 	player->moveDirection = Vector2Zero();
@@ -65,7 +62,7 @@ void updateArtifact(Player* player) {
 	player->artifactMode += InputSystem::getInstance().IsActionPressed(ACTION_USE_ARTIFACT_RIGHT) ? 1
 		: InputSystem::getInstance().IsActionPressed(ACTION_USE_ARTIFACT_LEFT) ? -1
 		: 0;
-	Clamp(player->artifactMode, 0, 5);
+	player->artifactMode = static_cast<int>(Clamp(static_cast<float>(player->artifactMode), 0, 5));
 
 	if (InputSystem::getInstance().IsActionPressed(ACTION_USE_ARTIFACT)) { scene->SetMiniGame(player->artifactMode); };
 

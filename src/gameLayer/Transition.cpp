@@ -9,7 +9,7 @@
  *
  */
 
- #include "transition.h"
+ #include "Transition.h"
 
 Transition * Transition_new() {
 	Transition * transition = (Transition*)malloc(sizeof(Transition));

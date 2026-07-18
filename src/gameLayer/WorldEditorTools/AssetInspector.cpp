@@ -7,7 +7,7 @@ void WorldEditor::ShowAssetData()
 	ImGui::SetNextWindowSize({ 640, 480 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSizeConstraints({ 0, 0 }, { FLT_MAX, FLT_MAX });
 	if (ImGui::Begin("Asset Data", &isAssetActive, 0)) {
-		ImGui::Text("Total Assets: %d", assetManager.assets.size());
+		ImGui::Text("Total Assets: %zu", assetManager.assets.size());
 		ImGui::Separator();
 
 		// Add Draw Calls of dependent popup wiindows here
