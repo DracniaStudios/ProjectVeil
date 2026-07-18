@@ -297,30 +297,36 @@ void Scene_drawScene3D() {
 
 void Scene::SetMiniGame(int value)
 {
+	if (value < MINI_GAME_FLAPPY_BIRD_ID || value > MINI_GAME_RO_SHAM_BOO_ID)
+	{
+		std::cout << "[Scene.cpp] Ignoring SetMiniGame with unknown id: " << value << "\n";
+		return;
+	}
+
 	player->rigidBody2D = {};
 	is2DActive = true;
 	isMiniActive = true;
-	
+
 	player->artifactMode = value;
 
 	switch (value)
 	{
-		case 0:
+		case MINI_GAME_FLAPPY_BIRD_ID:
 			miniGame = MiniGame_FlappyBird(player);
 			break;
-		case 1:
+		case MINI_GAME_CRANE_ID:
 			miniGame = MiniGame_Crane(player);
 			break;
-		case 2:
+		case MINI_GAME_DOCTOR_ID:
 			miniGame = MiniGame_Doctor(player);
 			break;
-		case 3:
+		case MINI_GAME_SIMON_SAYS_ID:
 			miniGame = MiniGame_SimonSays(player);
 			break;
-		case 4:
+		case MINI_GAME_MAZE_ID:
 			miniGame = MiniGame_Maze(player);
 			break;
-		case 5:
+		case MINI_GAME_RO_SHAM_BOO_ID:
 			miniGame = MiniGame_RoShamBoo(player);
 			break;
 	}

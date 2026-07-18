@@ -39,17 +39,17 @@ struct MiniGame
 };
 
 /// Mini Game Constructors
-#define MINI_GAME_FLAPPY_BIRD_ID = 0
+#define MINI_GAME_FLAPPY_BIRD_ID 0
 MiniGame* MiniGame_FlappyBird(Player* player);
-#define MINI_GAME_CRANE_ID = 1
+#define MINI_GAME_CRANE_ID 1
 MiniGame* MiniGame_Crane(Player* player);
-#define MINI_GAME_DOCTOR_ID = 2
+#define MINI_GAME_DOCTOR_ID 2
 MiniGame* MiniGame_Doctor(Player* player);
-#define MINI_GAME_SIMON_SAYS_ID = 3
+#define MINI_GAME_SIMON_SAYS_ID 3
 MiniGame* MiniGame_SimonSays(Player* player);
-#define MINI_GAME_MAZE_ID = 4
+#define MINI_GAME_MAZE_ID 4
 MiniGame* MiniGame_Maze(Player* player);
-#define MINI_GAME_RO_SHAM_BOO_ID = 5
+#define MINI_GAME_RO_SHAM_BOO_ID 5
 MiniGame* MiniGame_RoShamBoo(Player* player);// Rock Paper Scissors
 
 

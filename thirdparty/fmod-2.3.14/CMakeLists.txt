@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.2)
+cmake_minimum_required(VERSION 3.28)
 project(FMOD)
 
 set (CORE_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/core")

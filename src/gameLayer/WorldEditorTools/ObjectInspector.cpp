@@ -1,57 +1,6 @@
 #include "WorldEditor.h"
 
 int textureId = 0; // Global variable to hold the texture ID
-const char* decoyName;
-
-void DisplayObject(GameObject& object) 
-{
-	ImGui::PushID(&object);
-
-	// Generic Data
-	//ImGui::InputText(object.name.c_str(), &object.name.c_str());
-	ImGui::Text("%s", object.name.c_str());
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "%s", std::to_string(object.id).c_str());
-	ImGui::Checkbox("Enabled", &object.isEnabled);
-	ImGui::Checkbox("Selected", &object.canBeSelected);
-	ImGui::Checkbox("Destroyable", &object.isDestructible);
-
-	ImGui::InputInt("Object Type: ", &object.type, 1, 1);
-	const char* objectTypeString =
-		object.type == OBJECT_PLAYER ? "Player" :
-		object.type == OBJECT_ENTITY ? "Entity" :
-		object.type == OBJECT_ITEM ? "Item" :
-		object.type == OBJECT_PROJECTILE ? "Projectile" :
-		object.type == OBJECT_ENVIRONMENT ? "Environment" :
-		"Generic"
-		;
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "%s", objectTypeString);
-
-	// Debug Display
-	ImGui::Checkbox("Show Model", &object.display3DModel);
-	ImGui::Checkbox("Show Direction", &object.displayDirection);
-	ImGui::Checkbox("Show Collider", &object.displayCollider);
-
-	// Status Data
-	ImGui::Checkbox("Alive", &object.isAlive);
-	ImGui::Checkbox("Pending Destroy", &object.pendingDestroy);
-	ImGui::InputFloat("Life Time", &object.lifeSpan);
-	ImGui::InputFloat("Death Time", &object.deathSpan);
-	ImGui::InputFloat("Decay Time", &object.decayTime);
-
-	// Physics
-
-	// Renderer
-	ImGui::Text("Model: %s", object.modelName.empty() ? "Cube" : object.modelName.c_str());
-	ImGui::Text("Texture: %s", object.textureName.empty() ? "None" : object.textureName.c_str());
-	ImGui::Text("Texture ID: %u", object.texture.id);
-
-	
-	
-
-
-	ImGui::PopID();
-
-}
 
 void WorldEditor::ShowObjectInspector()
 {
