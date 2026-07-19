@@ -117,9 +117,11 @@ bool Entity::loadFromJson(Json& j)
 
 bool Entity::useBuff(int id) {
 
-	auto& buff = buffTimers.at(id);
+	CooldownTimer* buff = getBuff(id);
+	if (buff == nullptr) { return false; }
+
 	std::cout << "[Entity.cpp] Use Buff With ID: " << id << "\n";
-	return buff.use();
+	return buff->use();
 }
 
 CooldownTimer* Entity::getBuff(int id) {
