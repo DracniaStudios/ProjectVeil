@@ -47,10 +47,15 @@ void SimonSays::update(MiniGameData* data, void* player_ptr, float delta)
 {
 	auto player = static_cast<Player*>(player_ptr);
 	
-	if (IsKeyPressed(KEY_W) && data->obstacles[data->score].y == 0) { data->score++; }
-	if (IsKeyPressed(KEY_A) && data->obstacles[data->score].y == 1) { data->score++; }
-	if (IsKeyPressed(KEY_S) && data->obstacles[data->score].y == 2) { data->score++; }
-	if (IsKeyPressed(KEY_D) && data->obstacles[data->score].y == 3) { data->score++; }
+	// A single frame can register more than one key press; each branch re-checks the same
+	// index, so chain them with else-if to avoid indexing obstacles[] once score reaches
+	// scoreGoal (out-of-bounds) or awarding more than one point per frame.
+	if (data->score < static_cast<int>(data->obstacles.size())) {
+		if (IsKeyPressed(KEY_W) && data->obstacles[data->score].y == 0) { data->score++; }
+		else if (IsKeyPressed(KEY_A) && data->obstacles[data->score].y == 1) { data->score++; }
+		else if (IsKeyPressed(KEY_S) && data->obstacles[data->score].y == 2) { data->score++; }
+		else if (IsKeyPressed(KEY_D) && data->obstacles[data->score].y == 3) { data->score++; }
+	}
 	
 	if (data->score >= data->scoreGoal) { data->isComplete = true; }
 

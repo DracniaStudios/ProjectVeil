@@ -32,8 +32,16 @@ namespace SaveSystem
 		file << j.dump(2);
 		file.close();
 
+		// Backing up the previous save is best-effort (it may not exist yet); only the
+		// final rename actually delivers the new save, so its failure must be reported.
 		std::filesystem::rename(path, bakPath, errorCode);
+		errorCode.clear();
 		std::filesystem::rename(tmpPath, path, errorCode);
+		if (errorCode)
+		{
+			std::cerr << "[Save System] Failed to finalize save file: " << path.string() << " (" << errorCode.message() << ")\n";
+			return false;
+		}
 		return true;
 	}
 
@@ -237,16 +245,19 @@ namespace SaveSystem
 	bool LoadGame(const char* fileName, Scene& scene)
 	{
 		Json j;
-		
+
+		const std::string savePath = RESOURCES_PATH "../saves/";
+		const std::filesystem::path path = savePath + fileName;
+
 		scene.gameMap.gameObjects.clear();
 		scene.entities.clear();
 		scene.instanceHolder.idCounter = 0;
-		if (!ReadJsonFromFile(fileName, j)) { return false; }
+		if (!ReadJsonFromFile(path.string().c_str(), j)) { return false; }
 
 		if (!ApplyJsonToScene(j, scene)) { return false; }
-		
-		std::cout << "[Save System] Loaded Game: " << fileName << "\n";
-		saveName = fileName;
+
+		std::cout << "[Save System] Loaded Game: " << path.string() << "\n";
+		saveName = path.string();
 		return true;
 	}
 

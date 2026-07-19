@@ -15,13 +15,10 @@ class WorldEditor
 	bool isWorldSettingsActive = true;
 	bool isObjectBrowserActive = false;
 	bool isPlacementActive = false;
-	bool isHierarchyActive = false;
 
 	/** Developer Tool Flags **/
-	bool isGameDataActive = false;
 	bool isPlayerActive = false;
 	bool isCameraActive = false;
-	bool isInspectorActive = false;
 	bool isEntityActive = false;
 	bool isMiniGameActive = false;
 	bool isAssetActive = false;
@@ -37,8 +34,7 @@ class WorldEditor
 	Vector4 colorHolder = Vector4(255, 255, 255, 255);
 
 	/** Object & Entity Inspector State **/
-	std::uint64_t inspectObjectId = 0; // Ids instead of pointers — survive gameObjects reallocation
-	std::uint64_t inspectEntityId = 0; // and entity removal (gameplay death, Load Game)
+	std::uint64_t inspectEntityId = 0; // Id instead of pointer — survives entity removal (gameplay death, Load Game)
 
 	GameObject* newObject = nullptr;
 	Entity* newEntity = nullptr;
