@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
-// Version: 0.1.53 
-// Due: 2026-07-24 (Input System)
-// Date: 2026-07-13 (Current Development Date)
+// Version: 0.1.70 
+// Due: 2026-07-31 (Game Mechanics)
+// Date: 2026-07-20 (Current Development Date)
 
 [Notice] Scene Camera3D can be changed and swith inbetween both cameras.
 [Notice] Player camera is held within the Player struct.
@@ -13,28 +13,21 @@
 
 [ Added ]
 
-- Entities can now be buffed.
-- CooldownTimers are now added.
+- Interaction Ranges is now applied to the Player (default 5m, buff 10m).
+- Added new UseItem InputActions.
 
 [ Updated ]
 
-- Combined World Editor and Developer Tools.
-- Entities can run at double speed with SpeedBuff.
-- Entities hold buff container based on cooldown Timer.
-- Lowered the Goal Score in FlappyBird minigame.
-- FlappyBird minigame increases Player movement. (needs nerfing)
-- Player is now initlaized on scene initialization.
-- Gamemap resets on scene initalization.
-- Object Inspector now shoes Model, Direction, and Type.
+- Updated Entities are effected by SpeedBuff.
+- Updated Entities to use Sprinting and Crouching bools.
+- Changed Buffs are defaulted to 5 seconds.
+- Changed "takeDamage" to "applyHealthValue" and check for isDamage.
+- Updated MiniGames to use new InputSystem.
 
 [ Fixed ]
 
-- Fixed an issue where the Artifact's center of mass was not in center.
-- Fixed an issue where the Player in FlappyBird now inverts speed instead of resetting.
-- Fixed an issue where the Object/Player inspector didn't load float to text propertly.
 
 [ Removed ]
 
-- DeveloperWindow.cpp (Combined File)
-- Physics.cpp (Header Only File)
-- Helpers.cpp (Header Only File)
+- Life Span is not saved in data.
+- Removed "useBuff", "getBuff" recieves full buff pointer for use.

@@ -35,7 +35,7 @@ void Player::FireLaser()
 	{
 		if (GetRayCollisionBox(cameraRay, entity->rigidBody3D.collisionBox).hit)
 		{
-			entity->takeDamage(baseDamage * 0.1f);
+			entity->applyHealthValue(baseDamage * 0.1f, true);
 			entity->rigidBody3D.AddForce(camera->forward, 0.1f);
 		}
 	}
@@ -46,6 +46,15 @@ void Player::Interact()
 	auto scene = SceneManager::getInstance().currentScene;
 	if (scene->is2DActive) { return; }
 
+	// Check buff for increased range
+	if (auto* rangeBuff = getBuff(BUFF_RANGE);
+		rangeBuff && rangeBuff->remaining_time() > 0) {
+		interactRange = 10;
+	}
+	else {
+		interactRange = 5;
+	}
+
 	const auto cameraRay = Ray(scene->camera->position, scene->camera->forward);
 	for (auto& interactable : scene->interactables)
 	{
@@ -54,7 +63,11 @@ void Player::Interact()
 		for (auto& sceneObject : scene->gameMap.gameObjects) { if (sceneObject.id == obj->id) { decoy = &sceneObject; } }
 		if (decoy == nullptr) { continue; }
 
-		if (GetRayCollisionBox(cameraRay, decoy->rigidBody3D.collisionBox).hit)
+		// interactRange
+		auto distance = Vector3Distance(cameraRay.position, decoy->getPosition());
+
+		//Check interaction
+		if (GetRayCollisionBox(cameraRay, decoy->rigidBody3D.collisionBox).hit && distance <= interactRange)
 		{
 			if (obj->isInteractable)
 			{

@@ -85,9 +85,9 @@ void Crane::update(MiniGameData* data, void* player_ptr, float deltaTime)
 
 		static int speed = 2;
 
-		if (IsKeyPressed(KEY_SPACE)) { player->rigidBody2D.jump(-200); }
-		if (IsKeyDown(KEY_LEFT)) { player->rigidBody2D.translation += Vector3(-speed, 0); }
-		if (IsKeyDown(KEY_RIGHT)) { player->rigidBody2D.translation += Vector3(speed, 0); }
+		if (InputSystem::getInstance().IsActionDown(ACTION_MOVE_JUMP)) { player->rigidBody2D.jump(-200); }
+		if (InputSystem::getInstance().IsActionPressed(ACTION_MOVE_LEFT)) { player->rigidBody2D.translation += Vector3(-speed, 0); }
+		if (InputSystem::getInstance().IsActionPressed(ACTION_MOVE_RIGHT)) { player->rigidBody2D.translation += Vector3(speed, 0); }
 
 		if (player->rigidBody2D.getPosition().y < data->screen.y)
 		{
@@ -108,9 +108,8 @@ void Crane::update(MiniGameData* data, void* player_ptr, float deltaTime)
 	{
 		if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, data->goal))
 		{
-			player->health += 5;
+			player->getBuff(BUFF_RANGE)->use();
 			data->isComplete = true;
-			CooldownTimer buffTime = CooldownTimer(30.0f);
 		}
 	}
 

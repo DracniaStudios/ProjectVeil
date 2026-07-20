@@ -15,7 +15,7 @@ void Entity::onEnable()
 	// All Buffs Last 30 seconds
 	// Change Manually when needed
 	for (int i = 0; i < MAX_BUFF; i++) {
-		auto buff = CooldownTimer(30);
+		auto buff = CooldownTimer(5);
 		buff.cooldownID = i;
 		buffTimers.push_back(buff);
 	}
@@ -36,8 +36,21 @@ void Entity::update(Scene* scene, float deltaTime)
 {
 	GameObject::update(scene, deltaTime);
 
-	stamina = Clamp(stamina, 0, getMaxStamina());
+#pragma region Status Effects
+	currentSpeed = isSprinting ? baseSpeed * 2 :
+		isCrouching ? baseSpeed * 0.5f : baseSpeed;
 
+	if (auto* movementBuff = getBuff(BUFF_MOVEMENT);
+		movementBuff && movementBuff->remaining_time() > 0) {
+		currentSpeed *= 2;
+	}
+	
+	if (isSprinting) stamina -= 0.5f;
+	stamina = Clamp(stamina, 0, getMaxStamina());
+	
+	health = Clamp(health, 0, getMaxStamina());
+
+#pragma endregion
 	if (forceFire) { Attack(); }
 
 }
@@ -45,13 +58,13 @@ void Entity::update(Scene* scene, float deltaTime)
 /** Combat Functions **/
 
 // Damage reactions live here (virtual dispatch) instead of in the physics
-// solver so only real Entity instances ever take damage — the solver used to
-// C-cast arbitrary GameObjects to Entity*, which corrupted memory
+// solver so only real Entity instances ever take damage
+
 void Entity::onCollision(const GameObject* collider)
 {
 	if (collider->type == OBJECT_PROJECTILE)
 	{
-		takeDamage(collider->baseDamage);
+		applyHealthValue(collider->baseDamage, true);
 	}
 }
 
@@ -113,15 +126,6 @@ bool Entity::loadFromJson(Json& j)
 	baseSpeed = j.value("BaseSpeed", baseSpeed);
 
 	return true;
-}
-
-bool Entity::useBuff(int id) {
-
-	CooldownTimer* buff = getBuff(id);
-	if (buff == nullptr) { return false; }
-
-	std::cout << "[Entity.cpp] Use Buff With ID: " << id << "\n";
-	return buff->use();
 }
 
 CooldownTimer* Entity::getBuff(int id) {

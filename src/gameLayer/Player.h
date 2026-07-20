@@ -35,9 +35,11 @@ struct Player : Entity
 	GameObject* artifact = {};
 	int artifactMode = 0;
 
+	// Status
+	int baseJumpPower = 20;
+	float currentJumpPower = 20;
+
 	// Flags
-	bool isCrouching = false;
-	bool isSprinting = false;
 
 	// Render And Update
 	void render2D() override;
@@ -62,7 +64,7 @@ struct Player : Entity
 	void Interact();
 
 private:
-	
+	int interactRange = 5;
 };
 
 #endif

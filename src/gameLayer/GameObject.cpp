@@ -291,12 +291,12 @@ bool GameObject::loadCommonFromJson(Json& j)
 	{
 		return false;
 	}
-
+	/*
 	if (j.contains("Life") && j["Life"].is_number())
 	{
 		lifeSpan = j["Life"];
 	}
-
+	*/
 	type = j.value("ObjectType", static_cast<int>(OBJECT_GENERIC));
 	name = j.value("Name", name);
 

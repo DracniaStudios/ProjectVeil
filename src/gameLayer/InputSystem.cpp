@@ -86,6 +86,11 @@ void InputSystem::SetDefaultActions() {
 	CreateAction(ACTION_USE_ARTIFACT_RIGHT, "Artifact_Right", KEY_E, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
 	CreateAction(ACTION_USE_ARTIFACT_LEFT, "Artifact_Left", KEY_Q, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
 
+	// Change to use mouse Buttons
+	CreateAction(ACTION_USE_ITEM, "Item_Left", KEY_T, GAMEPAD_BUTTON_LEFT_TRIGGER_1);
+	CreateAction(ACTION_USE_ITEM2, "Item_Right", KEY_G, GAMEPAD_BUTTON_LEFT_TRIGGER_2);
+	
+	
 	// UI Action
 	CreateAction(ACTION_UI_PAUSE, "Pause", KEY_TAB, GAMEPAD_BUTTON_MIDDLE_RIGHT);
 

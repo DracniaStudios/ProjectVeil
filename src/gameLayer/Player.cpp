@@ -9,14 +9,23 @@
 void SetMoveDirection(Player* player) {
 	/// Player Movement
 	auto& speed = player->currentSpeed;
-	speed = player->isSprinting ? player->baseSpeed * 2 : player->isCrouching ? player->baseSpeed / 2 : player->baseSpeed;
+	speed = player->isSprinting ? player->baseSpeed * 2 :
+		player->isCrouching ? player->baseSpeed / 2 : player->baseSpeed;
 
-	if (auto* movementBuff = player->getBuff(BUFF_MOVEMENT); movementBuff && movementBuff->remaining_time() > 0) { speed *= 2; }
+	auto& jumpPower = player->currentJumpPower;
+
+	if (auto* movementBuff = player->getBuff(BUFF_MOVEMENT);
+		movementBuff && movementBuff->remaining_time() > 0)
+	{
+		speed *= 2; jumpPower += player->baseJumpPower * 2;
+	}
 
 	// Player Movement Input
 	player->moveDirection = Vector2Zero();
-	player->moveDirection.x = InputSystem::getInstance().IsActionDown(ACTION_MOVE_LEFT) ? -1.0 : InputSystem::getInstance().IsActionDown(ACTION_MOVE_RIGHT) ? 1.0f : 0;
-	player->moveDirection.y = InputSystem::getInstance().IsActionDown(ACTION_MOVE_FORWARD) ? 1.0 : InputSystem::getInstance().IsActionDown(ACTION_MOVE_BACKWARD) ? -1.0f : 0;
+	player->moveDirection.x = InputSystem::getInstance().IsActionDown(ACTION_MOVE_LEFT) ? -1.0 :
+		InputSystem::getInstance().IsActionDown(ACTION_MOVE_RIGHT) ? 1.0f : 0;
+	player->moveDirection.y = InputSystem::getInstance().IsActionDown(ACTION_MOVE_FORWARD) ? 1.0 :
+		InputSystem::getInstance().IsActionDown(ACTION_MOVE_BACKWARD) ? -1.0f : 0;
 
 	if (player->moveDirection.y > 0) { player->rigidBody3D.translation += (player->rigidBody3D.forward * speed) * 0.1f; }
 	if (player->moveDirection.y < 0) { player->rigidBody3D.translation += (player->rigidBody3D.back * speed) * 0.1f; }
@@ -28,11 +37,12 @@ void UpdateActions(Player* player) {
 	/// Player Flags
 	player->isCrouching = InputSystem::getInstance().IsActionDown(ACTION_MOVE_CROUCH);
 	player->isSprinting = InputSystem::getInstance().IsActionDown(ACTION_MOVE_SPRINT);
-	player->isFiring = IsMouseButtonDown(MOUSE_BUTTON_LEFT) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
+	player->isFiring = InputSystem::getInstance().IsActionPressed(ACTION_USE_ITEM)
+		|| InputSystem::getInstance().IsActionDown(ACTION_USE_ITEM2);
 
 	if (!WorldEditor::getInstance().IsEnabled()) {
-		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) { player->Fire(); }
-		if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) { player->FireLaser(); }
+		if (InputSystem::getInstance().IsActionPressed(ACTION_USE_ITEM)) { player->Fire(); }
+		if (InputSystem::getInstance().IsActionDown(ACTION_USE_ITEM2)) { player->FireLaser(); }
 	}
 
 	if (InputSystem::getInstance().IsActionPressed(ACTION_MOVE_INTERACT)) { player->Interact(); }
@@ -92,13 +102,15 @@ void Player::onEnable()
 	maxHealth = 100.0f;
 
 	id = PLAYER_ID;
-	stamina = getMaxStamina();
 	rigidBody2D.translation = Vector3(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f, 0);
 	rng = std::ranlux24_base(std::random_device{}());
 	display3DModel = false;
-
-
+	
 	Entity::onEnable();
+	
+	// Override Entity Buffs
+	//buffTimers.clear();
+
 }
 
 void Player::onDisable()
@@ -120,8 +132,8 @@ void Player::render2D()
 	/// Reticle
 	if (!scene->is2DActive) {
 		DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 10,
-			IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? RED
-			: IsMouseButtonDown(MOUSE_BUTTON_RIGHT) ? RED
+			InputSystem::getInstance().IsActionDown(ACTION_USE_ITEM) ? RED
+			: InputSystem::getInstance().IsActionDown(ACTION_USE_ITEM2) ? RED
 			: WHITE);
 	}
 }
@@ -129,17 +141,8 @@ void Player::render2D()
 void Player::render3D()
 {
 	if (!this->isEnabled) { return; }
-	auto camera = SceneManager::getInstance().currentScene->camera;
-
 	artifact->render3D();
 	GameObject::render3D();
-
-	/* Camera Light Location
-	Vector3 rayOffset = Vector3Add(camera->forward, rigidBody3D.right);
-	DrawSphere(camera->position + rayOffset, 0.1f, GREEN);
-	if (isFiring)	{	DrawRay(Ray{ camera->position + rayOffset, camera->forward }, GREEN);}
-	*/
-
 }
 
 void Player::update2D(float deltaTime, bool canMove)
@@ -177,10 +180,8 @@ void Player::update3D(float deltaTime)
 
 	updateArtifact(this);
 
-	/// Clamp Player Health and Stamina
-	health = Clamp(health, 0, getMaxHealth());
 	stamina = Clamp(stamina, 0, getMaxStamina());
-
+	health = Clamp(health, 0, getMaxStamina());
 }
 
 FMOD_3D_ATTRIBUTES Player::getListener() {

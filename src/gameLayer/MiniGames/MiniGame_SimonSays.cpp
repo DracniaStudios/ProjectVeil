@@ -15,10 +15,10 @@ MiniGame* MiniGame_SimonSays(Player* player)
 
 	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.2f, GetScreenHeight() * 0.2f));
 
-
 	auto rng = std::ranlux24_base(std::random_device{}());
 	for (int i = 0; i < game->data->scoreGoal; ++i)
 	{
+		// Holds ID and Type
 		game->data->obstacles.push_back(Rectangle{static_cast<float>(i), static_cast<float>(getRandomInt(rng, 0, 4))});
 		
 	}
@@ -34,6 +34,7 @@ void SimonSays::render(MiniGameData* data, void* player_ptr)
 	for (size_t i = 0; i < data->obstacles.size(); i++)
 	{
 		auto rect = getScreenScale(Rectangle{ 0.025f * i, 0.45f, 0.01f, 0.01f });
+		rect.x += 300;
 
 		DrawRectangleRec(rect, data->score == static_cast<int>(i) ? LIGHTGRAY : BLUE);
 		
@@ -47,11 +48,11 @@ void SimonSays::update(MiniGameData* data, void* player_ptr, float delta)
 {
 	auto player = static_cast<Player*>(player_ptr);
 	
-	if (IsKeyPressed(KEY_W) && data->obstacles[data->score].y == 0) { data->score++; }
-	if (IsKeyPressed(KEY_A) && data->obstacles[data->score].y == 1) { data->score++; }
-	if (IsKeyPressed(KEY_S) && data->obstacles[data->score].y == 2) { data->score++; }
-	if (IsKeyPressed(KEY_D) && data->obstacles[data->score].y == 3) { data->score++; }
+	if (InputSystem::getInstance().IsActionPressed(ACTION_MOVE_FORWARD) && data->obstacles[data->score].y == 0) { data->score++; }
+	if (InputSystem::getInstance().IsActionPressed(ACTION_MOVE_LEFT) && data->obstacles[data->score].y == 1) { data->score++; }
+	if (InputSystem::getInstance().IsActionPressed(ACTION_MOVE_BACKWARD) && data->obstacles[data->score].y == 2) { data->score++; }
+	if (InputSystem::getInstance().IsActionPressed(ACTION_MOVE_RIGHT) && data->obstacles[data->score].y == 3) { data->score++; }
 	
-	if (data->score >= data->scoreGoal) { data->isComplete = true; }
+	if (data->score >= data->scoreGoal) { data->isComplete = true; player->getBuff(BUFF_HEARING)->use(); }
 
 }
