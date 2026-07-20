@@ -108,7 +108,7 @@ void Crane::update(MiniGameData* data, void* player_ptr, float deltaTime)
 	{
 		if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, data->goal))
 		{
-			player->getBuff(BUFF_RANGE)->use();
+			if (auto* rangeBuff = player->getBuff(BUFF_RANGE)) { rangeBuff->use(); }
 			data->isComplete = true;
 		}
 	}

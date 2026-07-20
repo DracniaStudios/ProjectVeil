@@ -47,6 +47,9 @@ void RoShamBoo::update(MiniGameData* data, void* player_ptr, float delta)
 	// Select Right
 	if (InputSystem::getInstance().IsActionPressed(ACTION_MOVE_RIGHT)) { data->score = 3; }
 
-	if (data->score == data->scoreGoal) { data->isComplete = true; player->getBuff(BUFF_RANDOM)->use(); }
+	if (data->score == data->scoreGoal) {
+		data->isComplete = true;
+		if (auto* randomBuff = player->getBuff(BUFF_RANDOM)) { randomBuff->use(); }
+	}
 
 }
