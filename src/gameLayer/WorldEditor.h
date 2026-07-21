@@ -6,22 +6,30 @@
 #include <Player.h>
 #include <EditorUtils.h>
 
+struct EditorCamera : Camera3D {
+	Vector3 forward = {};
+	Vector3 back = {};
+	Vector3 right = {};
+	Vector3 left = {};
+	Vector3 up = {};
+	Vector3 down = {};
+	Vector2 sensitivity = Vector2{ 0.01f, 0.01f };
+	Vector2 lookRotation = {};
+
+	void Update(Camera3D* camera);
+};
+
 class WorldEditor
 {
 	WorldEditor() = default; // Private constructor to prevent instantiation
 
 	/** Window Flags **/
-	bool isEditorActive = false; // Master switch (F8)
+	bool isEditorActive = false; // Master switch (F1)
 	bool isWorldSettingsActive = true;
 	bool isObjectBrowserActive = false;
 	bool isPlacementActive = false;
-	bool isHierarchyActive = false;
-
-	/** Developer Tool Flags **/
-	bool isGameDataActive = false;
 	bool isPlayerActive = false;
 	bool isCameraActive = false;
-	bool isInspectorActive = false;
 	bool isEntityActive = false;
 	bool isMiniGameActive = false;
 	bool isAssetActive = false;
@@ -85,6 +93,8 @@ public:
 		return instance;
 	}
 
+	EditorCamera editorCamera = {};
+	
 	/** Functions **/
 	void update(Player* player);
 

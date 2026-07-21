@@ -6,7 +6,7 @@
 #include <Entity.h>
 #include <randomStuff.h>
 
-struct PlayerCamera
+struct PlayerCamera : Camera3D
 {
 	Vector3 forward = {};
 	Vector3 back = {};
@@ -15,7 +15,6 @@ struct PlayerCamera
 	Vector3 up = {};
 	Vector3 down = {};
 	Vector3 offset = {};
-	Vector3 position = {};
 	Vector2 sensitivity = Vector2{ 0.01f, 0.01f };
 	Vector2 lookRotation = Vector2{ 0, 0 };
 	Vector2 lean = Vector2{ 0, 0 };
@@ -23,7 +22,7 @@ struct PlayerCamera
 	float walkLerp = {};
 	float headTimer = {};
 
-	void UpdateCameraFPS(Camera* camera);
+	void UpdateCameraFPS(Camera3D* camera);
 
 };
 

@@ -7,6 +7,8 @@
 /* Static Functions */
 #pragma region Static Functions
 void SetMoveDirection(Player* player) {
+	auto inputSystem = &InputSystem::getInstance();
+
 	/// Player Movement
 	auto& speed = player->currentSpeed;
 	speed = player->isSprinting ? player->baseSpeed * 2 :
@@ -22,10 +24,10 @@ void SetMoveDirection(Player* player) {
 
 	// Player Movement Input
 	player->moveDirection = Vector2Zero();
-	player->moveDirection.x = InputSystem::getInstance().IsActionDown(ACTION_MOVE_LEFT) ? -1.0 :
-		InputSystem::getInstance().IsActionDown(ACTION_MOVE_RIGHT) ? 1.0f : 0;
-	player->moveDirection.y = InputSystem::getInstance().IsActionDown(ACTION_MOVE_FORWARD) ? 1.0 :
-		InputSystem::getInstance().IsActionDown(ACTION_MOVE_BACKWARD) ? -1.0f : 0;
+	player->moveDirection.x = inputSystem->IsActionDown(ACTION_MOVE_LEFT) ? -1.0 :
+		inputSystem->IsActionDown(ACTION_MOVE_RIGHT) ? 1.0f : 0;
+	player->moveDirection.y = inputSystem->IsActionDown(ACTION_MOVE_FORWARD) ? 1.0 :
+		inputSystem->IsActionDown(ACTION_MOVE_BACKWARD) ? -1.0f : 0;
 
 	if (player->moveDirection.y > 0) { player->rigidBody3D.translation += (player->rigidBody3D.forward * speed) * 0.1f; }
 	if (player->moveDirection.y < 0) { player->rigidBody3D.translation += (player->rigidBody3D.back * speed) * 0.1f; }
@@ -34,20 +36,22 @@ void SetMoveDirection(Player* player) {
 }
 
 void UpdateActions(Player* player) {
+	auto inputSystem = &InputSystem::getInstance();
+
 	/// Player Flags
-	player->isCrouching = InputSystem::getInstance().IsActionDown(ACTION_MOVE_CROUCH);
-	player->isSprinting = InputSystem::getInstance().IsActionDown(ACTION_MOVE_SPRINT);
-	player->isFiring = InputSystem::getInstance().IsActionPressed(ACTION_USE_ITEM)
-		|| InputSystem::getInstance().IsActionDown(ACTION_USE_ITEM2);
+	player->isCrouching = inputSystem->IsActionDown(ACTION_MOVE_CROUCH);
+	player->isSprinting = inputSystem->IsActionDown(ACTION_MOVE_SPRINT);
+	player->isFiring = inputSystem->IsActionPressed(ACTION_USE_ITEM)
+		|| inputSystem->IsActionDown(ACTION_USE_ITEM2);
 
 	if (!WorldEditor::getInstance().IsEnabled()) {
-		if (InputSystem::getInstance().IsActionPressed(ACTION_USE_ITEM)) { player->Fire(); }
-		if (InputSystem::getInstance().IsActionDown(ACTION_USE_ITEM2)) { player->FireLaser(); }
+		if (inputSystem->IsActionPressed(ACTION_USE_ITEM)) { player->Fire(); }
+		if (inputSystem->IsActionDown(ACTION_USE_ITEM2)) { player->FireLaser(); }
 	}
 
-	if (InputSystem::getInstance().IsActionPressed(ACTION_MOVE_INTERACT)) { player->Interact(); }
+	if (inputSystem->IsActionPressed(ACTION_MOVE_INTERACT)) { player->Interact(); }
 
-	if (InputSystem::getInstance().IsActionPressed(ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(20);
+	if (inputSystem->IsActionPressed(ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(20);
 }
 
 void updateCollision(Player* player) {
@@ -65,16 +69,16 @@ void updateCollision(Player* player) {
 }
 
 void updateArtifact(Player* player) {
-	
+	auto inputSystem = &InputSystem::getInstance();
 	auto scene = SceneManager::getInstance().currentScene;
 
 	// Artifact Actions
-	player->artifactMode += InputSystem::getInstance().IsActionPressed(ACTION_USE_ARTIFACT_RIGHT) ? 1
-		: InputSystem::getInstance().IsActionPressed(ACTION_USE_ARTIFACT_LEFT) ? -1
+	player->artifactMode += inputSystem->IsActionPressed(ACTION_USE_ARTIFACT_RIGHT) ? 1
+		: inputSystem->IsActionPressed(ACTION_USE_ARTIFACT_LEFT) ? -1
 		: 0;
 	player->artifactMode = static_cast<int>(Clamp(static_cast<float>(player->artifactMode), 0, 5));
 
-	if (InputSystem::getInstance().IsActionPressed(ACTION_USE_ARTIFACT)) { scene->SetMiniGame(player->artifactMode); };
+	if (inputSystem->IsActionPressed(ACTION_USE_ARTIFACT)) { scene->SetMiniGame(player->artifactMode); };
 
 	
 	// Artifact
@@ -120,6 +124,7 @@ void Player::onDisable()
 
 void Player::render2D()
 {
+	auto inputSystem = &InputSystem::getInstance();
 	if (!this->isEnabled) return;
 	
 	auto scene = SceneManager::getInstance().currentScene;
@@ -132,8 +137,8 @@ void Player::render2D()
 	/// Reticle
 	if (!scene->is2DActive) {
 		DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 10,
-			InputSystem::getInstance().IsActionDown(ACTION_USE_ITEM) ? RED
-			: InputSystem::getInstance().IsActionDown(ACTION_USE_ITEM2) ? RED
+			inputSystem->IsActionDown(ACTION_USE_ITEM) ? RED
+			: inputSystem->IsActionDown(ACTION_USE_ITEM2) ? RED
 			: WHITE);
 	}
 }
@@ -148,15 +153,16 @@ void Player::render3D()
 void Player::update2D(float deltaTime, bool canMove)
 {
 	if (!this->isEnabled) return;
-
 	if (!SceneManager::getInstance().currentScene->is2DActive) return;
+
+	auto inputSystem = &InputSystem::getInstance();
 
 	// Player2D Function
 	moveDirection = Vector2Zero();
-	moveDirection.x = InputSystem::getInstance().IsActionDown(ACTION_MOVE_LEFT) ? -1.0 : InputSystem::getInstance().IsActionDown(ACTION_MOVE_RIGHT) ? 1.0f : 0;
-	moveDirection.y = InputSystem::getInstance().IsActionDown(ACTION_MOVE_FORWARD) ? 1.0 : InputSystem::getInstance().IsActionDown(ACTION_MOVE_BACKWARD) ? -1.0f : 0;
+	moveDirection.x = inputSystem->IsActionDown(ACTION_MOVE_LEFT) ? -1.0 : inputSystem->IsActionDown(ACTION_MOVE_RIGHT) ? 1.0f : 0;
+	moveDirection.y = inputSystem->IsActionDown(ACTION_MOVE_FORWARD) ? 1.0 : inputSystem->IsActionDown(ACTION_MOVE_BACKWARD) ? -1.0f : 0;
 	
-	auto speed = InputSystem::getInstance().IsActionDown(ACTION_MOVE_SPRINT) ? baseSpeed * 2 : baseSpeed;
+	auto speed = inputSystem->IsActionDown(ACTION_MOVE_SPRINT) ? baseSpeed * 2 : baseSpeed;
 	
 	rigidBody2D.update(deltaTime);
 }

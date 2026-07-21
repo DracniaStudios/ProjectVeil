@@ -1,33 +1,32 @@
 // Game Name: Subject Veil
 // Version: 0.1.70 
 // Due: 2026-07-31 (Game Mechanics)
-// Date: 2026-07-20 (Current Development Date)
+// Date: 2026-07-21 (Current Development Date)
 
-[Notice] Scene Camera3D can be changed and swith inbetween both cameras.
-[Notice] Player camera is held within the Player struct.
-[Notice] Editor camera can be created within the Developer Window.
 [Notice] Change Save System to read all types of data files from Json and return the Json data when called.
+[Notice] World Editor doesn't use new InputSystem.
 
 [ Issues ]
 
 
 [ Added ]
 
-- Interaction Ranges is now applied to the Player (default 5m, buff 10m).
-- Added new UseItem InputActions.
+- Added new EditorCamera for world creation.
+- Added new Editor Actions in InputSystem.
 
 [ Updated ]
 
-- Updated Entities are effected by SpeedBuff.
-- Updated Entities to use Sprinting and Crouching bools.
-- Changed Buffs are defaulted to 5 seconds.
-- Changed "takeDamage" to "applyHealthValue" and check for isDamage.
-- Updated MiniGames to use new InputSystem.
+- Updated Scene to check if WorldEditor and 2D mode is active before updating Cameras.
+- Updated Scene to check if WorldEditor is enabled before updating Player3D.
+- Updated PlayerCamera to derive from Camera3D.
+- Updated PlayerCamera to use Camera_Custom update.
+- Updated WorldEditor to use Control + (Number) for UI panels.
+
 
 [ Fixed ]
 
+- Fixed an issue where the PlayerCamera updated with FlatFoward instead of CameraForward.
 
 [ Removed ]
 
-- Life Span is not saved in data.
-- Removed "useBuff", "getBuff" recieves full buff pointer for use.
+- Removed Inventory and Items until added with reason.

@@ -5,7 +5,7 @@
 // Projectile Variant
 void Player::Fire()
 {
-	//
+	std::cout << "Player Fire Projectile \n";
 }
 
 void Player::FireLaser()

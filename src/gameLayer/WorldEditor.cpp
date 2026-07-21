@@ -2,7 +2,7 @@
 
 void WorldEditor::update(Player* player)
 {
-	if (IsKeyPressed(KEY_F8)) { isEditorActive = !isEditorActive; }
+	if (IsKeyPressed(KEY_F1)) { isEditorActive = !isEditorActive; }
 	if (!isEditorActive) { return; } // Panel flags are remembered while hidden
 
 	// Panel shortcuts, only read while the editor is active
@@ -11,22 +11,20 @@ void WorldEditor::update(Player* player)
 		if (IsKeyPressed(KEY_ONE)) { isWorldSettingsActive = !isWorldSettingsActive; }
 		if (IsKeyPressed(KEY_TWO)) { isObjectBrowserActive = !isObjectBrowserActive; }
 		if (IsKeyPressed(KEY_THREE)) { isPlacementActive = !isPlacementActive; }
+		if (IsKeyPressed(KEY_FOUR)) { isPlayerActive = !isPlayerActive; }
+		if (IsKeyPressed(KEY_FIVE)) { isCameraActive = !isCameraActive; }
+		if (IsKeyPressed(KEY_SIX)) { isMiniGameActive = !isMiniGameActive; }
+		if (IsKeyPressed(KEY_SEVEN)) { isEntityActive = !isEntityActive; }
+		if (IsKeyPressed(KEY_EIGHT)) { isAssetActive = !isAssetActive; }
 	}
 
 	// Developer tool shortcuts, kept from the standalone Developer Window
-	if (IsKeyPressed(KEY_F2)) { isPlayerActive = !isPlayerActive; }
-	if (IsKeyPressed(KEY_F3)) { isCameraActive = !isCameraActive; }
-	if (IsKeyPressed(KEY_F5)) { isMiniGameActive = !isMiniGameActive; }
-	if (IsKeyPressed(KEY_F6)) { isEntityActive = !isEntityActive; }
-	if (IsKeyPressed(KEY_F7)) { isAssetActive = !isAssetActive; }
 
 	/// Update World Editor Windows
 	ShowEditorHub();
 	if (isWorldSettingsActive) ShowWorldSettings();
 	if (isObjectBrowserActive) ShowObjectBrowser();
 	if (isPlacementActive) ShowPlacementPanel();
-
-	/// Update Developer Tool Windows
 	if (isPlayerActive) ShowPlayerData(player);
 	if (isCameraActive) ShowCameraData(player);
 	if (isEntityActive) ShowEntityInspector();
@@ -42,19 +40,16 @@ void WorldEditor::ShowEditorHub()
 	ImGui::Checkbox("World Settings (Ctrl+1)", &isWorldSettingsActive);
 	ImGui::Checkbox("Object Browser (Ctrl+2)", &isObjectBrowserActive);
 	ImGui::Checkbox("Placement (Ctrl+3)", &isPlacementActive);
-	ImGui::Separator();
-
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Developer Tools");
-	ImGui::Checkbox("Player Data (F2)", &isPlayerActive);
-	ImGui::Checkbox("Camera Data (F3)", &isCameraActive);
-	ImGui::Checkbox("Mini Game Data (F5)", &isMiniGameActive);
-	ImGui::Checkbox("Entity Inspector (F6)", &isEntityActive);
-	ImGui::Checkbox("Asset Data (F7)", &isAssetActive);
+	ImGui::Checkbox("Player Data (Ctrl+4)", &isPlayerActive);
+	ImGui::Checkbox("Camera Data (Ctrl+5)", &isCameraActive);
+	ImGui::Checkbox("Mini Game Data (Ctrl+6)", &isMiniGameActive);
+	ImGui::Checkbox("Entity Inspector (Ctrl+7)", &isEntityActive);
+	ImGui::Checkbox("Asset Data (Ctrl+8)", &isAssetActive);
 	ImGui::Separator();
 
 	if (!statusMessage.empty()) { ImGui::Text("%s", statusMessage.c_str()); }
 
-	if (ImGui::Button("Close Editor (F8)")) { isEditorActive = false; }
+	if (ImGui::Button("Close Editor (F1)")) { isEditorActive = false; }
 
 	ImGui::End();
 }

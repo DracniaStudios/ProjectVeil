@@ -51,7 +51,6 @@ public:
 	/** Status **/
 	std::vector<CooldownTimer> buffTimers = {};
 	
-	bool useBuff(int id);
 	CooldownTimer* getBuff(int id);
 	float getMaxHealth() const { return maxHealth; }
 	float getMaxStamina() const { return maxStamina; }

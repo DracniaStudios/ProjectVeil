@@ -47,11 +47,12 @@ void SimonSays::render(MiniGameData* data, void* player_ptr)
 void SimonSays::update(MiniGameData* data, void* player_ptr, float delta)
 {
 	auto player = static_cast<Player*>(player_ptr);
+	auto inputSystem = &InputSystem::getInstance();
 	
-	if (InputSystem::getInstance().IsActionPressed(ACTION_MOVE_FORWARD) && data->obstacles[data->score].y == 0) { data->score++; }
-	if (InputSystem::getInstance().IsActionPressed(ACTION_MOVE_LEFT) && data->obstacles[data->score].y == 1) { data->score++; }
-	if (InputSystem::getInstance().IsActionPressed(ACTION_MOVE_BACKWARD) && data->obstacles[data->score].y == 2) { data->score++; }
-	if (InputSystem::getInstance().IsActionPressed(ACTION_MOVE_RIGHT) && data->obstacles[data->score].y == 3) { data->score++; }
+	if (inputSystem->IsActionPressed(ACTION_MOVE_FORWARD) && data->obstacles[data->score].y == 0) { data->score++; }
+	if (inputSystem->IsActionPressed(ACTION_MOVE_LEFT) && data->obstacles[data->score].y == 1) { data->score++; }
+	if (inputSystem->IsActionPressed(ACTION_MOVE_BACKWARD) && data->obstacles[data->score].y == 2) { data->score++; }
+	if (inputSystem->IsActionPressed(ACTION_MOVE_RIGHT) && data->obstacles[data->score].y == 3) { data->score++; }
 	
 	if (data->score >= data->scoreGoal) { data->isComplete = true; player->getBuff(BUFF_HEARING)->use(); }
 

@@ -10,6 +10,7 @@ Scene* Scene_new() {
 	Scene* scene = new Scene;
 	scene->gameMap = {};
 
+
 	// Default Settings For Scene
 	scene->player = new Player;
 	scene->player->type = OBJECT_PLAYER;
@@ -136,8 +137,23 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 void Scene_updateScene(float delta) {
 
 	auto manager = &SceneManager::getInstance();
+	auto worldEditor = &WorldEditor::getInstance();
 	auto scene = manager->currentScene;
 	scene->update(delta);
+
+
+	// Swap Editor and Player Camera
+	if (!scene->is2DActive) {
+		if (scene->player != nullptr && worldEditor->IsEnabled() == false) {
+			scene->player->camera.UpdateCameraFPS(&manager->camera3D);
+		}
+		else if (worldEditor->IsEnabled()) {
+			worldEditor->editorCamera.Update(&manager->camera3D);
+		}
+		else {
+			std::cout << "No Camera Detected \n";
+		}
+	}
 
 	/** Update Player **/
 	if (auto player = scene->player) {
@@ -147,8 +163,7 @@ void Scene_updateScene(float delta) {
 		}
 		else
 		{
-			player->update3D(delta);
-			scene->camera->UpdateCameraFPS(&manager->camera3D);
+			if (!worldEditor->IsEnabled()) { player->update3D(delta); };
 		
 			// Clamp Y Bounds
 			if (player->rigidBody3D.translation.y < -1000.0f) {

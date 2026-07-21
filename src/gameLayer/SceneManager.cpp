@@ -5,6 +5,7 @@ SceneManager* SceneManager_new() {
 	return manager;
 }
 
+void SceneManager::SetCamera(Camera3D* camera) { camera3D = *camera; }
 
 void SceneManager_init(SceneManager* manager) {
 	manager->currentScene = nullptr;
