@@ -39,14 +39,15 @@ void RoShamBoo::render(MiniGameData* data, void* player_ptr)
 void RoShamBoo::update(MiniGameData* data, void* player_ptr, float delta)
 {
 	auto player = static_cast<Player*>(player_ptr);
+	auto inputSystem = &InputSystem::getInstance();
 
 	// Select Left
-	if (IsKeyPressed(KEY_A)) { data->score = 1; }
+	if (inputSystem->IsActionPressed(ACTION_MOVE_LEFT)) { data->score = 1; }
 	// Select Middle
-	if (IsKeyPressed(KEY_S)) { data->score = 2; }
+	if (inputSystem->IsActionPressed(ACTION_MOVE_BACKWARD)) { data->score = 2; }
 	// Select Right
-	if (IsKeyPressed(KEY_D)) { data->score = 3; }
+	if (inputSystem->IsActionPressed(ACTION_MOVE_RIGHT)) { data->score = 3; }
 
-	if (data->score == data->scoreGoal) { data->isComplete = true; }
+	if (data->score == data->scoreGoal) { data->isComplete = true; player->getBuff(BUFF_RANDOM)->use(); }
 
 }

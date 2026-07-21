@@ -8,11 +8,12 @@ struct Scene;
 
 enum Buff {
 	BUFF_MOVEMENT,
-	BUFF_REACH,
+	BUFF_RANGE,
 	BUFF_HEALTH,
 	BUFF_HEARING,
 	BUFF_SEARCH,
 	BUFF_RANDOM,
+	// Attack Timer?
 	MAX_BUFF
 };
 
@@ -33,6 +34,9 @@ public:
 	float currentSpeed = 1.0f;
 
 	/** Flags **/
+
+	bool isSprinting = false;
+	bool isCrouching = false;
 	bool isFiring = false;
 	bool forceFire = false;
 	bool canAttack = true;
@@ -47,7 +51,6 @@ public:
 	/** Status **/
 	std::vector<CooldownTimer> buffTimers = {};
 	
-	bool useBuff(int id);
 	CooldownTimer* getBuff(int id);
 	float getMaxHealth() const { return maxHealth; }
 	float getMaxStamina() const { return maxStamina; }
@@ -59,10 +62,8 @@ public:
 
 	/** Combat Functions **/
 	virtual void onHit(const Entity* collider);
-	void takeDamage(const float& damage)
-	{
-		health -= damage;
-	}
+
+	void applyHealthValue(const float& value, bool isDamage){ health = isDamage ? health -= value : health += value; }
 	virtual void Attack();
 
 };

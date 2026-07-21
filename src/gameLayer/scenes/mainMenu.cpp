@@ -1,7 +1,5 @@
 #include "mainMenu.h"
 
-#include <Objects/Interactable/LockedBox.h>
-
 void Scene_MainMenuUpdate(float deltaTime)
 {
 	auto manager = &SceneManager::getInstance();
@@ -35,7 +33,7 @@ Scene* Scene_MainMenuConstruct()
 	scene->update = Scene_MainMenuUpdate;
 	scene->draw2D = Scene_MainMenuDraw2D;
 	scene->draw3D = Scene_MainMenuDraw3D;
-
+   
 	SaveSystem::LoadGame("world.json", *scene);
 	//SaveSystem::LoadGame("mainMenu.json", *scene);
 	return scene;

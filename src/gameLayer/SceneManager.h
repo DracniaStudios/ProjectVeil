@@ -29,8 +29,11 @@ public:
 	Scene* nextScene; /**< The next Scene to activate */
 	Transition* transition; /**< The Transition between two Scene */
 
-	Camera3D camera3D;
+	Camera3D camera3D; // cast Editor/Player -> SceneManager.Camera
 	Camera2D camera2D;
+
+	void SetCamera(Camera3D* camera);
+
 } SceneManager;
 
 /**

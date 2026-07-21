@@ -87,6 +87,7 @@ void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
 {
 	auto scene = SceneManager::getInstance().currentScene;
 	auto player = static_cast<Player*>(player_ptr);
+	auto inputSystem = &InputSystem::getInstance();
 
 	auto generateObstacle = [&](int count = 4)
 		{
@@ -147,9 +148,7 @@ void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
 
 	if (data->score >= data->scoreGoal)
 	{
-		player->health += 5;
-		// Create new player Buff
-		player->useBuff(0);
+		player->getBuff(BUFF_MOVEMENT)->use();
 		data->isComplete = true;
 	}
 
@@ -158,7 +157,7 @@ void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
 		static int speed = 50;
 		
 		player->rigidBody2D.applyGravity();
-		if (IsKeyPressed(KEY_SPACE)) { player->rigidBody2D.jump(50); }
+		if (inputSystem->IsActionPressed(ACTION_MOVE_JUMP)) { player->rigidBody2D.jump(200); }
 
 		if (isLeftGoalActive) { player->rigidBody2D.applyForce(Vector2(-speed, 0)); }
 		if (isRightGoalActive) { player->rigidBody2D.applyForce(Vector2(speed, 0)); }

@@ -13,7 +13,6 @@
 #include <Player.h>
 #include <AssetManager.h>
 #include <MiniGame.h>
-#include <Inventory.h>
 #include <asserts.h>
 #include <SaveSystem.h>
 

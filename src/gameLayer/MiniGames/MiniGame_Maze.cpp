@@ -24,5 +24,8 @@ void Maze::render(MiniGameData* data, void* player_ptr)
 void Maze::update(MiniGameData* data, void* player_ptr, float delta)
 {
 	auto player = static_cast<Player*>(player_ptr);
+	auto inputSystem = &InputSystem::getInstance();
+
+	player->getBuff(BUFF_SEARCH)->use();
 	if (data->score >= data->scoreGoal) { data->isComplete = true; }
 }
