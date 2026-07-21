@@ -48,7 +48,7 @@ void Entity::update(Scene* scene, float deltaTime)
 	if (isSprinting) stamina -= 0.5f;
 	stamina = Clamp(stamina, 0, getMaxStamina());
 	
-	health = Clamp(health, 0, getMaxStamina());
+	health = Clamp(health, 0, getMaxHealth());
 
 #pragma endregion
 	if (forceFire) { Attack(); }

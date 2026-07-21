@@ -59,6 +59,8 @@ void SimonSays::update(MiniGameData* data, void* player_ptr, float delta)
 	if (inputSystem->IsActionPressed(ACTION_MOVE_RIGHT) && data->obstacles[data->score].y == 3) { data->score++; }
   }
 	
-	if (data->score >= data->scoreGoal) { data->isComplete = true; player->getBuff(BUFF_HEARING)->use(); }
-
+	if (data->score >= data->scoreGoal) {
+		data->isComplete = true;
+		if (auto* hearingBuff = player->getBuff(BUFF_HEARING)) { hearingBuff->use(); }
+	}
 }

@@ -63,7 +63,7 @@ public:
 	/** Combat Functions **/
 	virtual void onHit(const Entity* collider);
 
-	void applyHealthValue(const float& value, bool isDamage){ health = isDamage ? health -= value : health += value; }
+	void applyHealthValue(const float& value, bool isDamage){ if (isDamage) { health -= value; } else { health += value; } }
 	virtual void Attack();
 
 };

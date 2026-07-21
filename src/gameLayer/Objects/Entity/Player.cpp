@@ -187,7 +187,7 @@ void Player::update3D(float deltaTime)
 	updateArtifact(this);
 
 	stamina = Clamp(stamina, 0, getMaxStamina());
-	health = Clamp(health, 0, getMaxStamina());
+	health = Clamp(health, 0, getMaxHealth());
 }
 
 FMOD_3D_ATTRIBUTES Player::getListener() {

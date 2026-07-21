@@ -148,7 +148,7 @@ void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
 
 	if (data->score >= data->scoreGoal)
 	{
-		player->getBuff(BUFF_MOVEMENT)->use();
+		if (auto* movementBuff = player->getBuff(BUFF_MOVEMENT)) { movementBuff->use(); }
 		data->isComplete = true;
 	}
 

@@ -26,6 +26,8 @@ void Maze::update(MiniGameData* data, void* player_ptr, float delta)
 	auto player = static_cast<Player*>(player_ptr);
 	auto inputSystem = &InputSystem::getInstance();
 
-	player->getBuff(BUFF_SEARCH)->use();
-	if (data->score >= data->scoreGoal) { data->isComplete = true; }
+	if (data->score >= data->scoreGoal) {
+		data->isComplete = true;
+		if (auto* searchBuff = player->getBuff(BUFF_SEARCH)) { searchBuff->use(); }
+	}
 }
