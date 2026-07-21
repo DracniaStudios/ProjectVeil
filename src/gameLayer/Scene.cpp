@@ -181,20 +181,20 @@ void Scene_updateScene(float delta) {
 	{
 		// Update Data
 		entity->second->id = entity->first;
-		
-		bool shouldKill = false;
 
-		if (entity->second->health <= 0)
-		{
-			shouldKill = true;
-		}
+		bool shouldKill = entity->second->health <= 0;
 
 		if (shouldKill)
 		{
-			// Check If Item
-			if (entity->second->type != OBJECT_ITEM) { continue; }
+			// Only items are auto-removed here; other entity types keep their
+			// (still-zero-health) entry until their own death handling runs.
+			if (entity->second->type != OBJECT_ITEM) { ++entity; continue; }
+
+			// removeEntity() erases this key from scene->entities, invalidating
+			// `entity` - grab the next iterator first.
+			auto next = std::next(entity);
 			scene->gameMap.removeEntity(entity->second.get());
-			//entity = scene->entities.erase(entity);
+			entity = next;
 		}
 		else
 		{
@@ -246,10 +246,13 @@ void Scene_updateScene(float delta) {
 			scene->is2DActive = false;
 			scene->isMiniActive = false;
 			scene->miniGame = nullptr;
+			delete miniGame->data;
+			delete miniGame;
 		}
-
-		if (miniGame->data->isReset)
+		else if (miniGame->data->isReset)
 		{
+			delete miniGame->data;
+			delete miniGame;
 			scene->SetMiniGame(scene->GetLastMiniGame());
 		}
 
