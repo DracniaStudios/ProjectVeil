@@ -14,7 +14,11 @@ void InteractableObject::onInteract()
 
 	//AudioManager::getInstance().Play("anime_wow");
 	AudioManager::getInstance().Play3D(defaultSound, *this);
-	soundInstance->setParameterByName(soundParameterName.c_str(), soundParameterValue);
+	// Play3D only populates soundInstance when it falls back to the FMOD Studio event path;
+	// a plain loaded sound (the common case) leaves it null.
+	if (soundInstance != nullptr) {
+		soundInstance->setParameterByName(soundParameterName.c_str(), soundParameterValue);
+	}
 
 	if (interactType == INTERACT_MINIGAME)
 	{

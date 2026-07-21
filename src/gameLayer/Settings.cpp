@@ -55,8 +55,15 @@ bool Settings::Save() {
 	file << j.dump(2);
 	file.close();
 
+	// Backing up the previous settings is best-effort (it may not exist yet); only the
+	// final rename actually delivers the new file, so its failure must be reported.
 	std::filesystem::rename(path, bakPath, errorCode);
+	errorCode.clear();
 	std::filesystem::rename(tmpPath, path, errorCode);
+	if (errorCode) {
+		std::cerr << "[Settings] Failed to finalize settings file: " << path.string() << " (" << errorCode.message() << ")\n";
+		return false;
+	}
 
 	std::cout << "[Settings] Saved Settings: " << path.string() << "\n";
 	return true;

@@ -33,9 +33,8 @@ Scene* Scene_MainMenuConstruct()
 	scene->update = Scene_MainMenuUpdate;
 	scene->draw2D = Scene_MainMenuDraw2D;
 	scene->draw3D = Scene_MainMenuDraw3D;
-
-	SaveSystem::LoadGame(RESOURCES_PATH "../saves/world.json", *scene);
-	//SaveSystem::LoadGame(RESOURCES_PATH "../saves/mainMenu.json", *scene);
-
+   
+	SaveSystem::LoadGame("world.json", *scene);
+	//SaveSystem::LoadGame("mainMenu.json", *scene);
 	return scene;
 }
