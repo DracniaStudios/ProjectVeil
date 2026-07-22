@@ -69,8 +69,9 @@ void updateCollision(Player* player) {
 }
 
 void updateArtifact(Player* player) {
+
 	auto inputSystem = &InputSystem::getInstance();
-	auto scene = SceneManager::getInstance().currentScene;
+	const auto scene = SceneManager::getInstance().currentScene;
 
 	// Artifact Actions
 	player->artifactMode += inputSystem->IsActionPressed(ACTION_USE_ARTIFACT_RIGHT) ? 1
@@ -80,11 +81,11 @@ void updateArtifact(Player* player) {
 
 	if (inputSystem->IsActionPressed(ACTION_USE_ARTIFACT)) { scene->SetMiniGame(player->artifactMode); };
 
-	
 	// Artifact
-	auto camera = scene->camera;
-	auto offset = Vector3Add(camera->forward, player->rigidBody3D.left);//camera->left / 2);
-	player->artifact->rigidBody3D.translation = Vector3Add(camera->position, offset);
+	const auto camera = player->camera;
+	const auto offset = Vector3Add(camera.forward, player->rigidBody3D.left);//camera->left / 2);
+
+	player->artifact->rigidBody3D.translation = Vector3Add(camera.position, offset);
 	player->artifact->rigidBody3D.angularVelocity = Vector3(0.1f, 0, 0.1f);
 	player->artifact->update(scene, GetFrameTime());
 	
@@ -191,7 +192,7 @@ void Player::update3D(float deltaTime)
 }
 
 FMOD_3D_ATTRIBUTES Player::getListener() {
-	const auto camera = SceneManager::getInstance().currentScene->camera;
+	const auto camera = &SceneManager::getInstance().currentScene->player->camera;
 
 	// FMOD requires forward and up to be normalized and perpendicular
 	Vector3 forward = Vector3Normalize(camera->forward);

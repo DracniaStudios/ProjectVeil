@@ -2,7 +2,8 @@
 
 void WorldEditor::ShowPlacementPanel()
 {
-	auto scene = SceneManager::getInstance().currentScene;
+	const auto manager = &SceneManager::getInstance();
+	const auto scene = manager->currentScene;
 
 	// Add Type Creation Variant
 
@@ -91,11 +92,19 @@ void WorldEditor::ShowPlacementPanel()
 		};
 
 	if (ImGui::Button("Spawn Game Object")) { spawnAt(stagingObject.getPosition()); }
-	if (scene->player != nullptr && scene->camera != nullptr && ImGui::Button("Spawn At Player"))
+	if (scene->player != nullptr && ImGui::Button("Spawn At Player"))
 	{
 		Vector3 position = Vector3Add(
 			scene->player->rigidBody3D.translation,
-			Vector3Scale(scene->camera->forward, 3.0f)
+			Vector3Scale(scene->player->camera.forward, 3.0f)
+		);
+		spawnAt(position);
+	}
+	if (scene->player != nullptr && ImGui::Button("Spawn At Camera"))
+	{
+		Vector3 position = Vector3Add(
+			manager->camera3D.position,
+			Vector3Scale(manager->camera3D.up, 3.0f)
 		);
 		spawnAt(position);
 	}

@@ -6,7 +6,7 @@ static Color colliderColor;
 
 static BoundingBox getBoundingBox(Model mdl, Vector3 pos)
 {
-	permaAssertComment(mdl.meshes == nullptr, "No Meshes In Model");
+	permaAssertComment(mdl.meshCount == 0, "No Meshes In Model");
 	
 	BoundingBox box = GetMeshBoundingBox(mdl.meshes[0]);
 	box.min = Vector3Add(pos, box.min);
@@ -31,11 +31,29 @@ GameObject::GameObject()
 		ownsModel = true;
 	}
 
+	if (model.materialCount == 0) {
+		model.materials[MATERIAL_MAP_DIFFUSE] = LoadMaterialDefault();
+	}
+
 	// Set Initial Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(model.meshes[0]);
 
 	lifeSpan = 0;
 	deathSpan = 1;
+
+}
+
+GameObject::~GameObject() {
+
+	isEnabled = false;
+	/*
+	if (&model != nullptr) {
+		UnloadModel(model);
+	}
+	if (&mesh != nullptr) {
+		UnloadMesh(mesh);
+	}
+	*/
 
 }
 

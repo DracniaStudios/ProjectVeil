@@ -26,6 +26,7 @@ enum ObjectType : uint8_t
 struct GameObject 
 {
 	GameObject();
+	~GameObject();
 
 	/// Data
 	std::string name = "GameObject";
@@ -36,6 +37,7 @@ struct GameObject
 	bool display3DModel = true;
 	bool displayDirection = false;
 	bool displayCollider = false;
+	bool isSelectable = true;
 	
 	/// Status
 	float lifeSpan = 0;

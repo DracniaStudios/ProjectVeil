@@ -119,7 +119,6 @@ void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
 	// Game Logic
 	if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, leftGoal))
 	{
-		if (!isLeftGoalActive) return;
 		std::cout << "Player Inside Left Goal \n";
 		data->score++;
 		isRightGoalActive = true;
@@ -130,7 +129,6 @@ void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
 	}
 	if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, rightGoal))
 	{
-		if (!isRightGoalActive) return;
 		std::cout << "Player Inside Right Goal \n";
 		data->score++;
 		isLeftGoalActive = true;

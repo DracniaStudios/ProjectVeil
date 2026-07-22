@@ -16,7 +16,6 @@ Scene* Scene_new() {
 	scene->player->type = OBJECT_PLAYER;
 	scene->player->id = PLAYER_ID;
 	scene->player->onEnable();
-	//scene->gameMap.saveEntity(*scene->player);
 	
 	scene->player->artifact = new GameObject;
 	scene->player->artifact->name = "Artifact";
@@ -26,9 +25,6 @@ Scene* Scene_new() {
 	scene->player->artifact->rigidBody3D.SetGravity(0, 0, 0);
 	scene->player->artifact->setModel("RubixCube");
 	scene->player->artifact->defaultSound = "Artifact_Load_Up";
-	//scene->player->artifact = scene->gameMap.saveObject(*scene->player->artifact);
-
-	scene->camera = new PlayerCamera;
 
 	SceneManager::getInstance().currentScene = scene;
 	return scene;

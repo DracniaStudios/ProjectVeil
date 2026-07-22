@@ -1,24 +1,43 @@
 #include <WorldEditor.h>
 
+void SelectObjectInWorldSpace(EditorCamera* editor, Camera3D* camera) {
+	auto gameObjects = SceneManager::getInstance().currentScene->gameMap.gameObjects;
+	// Get Mouse To World Space.
+	const auto mouseRay = GetScreenToWorldRay(GetMousePosition(), *camera);
+
+	// Dangerous
+	for (size_t i = 0; i < gameObjects.size(); ++i) {
+		auto object = &gameObjects[i];
+		if (!object->isSelectable) continue;
+		// Check Mouse Ray and Object Collision
+		if (auto collider = GetRayCollisionBox(mouseRay, object->rigidBody3D.collisionBox); collider.hit) {
+			auto worldEditor = &WorldEditor::getInstance();
+
+			worldEditor->SelectObject(object->id);
+			object->displayCollider = true;
+			object->displayDirection = true;
+
+		}
+	}
+}
+
 void UpdateDirection(EditorCamera* editor, Camera3D* camera) {
 
 	auto up = Vector3(0.0f, 1.0f, 0.0f);
-	
-	editor->lookRotation.x -= GetMouseDelta().x * editor->sensitivity.x;
-	editor->lookRotation.y += GetMouseDelta().y * editor->sensitivity.y;
-
-	UpdateCamera(camera, CAMERA_CUSTOM);
 
 	// FPS-style camera look
 	static float yaw = 0.0f;
 	static float pitch = 0.0f;
-	const float sensitivity = -0.003f;
+	const float sensitivity = -0.1f;
 
 	Vector2 mouseDelta = GetMouseDelta();
-	yaw += mouseDelta.x * sensitivity;
-	pitch += mouseDelta.y * sensitivity;
+	yaw += mouseDelta.x * sensitivity * GetFrameTime();
+	pitch += mouseDelta.y * sensitivity * GetFrameTime();
 	if (pitch > 1.5f) pitch = 1.5f;
 	if (pitch < -1.5f) pitch = -1.5f;
+
+	editor->lookRotation.x -= mouseDelta.x + sensitivity * GetFrameTime();
+	editor->lookRotation.x += mouseDelta.x + sensitivity * GetFrameTime();
 
 	Vector3 camForward = {
 		cosf(pitch) * sinf(yaw),
@@ -36,9 +55,10 @@ void UpdateDirection(EditorCamera* editor, Camera3D* camera) {
 	editor->back = Vector3Scale(camForward, -1);
 	editor->right = Vector3{ -camForward.z, 0, camForward.x };
 	editor->left = Vector3{ camForward.z, 0, -camForward.x };
-	editor->up = Vector3{ 0, 1, 0 };
+	camera->up = editor->up = Vector3{ 0, 1, 0 };
 	editor->down = Vector3{ 0, -1, 0 };
 
+	UpdateCamera(camera, CAMERA_CUSTOM);
 }
 
 void UpdateMovement(EditorCamera* editor, Camera3D* camera) {
@@ -47,8 +67,8 @@ void UpdateMovement(EditorCamera* editor, Camera3D* camera) {
 
 	if (inputSystem->IsActionDown(ACTION_MOVE_SPRINT)) { speed *= 2; }
 
-	if (inputSystem->IsActionDown(ACTION_EDITOR_UP)) { editor->position.y += speed * 0.5f; }
-	if (inputSystem->IsActionDown(ACTION_EDITOR_DOWN)) { editor->position.y -= speed * 0.5f; }
+	if (inputSystem->IsActionDown(ACTION_EDITOR_UP)) { editor->position.y += speed * 0.1f; }
+	if (inputSystem->IsActionDown(ACTION_EDITOR_DOWN)) { editor->position.y -= speed * 0.1f; }
 
 	Vector2 moveDirection = Vector2Zero();
 
@@ -70,5 +90,7 @@ void EditorCamera::Update(Camera3D* camera) {
 	UpdateDirection(this, camera);
 	
 	UpdateMovement(this, camera);
+
+	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) { SelectObjectInWorldSpace(this, camera); }
 
 };

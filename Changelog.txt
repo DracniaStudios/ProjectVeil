@@ -11,22 +11,23 @@
 
 [ Added ]
 
-- Added new EditorCamera for world creation.
-- Added new Editor Actions in InputSystem.
+- Added new ability to select GameObjects with EditorCamera.
+- Placement Panel can now place objects at Camera position.
 
 [ Updated ]
 
-- Updated Scene to check if WorldEditor and 2D mode is active before updating Cameras.
-- Updated Scene to check if WorldEditor is enabled before updating Player3D.
-- Updated PlayerCamera to derive from Camera3D.
-- Updated PlayerCamera to use Camera_Custom update.
-- Updated WorldEditor to use Control + (Number) for UI panels.
-
+- Updated multiple scripts to use Readonly Scenes.
+- Updated multiple scripts to use SceneManager camera as readable.
+- Updated multiple scripts to use Player/Editor camera as current Camera data.
+- Updated Player to use Default and Extended Interact Range.
+- Updated GameObject to check for MeshCount in GetBoundingBox.
+- Updated GameObjects to be Selectable by Editor.
+- Updated MiniGames to initialize Update and Draw methods.
+- Updated CameraInspector to show default Camera data.
+- Updated EditorCamera to use deltaTime for CameraSpeed.
 
 [ Fixed ]
 
-- Fixed an issue where the PlayerCamera updated with FlatFoward instead of CameraForward.
-
 [ Removed ]
 
-- Removed Inventory and Items until added with reason.
+- Removed Goal check from FlappyBird collision.

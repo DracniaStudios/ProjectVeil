@@ -31,8 +31,8 @@ typedef void (*drawGameMethod)(MiniGameData* data, void* player_ptr);
 struct MiniGame
 {
 	const char* name = {};
-	updateGameMethod update;
-	drawGameMethod draw;
+	updateGameMethod update = {};
+	drawGameMethod draw = {};
 	MiniGameData* data = {};
 
 	void SetGoal(const Rectangle rect) const { data->goal = rect; }

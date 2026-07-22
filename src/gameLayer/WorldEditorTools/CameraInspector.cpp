@@ -2,16 +2,15 @@
 
 void WorldEditor::ShowCameraData(Player* player)
 {
-	auto camera = *SceneManager::getInstance().currentScene->camera;
+	const auto camera = &SceneManager::getInstance().camera3D;
 	/// Show Camera Data Window
 	ImGui::Begin("Camera Data");
 
-	ImGui::Text("Camera Forward: (%.2f, %.2f, %.2f)", camera.forward.x, camera.forward.y, camera.forward.z);
-	ImGui::Text("Camera Offset: (%.2f, %.2f, %.2f)", camera.offset.x, camera.offset.y, camera.offset.z);
-	ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", camera.position.x, camera.position.y, camera.position.z);
-	ImGui::Text("Camera Sensitivity: (%.2f, %.2f)", camera.sensitivity.x, camera.sensitivity.y);
-	ImGui::Text("Camera Look Rotation: (%.2f, %.2f)", camera.lookRotation.x, camera.lookRotation.y);
-	ImGui::Text("Camera Lean: (%.2f, %.2f)", camera.lean.x, camera.lean.y);
+	ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", camera->position.x, camera->position.y, camera->position.z);
+	ImGui::Text("Camera Target: (%.2f, %.2f, %.2f)", camera->target.x, camera->target.y, camera->target.z);
+	ImGui::Text("Camera Up: (%.2f, %.2f, %.2f)", camera->up.x, camera->up.y, camera->up.z);
+	ImGui::Text("Camera FOVY: (%.2f)", camera->fovy);
+	ImGui::Text("Camera Projection: (%.2f)", camera->projection);
 	ImGui::Separator();
 
 	ImGui::Text("Mouse Position: (%.2f, %.2f)", GetMousePosition().x, GetMousePosition().y);

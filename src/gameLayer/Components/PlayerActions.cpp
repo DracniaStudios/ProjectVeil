@@ -10,13 +10,13 @@ void Player::Fire()
 
 void Player::FireLaser()
 {
-	auto camera = SceneManager::getInstance().currentScene->camera;
+	const auto camera = &SceneManager::getInstance().currentScene->player->camera;
 	// Create Ray from Camera
 	Ray cameraRay = { camera->position, camera->forward };
 
 	// Check Ray Collision with Game Objects
 
-	auto scene = SceneManager::getInstance().currentScene;
+	const auto scene = SceneManager::getInstance().currentScene;
 
 	// gameMap.gameObjects stores plain GameObjects (anything saved there was
 	// sliced), so casting them to Entity* to deal damage wrote past the end
@@ -43,19 +43,21 @@ void Player::FireLaser()
 
 void Player::Interact()
 {
-	auto scene = SceneManager::getInstance().currentScene;
+	const auto scene = SceneManager::getInstance().currentScene;
+	auto interactRange = 5;
+
 	if (scene->is2DActive) { return; }
 
 	// Check buff for increased range
 	if (auto* rangeBuff = getBuff(BUFF_RANGE);
 		rangeBuff && rangeBuff->remaining_time() > 0) {
-		interactRange = 10;
+		interactRange = extendedInteractRange;
 	}
 	else {
-		interactRange = 5;
+		interactRange = defaultInteractRange;
 	}
 
-	const auto cameraRay = Ray(scene->camera->position, scene->camera->forward);
+	const auto cameraRay = Ray(camera.position, camera.forward);
 	for (auto& interactable : scene->interactables)
 	{
 		const auto obj = interactable.second.get();
@@ -78,38 +80,4 @@ void Player::Interact()
 	}
 	
 	if (artifact->isEnabled) { scene->SetMiniGame(artifactMode); return; }
-}
-
-static GameObject* selectObject(const Camera& cam)
-{
-	auto scene = SceneManager::getInstance().currentScene;
-	auto player = scene->player;
-
-	Ray selectRay = {
-		cam.position,
-		scene->camera->forward
-	};
-
-	if (!scene->gameMap.gameObjects.empty())
-	{
-		for (auto& object : scene->gameMap.gameObjects)
-		{
-			if (object.isEnabled)
-			{
-				BoundingBox objectBox = {
-					object.getPosition() - object.getSize() / 2,
-					object.getPosition() + object.getSize() / 2
-				};
-				if (GetRayCollisionBox(selectRay, objectBox).hit)
-				{
-					if (!object.canBeSelected) { continue; }
-
-					return &object;
-				}
-			}
-		}
-	}
-
-	return nullptr;
-
 }

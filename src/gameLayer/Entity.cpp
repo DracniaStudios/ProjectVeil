@@ -12,10 +12,10 @@ void Entity::onEnable()
 
 	// Reset Buffs
 	buffTimers.clear();
-	// All Buffs Last 30 seconds
+
 	// Change Manually when needed
 	for (int i = 0; i < MAX_BUFF; i++) {
-		auto buff = CooldownTimer(5);
+		auto buff = CooldownTimer(5); // Default Buff Time
 		buff.cooldownID = i;
 		buffTimers.push_back(buff);
 	}

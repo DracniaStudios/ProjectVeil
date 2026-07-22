@@ -63,7 +63,8 @@ struct Player : Entity
 	void Interact();
 
 private:
-	int interactRange = 5;
+	int defaultInteractRange = 5;
+	int extendedInteractRange = 10;
 };
 
 #endif

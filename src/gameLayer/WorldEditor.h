@@ -99,6 +99,7 @@ public:
 	void update(Player* player);
 
 	bool IsEnabled() const { return isEditorActive; }
+	void SelectObject(int id) { selectedObjectId = id; }
 };
 
 #endif

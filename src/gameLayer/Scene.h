@@ -51,8 +51,6 @@ struct InstanceID
 
 typedef struct Scene {
 	
-private:
-	int lastMiniGamePlayed = 0;
 public:
 	// Details
 	const char* name = "Scene";
@@ -73,7 +71,6 @@ public:
 	
 	// Entity Data
 	Player* player = {};
-	PlayerCamera* camera = {};
 	std::unordered_map<std::uint64_t, std::unique_ptr<Entity>> entities{}; // Entities
 	std::unordered_map<std::uint64_t, std::unique_ptr<InteractableObject>> interactables{}; // Interactables
 	InstanceID instanceHolder = {}; // All IDs Stored
@@ -81,6 +78,8 @@ public:
 
 	void SetMiniGame(int miniGame);
 	int GetLastMiniGame() const { return lastMiniGamePlayed; }
+private:
+	int lastMiniGamePlayed = 0;
 
 } Scene;
 
