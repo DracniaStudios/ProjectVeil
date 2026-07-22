@@ -46,15 +46,15 @@ GameObject::GameObject()
 GameObject::~GameObject() {
 
 	isEnabled = false;
-	/*
-	if (&model != nullptr) {
+
+	// Only unload primitives this object generated for itself — named
+	// models/textures are shared AssetManager handles (see onDisable)
+	if (ownsModel && model.meshCount > 0) {
 		UnloadModel(model);
 	}
-	if (&mesh != nullptr) {
+	if (mesh.vertexCount > 0) {
 		UnloadMesh(mesh);
 	}
-	*/
-
 }
 
 /** Asset Binding **/

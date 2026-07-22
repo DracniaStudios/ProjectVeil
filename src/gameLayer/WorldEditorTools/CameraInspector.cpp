@@ -10,7 +10,7 @@ void WorldEditor::ShowCameraData(Player* player)
 	ImGui::Text("Camera Target: (%.2f, %.2f, %.2f)", camera->target.x, camera->target.y, camera->target.z);
 	ImGui::Text("Camera Up: (%.2f, %.2f, %.2f)", camera->up.x, camera->up.y, camera->up.z);
 	ImGui::Text("Camera FOVY: (%.2f)", camera->fovy);
-	ImGui::Text("Camera Projection: (%.2f)", camera->projection);
+	ImGui::Text("Camera Projection: %d", camera->projection);
 	ImGui::Separator();
 
 	ImGui::Text("Mouse Position: (%.2f, %.2f)", GetMousePosition().x, GetMousePosition().y);

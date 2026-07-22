@@ -1,7 +1,7 @@
 #include <WorldEditor.h>
 
 void SelectObjectInWorldSpace(EditorCamera* editor, Camera3D* camera) {
-	auto gameObjects = SceneManager::getInstance().currentScene->gameMap.gameObjects;
+	auto& gameObjects = SceneManager::getInstance().currentScene->gameMap.gameObjects;
 	// Get Mouse To World Space.
 	const auto mouseRay = GetScreenToWorldRay(GetMousePosition(), *camera);
 
@@ -31,13 +31,10 @@ void UpdateDirection(EditorCamera* editor, Camera3D* camera) {
 	const float sensitivity = -0.1f;
 
 	Vector2 mouseDelta = GetMouseDelta();
-	yaw += mouseDelta.x * sensitivity * GetFrameTime();
-	pitch += mouseDelta.y * sensitivity * GetFrameTime();
+	yaw += mouseDelta.x * sensitivity;
+	pitch += mouseDelta.y * sensitivity;
 	if (pitch > 1.5f) pitch = 1.5f;
 	if (pitch < -1.5f) pitch = -1.5f;
-
-	editor->lookRotation.x -= mouseDelta.x + sensitivity * GetFrameTime();
-	editor->lookRotation.x += mouseDelta.x + sensitivity * GetFrameTime();
 
 	Vector3 camForward = {
 		cosf(pitch) * sinf(yaw),
