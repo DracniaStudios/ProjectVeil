@@ -11,7 +11,7 @@ void WorldEditor::ShowWorldSettings()
 
 	/// Show Scene Data
 	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Scene Data");
-
+	if (ImGui::ArrowButton("Reset IDs", ImGuiDir_Right)) { scene->ResetID(); }
 	ImGui::Checkbox("Is 2D Active", &scene->is2DActive);
 	ImGui::Checkbox("Is Mini Game Active", &scene->isMiniActive);
 	ImGui::Checkbox("Limit Y Bounds", &scene->limitYBounds);

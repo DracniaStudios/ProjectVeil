@@ -1,33 +1,33 @@
 // Game Name: Subject Veil
-// Version: 0.1.70 
+// Version: 0.1.72 
 // Due: 2026-07-31 (Game Mechanics)
-// Date: 2026-07-21 (Current Development Date)
+// Date: 2026-07-23 (Current Development Date)
 
 [Notice] Change Save System to read all types of data files from Json and return the Json data when called.
 [Notice] World Editor doesn't use new InputSystem.
 
 [ Issues ]
 
+- Interactable Objects don't enable/disable activator objects.
+- Object Browser doesnt remove objects from GameObjects lists if they're not Generic Objects.
 
 [ Added ]
 
-- Added new ability to select GameObjects with EditorCamera.
-- Placement Panel can now place objects at Camera position.
+- New BuffTypeToString utility.
+- Added InteractableObject Constructor for interacting with other objects.
+- Added new ResetID to Scene for sanitation.
+
 
 [ Updated ]
 
-- Updated multiple scripts to use Readonly Scenes.
-- Updated multiple scripts to use SceneManager camera as readable.
-- Updated multiple scripts to use Player/Editor camera as current Camera data.
-- Updated Player to use Default and Extended Interact Range.
-- Updated GameObject to check for MeshCount in GetBoundingBox.
-- Updated GameObjects to be Selectable by Editor.
-- Updated MiniGames to initialize Update and Draw methods.
-- Updated CameraInspector to show default Camera data.
-- Updated EditorCamera to use deltaTime for CameraSpeed.
+- Updated GameMap to use RemoveObject with gameObject Lists & IDs.
+- Updated InteractableObject to check if the Player is running MiniGames.
+- Updated Object Browser to show Generic data vs. Entity/Inspector data.
 
 [ Fixed ]
 
+- Fixed an issue where the SaveSystem didn't update the ID Counter on loading.
+
 [ Removed ]
 
-- Removed Goal check from FlappyBird collision.
+- GameObject Destructor

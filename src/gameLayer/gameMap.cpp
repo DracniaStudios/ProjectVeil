@@ -92,25 +92,28 @@ InteractableObject* GameMap::saveInteractable(InteractableObject& object)
 	return scene->interactables[object.id].get();
 }
 
-// Unload Object From Scene
+// Unload Object From Scene GameMap
 void GameMap::removeObject(GameObject* object) {
     if (!object) return;
 	auto scene = SceneManager::getInstance().currentScene;
 	erase_if(scene->gameMap.gameObjects, [&](const GameObject& o) { return &o == object;});
 }
 
-
+// Remove Entity From Entity List
 void GameMap::removeEntity(Entity* entity)
 {
 	auto scene = SceneManager::getInstance().currentScene;
 	scene->entities.erase(entity->id);
 	erase_if(scene->gameMap.gameObjects, [&](const GameObject& o) { return o.id == entity->id;});
-	//removeObject(entity);
+	removeObject(&gameObjects[entity->id]);
 }
+
+// Remove Interactable From InteractableList
 void GameMap::removeInteractable(InteractableObject* object)
 {
 	SceneManager::getInstance().currentScene->interactables.erase(object->id);
-	removeObject(object);
+	//removeObject(&SceneManager::getInstance().currentScene->gameMap.gameObjects[object->id]);
+	removeObject(&gameObjects[object->id]);
 }
 
 // Find GameObjects

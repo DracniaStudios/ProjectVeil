@@ -81,6 +81,12 @@ class WorldEditor
 	GameObject* getSelectedObject();
 	Asset* getActiveTexture();
 	Asset* getActiveModel();
+	void showGameObject(GameObject* object);
+	void showEntity(Entity* object);
+	void showInteractableObject(InteractableObject* object);
+
+
+
 public:
 	// Singleton Pattern Implementation
 	WorldEditor(const WorldEditor&) = delete;

@@ -17,12 +17,26 @@ enum Buff {
 	MAX_BUFF
 };
 
+inline const char* buffTypeToString(int type) {
+	switch (type)
+	{
+	case BUFF_MOVEMENT:      return "Movement";
+	case BUFF_RANGE:		 return "Range";
+	case BUFF_HEALTH:        return "Health";
+	case BUFF_HEARING:		 return "Hearing";
+	case BUFF_SEARCH:		 return "Search";
+	case BUFF_RANDOM:		 return "Random";
+	default:                 return "None";
+	}
+}
+
 struct Entity : GameObject
 {
 private:
 	float attackStartTime = 1.0f;
 	float attackWaitTime = 3.0f;
 public:
+	Entity();
 	/** Status **/
 	float health = 1.0f;
 	float maxHealth = 10.0f;
@@ -54,7 +68,6 @@ public:
 	CooldownTimer* getBuff(int id);
 	float getMaxHealth() const { return maxHealth; }
 	float getMaxStamina() const { return maxStamina; }
-
 
 	/** Save Data **/
 	Json formatToJson() override;

@@ -41,6 +41,21 @@ std::uint64_t InstanceID::getIdAndIncrement()
 	return id;
 }
 
+// Removes Unintended IDs and Updates.
+void Scene::ResetID() {
+	instanceHolder.idCounter = 0;
+
+	// Remove Invalid ID Objects
+	// Reset IDs
+	for (int i = 0; i < gameMap.gameObjects.size(); i++) {
+		auto object = &gameMap.gameObjects[i];
+
+		if (object->id > gameMap.gameObjects.size()) { gameMap.removeObject(object); continue; }
+
+		object->id = instanceHolder.getIdAndIncrement();
+	}
+}
+
 /** Physics Solutions **/
 
 // Refresh a body's collision box after a positional correction so subsequent

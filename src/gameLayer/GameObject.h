@@ -16,6 +16,7 @@ enum ObjectType : uint8_t
 	OBJECT_GENERIC,
 	OBJECT_PLAYER,
 	OBJECT_ENTITY,
+	OBJECT_INTERACTABLE,
 	OBJECT_ITEM,
 	OBJECT_PROJECTILE,
 	OBJECT_ENVIRONMENT,
@@ -114,7 +115,6 @@ struct GameObject
 enum InteractionType
 {
 	INTERACT_MINIGAME,
-	INTERACT_OBJECT,
 	INTERACT_ITEM,
 };
 
@@ -123,11 +123,22 @@ struct InteractableObject : GameObject
 private:
 	int interactType = 0;
 	int interactValue = 0;
+	int activatorValue = 0;
 public:
 
-	InteractableObject(InteractionType type, int value = 0);
+	InteractableObject(InteractionType type, int value);
+	InteractableObject(InteractionType type, int value, int activator);
+
+	void update(Scene* scene, float delta) override;
+
 	bool isInteractable = true;
+	bool isRunningMiniGame = false;
+
 	virtual void onInteract();
+	
+	int getType() const { return interactType; }
+	int getValue() const { return interactValue; }
+
 
 	// Save Data
 	Json formatToJson() override;

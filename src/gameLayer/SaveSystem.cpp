@@ -193,7 +193,7 @@ namespace SaveSystem
 		{
 			for (auto& [key, intData] : j["Interactables"].items())
 			{
-				InteractableObject interactable(INTERACT_MINIGAME);
+				InteractableObject interactable(INTERACT_MINIGAME, std::stoull(key));
 				interactable.id = std::stoull(key);
 
 				if (!interactable.loadFromJson(intData))
@@ -222,6 +222,8 @@ namespace SaveSystem
 				});
 			}
 		}
+
+		if (scene.gameMap.gameObjects.size() > scene.instanceHolder.idCounter) { scene.instanceHolder.idCounter = scene.gameMap.gameObjects.size(); }
 
 		return true;
 	}
@@ -353,7 +355,7 @@ namespace SaveSystem
 		{
 			for (auto& [key, intData] : j["Interactables"].items())
 			{
-				InteractableObject interactable(INTERACT_MINIGAME);
+				InteractableObject interactable(INTERACT_MINIGAME, std::stoull(key));
 				interactable.id = std::stoull(key);
 
 				if (!interactable.loadFromJson(intData))

@@ -75,9 +75,9 @@ public:
 	std::unordered_map<std::uint64_t, std::unique_ptr<InteractableObject>> interactables{}; // Interactables
 	InstanceID instanceHolder = {}; // All IDs Stored
 
-
 	void SetMiniGame(int miniGame);
 	int GetLastMiniGame() const { return lastMiniGamePlayed; }
+	void ResetID();
 private:
 	int lastMiniGamePlayed = 0;
 

@@ -1,47 +1,13 @@
 {
   "Entities": {},
-  "IdCounter": 69,
+  "IdCounter": 39,
   "Interactables": {
-    "58": {
+    "32": {
       "CanBeSelected": true,
       "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "InteractType": 1,
-      "InteractValue": 0,
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "IsInteractable": true,
-      "Life": 0.0,
-      "Name": "BGM",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 0.0,
-        "PosY": 2.0,
-        "PosZ": 0.0,
-        "RotW": 0.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 0.0,
-        "ScaleY": 0.0,
-        "ScaleZ": 0.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      }
-    },
-    "59": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
+        0,
+        121,
+        241,
         255
       ],
       "InteractType": 0,
@@ -50,14 +16,14 @@
       "IsEnabled": true,
       "IsInteractable": true,
       "Life": 0.0,
-      "Name": "MiniGame Player",
-      "ObjectType": 0,
+      "Name": "Minigame Player",
+      "ObjectType": 3,
       "RigidBody3D": {
         "IsEnabled": true,
         "IsStatic": true,
-        "PosX": 0.0,
+        "PosX": 20.0,
         "PosY": 5.0,
-        "PosZ": -15.0,
+        "PosZ": 0.0,
         "RotW": 0.0,
         "RotX": 0.0,
         "RotY": 0.0,
@@ -70,12 +36,12 @@
         "VelocityZ": 0.0
       }
     },
-    "60": {
+    "33": {
       "CanBeSelected": true,
       "Color": [
-        255,
-        255,
-        255,
+        0,
+        121,
+        241,
         255
       ],
       "InteractType": 0,
@@ -84,114 +50,12 @@
       "IsEnabled": true,
       "IsInteractable": true,
       "Life": 0.0,
-      "Name": "MiniGame Player",
-      "ObjectType": 0,
+      "Name": "Minigame Player",
+      "ObjectType": 3,
       "RigidBody3D": {
         "IsEnabled": true,
         "IsStatic": true,
-        "PosX": 0.0,
-        "PosY": 5.0,
-        "PosZ": -10.0,
-        "RotW": 0.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 1.0,
-        "ScaleY": 1.0,
-        "ScaleZ": 1.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      }
-    },
-    "61": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "InteractType": 0,
-      "InteractValue": 2,
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "IsInteractable": true,
-      "Life": 0.0,
-      "Name": "MiniGame Player",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 0.0,
-        "PosY": 5.0,
-        "PosZ": -5.0,
-        "RotW": 0.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 1.0,
-        "ScaleY": 1.0,
-        "ScaleZ": 1.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      }
-    },
-    "62": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "InteractType": 0,
-      "InteractValue": 3,
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "IsInteractable": true,
-      "Life": 0.0,
-      "Name": "MiniGame Player",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 0.0,
-        "PosY": 5.0,
-        "PosZ": 0.0,
-        "RotW": 0.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 1.0,
-        "ScaleY": 1.0,
-        "ScaleZ": 1.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      }
-    },
-    "63": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "InteractType": 0,
-      "InteractValue": 4,
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "IsInteractable": true,
-      "Life": 0.0,
-      "Name": "MiniGame Player",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 0.0,
+        "PosX": 20.0,
         "PosY": 5.0,
         "PosZ": 5.0,
         "RotW": 0.0,
@@ -206,12 +70,114 @@
         "VelocityZ": 0.0
       }
     },
-    "64": {
+    "34": {
       "CanBeSelected": true,
       "Color": [
-        255,
-        255,
-        255,
+        0,
+        121,
+        241,
+        255
+      ],
+      "InteractType": 0,
+      "InteractValue": 2,
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "IsInteractable": true,
+      "Life": 0.0,
+      "Name": "Minigame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 20.0,
+        "PosY": 5.0,
+        "PosZ": 10.0,
+        "RotW": 0.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "35": {
+      "CanBeSelected": true,
+      "Color": [
+        0,
+        121,
+        241,
+        255
+      ],
+      "InteractType": 0,
+      "InteractValue": 3,
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "IsInteractable": true,
+      "Life": 0.0,
+      "Name": "Minigame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 20.0,
+        "PosY": 5.0,
+        "PosZ": 15.0,
+        "RotW": 0.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "36": {
+      "CanBeSelected": true,
+      "Color": [
+        0,
+        121,
+        241,
+        255
+      ],
+      "InteractType": 0,
+      "InteractValue": 4,
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "IsInteractable": true,
+      "Life": 0.0,
+      "Name": "Minigame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 20.0,
+        "PosY": 5.0,
+        "PosZ": 20.0,
+        "RotW": 0.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "37": {
+      "CanBeSelected": true,
+      "Color": [
+        0,
+        121,
+        241,
         255
       ],
       "InteractType": 0,
@@ -220,14 +186,48 @@
       "IsEnabled": true,
       "IsInteractable": true,
       "Life": 0.0,
-      "Name": "MiniGame Player",
-      "ObjectType": 0,
+      "Name": "Minigame Player",
+      "ObjectType": 3,
       "RigidBody3D": {
         "IsEnabled": true,
         "IsStatic": true,
-        "PosX": 0.0,
+        "PosX": 20.0,
         "PosY": 5.0,
-        "PosZ": 10.0,
+        "PosZ": 25.0,
+        "RotW": 0.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "38": {
+      "CanBeSelected": true,
+      "Color": [
+        0,
+        121,
+        241,
+        255
+      ],
+      "InteractType": 0,
+      "InteractValue": 6,
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "IsInteractable": true,
+      "Life": 0.0,
+      "Name": "Minigame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 20.0,
+        "PosY": 5.0,
+        "PosZ": 30.0,
         "RotW": 0.0,
         "RotX": 0.0,
         "RotY": 0.0,
@@ -247,7 +247,7 @@
     "SizeZ": 100.0
   },
   "Objects": {
-    "2": {
+    "0": {
       "CanBeSelected": false,
       "Color": [
         196,
@@ -257,7 +257,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
-      "Life": 198.802734375,
+      "Life": 115.60660552978516,
       "Name": "Floor",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -279,7 +279,7 @@
       },
       "Texture": "Asphalt031"
     },
-    "27": {
+    "1": {
       "CanBeSelected": true,
       "Color": [
         255,
@@ -289,7 +289,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 198.802734375,
+      "Life": 115.60660552978516,
       "Name": "Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -311,7 +311,7 @@
       },
       "Texture": "Wood067"
     },
-    "28": {
+    "10": {
       "CanBeSelected": true,
       "Color": [
         255,
@@ -321,263 +321,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 198.802734375,
-      "Name": "Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 0.0,
-        "PosY": 5.0,
-        "PosZ": -50.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 100.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 0.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Wood067"
-    },
-    "29": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Life": 198.802734375,
-      "Name": "Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 50.0,
-        "PosY": 5.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 0.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 100.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Wood067"
-    },
-    "31": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Life": 198.802734375,
-      "Name": "Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": -50.0,
-        "PosY": 5.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 0.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 100.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Wood067"
-    },
-    "36": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Life": 198.802734375,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": -10.0,
-        "PosY": 5.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 10.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "37": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Life": 198.802734375,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": -10.0,
-        "PosY": 5.0,
-        "PosZ": 10.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 10.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "38": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Life": 198.802734375,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": -10.0,
-        "PosY": 5.0,
-        "PosZ": 20.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 10.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "39": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Life": 198.802734375,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": -10.0,
-        "PosY": 5.0,
-        "PosZ": -10.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 10.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "40": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Life": 198.802734375,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": -10.0,
-        "PosY": 5.0,
-        "PosZ": -20.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 10.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "41": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Life": 198.802734375,
+      "Life": 115.60660552978516,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -599,7 +343,7 @@
       },
       "Texture": "Metal030"
     },
-    "42": {
+    "11": {
       "CanBeSelected": true,
       "Color": [
         255,
@@ -609,7 +353,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 198.802734375,
+      "Life": 115.60660552978516,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -631,7 +375,7 @@
       },
       "Texture": "Metal030"
     },
-    "43": {
+    "12": {
       "CanBeSelected": true,
       "Color": [
         255,
@@ -641,7 +385,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 198.802734375,
+      "Life": 115.60660552978516,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -663,7 +407,7 @@
       },
       "Texture": "Metal030"
     },
-    "44": {
+    "13": {
       "CanBeSelected": true,
       "Color": [
         255,
@@ -673,7 +417,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 198.802734375,
+      "Life": 115.60660552978516,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -695,7 +439,7 @@
       },
       "Texture": "Metal030"
     },
-    "45": {
+    "14": {
       "CanBeSelected": true,
       "Color": [
         255,
@@ -705,7 +449,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 198.802734375,
+      "Life": 115.60660552978516,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -727,7 +471,7 @@
       },
       "Texture": "Metal030"
     },
-    "46": {
+    "15": {
       "CanBeSelected": true,
       "Color": [
         255,
@@ -737,7 +481,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 198.802734375,
+      "Life": 115.60660552978516,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -759,7 +503,7 @@
       },
       "Texture": "Metal030"
     },
-    "47": {
+    "16": {
       "CanBeSelected": true,
       "Color": [
         255,
@@ -769,7 +513,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 198.802734375,
+      "Life": 115.60660552978516,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -791,7 +535,7 @@
       },
       "Texture": "Metal030"
     },
-    "48": {
+    "17": {
       "CanBeSelected": true,
       "Color": [
         255,
@@ -801,7 +545,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
-      "Life": 198.802734375,
+      "Life": 115.60660552978516,
       "Name": "Cell Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -817,6 +561,696 @@
         "ScaleX": 30.0,
         "ScaleY": 1.0,
         "ScaleZ": 42.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Metal030"
+    },
+    "18": {
+      "CanBeSelected": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "BGM",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 0.0,
+        "PosY": 2.0,
+        "PosZ": 0.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "19": {
+      "CanBeSelected": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "MiniGame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 0.0,
+        "PosY": 5.0,
+        "PosZ": -15.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "2": {
+      "CanBeSelected": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "Wall",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 0.0,
+        "PosY": 5.0,
+        "PosZ": -50.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 100.0,
+        "ScaleY": 10.0,
+        "ScaleZ": 0.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Wood067"
+    },
+    "20": {
+      "CanBeSelected": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "MiniGame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 0.0,
+        "PosY": 5.0,
+        "PosZ": -10.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "21": {
+      "CanBeSelected": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "MiniGame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 0.0,
+        "PosY": 5.0,
+        "PosZ": -5.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "22": {
+      "CanBeSelected": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "MiniGame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 0.0,
+        "PosY": 5.0,
+        "PosZ": 0.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "23": {
+      "CanBeSelected": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "MiniGame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 0.0,
+        "PosY": 5.0,
+        "PosZ": 5.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "24": {
+      "CanBeSelected": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "MiniGame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 0.0,
+        "PosY": 5.0,
+        "PosZ": 10.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "25": {
+      "CanBeSelected": true,
+      "Color": [
+        0,
+        121,
+        241,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "Minigame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 0.0,
+        "PosY": 5.0,
+        "PosZ": 0.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "26": {
+      "CanBeSelected": true,
+      "Color": [
+        0,
+        121,
+        241,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "Minigame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 0.0,
+        "PosY": 5.0,
+        "PosZ": 5.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "27": {
+      "CanBeSelected": true,
+      "Color": [
+        0,
+        121,
+        241,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "Minigame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 0.0,
+        "PosY": 5.0,
+        "PosZ": 10.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "28": {
+      "CanBeSelected": true,
+      "Color": [
+        0,
+        121,
+        241,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "Minigame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 0.0,
+        "PosY": 5.0,
+        "PosZ": 15.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "29": {
+      "CanBeSelected": true,
+      "Color": [
+        0,
+        121,
+        241,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "Minigame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 0.0,
+        "PosY": 5.0,
+        "PosZ": 20.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "3": {
+      "CanBeSelected": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "Wall",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 50.0,
+        "PosY": 5.0,
+        "PosZ": 0.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 0.0,
+        "ScaleY": 10.0,
+        "ScaleZ": 100.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Wood067"
+    },
+    "30": {
+      "CanBeSelected": true,
+      "Color": [
+        0,
+        121,
+        241,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "Minigame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 0.0,
+        "PosY": 5.0,
+        "PosZ": 25.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "31": {
+      "CanBeSelected": true,
+      "Color": [
+        0,
+        121,
+        241,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "Minigame Player",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 0.0,
+        "PosY": 5.0,
+        "PosZ": 30.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      }
+    },
+    "4": {
+      "CanBeSelected": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "Wall",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": -50.0,
+        "PosY": 5.0,
+        "PosZ": 0.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 0.0,
+        "ScaleY": 10.0,
+        "ScaleZ": 100.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Wood067"
+    },
+    "5": {
+      "CanBeSelected": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "Cell Wall",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": -10.0,
+        "PosY": 5.0,
+        "PosZ": 0.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 10.0,
+        "ScaleY": 10.0,
+        "ScaleZ": 2.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Metal030"
+    },
+    "6": {
+      "CanBeSelected": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "Cell Wall",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": -10.0,
+        "PosY": 5.0,
+        "PosZ": 10.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 10.0,
+        "ScaleY": 10.0,
+        "ScaleZ": 2.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Metal030"
+    },
+    "7": {
+      "CanBeSelected": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "Cell Wall",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": -10.0,
+        "PosY": 5.0,
+        "PosZ": 20.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 10.0,
+        "ScaleY": 10.0,
+        "ScaleZ": 2.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Metal030"
+    },
+    "8": {
+      "CanBeSelected": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "Cell Wall",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": -10.0,
+        "PosY": 5.0,
+        "PosZ": -10.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 10.0,
+        "ScaleY": 10.0,
+        "ScaleZ": 2.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Metal030"
+    },
+    "9": {
+      "CanBeSelected": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Life": 115.60660552978516,
+      "Name": "Cell Wall",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": -10.0,
+        "PosY": 5.0,
+        "PosZ": -20.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 10.0,
+        "ScaleY": 10.0,
+        "ScaleZ": 2.0,
         "VelocityX": 0.0,
         "VelocityY": 0.0,
         "VelocityZ": 0.0
@@ -843,13 +1277,13 @@
     "Name": "GameObject",
     "ObjectType": 1,
     "Pos2X": 800.0,
-    "Pos2Y": 1018.8577880859375,
+    "Pos2Y": 899.0,
     "RigidBody3D": {
       "IsEnabled": true,
       "IsStatic": false,
-      "PosX": 12.047689437866211,
-      "PosY": 1.5661559104919434,
-      "PosZ": -29.885662078857422,
+      "PosX": 4.110285758972168,
+      "PosY": 0.6928289532661438,
+      "PosZ": 20.714096069335938,
       "RotW": 1.0,
       "RotX": 0.0,
       "RotY": 0.0,
@@ -858,7 +1292,7 @@
       "ScaleY": 2.0,
       "ScaleZ": 1.0,
       "VelocityX": 0.0,
-      "VelocityY": -2.868300199508667,
+      "VelocityY": -2.9756271839141846,
       "VelocityZ": 0.0
     },
     "Stamina": 100.0

@@ -1,43 +1,49 @@
 #include "WorldEditor.h"
 
-void WorldEditor::ShowObjectBrowser()
-{
-	auto scene = SceneManager::getInstance().currentScene;
+void WorldEditor::showInteractableObject(InteractableObject* object) {
+	ImGui::PushID(object);
 
-	/// Show Object Browser Window
-	ImGui::Begin("Object Browser");
+	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Status");
+	ImGui::PopID();
+}
 
-	/// List World Objects
-	ImGui::BeginChild("World Object List", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.3f));
-	ImGui::TextColored(ImVec4(0, 255, 0, 255), "World Objects");
-	for (auto& object : scene->gameMap.gameObjects)
-	{
-		if (getType(&object) == OBJECT_PROJECTILE) continue;
-		if (getType(&object) == OBJECT_PLAYER) continue;
+void WorldEditor::showEntity(Entity* object) {
+	ImGui::PushID(object);
 
-		ImGui::PushID(&object);
-		std::string label = object.name + " (" + std::to_string(object.id) + ")";
-		if (ImGui::Selectable(label.c_str(), object.id == selectedObjectId))
-		{
-			selectedObjectId = object.id;
-		}
-		ImGui::PopID();
+	// Status
+	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Status");
+	ImGui::Text("Health: %f", object->health);
+	ImGui::Text("Max Health: %f", object->maxHealth);
+
+	ImGui::Text("Stamina: %f", object->stamina);
+	ImGui::Text("Max Stamina: %f", object->maxStamina);
+
+	ImGui::Text("Speed: %f", object->baseSpeed);
+	ImGui::Text("Max Speed: %f", object->currentSpeed);
+	ImGui::Spacing();
+
+	// Flags
+	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Flags");
+	ImGui::Checkbox("IsSprinting", &object->isSprinting);
+	ImGui::Checkbox("IsCrouching", &object->isCrouching);
+	ImGui::Checkbox("IsFiring", &object->isFiring);
+	ImGui::Checkbox("ForceFire", &object->forceFire);
+	ImGui::Checkbox("CanAttack", &object->canAttack);
+	ImGui::Spacing();
+
+	// List Of Buffs
+	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Buffs");
+	for (auto& buff : object->buffTimers) {
+		ImGui::TextColored(ImVec4(255, 0, 255, 255), buffTypeToString(buff.cooldownID));
+		ImGui::Text("Duration: %d", buff.remaining_time());
+		ImGui::SameLine();
+		if (ImGui::Button("Use Buff")) { buff.use(); }
 	}
-	ImGui::EndChild();
-	ImGui::Separator();
 
-	/// Show Selected Object Data
-	ImGui::BeginChild("Selected Object");
+	ImGui::PopID();
+}
 
-	GameObject* object = getSelectedObject();
-	if (object == nullptr)
-	{
-		ImGui::Text("Nothing selected");
-		ImGui::EndChild();
-		ImGui::End();
-		return;
-	}
-
+void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::PushID(object);
 
 	std::string dataString = objectTypeToString(object->type);
@@ -46,6 +52,7 @@ void WorldEditor::ShowObjectBrowser()
 	ImGui::Text("Name: %s", object->name.c_str());
 	ImGui::Text("ID: %llu", static_cast<unsigned long long>(object->id));
 	ImGui::Text("Type: %d", static_cast<int>(object->type));
+	ImGui::Checkbox("Selectable", &object->canBeSelected);
 	ImGui::Spacing();
 
 
@@ -126,9 +133,90 @@ void WorldEditor::ShowObjectBrowser()
 	ImGui::Text("Life Span: %f", object->lifeSpan);
 	ImGui::Text("Death Span: %f", object->deathSpan);
 	ImGui::Spacing();
+	ImGui::PopID();
+}
+
+void WorldEditor::ShowObjectBrowser()
+{
+	auto scene = SceneManager::getInstance().currentScene;
+
+	/// Show Object Browser Window
+	ImGui::Begin("Object Browser");
+
+	/// List World Objects
+	ImGui::BeginChild("World Object List", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.3f));
+	ImGui::TextColored(ImVec4(0, 255, 0, 255), "World Objects");
+	for (auto& object : scene->gameMap.gameObjects)
+	{
+		if (getType(&object) != OBJECT_GENERIC) continue;
+
+		ImGui::PushID(&object);
+		std::string label = object.name + " (" + std::to_string(object.id) + ")";
+		if (ImGui::Selectable(label.c_str(), object.id == selectedObjectId))
+		{
+			selectedObjectId = object.id;
+		}
+		ImGui::PopID();
+	}
+
+	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Entities");
+	for (auto& object : scene->entities)
+	{
+		//if (getType(&object) != OBJECT_ENTITY) continue;
+
+		ImGui::PushID(&object);
+		std::string label = object.second.get()->name + " (" + std::to_string(object.second.get()->id) + ")" + " (" + std::to_string(object.first) + ")";
+		if (ImGui::Selectable(label.c_str(), object.second.get()->id == selectedObjectId))
+		{
+			selectedObjectId = object.second.get()->id;
+		}
+		ImGui::PopID();
+	}
+
+	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Interactables");
+	for (auto& object : scene->interactables)
+	{
+		//if (getType(&object) != OBJECT_INTERACTABLE) continue;
+
+		ImGui::PushID(&object);
+		std::string label = object.second.get()->name + " (" + std::to_string(object.second.get()->id) + ")" + " (" + std::to_string(object.first) + ")";
+		if (ImGui::Selectable(label.c_str(), object.second.get()->id == selectedObjectId))
+		{
+			selectedObjectId = object.second.get()->id;
+		}
+		ImGui::PopID();
+	}
+	ImGui::EndChild();
+	ImGui::Separator();
+
+	/// Show Selected Object Data
+	ImGui::BeginChild("Selected Object");
+
+	GameObject* object = getSelectedObject();
+	if (object == nullptr)
+	{
+		ImGui::Text("Nothing selected");
+		ImGui::EndChild();
+		ImGui::End();
+		return;
+	}
+
+	// Show Object Data
+	
+	// Push ID in GameObject
+	showGameObject(object);
+	if (object->type == OBJECT_ENTITY) {
+		showEntity(scene->entities[object->id].get());
+	}
+	else if (object->type == OBJECT_INTERACTABLE) {
+		showInteractableObject(scene->interactables[object->id].get());
+
+	}
+
 	if (ImGui::Button("Duplicate Object"))
 	{
 		GameObject copy = *object;
+		
 		copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), Vector3(1, 0, 0)));
 
 		// saveObject may reallocate gameObjects — object is stale after this call.
@@ -143,14 +231,15 @@ void WorldEditor::ShowObjectBrowser()
 		{
 			scene->gameMap.removeInteractable(scene->interactables[object->id].get());
 		}
+		else if(scene->entities.contains(object->id)) {
+			scene->gameMap.removeEntity(scene->entities[object->id].get());
+		}
 		else
 		{
 			scene->gameMap.removeObject(object);
 		}
 		selectedObjectId = 0;
 	}
-
-	ImGui::PopID();
 
 	ImGui::EndChild();
 	ImGui::End();

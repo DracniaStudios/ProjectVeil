@@ -3,8 +3,16 @@
 #include <SceneManager.h>
 InteractableObject::InteractableObject(const InteractionType interact, int value)
 {
-	interactType = interact;
-	interactValue = value;
+	type = OBJECT_INTERACTABLE;
+	interactType = interact; // Type Of Interaction
+	interactValue = value; // Item
+}
+InteractableObject::InteractableObject(const InteractionType interact, int value, int activator )
+{
+	type = OBJECT_INTERACTABLE;
+	interactType = interact; // Type of interaction
+	interactValue = value; // Minigame
+	activatorValue = activator; // Object
 }
 
 void InteractableObject::onInteract()
@@ -23,12 +31,7 @@ void InteractableObject::onInteract()
 	if (interactType == INTERACT_MINIGAME)
 	{
 		SceneManager::getInstance().currentScene->SetMiniGame(interactValue);
-		return;
-	}
-
-	if (interactType == INTERACT_OBJECT)
-	{
-		// Activate Specific Object ID
+		isRunningMiniGame = true;
 		return;
 	}
 
@@ -37,4 +40,21 @@ void InteractableObject::onInteract()
 		// Give Player Specific Item
 		return;
 	}
+}
+
+void InteractableObject::update(Scene* scene, float delta) {
+
+	GameObject::update(scene, delta);
+	if (!isRunningMiniGame) return;
+
+	if (auto miniGame = scene->miniGame; scene->isMiniActive && scene->GetLastMiniGame() == interactValue) {
+
+		if (miniGame->data->isComplete) {
+			auto object = &scene->gameMap.gameObjects[interactValue];
+			if (object->isEnabled) { object->onDisable(); std::cout << "Disable Object: " << interactValue;}
+			if (!object->isEnabled) { object->onEnable(); std::cout << "Enable Object: " << interactValue;}
+			isRunningMiniGame = false;
+		}
+	}
+
 }

@@ -5,6 +5,10 @@
 #include <helpers.h>
 // Length in milliseconds
 
+Entity::Entity() {
+	type = OBJECT_ENTITY;
+}
+
 void Entity::onEnable()
 {
 	health = getMaxHealth();
