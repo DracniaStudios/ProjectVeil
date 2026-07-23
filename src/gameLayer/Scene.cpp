@@ -47,12 +47,16 @@ void Scene::ResetID() {
 
 	// Remove Invalid ID Objects
 	// Reset IDs
-	for (int i = 0; i < gameMap.gameObjects.size(); i++) {
+	for (size_t i = 0; i < gameMap.gameObjects.size(); ) {
 		auto object = &gameMap.gameObjects[i];
 
-		if (object->id > gameMap.gameObjects.size()) { gameMap.removeObject(object); continue; }
+		// removeObject erases in place, shifting the next element into slot i,
+		// so don't advance i when we remove — otherwise that shifted element
+		// gets skipped and never has its ID sanitized.
+		if (object->id >= gameMap.gameObjects.size()) { gameMap.removeObject(object); continue; }
 
 		object->id = instanceHolder.getIdAndIncrement();
+		i++;
 	}
 }
 

@@ -102,18 +102,20 @@ void GameMap::removeObject(GameObject* object) {
 // Remove Entity From Entity List
 void GameMap::removeEntity(Entity* entity)
 {
+	// Entities live only in Scene::entities, not in gameObjects (see saveEntity),
+	// so there is nothing to remove from gameObjects here.
 	auto scene = SceneManager::getInstance().currentScene;
 	scene->entities.erase(entity->id);
-	erase_if(scene->gameMap.gameObjects, [&](const GameObject& o) { return o.id == entity->id;});
-	removeObject(&gameObjects[entity->id]);
 }
 
 // Remove Interactable From InteractableList
 void GameMap::removeInteractable(InteractableObject* object)
 {
-	SceneManager::getInstance().currentScene->interactables.erase(object->id);
-	//removeObject(&SceneManager::getInstance().currentScene->gameMap.gameObjects[object->id]);
-	removeObject(&gameObjects[object->id]);
+	auto scene = SceneManager::getInstance().currentScene;
+	scene->interactables.erase(object->id);
+	// object->id is a global instance id, not a gameObjects index — find the
+	// matching entry by id instead of indexing gameObjects[object->id].
+	erase_if(gameObjects, [&](const GameObject& o) { return o.id == object->id; });
 }
 
 // Find GameObjects
