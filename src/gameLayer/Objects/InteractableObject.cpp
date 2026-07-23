@@ -1,6 +1,7 @@
 #include <GameObject.h>
 
 #include <SceneManager.h>
+#include <gameMap.h>
 InteractableObject::InteractableObject(const InteractionType interact, int value)
 {
 	type = OBJECT_INTERACTABLE;
@@ -50,9 +51,11 @@ void InteractableObject::update(Scene* scene, float delta) {
 	if (auto miniGame = scene->miniGame; scene->isMiniActive && scene->GetLastMiniGame() == interactValue) {
 
 		if (miniGame->data->isComplete) {
-			auto object = &scene->gameMap.gameObjects[interactValue];
-			if (object->isEnabled) { object->onDisable(); std::cout << "Disable Object: " << interactValue;}
-			if (!object->isEnabled) { object->onEnable(); std::cout << "Enable Object: " << interactValue;}
+			auto object = static_cast<GameObject*>(FindGameObjectByID(activatorValue));
+			if (object != nullptr) {
+				if (object->isEnabled) { object->onDisable(); std::cout << "Disable Object: " << activatorValue; }
+				else { object->onEnable(); std::cout << "Enable Object: " << activatorValue; }
+			}
 			isRunningMiniGame = false;
 		}
 	}
