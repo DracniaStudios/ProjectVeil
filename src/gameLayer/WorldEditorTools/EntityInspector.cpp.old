@@ -73,8 +73,11 @@ void WorldEditor::ShowEntityInspector()
 			{
 				object->name = createName;
 			}
+
+
 			ImGui::InputInt("Entity Type: ", &object->type, 1, 1);
 			object->type = Clamp(object->type, 0, OBJECT_COUNT - 1);
+
 			ImGui::Text("%s", objectTypeToString(object->type));
 
 			// Color ( float to unsigned char conversion )

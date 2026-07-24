@@ -1,9 +1,9 @@
 #include "gameMap.h"
 
-#include <iostream>
-#include <string>
 #include <SceneManager.h>
-
+#include <algorithm>
+#include <iostream>
+#include <vector>
 /** Map Data **/
 
 // Create GameMap and Floor Space
@@ -46,8 +46,11 @@ GameObject* GameMap::saveObject(GameObject& object)
 	/// Set GameMap Data
 	object.onEnable();
 	gameObjects.push_back(object);
-
+	
 	std::cout << "Added Object \n";
+	std::sort(gameObjects.begin(), gameObjects.end(), [](const GameObject& a, const GameObject& b) {
+		return a.id > b.id;
+	});
 	return &gameObjects.back();
 }
 
@@ -88,7 +91,6 @@ InteractableObject* GameMap::saveInteractable(InteractableObject& object)
 	scene->interactables[object.id] = std::move(interact_ptr);
 
 	std::cout << "Add Interactable \n";
-	gameObjects.push_back(object);
 	return scene->interactables[object.id].get();
 }
 
@@ -104,6 +106,7 @@ void GameMap::removeEntity(Entity* entity)
 {
 	// Entities live only in Scene::entities, not in gameObjects (see saveEntity),
 	// so there is nothing to remove from gameObjects here.
+	if (entity == nullptr) return;
 	auto scene = SceneManager::getInstance().currentScene;
 	scene->entities.erase(entity->id);
 }
@@ -111,6 +114,7 @@ void GameMap::removeEntity(Entity* entity)
 // Remove Interactable From InteractableList
 void GameMap::removeInteractable(InteractableObject* object)
 {
+	if (object == nullptr) return;
 	auto scene = SceneManager::getInstance().currentScene;
 	scene->interactables.erase(object->id);
 	// object->id is a global instance id, not a gameObjects index — find the
@@ -118,14 +122,32 @@ void GameMap::removeInteractable(InteractableObject* object)
 	erase_if(gameObjects, [&](const GameObject& o) { return o.id == object->id; });
 }
 
-// Find GameObjects
-void* FindGameObjectByID(int id)
+GameObject* GameMap::FindGameObjectByID(int id)
 {
-	auto gameMap = &SceneManager::getInstance().currentScene->gameMap;
-
-	for (auto& obj : gameMap->gameObjects)
-	{
-		if (obj.id == id) { return &obj; }
+	const auto scene = SceneManager::getInstance().currentScene;
+	for (size_t i = 0; i < scene->gameMap.gameObjects.size(); ++i) {
+		auto obj = &scene->gameMap.gameObjects[i];
+		if (obj->id == id) { return obj; }
 	}
 	return nullptr;
-}
+};
+
+Entity* GameMap::FindEntityByID(int id)
+{
+	const auto scene = SceneManager::getInstance().currentScene;
+	for (size_t i = 0; i < scene->entities.size(); ++i) {
+		auto obj = scene->entities[i].get();
+		if (obj->id == id) { return obj; }
+	}
+	return nullptr;
+};
+
+InteractableObject* GameMap::FindInteractableByID(int id)
+{
+	const auto scene = SceneManager::getInstance().currentScene;
+	for (size_t i = 0; i < scene->interactables.size(); ++i) {
+		auto obj = scene->interactables[i].get();
+		if (obj->id == id) { return obj; }
+	}
+	return nullptr;
+};

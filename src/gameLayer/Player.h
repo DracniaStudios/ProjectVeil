@@ -32,6 +32,7 @@ struct Player : Entity
 	Vector2 moveDirection = {};
 	PlayerCamera camera = {};
 	GameObject* artifact = {};
+	GameObject* interactObject = {};
 	int artifactMode = 0;
 
 	// Status

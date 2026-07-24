@@ -28,7 +28,7 @@ void UpdateDirection(EditorCamera* editor, Camera3D* camera) {
 	// FPS-style camera look
 	static float yaw = 0.0f;
 	static float pitch = 0.0f;
-	const float sensitivity = -0.1f;
+	const float sensitivity = -0.005f;
 
 	Vector2 mouseDelta = GetMouseDelta();
 	yaw += mouseDelta.x * sensitivity;

@@ -60,7 +60,7 @@ MiniGame* MiniGame_Crane(Player* player)
 	return game;
 }
 
-void Crane::render(MiniGameData* data, void* player_ptr)
+void Crane::render(MiniGameData* data, Player* player)
 {
 	std::ranlux24_base rng(std::random_device{}());
 
@@ -75,9 +75,8 @@ void Crane::render(MiniGameData* data, void* player_ptr)
 
 }
 
-void Crane::update(MiniGameData* data, void* player_ptr, float deltaTime)
+void Crane::update(MiniGameData* data, Player* player, float deltaTime)
 {
-	auto player = static_cast<Player*>(player_ptr);
 	auto inputSystem = &InputSystem::getInstance();
 
 	/// Player Logic
@@ -109,8 +108,7 @@ void Crane::update(MiniGameData* data, void* player_ptr, float deltaTime)
 	{
 		if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, data->goal))
 		{
-			if (auto* rangeBuff = player->getBuff(BUFF_RANGE)) { rangeBuff->use(); }
-			data->isComplete = true;
+			CompleteMiniGame(data, player, BUFF_RANGE, true);
 		}
 	}
 

@@ -43,20 +43,6 @@ GameObject::GameObject()
 
 }
 
-GameObject::~GameObject() {
-
-	isEnabled = false;
-
-	// Only unload primitives this object generated for itself — named
-	// models/textures are shared AssetManager handles (see onDisable)
-	if (ownsModel && model.meshCount > 0) {
-		UnloadModel(model);
-	}
-	if (mesh.vertexCount > 0) {
-		UnloadMesh(mesh);
-	}
-}
-
 /** Asset Binding **/
 
 void GameObject::loadVisuals()
@@ -309,13 +295,8 @@ bool GameObject::loadCommonFromJson(Json& j)
 	{
 		return false;
 	}
-	/*
-	if (j.contains("Life") && j["Life"].is_number())
-	{
-		lifeSpan = j["Life"];
-	}
-	*/
-	type = j.value("ObjectType", static_cast<int>(OBJECT_GENERIC));
+
+	type = static_cast<ObjectType>(j.value("ObjectType", static_cast<int>(OBJECT_GENERIC)));
 	name = j.value("Name", name);
 
 	// Flags
@@ -373,7 +354,7 @@ Json InteractableObject::formatToJson()
 bool InteractableObject::loadFromJson(Json& j)
 {
 	if (!loadCommonFromJson(j)) { return false; }
-	interactType = j.value("InteractType", 0);
+	interactType = static_cast<InteractionType>(j.value("InteractType", 0));
 	interactValue = j.value("InteractValue", 0);
 	isInteractable = j.value("IsInteractable", true);
 	return true;

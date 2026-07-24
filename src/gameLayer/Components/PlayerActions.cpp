@@ -61,15 +61,10 @@ void Player::Interact()
 	for (auto& interactable : scene->interactables)
 	{
 		const auto obj = interactable.second.get();
-		const GameObject* decoy = nullptr;
-		for (auto& sceneObject : scene->gameMap.gameObjects) { if (sceneObject.id == obj->id) { decoy = &sceneObject; } }
-		if (decoy == nullptr) { continue; }
-
-		// interactRange
-		auto distance = Vector3Distance(cameraRay.position, decoy->getPosition());
+		auto distance = Vector3Distance(cameraRay.position, obj->getPosition());
 
 		//Check interaction
-		if (GetRayCollisionBox(cameraRay, decoy->rigidBody3D.collisionBox).hit && distance <= interactRange)
+		if (GetRayCollisionBox(cameraRay, obj->rigidBody3D.collisionBox).hit && distance <= interactRange)
 		{
 			if (obj->isInteractable)
 			{

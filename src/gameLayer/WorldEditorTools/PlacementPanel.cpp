@@ -16,8 +16,12 @@ void WorldEditor::ShowPlacementPanel()
 	{
 		stagingObject.name = inputName;
 	}
-	ImGui::InputInt("Object Type: ", &stagingObject.type, 1, 1);
-	stagingObject.type = Clamp(stagingObject.type, 0, OBJECT_COUNT - 1);
+
+	int objectType = static_cast<int>(stagingObject.type);
+	if (ImGui::InputInt("Object Type: ", &objectType, 1, 1)) {
+		objectType = Clamp(objectType, 0, OBJECT_COUNT);
+		stagingObject.type = static_cast<ObjectType>(objectType);
+	}
 	ImGui::Text("%s", objectTypeToString(stagingObject.type));
 
 	// Color ( float to unsigned char conversion )

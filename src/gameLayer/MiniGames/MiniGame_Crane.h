@@ -6,8 +6,8 @@
 
 struct Crane : MiniGame
 {
-	static void render(MiniGameData* data, void* player_ptr);
-	static void update(MiniGameData* data, void* player_ptr, float deltaTime);
+	static void render(MiniGameData* data, Player* player_ptr);
+	static void update(MiniGameData* data, Player* player_ptr, float deltaTime);
 };
 
 #endif

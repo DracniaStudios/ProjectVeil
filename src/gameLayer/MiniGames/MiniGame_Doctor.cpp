@@ -42,9 +42,8 @@ MiniGame* MiniGame_Doctor(Player* player)
 	return game;
 }
 
-void Doctor::render(MiniGameData* data, void* player_ptr)
+void Doctor::render(MiniGameData* data, Player* player)
 {
-	auto player = static_cast<Player*>(player_ptr);
 	auto screen = data->screen;
 
 
@@ -67,9 +66,8 @@ void Doctor::render(MiniGameData* data, void* player_ptr)
 	}
 }
 
-void Doctor::update(MiniGameData* data, void* player_ptr, float delta)
+void Doctor::update(MiniGameData* data, Player* player, float delta)
 {
-	auto player = static_cast<Player*>(player_ptr);
 	auto screen = data->screen;
 	auto inputSystem = &InputSystem::getInstance();
 
@@ -96,9 +94,8 @@ void Doctor::update(MiniGameData* data, void* player_ptr, float delta)
 
 	if (CheckCollisionRecs(data->goal, playerRect) && isMoving == false)
 	{
-		std::cout << "Scored \n";
 		player->applyHealthValue(3, false);
-		data->isComplete = true;
+		CompleteMiniGame(data, player, BUFF_HEALTH, true);
 	}
 
 }

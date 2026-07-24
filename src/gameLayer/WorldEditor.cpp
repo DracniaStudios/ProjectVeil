@@ -14,7 +14,7 @@ void WorldEditor::update(Player* player)
 		if (IsKeyPressed(KEY_FOUR)) { isPlayerActive = !isPlayerActive; }
 		if (IsKeyPressed(KEY_FIVE)) { isCameraActive = !isCameraActive; }
 		if (IsKeyPressed(KEY_SIX)) { isMiniGameActive = !isMiniGameActive; }
-		if (IsKeyPressed(KEY_SEVEN)) { isEntityActive = !isEntityActive; }
+		//if (IsKeyPressed(KEY_SEVEN)) { isEntityActive = !isEntityActive; }
 		if (IsKeyPressed(KEY_EIGHT)) { isAssetActive = !isAssetActive; }
 	}
 
@@ -27,7 +27,7 @@ void WorldEditor::update(Player* player)
 	if (isPlacementActive) ShowPlacementPanel();
 	if (isPlayerActive) ShowPlayerData(player);
 	if (isCameraActive) ShowCameraData(player);
-	if (isEntityActive) ShowEntityInspector();
+	//if (isEntityActive) ShowEntityInspector();
 	if (isMiniGameActive) ShowMiniGameData(player);
 	if (isAssetActive) ShowAssetData();
 }
@@ -43,7 +43,7 @@ void WorldEditor::ShowEditorHub()
 	ImGui::Checkbox("Player Data (Ctrl+4)", &isPlayerActive);
 	ImGui::Checkbox("Camera Data (Ctrl+5)", &isCameraActive);
 	ImGui::Checkbox("Mini Game Data (Ctrl+6)", &isMiniGameActive);
-	ImGui::Checkbox("Entity Inspector (Ctrl+7)", &isEntityActive);
+	//ImGui::Checkbox("Entity Inspector (Ctrl+7)", &isEntityActive);
 	ImGui::Checkbox("Asset Data (Ctrl+8)", &isAssetActive);
 	ImGui::Separator();
 
@@ -75,10 +75,22 @@ Entity* WorldEditor::findEntity(std::uint64_t id)
 	if (entity == entities.end()) { return nullptr; }
 	return entity->second.get();
 }
+InteractableObject* WorldEditor::findInteractable(std::uint64_t id)
+{
+	if (id == 0) { return nullptr; }
+
+	auto& entities = SceneManager::getInstance().currentScene->interactables;
+	auto entity = entities.find(id);
+	if (entity == entities.end()) { return nullptr; }
+	return entity->second.get();
+}
 
 GameObject* WorldEditor::getSelectedObject()
 {
-	return findGameObject(selectedObjectId);
+	return
+		findInteractable(selectedObjectId) != nullptr ? findInteractable(selectedObjectId) :
+		findEntity(selectedObjectId) != nullptr ? findEntity(selectedObjectId) :
+		findGameObject(selectedObjectId);
 }
 
 Asset* WorldEditor::getActiveTexture()

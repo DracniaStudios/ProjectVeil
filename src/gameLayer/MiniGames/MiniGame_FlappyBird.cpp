@@ -44,7 +44,7 @@ MiniGame* MiniGame_FlappyBird(Player* player)
 	return game;
 }
 
-void FlappyBird::render(MiniGameData* data, void* player_ptr)
+void FlappyBird::render(MiniGameData* data, Player* player)
 {
 	auto rng(std::random_device{}());
 	/// Draw Background Screen
@@ -83,10 +83,9 @@ void FlappyBird::render(MiniGameData* data, void* player_ptr)
 
 }
 
-void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
+void FlappyBird::update(MiniGameData* data, Player* player, float deltaTime)
 {
 	auto scene = SceneManager::getInstance().currentScene;
-	auto player = static_cast<Player*>(player_ptr);
 	auto inputSystem = &InputSystem::getInstance();
 
 	auto generateObstacle = [&](int count = 4)
@@ -146,11 +145,7 @@ void FlappyBird::update(MiniGameData* data, void* player_ptr, float deltaTime)
 
 	// Win Condition
 
-	if (data->score >= data->scoreGoal)
-	{
-		if (auto* movementBuff = player->getBuff(BUFF_MOVEMENT)) { movementBuff->use(); }
-		data->isComplete = true;
-	}
+	CompleteMiniGame(data, player, BUFF_MOVEMENT);
 
 	// Player Logic
 	{

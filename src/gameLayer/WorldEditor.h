@@ -71,13 +71,13 @@ class WorldEditor
 	/** Developer Tool Windows **/
 	void ShowPlayerData(Player* player);
 	void ShowCameraData(Player* player);
-	void ShowEntityInspector();
 	void ShowMiniGameData(Player* player);
 	void ShowAssetData();
 
 	/** Helpers **/
 	GameObject* findGameObject(std::uint64_t id);
 	Entity* findEntity(std::uint64_t id);
+	InteractableObject* findInteractable(std::uint64_t);
 	GameObject* getSelectedObject();
 	Asset* getActiveTexture();
 	Asset* getActiveModel();

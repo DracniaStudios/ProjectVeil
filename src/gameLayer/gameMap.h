@@ -6,7 +6,6 @@
 #include <vector>
 #include <Entity.h>
 
-void* FindGameObjectByID(int id);
 inline constexpr int OBJECT_LIMIT = 10000;
 
 struct GameMap {
@@ -21,13 +20,19 @@ struct GameMap {
 	Entity* saveEntity(Entity& object);
 	InteractableObject* saveInteractable(InteractableObject& object);
 
-	// Remove Data
+	// Remove Data (Change to References)
 	void removeObject(GameObject* object);
 	void removeEntity(Entity* entity);
 	void removeInteractable(InteractableObject* object);
+
+	// Find Data
+	GameObject* FindGameObjectByID(int id);
+	Entity* FindEntityByID(int id);
+	InteractableObject* FindInteractableByID(int id);
 
 	// Return Data
 	Vector3 getMapSize() const { return Vector3(size.x, size.y, size.z);}
 };
 
+// Find GameObjects
 #endif

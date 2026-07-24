@@ -129,6 +129,48 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 				}
 			}
 		}
+		
+		// Interactable Vs. Game Objects
+		for (auto& [id, entity] : scene->interactables)
+		{
+			for (auto& bodyB : objects)
+			{
+				if (CheckCollisionBoxes(entity->rigidBody3D.collisionBox, bodyB.rigidBody3D.collisionBox))
+				{
+					entity->rigidBody3D.resolveConstrains(entity.get(), &bodyB);
+					refreshCollisionBox(entity->rigidBody3D);
+					refreshCollisionBox(bodyB.rigidBody3D);
+				}
+			}
+		}
+
+		// Interactable Vs. Entities — each unordered pair once
+		for (auto bodyA = scene->interactables.begin(); bodyA != scene->interactables.end(); ++bodyA)
+		{
+			for (auto bodyB = scene->entities.begin(); bodyB != scene->entities.end(); ++bodyB)
+			{
+				if (CheckCollisionBoxes(bodyA->second->rigidBody3D.collisionBox, bodyB->second->rigidBody3D.collisionBox))
+				{
+					bodyA->second->rigidBody3D.resolveConstrains(bodyA->second.get(), bodyB->second.get());
+					refreshCollisionBox(bodyA->second->rigidBody3D);
+					refreshCollisionBox(bodyB->second->rigidBody3D);
+				}
+			}
+		}
+		
+		// Interactable Vs. Interactable — each unordered pair once
+		for (auto bodyA = scene->interactables.begin(); bodyA != scene->interactables.end(); ++bodyA)
+		{
+			for (auto bodyB = std::next(bodyA); bodyB != scene->interactables.end(); ++bodyB)
+			{
+				if (CheckCollisionBoxes(bodyA->second->rigidBody3D.collisionBox, bodyB->second->rigidBody3D.collisionBox))
+				{
+					bodyA->second->rigidBody3D.resolveConstrains(bodyA->second.get(), bodyB->second.get());
+					refreshCollisionBox(bodyA->second->rigidBody3D);
+					refreshCollisionBox(bodyB->second->rigidBody3D);
+				}
+			}
+		}
 
 		// Player Vs. Entities — the player lives outside both containers, so
 		// without this pass it walks straight through every entity (it already
@@ -136,6 +178,19 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		if (auto player = scene->player)
 		{
 			for (auto& [id, entity] : scene->entities)
+			{
+				if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, entity->rigidBody3D.collisionBox))
+				{
+					player->rigidBody3D.resolveConstrains(player, entity.get());
+					refreshCollisionBox(player->rigidBody3D);
+					refreshCollisionBox(entity->rigidBody3D);
+				}
+			}
+		}
+
+		if (auto player = scene->player)
+		{
+			for (auto& [id, entity] : scene->interactables)
 			{
 				if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, entity->rigidBody3D.collisionBox))
 				{
@@ -190,8 +245,20 @@ void Scene_updateScene(float delta) {
 
 		}
 	}
+	
+	/* Update GameObjects */
+	for (auto& object : scene->gameMap.gameObjects) {
+		object.update(scene, delta);
+	}
 
-	/** Update GameObjects **/
+	/* Update Interactables */
+	for (auto interactable = scene->interactables.begin(); interactable != scene->interactables.end();) {
+		interactable->second->id = interactable->first;
+		interactable->second->update(scene, delta);
+		++interactable;
+	}
+
+	/** Update Entities **/
 	for (auto entity = scene->entities.begin(); entity != scene->entities.end();)
 	{
 		// Update Data
@@ -225,19 +292,6 @@ void Scene_updateScene(float delta) {
 		}
 	}
 
-	/* Limit GameObject Positions */
-	for (auto& object : scene->gameMap.gameObjects) {
-		object.update(scene, delta);
-		
-		// Clamp Y Bounds
-		if (object.rigidBody3D.translation.y < -1000.0f) {
-			object.rigidBody3D.Teleport(Vector3{ 0, 5, 0 });
-		}
-		if (object.rigidBody3D.translation.y < -1 && scene->limitYBounds) {
-			object.rigidBody3D.Teleport(Vector3{ object.getPosition().x, 5, object.getPosition().z });
-			std::cout << "Reset " << object.name << "'s Position \n";
-		}
-	}
 
 	// Sweep objects flagged by Destroy() — removal must happen outside the
 	// update loop above, since erasing mid-iteration invalidates it
@@ -302,7 +356,7 @@ void Scene_drawScene2D() {
 			/// Mini Games On Top
 			if (scene->isMiniActive && scene->miniGame != nullptr)
 			{
-				scene->miniGame->draw(scene->miniGame->data, &scene->player);
+				scene->miniGame->draw(scene->miniGame->data, scene->player);
 			}
 			scene->player->render2D();
 		}
@@ -321,6 +375,10 @@ void Scene_drawScene3D() {
 
 		for (auto& entity : scene->entities) {
 			entity.second->render3D();
+		}
+
+		for (auto& interact : scene->interactables) {
+			interact.second->render3D();
 		}
 
 		scene->player->render3D();

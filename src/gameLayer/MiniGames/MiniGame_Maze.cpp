@@ -15,19 +15,14 @@ MiniGame* MiniGame_Maze(Player* player)
 	return game;
 }
 
-void Maze::render(MiniGameData* data, void* player_ptr)
+void Maze::render(MiniGameData* data, Player* player)
 {
-	auto player = static_cast<Player*>(player_ptr);
 	
 }
 
-void Maze::update(MiniGameData* data, void* player_ptr, float delta)
+void Maze::update(MiniGameData* data, Player* player, float delta)
 {
-	auto player = static_cast<Player*>(player_ptr);
 	auto inputSystem = &InputSystem::getInstance();
 
-	if (data->score >= data->scoreGoal) {
-		data->isComplete = true;
-		if (auto* searchBuff = player->getBuff(BUFF_SEARCH)) { searchBuff->use(); }
-	}
+	CompleteMiniGame(data, player, BUFF_SEARCH);
 }

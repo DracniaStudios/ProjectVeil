@@ -31,7 +31,9 @@ void InteractableObject::onInteract()
 
 	if (interactType == INTERACT_MINIGAME)
 	{
-		SceneManager::getInstance().currentScene->SetMiniGame(interactValue);
+		auto scene = SceneManager::getInstance().currentScene;
+		scene->SetMiniGame(interactValue);
+		scene->player->interactObject = scene->gameMap.FindGameObjectByID(activatorValue);
 		isRunningMiniGame = true;
 		return;
 	}
@@ -51,7 +53,8 @@ void InteractableObject::update(Scene* scene, float delta) {
 	if (auto miniGame = scene->miniGame; scene->isMiniActive && scene->GetLastMiniGame() == interactValue) {
 
 		if (miniGame->data->isComplete) {
-			auto object = static_cast<GameObject*>(FindGameObjectByID(activatorValue));
+			std::cout << "Interactable Object Activate \n";
+			auto object = scene->gameMap.FindGameObjectByID(activatorValue);
 			if (object != nullptr) {
 				if (object->isEnabled) { object->onDisable(); std::cout << "Disable Object: " << activatorValue; }
 				else { object->onEnable(); std::cout << "Enable Object: " << activatorValue; }

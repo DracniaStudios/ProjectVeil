@@ -21,10 +21,8 @@ MiniGame* MiniGame_RoShamBoo(Player* player)
 	return game;
 }
 
-void RoShamBoo::render(MiniGameData* data, void* player_ptr)
+void RoShamBoo::render(MiniGameData* data, Player* player)
 {
-	auto player = static_cast<Player*>(player_ptr);
-
 	// Display 3 Cards
 	auto leftCard = getScreenScale(Rectangle{ 0.1f, 0.3f, 0.2f, 0.5f });
 	auto middleCard = getScreenScale(Rectangle{ 0.4f, 0.3f, 0.2f, 0.5f });
@@ -36,9 +34,8 @@ void RoShamBoo::render(MiniGameData* data, void* player_ptr)
 
 }
 
-void RoShamBoo::update(MiniGameData* data, void* player_ptr, float delta)
+void RoShamBoo::update(MiniGameData* data, Player* player, float delta)
 {
-	auto player = static_cast<Player*>(player_ptr);
 	auto inputSystem = &InputSystem::getInstance();
 
 	// Select Left
@@ -47,9 +44,8 @@ void RoShamBoo::update(MiniGameData* data, void* player_ptr, float delta)
 	if (inputSystem->IsActionPressed(ACTION_MOVE_BACKWARD)) { data->score = 2; }
 	// Select Right
 	if (inputSystem->IsActionPressed(ACTION_MOVE_RIGHT)) { data->score = 3; }
-
-	if (data->score == data->scoreGoal) {
-		data->isComplete = true;
-		if (auto* randomBuff = player->getBuff(BUFF_RANDOM)) { randomBuff->use(); }
-	}
+	
+	if (data->score == data->scoreGoal) { CompleteMiniGame(data, player, BUFF_RANDOM, true); };
+	
+	
 }

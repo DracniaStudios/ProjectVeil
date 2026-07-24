@@ -46,6 +46,8 @@ out/
 # Additive Directories
 .fmod/
 .claude/
+saves/backup.json
+saves/settings.json
 
 # CMake generated files
 CMakeFiles/

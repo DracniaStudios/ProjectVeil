@@ -2,13 +2,22 @@
 
 void WorldEditor::showInteractableObject(InteractableObject* object) {
 	ImGui::PushID(object);
+	ImGui::Separator();
+	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Interactable");
 
-	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Status");
+	ImGui::Text("Interact Type: %s", interactTypeToString(object->interactType));
+	ImGui::InputInt("Interact Value: %d", &object->interactValue);
+	ImGui::InputInt("Activator Value: &d", &object->activatorValue);
+	ImGui::Checkbox("Interactable", &object->isInteractable);
+	ImGui::Checkbox("MiniGame Running", &object->isRunningMiniGame);
+
 	ImGui::PopID();
 }
 
 void WorldEditor::showEntity(Entity* object) {
 	ImGui::PushID(object);
+	ImGui::Separator();
+	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Entity");
 
 	// Status
 	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Status");
@@ -123,11 +132,11 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::Checkbox("isVisible", &object->display3DModel);
 	ImGui::Checkbox("isDestructible", &object->isDestructible);
 
+	ImGui::Separator();
 	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Debug");
 	ImGui::Checkbox("Show Collider", &object->displayCollider);
 	ImGui::Checkbox("Show Model", &object->display3DModel);
 	ImGui::Checkbox("Show Direction", &object->displayDirection);
-	ImGui::Separator();
 
 	// Status
 	ImGui::Text("Life Span: %f", object->lifeSpan);

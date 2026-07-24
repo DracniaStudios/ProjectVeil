@@ -1,33 +1,34 @@
 // Game Name: Subject Veil
-// Version: 0.1.72 
+// Version: 0.1.73 
 // Due: 2026-07-31 (Game Mechanics)
-// Date: 2026-07-23 (Current Development Date)
+// Date: 2026-07-24 (Current Development Date)
 
 [Notice] Change Save System to read all types of data files from Json and return the Json data when called.
 [Notice] World Editor doesn't use new InputSystem.
 
 [ Issues ]
 
-- Interactable Objects don't enable/disable activator objects.
-- Object Browser doesnt remove objects from GameObjects lists if they're not Generic Objects.
-
 [ Added ]
 
-- New BuffTypeToString utility.
-- Added InteractableObject Constructor for interacting with other objects.
-- Added new ResetID to Scene for sanitation.
+- Added FindObjectByID(types) in GameMap.
+- Added Interact_None to InteractType.
+- Added CompleteMiniGame inline void.
 
+- InteractableObjects now set ActivatorObject on Player for MiniGames.
 
 [ Updated ]
 
-- Updated GameMap to use RemoveObject with gameObject Lists & IDs.
-- Updated InteractableObject to check if the Player is running MiniGames.
-- Updated Object Browser to show Generic data vs. Entity/Inspector data.
+- Updated multiple DataTypes to use Enum.
+- Updated InteractableObject data to public.
+- Updated Minigames to use Player* on draw and update.
+
+- Updated InteractableObjects to be seperate from GameObjects.
 
 [ Fixed ]
 
-- Fixed an issue where the SaveSystem didn't update the ID Counter on loading.
+- Fixed an issue where InteractableObjects were not displayed in ObjectBrowser.
+- Fixed an issue where OtherType data was not displayed in ObjectBrowser.
 
 [ Removed ]
 
-- GameObject Destructor
+- EntityInspector (.old)

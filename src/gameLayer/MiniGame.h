@@ -5,12 +5,12 @@
 #include <iostream>
 #include <raylib.h>
 #include <vector>
-
 #include <helpers.h>
 #include <randomStuff.h>
+#include <Player.h>
 
 struct Scene;
-struct Player;
+
 
 struct MiniGameData
 {
@@ -25,8 +25,8 @@ struct MiniGameData
 };
 
 // Update Game Method
-typedef void (*updateGameMethod)(MiniGameData* data, void* player_ptr, float deltaTime);
-typedef void (*drawGameMethod)(MiniGameData* data, void* player_ptr);
+typedef void (*updateGameMethod)(MiniGameData* data, Player* player_ptr, float deltaTime);
+typedef void (*drawGameMethod)(MiniGameData* data, Player* player_ptr);
 
 struct MiniGame
 {
@@ -37,6 +37,15 @@ struct MiniGame
 
 	void SetGoal(const Rectangle rect) const { data->goal = rect; }
 };
+
+inline void CompleteMiniGame(MiniGameData* data, Player* player, Buff buff, bool forceComplete = false) {
+	if (data->score >= data->scoreGoal || forceComplete) {
+		data->isComplete = true;
+		if (CooldownTimer* getBuff = player->getBuff(buff); getBuff != nullptr) { getBuff->use(); }
+		// May Switch Inbetween Enable and Disable States
+		if (player->interactObject != nullptr) { player->interactObject->onEnable(); }
+	}
+}
 
 /// Mini Game Constructors
 #define MINI_GAME_FLAPPY_BIRD_ID 0

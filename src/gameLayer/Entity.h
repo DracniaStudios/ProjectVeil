@@ -16,6 +16,12 @@ enum Buff {
 	// Attack Timer?
 	MAX_BUFF
 };
+/*
+struct Buff {
+	CooldownTimer timer = {};
+	BuffType type = {};
+};
+*/
 
 inline const char* buffTypeToString(int type) {
 	switch (type)

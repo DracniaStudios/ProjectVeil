@@ -27,9 +27,8 @@ MiniGame* MiniGame_SimonSays(Player* player)
 }
 
 
-void SimonSays::render(MiniGameData* data, void* player_ptr)
+void SimonSays::render(MiniGameData* data, Player* player)
 {
-	auto player = static_cast<Player*>(player_ptr);
 	
 	for (size_t i = 0; i < data->obstacles.size(); i++)
 	{
@@ -44,23 +43,20 @@ void SimonSays::render(MiniGameData* data, void* player_ptr)
 
 }
 
-void SimonSays::update(MiniGameData* data, void* player_ptr, float delta)
+void SimonSays::update(MiniGameData* data, Player* player, float delta)
 {
-	auto player = static_cast<Player*>(player_ptr);
 	auto inputSystem = &InputSystem::getInstance();
 	
 	// A single frame can register more than one key press; each branch re-checks the same
 	// index, so chain them with else-if to avoid indexing obstacles[] once score reaches
 	// scoreGoal (out-of-bounds) or awarding more than one point per frame.
 	if (data->score < static_cast<int>(data->obstacles.size())) {
-	if (inputSystem->IsActionPressed(ACTION_MOVE_FORWARD) && data->obstacles[data->score].y == 0) { data->score++; }
-	if (inputSystem->IsActionPressed(ACTION_MOVE_LEFT) && data->obstacles[data->score].y == 1) { data->score++; }
-	if (inputSystem->IsActionPressed(ACTION_MOVE_BACKWARD) && data->obstacles[data->score].y == 2) { data->score++; }
-	if (inputSystem->IsActionPressed(ACTION_MOVE_RIGHT) && data->obstacles[data->score].y == 3) { data->score++; }
-  }
-	
-	if (data->score >= data->scoreGoal) {
-		data->isComplete = true;
-		if (auto* hearingBuff = player->getBuff(BUFF_HEARING)) { hearingBuff->use(); }
+		if (inputSystem->IsActionPressed(ACTION_MOVE_FORWARD) && data->obstacles[data->score].y == 0) { data->score++; }
+		if (inputSystem->IsActionPressed(ACTION_MOVE_LEFT) && data->obstacles[data->score].y == 1) { data->score++; }
+		if (inputSystem->IsActionPressed(ACTION_MOVE_BACKWARD) && data->obstacles[data->score].y == 2) { data->score++; }
+		if (inputSystem->IsActionPressed(ACTION_MOVE_RIGHT) && data->obstacles[data->score].y == 3) { data->score++; }
 	}
+	
+	CompleteMiniGame(data, player, BUFF_HEARING);
+
 }

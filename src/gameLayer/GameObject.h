@@ -11,7 +11,7 @@
 
 struct Scene;
 
-enum ObjectType : uint8_t
+enum ObjectType
 {
 	OBJECT_GENERIC,
 	OBJECT_PLAYER,
@@ -27,13 +27,13 @@ enum ObjectType : uint8_t
 struct GameObject 
 {
 	GameObject();
-	~GameObject();
+	~GameObject() = default;
 
 	/// Data
 	std::string name = "GameObject";
 	std::uint64_t id = 0;
 
-	int type = OBJECT_GENERIC;
+	ObjectType type = OBJECT_GENERIC;
 	/// Debug Display
 	bool display3DModel = true;
 	bool displayDirection = false;
@@ -88,7 +88,7 @@ struct GameObject
 	Quaternion getRotation() const { return rigidBody3D.rotation; }
 	Vector3 getVelocity() const { return rigidBody3D.GetVelocity(); }
 	Vector3 getSize() const { return rigidBody3D.scale; }
-	ObjectType getType() const { return static_cast<ObjectType>(type); }
+	ObjectType getType() const { return type; }
 
 	virtual void update(Scene* scene, float deltaTime);
 	virtual void render2D();
@@ -106,39 +106,31 @@ struct GameObject
 	virtual bool loadFromJson(Json& j);
 	void addCommonToJson(Json& j);
 	bool loadCommonFromJson(Json& j);
-
-
 };
 
 /** Interfaces **/
-
 enum InteractionType
 {
+	INTERACT_NONE,
 	INTERACT_MINIGAME,
 	INTERACT_ITEM,
 };
 
 struct InteractableObject : GameObject
 {
-private:
-	int interactType = 0;
-	int interactValue = 0;
-	int activatorValue = 0;
 public:
 
 	InteractableObject(InteractionType type, int value);
 	InteractableObject(InteractionType type, int value, int activator);
 
-	void update(Scene* scene, float delta) override;
-
+	InteractionType interactType = INTERACT_NONE;
+	int interactValue = 0;
+	int activatorValue = 0;
 	bool isInteractable = true;
 	bool isRunningMiniGame = false;
 
+	void update(Scene* scene, float delta) override;
 	virtual void onInteract();
-	
-	int getType() const { return interactType; }
-	int getValue() const { return interactValue; }
-
 
 	// Save Data
 	Json formatToJson() override;
@@ -151,6 +143,14 @@ inline ObjectType getType(void* object)
 {
 	auto check = static_cast<GameObject*>(object);
 	return static_cast<ObjectType>(check->type);
+}
+
+inline const char* interactTypeToString(InteractionType type) {
+	switch (type) {
+		case INTERACT_MINIGAME: return "Mini Game";
+		case INTERACT_ITEM: return "Item";
+		default: return "None";
+	}
 }
 
 
