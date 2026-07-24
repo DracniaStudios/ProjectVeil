@@ -43,8 +43,8 @@ void WorldEditor::showEntity(Entity* object) {
 	// List Of Buffs
 	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Buffs");
 	for (auto& buff : object->buffTimers) {
-		ImGui::TextColored(ImVec4(255, 0, 255, 255), buffTypeToString(buff.cooldownID));
-		ImGui::Text("Duration: %d", buff.remaining_time());
+		ImGui::TextColored(ImVec4(255, 0, 255, 255), "%s", buffTypeToString(buff.cooldownID));
+		ImGui::Text("Duration: %f", buff.remaining_time());
 		ImGui::SameLine();
 		if (ImGui::Button("Use Buff")) { buff.use(); }
 	}
