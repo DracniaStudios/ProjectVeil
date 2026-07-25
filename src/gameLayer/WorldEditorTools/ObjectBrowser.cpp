@@ -226,15 +226,38 @@ void WorldEditor::ShowObjectBrowser()
 
 	if (ImGui::Button("Duplicate Object"))
 	{
-		GameObject copy = *object;
-		
-		copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), Vector3(1, 0, 0)));
+		// Copying through the GameObject base (rather than the Entity/InteractableObject
+		// subclass) would slice off their extra data, and still leave copy.type set to
+		// OBJECT_ENTITY/OBJECT_INTERACTABLE while only ever being saved into gameObjects
+		// — a later lookup by that stale type then indexes scene->entities/interactables
+		// with an id that was never inserted, handing back a null pointer.
+		if (object->type == OBJECT_ENTITY) {
+			Entity copy = *static_cast<Entity*>(object);
+			copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), Vector3(1, 0, 0)));
 
-		// saveObject may reallocate gameObjects — object is stale after this call.
-		// onEnable() rebinds visuals, giving the copy its own model instead of sharing meshes
-		GameObject* spawned = scene->gameMap.saveObject(copy);
-		selectedObjectId = spawned->id;
-		statusMessage = "Duplicated: " + spawned->name;
+			Entity* spawned = scene->gameMap.saveEntity(copy);
+			selectedObjectId = spawned->id;
+			statusMessage = "Duplicated: " + spawned->name;
+		}
+		else if (object->type == OBJECT_INTERACTABLE) {
+			InteractableObject copy = *static_cast<InteractableObject*>(object);
+			copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), Vector3(1, 0, 0)));
+
+			InteractableObject* spawned = scene->gameMap.saveInteractable(copy);
+			selectedObjectId = spawned->id;
+			statusMessage = "Duplicated: " + spawned->name;
+		}
+		else {
+			GameObject copy = *object;
+
+			copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), Vector3(1, 0, 0)));
+
+			// saveObject may reallocate gameObjects — object is stale after this call.
+			// onEnable() rebinds visuals, giving the copy its own model instead of sharing meshes
+			GameObject* spawned = scene->gameMap.saveObject(copy);
+			selectedObjectId = spawned->id;
+			statusMessage = "Duplicated: " + spawned->name;
+		}
 	}
 	else if (ImGui::Button("Delete Object"))
 	{
