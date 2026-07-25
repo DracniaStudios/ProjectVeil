@@ -9,13 +9,20 @@
 
 [ Issues ]
 
+- EditorCamera is unable to select Entites, InteractableObjects, and some GameObjects.
+
 [ Added ]
 
+- Added SteamSDK Integration
 
 [ Updated ]
 
+- Moved ActivatorObject check to MiniGame Complete.
 
 [ Fixed ]
+
+- Fixed an issue where Placement Panel wouldn't create Entites or Interactable Objects.
+- Fixed an issue in ObjectBrower that didn't allow Buffs to be used seperately.
 
 
 [ Removed ]
