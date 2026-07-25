@@ -249,12 +249,31 @@ void Scene_updateScene(float delta) {
 	/* Update GameObjects */
 	for (auto& object : scene->gameMap.gameObjects) {
 		object.update(scene, delta);
+
+		// Clamp Y Bounds
+		if (object.rigidBody3D.translation.y < -1000.0f) {
+			object.rigidBody3D.Teleport(Vector3{ 0, 5, 0 });
+		}
+		if (object.rigidBody3D.translation.y < -1 && scene->limitYBounds) {
+			object.rigidBody3D.Teleport(Vector3{ object.getPosition().x, 5, object.getPosition().z });
+			std::cout << "Reset " << object.name << "'s Position \n";
+		}
 	}
 
 	/* Update Interactables */
 	for (auto interactable = scene->interactables.begin(); interactable != scene->interactables.end();) {
 		interactable->second->id = interactable->first;
 		interactable->second->update(scene, delta);
+
+		// Clamp Y Bounds
+		if (interactable->second->rigidBody3D.translation.y < -1000.0f) {
+			interactable->second->rigidBody3D.Teleport(Vector3{ 0, 5, 0 });
+		}
+		if (interactable->second->rigidBody3D.translation.y < -1 && scene->limitYBounds) {
+			interactable->second->rigidBody3D.Teleport(Vector3{ interactable->second->getPosition().x, 5, interactable->second->getPosition().z });
+			std::cout << "Reset " << interactable->second->name << "'s Position \n";
+		}
+
 		++interactable;
 	}
 

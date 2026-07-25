@@ -46,12 +46,16 @@ GameObject* GameMap::saveObject(GameObject& object)
 	/// Set GameMap Data
 	object.onEnable();
 	gameObjects.push_back(object);
-	
+
 	std::cout << "Added Object \n";
 	std::sort(gameObjects.begin(), gameObjects.end(), [](const GameObject& a, const GameObject& b) {
 		return a.id > b.id;
 	});
-	return &gameObjects.back();
+
+	// The sort above reorders the vector, so the object we just added is no
+	// longer necessarily at back() — find it by the id we just assigned.
+	auto it = std::find_if(gameObjects.begin(), gameObjects.end(), [id](const GameObject& o) { return o.id == id; });
+	return &(*it);
 }
 
 
@@ -135,19 +139,15 @@ GameObject* GameMap::FindGameObjectByID(int id)
 Entity* GameMap::FindEntityByID(int id)
 {
 	const auto scene = SceneManager::getInstance().currentScene;
-	for (size_t i = 0; i < scene->entities.size(); ++i) {
-		auto obj = scene->entities[i].get();
-		if (obj->id == id) { return obj; }
-	}
-	return nullptr;
+	auto it = scene->entities.find(id);
+	if (it == scene->entities.end()) { return nullptr; }
+	return it->second.get();
 };
 
 InteractableObject* GameMap::FindInteractableByID(int id)
 {
 	const auto scene = SceneManager::getInstance().currentScene;
-	for (size_t i = 0; i < scene->interactables.size(); ++i) {
-		auto obj = scene->interactables[i].get();
-		if (obj->id == id) { return obj; }
-	}
-	return nullptr;
+	auto it = scene->interactables.find(id);
+	if (it == scene->interactables.end()) { return nullptr; }
+	return it->second.get();
 };
