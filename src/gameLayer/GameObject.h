@@ -129,7 +129,6 @@ public:
 	bool isInteractable = true;
 	bool isRunningMiniGame = false;
 
-	void update(Scene* scene, float delta) override;
 	virtual void onInteract();
 
 	// Save Data

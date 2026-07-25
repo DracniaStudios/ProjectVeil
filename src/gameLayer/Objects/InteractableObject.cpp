@@ -44,23 +44,3 @@ void InteractableObject::onInteract()
 		return;
 	}
 }
-
-void InteractableObject::update(Scene* scene, float delta) {
-
-	GameObject::update(scene, delta);
-	if (!isRunningMiniGame) return;
-
-	if (auto miniGame = scene->miniGame; scene->isMiniActive && scene->GetLastMiniGame() == interactValue) {
-
-		if (miniGame->data->isComplete) {
-			std::cout << "Interactable Object Activate \n";
-			auto object = scene->gameMap.FindGameObjectByID(activatorValue);
-			if (object != nullptr) {
-				if (object->isEnabled) { object->onDisable(); std::cout << "Disable Object: " << activatorValue; }
-				else { object->onEnable(); std::cout << "Enable Object: " << activatorValue; }
-			}
-			isRunningMiniGame = false;
-		}
-	}
-
-}

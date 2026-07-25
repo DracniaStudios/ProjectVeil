@@ -41,19 +41,26 @@ class WorldEditor
 	int activeModelIndex = -1; // Index into AssetManager::assets
 
 	/** Placement State **/
+	// Which kind of object the Placement Panel spawns
+	enum PlacementKind { PLACE_GAME_OBJECT, PLACE_ENTITY, PLACE_INTERACTABLE };
+	int placementKind = PLACE_GAME_OBJECT;
+
 	GameObject stagingObject = {};
 	char inputName[128] = "New Block";
 	Vector4 colorHolder = Vector4(255, 255, 255, 255);
 
+	// Entity extras, applied on spawn when placing an Entity
+	float stagingMaxHealth = 10.0f;
+	float stagingMaxStamina = 100.0f;
+	float stagingBaseSpeed = 1.0f;
+
+	// Interactable extras, applied on spawn when placing an Interactable
+	int stagingInteractType = INTERACT_NONE;
+	int stagingInteractValue = 0;
+	int stagingActivatorValue = 0;
+
 	/** Object & Entity Inspector State **/
 	std::uint64_t inspectEntityId = 0; // Id instead of pointer — survives entity removal (gameplay death, Load Game)
-
-	GameObject* newObject = nullptr;
-	Entity* newEntity = nullptr;
-	Vector4 createColorHolder = Vector4(0, 0, 0, 255);
-	char createName[128] = "New Object";
-	bool isCreatingObject = false;
-	bool isCreatingEntity = false;
 
 	/** Mini Game Inspector State **/
 	int currentGameID = 0;

@@ -1,34 +1,21 @@
 // Game Name: Subject Veil
-// Version: 0.1.73 
+// Version: 0.1.74 
 // Due: 2026-07-31 (Game Mechanics)
-// Date: 2026-07-24 (Current Development Date)
+// Date: 2026-07-25 (Current Development Date)
 
 [Notice] Change Save System to read all types of data files from Json and return the Json data when called.
 [Notice] World Editor doesn't use new InputSystem.
+[Notice] Add a Complete Game Buff to Player for Minigames
 
 [ Issues ]
 
 [ Added ]
 
-- Added FindObjectByID(types) in GameMap.
-- Added Interact_None to InteractType.
-- Added CompleteMiniGame inline void.
-
-- InteractableObjects now set ActivatorObject on Player for MiniGames.
 
 [ Updated ]
 
-- Updated multiple DataTypes to use Enum.
-- Updated InteractableObject data to public.
-- Updated Minigames to use Player* on draw and update.
-
-- Updated InteractableObjects to be seperate from GameObjects.
 
 [ Fixed ]
 
-- Fixed an issue where InteractableObjects were not displayed in ObjectBrowser.
-- Fixed an issue where OtherType data was not displayed in ObjectBrowser.
 
 [ Removed ]
-
-- EntityInspector (.old)

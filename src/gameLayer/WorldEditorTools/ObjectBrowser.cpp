@@ -43,10 +43,12 @@ void WorldEditor::showEntity(Entity* object) {
 	// List Of Buffs
 	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Buffs");
 	for (auto& buff : object->buffTimers) {
+		ImGui::PushID(&buff);
 		ImGui::TextColored(ImVec4(255, 0, 255, 255), "%s", buffTypeToString(buff.cooldownID));
 		ImGui::Text("Duration: %f", buff.remaining_time());
 		ImGui::SameLine();
 		if (ImGui::Button("Use Buff")) { buff.use(); }
+		ImGui::PopID();
 	}
 
 	ImGui::PopID();
@@ -174,7 +176,7 @@ void WorldEditor::ShowObjectBrowser()
 		//if (getType(&object) != OBJECT_ENTITY) continue;
 
 		ImGui::PushID(&object);
-		std::string label = object.second.get()->name + " (" + std::to_string(object.second.get()->id) + ")" + " (" + std::to_string(object.first) + ")";
+		std::string label = object.second.get()->name + " (" + std::to_string(object.second.get()->id) + ")";
 		if (ImGui::Selectable(label.c_str(), object.second.get()->id == selectedObjectId))
 		{
 			selectedObjectId = object.second.get()->id;
@@ -188,7 +190,7 @@ void WorldEditor::ShowObjectBrowser()
 		//if (getType(&object) != OBJECT_INTERACTABLE) continue;
 
 		ImGui::PushID(&object);
-		std::string label = object.second.get()->name + " (" + std::to_string(object.second.get()->id) + ")" + " (" + std::to_string(object.first) + ")";
+		std::string label = object.second.get()->name + " (" + std::to_string(object.second.get()->id) + ")";
 		if (ImGui::Selectable(label.c_str(), object.second.get()->id == selectedObjectId))
 		{
 			selectedObjectId = object.second.get()->id;

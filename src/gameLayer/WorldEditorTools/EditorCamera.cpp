@@ -1,24 +1,49 @@
 #include <WorldEditor.h>
 
-void SelectObjectInWorldSpace(EditorCamera* editor, Camera3D* camera) {
-	auto& gameObjects = SceneManager::getInstance().currentScene->gameMap.gameObjects;
+bool SelectObjectInWorldSpace(EditorCamera* editor, Camera3D* camera) {
+	auto& scene = SceneManager::getInstance().currentScene;
 	// Get Mouse To World Space.
 	const auto mouseRay = GetScreenToWorldRay(GetMousePosition(), *camera);
 
 	// Dangerous
-	for (size_t i = 0; i < gameObjects.size(); ++i) {
-		auto object = &gameObjects[i];
+	for (size_t i = 0; i < scene->gameMap.gameObjects.size(); ++i) {
+		auto object = &scene->gameMap.gameObjects[i];
 		if (!object->isSelectable) continue;
 		// Check Mouse Ray and Object Collision
 		if (auto collider = GetRayCollisionBox(mouseRay, object->rigidBody3D.collisionBox); collider.hit) {
 			auto worldEditor = &WorldEditor::getInstance();
 
 			worldEditor->SelectObject(object->id);
-			object->displayCollider = true;
-			object->displayDirection = true;
-
+			return true;
 		}
 	}
+
+	for (auto entity = scene->entities.begin(); entity != scene->entities.end(); ++entity) {
+		auto object = entity->second.get();
+		if (!object->isSelectable) continue;
+		// Check Mouse Ray and Object Collision
+		if (auto collider = GetRayCollisionBox(mouseRay, object->rigidBody3D.collisionBox); collider.hit) {
+			auto worldEditor = &WorldEditor::getInstance();
+
+			worldEditor->SelectObject(object->id);
+			return true;
+		}
+	}
+
+	for (auto entity = scene->interactables.begin(); entity != scene->interactables.end(); ++entity) {
+		auto object = entity->second.get();
+		if (!object->isSelectable) continue;
+		// Check Mouse Ray and Object Collision
+		if (auto collider = GetRayCollisionBox(mouseRay, object->rigidBody3D.collisionBox); collider.hit) {
+			auto worldEditor = &WorldEditor::getInstance();
+
+			worldEditor->SelectObject(object->id);
+			return true;
+		}
+	}
+
+	std::cout << "No Object Selected \n";
+	return false;
 }
 
 void UpdateDirection(EditorCamera* editor, Camera3D* camera) {
@@ -84,7 +109,7 @@ void UpdateMovement(EditorCamera* editor, Camera3D* camera) {
 
 void EditorCamera::Update(Camera3D* camera) {
 	
-	UpdateDirection(this, camera);
+	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) { UpdateDirection(this, camera); }
 	
 	UpdateMovement(this, camera);
 

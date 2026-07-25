@@ -42,6 +42,7 @@ add_subdirectory(thirdparty/rlImgui)
 add_subdirectory(thirdparty/FastNoise2-1.1.1)
 add_subdirectory(thirdparty/json-3.12.0) #Soon to me Customizable
 add_subdirectory(thirdparty/fmod-2.3.14)
+add_subdirectory(thirdparty/steam-1.64)
 
 file (GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
@@ -99,7 +100,8 @@ imgui
 rlimgui 
 FastNoise2 
 nlohmann_json 
-FMOD)
+FMOD
+STEAM)
 
 
 # TODO: Add tests and install targets if needed.
@@ -120,3 +122,8 @@ add_custom_command(
 		"$<TARGET_RUNTIME_DLLS:${CMAKE_PROJECT_NAME}>"
 	COMMAND_EXPAND_LISTS
 )
+
+# Copy the Steam libraries for the platform being built (defined by
+# thirdparty/steam-1.64). TARGET_RUNTIME_DLLS above only resolves DLLs on
+# Windows, so Steam handles its own copying to stay cross platform.
+steam_copy_runtime_libraries("${CMAKE_PROJECT_NAME}")
