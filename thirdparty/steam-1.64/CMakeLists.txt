@@ -53,64 +53,76 @@ else()
 	message(FATAL_ERROR "Steamworks SDK: unsupported platform '${CMAKE_SYSTEM_NAME}'")
 endif()
 
+# Only the Windows binaries are currently vendored under redistributable_bin
+# (see thirdparty/steam-1.64/redistributable_bin). Treating a missing runtime
+# as a hard configure error means nobody can configure/build the project on
+# Linux or macOS - including this repo's own Linux CI job - until Valve
+# binaries for every platform are committed. Degrade to a warning and build
+# without Steam support instead, so the rest of the project still configures.
+set(STEAM_SDK_FOUND TRUE)
 if(NOT EXISTS "${STEAM_API_RUNTIME}")
-	message(FATAL_ERROR "Steamworks SDK: missing '${STEAM_API_RUNTIME}'")
+	message(WARNING "Steamworks SDK: missing '${STEAM_API_RUNTIME}' - building without Steam support")
+	set(STEAM_SDK_FOUND FALSE)
 endif()
 
-# steam_api: the library everything in the Steamworks API goes through
-add_library(Steam::API SHARED IMPORTED GLOBAL)
-set_target_properties(Steam::API PROPERTIES
-	IMPORTED_LOCATION "${STEAM_API_RUNTIME}"
-)
+set(STEAM_RUNTIME_LIBRARIES "")
 
-if(WIN32)
-	set_target_properties(Steam::API PROPERTIES IMPORTED_IMPLIB "${STEAM_API_IMPLIB}")
-elseif(UNIX AND NOT APPLE)
-	# Valve ships these without a DT_SONAME. Without this CMake would bake the
-	# absolute build tree path into the executable instead of looking the
-	# library up next to it at runtime.
-	set_target_properties(Steam::API PROPERTIES IMPORTED_NO_SONAME TRUE)
-endif()
+# Umbrella for collecting different APIs
+add_library(STEAM INTERFACE)
 
-set(STEAM_RUNTIME_LIBRARIES "${STEAM_API_RUNTIME}")
-
-# Encrypted app ticket API (unused today but kept available)
-if(STEAM_APPTICKET_RUNTIME AND EXISTS "${STEAM_APPTICKET_RUNTIME}")
-	add_library(Steam::EncryptedAppTicket SHARED IMPORTED GLOBAL)
-	set_target_properties(Steam::EncryptedAppTicket PROPERTIES
-		IMPORTED_LOCATION "${STEAM_APPTICKET_RUNTIME}"
+if(STEAM_SDK_FOUND)
+	# steam_api: the library everything in the Steamworks API goes through
+	add_library(Steam::API SHARED IMPORTED GLOBAL)
+	set_target_properties(Steam::API PROPERTIES
+		IMPORTED_LOCATION "${STEAM_API_RUNTIME}"
 	)
 
 	if(WIN32)
-		set_target_properties(Steam::EncryptedAppTicket PROPERTIES
-			IMPORTED_IMPLIB "${STEAM_APPTICKET_IMPLIB}"
-		)
+		set_target_properties(Steam::API PROPERTIES IMPORTED_IMPLIB "${STEAM_API_IMPLIB}")
 	elseif(UNIX AND NOT APPLE)
-		set_target_properties(Steam::EncryptedAppTicket PROPERTIES IMPORTED_NO_SONAME TRUE)
+		# Valve ships these without a DT_SONAME. Without this CMake would bake the
+		# absolute build tree path into the executable instead of looking the
+		# library up next to it at runtime.
+		set_target_properties(Steam::API PROPERTIES IMPORTED_NO_SONAME TRUE)
 	endif()
 
-	list(APPEND STEAM_RUNTIME_LIBRARIES "${STEAM_APPTICKET_RUNTIME}")
+	list(APPEND STEAM_RUNTIME_LIBRARIES "${STEAM_API_RUNTIME}")
+
+	# Encrypted app ticket API (unused today but kept available)
+	if(STEAM_APPTICKET_RUNTIME AND EXISTS "${STEAM_APPTICKET_RUNTIME}")
+		add_library(Steam::EncryptedAppTicket SHARED IMPORTED GLOBAL)
+		set_target_properties(Steam::EncryptedAppTicket PROPERTIES
+			IMPORTED_LOCATION "${STEAM_APPTICKET_RUNTIME}"
+		)
+
+		if(WIN32)
+			set_target_properties(Steam::EncryptedAppTicket PROPERTIES
+				IMPORTED_IMPLIB "${STEAM_APPTICKET_IMPLIB}"
+			)
+		elseif(UNIX AND NOT APPLE)
+			set_target_properties(Steam::EncryptedAppTicket PROPERTIES IMPORTED_NO_SONAME TRUE)
+		endif()
+
+		list(APPEND STEAM_RUNTIME_LIBRARIES "${STEAM_APPTICKET_RUNTIME}")
+	endif()
+
+	target_include_directories(STEAM INTERFACE
+		"${INCLUDE_ROOT_DIR}"
+		"${INCLUDE_ROOT_DIR}/steam"
+	)
+
+	target_link_libraries(STEAM INTERFACE
+		Steam::API
+	)
+
+	if(TARGET Steam::EncryptedAppTicket)
+		target_link_libraries(STEAM INTERFACE Steam::EncryptedAppTicket)
+	endif()
 endif()
 
 # The copy helper below runs in the caller's scope, where the variables of this
 # directory are not visible, so hand the file list over as a global property.
 set_property(GLOBAL PROPERTY STEAM_RUNTIME_LIBRARIES "${STEAM_RUNTIME_LIBRARIES}")
-
-# Umbrella for collecting different APIs
-add_library(STEAM INTERFACE)
-
-target_include_directories(STEAM INTERFACE
-	"${INCLUDE_ROOT_DIR}"
-	"${INCLUDE_ROOT_DIR}/steam"
-)
-
-target_link_libraries(STEAM INTERFACE
-	Steam::API
-)
-
-if(TARGET Steam::EncryptedAppTicket)
-	target_link_libraries(STEAM INTERFACE Steam::EncryptedAppTicket)
-endif()
 
 # steam_copy_runtime_libraries(<target>)
 #
@@ -124,6 +136,13 @@ function(steam_copy_runtime_libraries TARGET_NAME)
 	endif()
 
 	get_property(STEAM_LIBS GLOBAL PROPERTY STEAM_RUNTIME_LIBRARIES)
+
+	# Nothing to copy when the Steamworks SDK wasn't found for this platform
+	# (see the STEAM_SDK_FOUND check above) - copy_if_different requires at
+	# least one source file, so skip the command entirely rather than error.
+	if(NOT STEAM_LIBS)
+		return()
+	endif()
 
 	add_custom_command(
 		TARGET ${TARGET_NAME} POST_BUILD
