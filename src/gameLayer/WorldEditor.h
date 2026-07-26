@@ -112,7 +112,7 @@ public:
 	void update(Player* player);
 
 	bool IsEnabled() const { return isEditorActive; }
-	void SelectObject(int id) { selectedObjectId = id; }
+	void SelectObject(std::uint64_t id) { selectedObjectId = id; }
 };
 
 #endif

@@ -44,7 +44,10 @@ inline void CompleteMiniGame(MiniGameData* data, Player* player, Buff buff, bool
 		if (CooldownTimer* getBuff = player->getBuff(buff); getBuff != nullptr) { getBuff->use(); }
 		// May Switch Inbetween Enable and Disable States
 		if (player->interactObject != nullptr) {
-			player->interactObject->isEnabled = !player->interactObject->isEnabled;
+			// Go through the virtual hooks (not a raw flag flip) so visuals/collision
+			// get (un)loaded and type-specific reset logic (Entity, LockedBox, ...) runs
+			if (player->interactObject->isEnabled) { player->interactObject->onDisable(); }
+			else { player->interactObject->onEnable(); }
 		}
 	}
 }
