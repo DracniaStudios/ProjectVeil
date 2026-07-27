@@ -77,15 +77,12 @@ int main()
 		}
 		AudioManager::getInstance().update();
 
-		if (!update_game())
-		{
-			close_game();
-
-			CloseWindow();
-		}
+		bool gameRunning = update_game();
 
 		rlImGuiEnd();
 		EndDrawing();
+
+		if (!gameRunning) { break; }
 	}
 
 	AudioManager::getInstance().shutdown();

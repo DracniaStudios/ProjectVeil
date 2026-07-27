@@ -38,8 +38,7 @@ struct GameObject
 	bool display3DModel = true;
 	bool displayDirection = false;
 	bool displayCollider = false;
-	bool isSelectable = true;
-	
+
 	/// Status
 	float lifeSpan = 0;
 	float deathSpan = 1;

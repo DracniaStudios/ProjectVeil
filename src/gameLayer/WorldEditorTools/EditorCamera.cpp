@@ -8,7 +8,7 @@ bool SelectObjectInWorldSpace(EditorCamera* editor, Camera3D* camera) {
 	// Dangerous
 	for (size_t i = 0; i < scene->gameMap.gameObjects.size(); ++i) {
 		auto object = &scene->gameMap.gameObjects[i];
-		if (!object->isSelectable) continue;
+		if (!object->canBeSelected) continue;
 		// Check Mouse Ray and Object Collision
 		if (auto collider = GetRayCollisionBox(mouseRay, object->rigidBody3D.collisionBox); collider.hit) {
 			auto worldEditor = &WorldEditor::getInstance();
@@ -20,7 +20,7 @@ bool SelectObjectInWorldSpace(EditorCamera* editor, Camera3D* camera) {
 
 	for (auto entity = scene->entities.begin(); entity != scene->entities.end(); ++entity) {
 		auto object = entity->second.get();
-		if (!object->isSelectable) continue;
+		if (!object->canBeSelected) continue;
 		// Check Mouse Ray and Object Collision
 		if (auto collider = GetRayCollisionBox(mouseRay, object->rigidBody3D.collisionBox); collider.hit) {
 			auto worldEditor = &WorldEditor::getInstance();
@@ -32,7 +32,7 @@ bool SelectObjectInWorldSpace(EditorCamera* editor, Camera3D* camera) {
 
 	for (auto entity = scene->interactables.begin(); entity != scene->interactables.end(); ++entity) {
 		auto object = entity->second.get();
-		if (!object->isSelectable) continue;
+		if (!object->canBeSelected) continue;
 		// Check Mouse Ray and Object Collision
 		if (auto collider = GetRayCollisionBox(mouseRay, object->rigidBody3D.collisionBox); collider.hit) {
 			auto worldEditor = &WorldEditor::getInstance();
