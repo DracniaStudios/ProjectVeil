@@ -6,8 +6,8 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Interactable");
 
 	ImGui::Text("Interact Type: %s", interactTypeToString(object->interactType));
-	ImGui::InputInt("Interact Value: %d", &object->interactValue);
-	ImGui::InputInt("Activator Value: &d", &object->activatorValue);
+	ImGui::InputInt("Interact Value", &object->interactValue);
+	ImGui::InputInt("Activator Value", &object->activatorValue);
 	ImGui::Checkbox("Interactable", &object->isInteractable);
 	ImGui::Checkbox("MiniGame Running", &object->isRunningMiniGame);
 
