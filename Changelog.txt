@@ -1,28 +1,35 @@
 // Game Name: Subject Veil
-// Version: 0.1.74 
+// Version: 0.2.37 
 // Due: 2026-07-31 (Game Mechanics)
-// Date: 2026-07-25 (Current Development Date)
+// Date: 2026-07-27 (Current Development Date)
 
+[Notice] Don't Upload Resource Folder, Send Directly to other developers
 [Notice] Change Save System to read all types of data files from Json and return the Json data when called.
 [Notice] World Editor doesn't use new InputSystem.
 [Notice] Add a Complete Game Buff to Player for Minigames
+[Notice] Apply Settings To World (Master Volume)
+[Notice] Add Stamina Check For Entities
 
 [ Issues ]
 
-- EditorCamera is unable to select Entites, InteractableObjects, and some GameObjects.
 
 [ Added ]
 
-- Added SteamSDK Integration
+- Added Reset & Complete buttons to MiniGame panel.
+- Added Save & Load Game buttons to World Settings.
 
 [ Updated ]
 
-- Moved ActivatorObject check to MiniGame Complete.
+- Updated multiple scripts to use Manager's Camera.
+- Updated PlayerCamera to change data of itself.
+- Updated Player to check collisions with Entites and Interactables.
 
 [ Fixed ]
 
-- Fixed an issue where Placement Panel wouldn't create Entites or Interactable Objects.
-- Fixed an issue in ObjectBrower that didn't allow Buffs to be used seperately.
-
+- Fixed a repetition issue where Objects would clamp inside of the world space.
+- Fixed an issue where FindingObjects used int instead of uint8_t.
+- Fixed an issue where the Collider Box displayed as NULL.
+- Fixed an issue where the ExitKey was declared twice.
 
 [ Removed ]
+- Added EditorUtils.h to Helpers.h

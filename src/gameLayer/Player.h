@@ -28,6 +28,7 @@ struct PlayerCamera : Camera3D
 
 struct Player : Entity
 {
+	// Game Mechanics
 	RigidBody2D rigidBody2D = {};
 	Vector2 moveDirection = {};
 	PlayerCamera camera = {};

@@ -4,7 +4,7 @@
 
 #include <SceneManager.h>
 #include <Player.h>
-#include <EditorUtils.h>
+#include <Helpers.h>
 
 struct EditorCamera : Camera3D {
 	Vector3 forward = {};
@@ -82,9 +82,6 @@ class WorldEditor
 	void ShowAssetData();
 
 	/** Helpers **/
-	GameObject* findGameObject(std::uint64_t id);
-	Entity* findEntity(std::uint64_t id);
-	InteractableObject* findInteractable(std::uint64_t);
 	GameObject* getSelectedObject();
 	Asset* getActiveTexture();
 	Asset* getActiveModel();
@@ -110,7 +107,6 @@ public:
 	
 	/** Functions **/
 	void update(Player* player);
-
 	bool IsEnabled() const { return isEditorActive; }
 	void SelectObject(std::uint64_t id) { selectedObjectId = id; }
 };

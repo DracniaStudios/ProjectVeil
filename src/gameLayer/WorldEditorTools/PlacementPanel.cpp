@@ -6,20 +6,6 @@ static constexpr ObjectType kGameObjectTypes[] = {
 	OBJECT_GENERIC, OBJECT_ITEM, OBJECT_PROJECTILE, OBJECT_ENVIRONMENT
 };
 
-static const char* miniGameIdToString(int id)
-{
-	switch (id)
-	{
-	case MINI_GAME_FLAPPY_BIRD_ID: return "Flappy Bird";
-	case MINI_GAME_CRANE_ID:       return "Crane";
-	case MINI_GAME_DOCTOR_ID:      return "Doctor";
-	case MINI_GAME_SIMON_SAYS_ID:  return "Simon Says";
-	case MINI_GAME_MAZE_ID:        return "Maze";
-	case MINI_GAME_RO_SHAM_BOO_ID: return "Ro Sham Boo";
-	default:                       return "Unknown";
-	}
-}
-
 void WorldEditor::ShowPlacementPanel()
 {
 	const auto manager = &SceneManager::getInstance();

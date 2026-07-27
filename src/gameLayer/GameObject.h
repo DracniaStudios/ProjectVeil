@@ -38,16 +38,17 @@ struct GameObject
 	bool display3DModel = true;
 	bool displayDirection = false;
 	bool displayCollider = false;
-
+	bool isSelectable = true;// WorldEditor
+	
 	/// Status
 	float lifeSpan = 0;
 	float deathSpan = 1;
 	float decayTime = 1;
+	void Decay(float time = 1) { decayTime = time; }
 
 	// Lives on GameObject (not Entity) so projectiles stored by value in
 	// GameMap::gameObjects keep their damage after slicing to GameObject
 	float baseDamage = 1.0f;
-	void Decay(float time = 1) { decayTime = time; }
 
 	/// Flags
 	bool isEnabled = true;
@@ -151,6 +152,18 @@ inline const char* interactTypeToString(InteractionType type) {
 	}
 }
 
+inline const char* objectTypeToString(int type)
+{
+	switch (type)
+	{
+	case OBJECT_PLAYER:      return "Player";
+	case OBJECT_ENTITY:      return "Entity";
+	case OBJECT_ITEM:        return "Item";
+	case OBJECT_PROJECTILE:  return "Projectile";
+	case OBJECT_ENVIRONMENT: return "Environment";
+	default:                 return "Generic";
+	}
+}
 
 
 #endif

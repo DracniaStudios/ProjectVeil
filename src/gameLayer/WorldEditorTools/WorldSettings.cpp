@@ -46,6 +46,9 @@ void WorldEditor::ShowWorldSettings()
 			statusMessage = "Failed to load world";
 		}
 	}
+
+	if (ImGui::Button("Save Game")) { SaveSystem::SaveGame("Default Save", scene); }
+	if (ImGui::Button("Load Game")) { SaveSystem::LoadGame("Default Save", *scene); }
 	if (!statusMessage.empty()) { ImGui::Text("%s", statusMessage.c_str()); }
 
 	ImGui::End();

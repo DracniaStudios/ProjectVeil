@@ -6,6 +6,7 @@ void WorldEditor::ShowAssetData()
 	auto& assets = assetManager.assets;
 	ImGui::SetNextWindowSize({ 640, 480 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSizeConstraints({ 0, 0 }, { FLT_MAX, FLT_MAX });
+
 	if (ImGui::Begin("Asset Data", &isAssetActive, 0)) {
 		ImGui::Text("Total Assets: %zu", assetManager.assets.size());
 		ImGui::Separator();

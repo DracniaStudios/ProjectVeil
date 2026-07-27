@@ -10,7 +10,6 @@ Scene* Scene_new() {
 	Scene* scene = new Scene;
 	scene->gameMap = {};
 
-
 	// Default Settings For Scene
 	scene->player = new Player;
 	scene->player->type = OBJECT_PLAYER;
@@ -35,9 +34,7 @@ std::uint64_t InstanceID::getIdAndIncrement()
 {
 	std::uint64_t id = idCounter;
 	idCounter++;
-
 	permaAssertComment(id < UINT64_MAX - 1, "We ran out of ids somehow...");
-
 	return id;
 }
 
@@ -175,6 +172,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		// Player Vs. Entities — the player lives outside both containers, so
 		// without this pass it walks straight through every entity (it already
 		// resolves against gameObjects in Player::update3D)
+		/*
 		if (auto player = scene->player)
 		{
 			for (auto& [id, entity] : scene->entities)
@@ -200,6 +198,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 				}
 			}
 		}
+		*/
 	}
 }
 
@@ -211,7 +210,6 @@ void Scene_updateScene(float delta) {
 	auto scene = manager->currentScene;
 	scene->update(delta);
 
-
 	// Swap Editor and Player Camera
 	if (!scene->is2DActive) {
 		if (scene->player != nullptr && worldEditor->IsEnabled() == false) {
@@ -221,9 +219,21 @@ void Scene_updateScene(float delta) {
 			worldEditor->editorCamera.Update(&manager->camera3D);
 		}
 		else {
-			std::cout << "No Camera Detected \n";
+			std::cerr << "No Camera Detected \n";
 		}
 	}
+
+	auto clampObject = [](GameObject& object, bool limit) {
+		// Clamp Y Bounds
+		if (object.rigidBody3D.translation.y < -1000.0f) {
+			object.rigidBody3D.Teleport(Vector3{ 0, 5, 0 });
+		}
+
+		if (object.rigidBody3D.translation.y < 0 && limit) {
+			object.rigidBody3D.translation.y = 0;
+			std::cout << "Reset: " << object.name << "'s Position \n";
+		}
+	};
 
 	/** Update Player **/
 	if (auto player = scene->player) {
@@ -234,46 +244,21 @@ void Scene_updateScene(float delta) {
 		else
 		{
 			if (!worldEditor->IsEnabled()) { player->update3D(delta); };
-		
-			// Clamp Y Bounds
-			if (player->rigidBody3D.translation.y < -1000.0f) {
-				player->rigidBody3D.Teleport(Vector3{ 0, 5, 0 });
-			}
-			if (player->rigidBody3D.translation.y < 0 && scene->limitYBounds) {
-				player->rigidBody3D.translation.y = 0;
-			}
-
+			clampObject(*player, scene->limitYBounds);
 		}
 	}
 	
 	/* Update GameObjects */
 	for (auto& object : scene->gameMap.gameObjects) {
 		object.update(scene, delta);
-
-		// Clamp Y Bounds
-		if (object.rigidBody3D.translation.y < -1000.0f) {
-			object.rigidBody3D.Teleport(Vector3{ 0, 5, 0 });
-		}
-		if (object.rigidBody3D.translation.y < -1 && scene->limitYBounds) {
-			object.rigidBody3D.Teleport(Vector3{ object.getPosition().x, 5, object.getPosition().z });
-			std::cout << "Reset " << object.name << "'s Position \n";
-		}
+		clampObject(object, scene->limitYBounds);
 	}
 
 	/* Update Interactables */
 	for (auto interactable = scene->interactables.begin(); interactable != scene->interactables.end();) {
 		interactable->second->id = interactable->first;
 		interactable->second->update(scene, delta);
-
-		// Clamp Y Bounds
-		if (interactable->second->rigidBody3D.translation.y < -1000.0f) {
-			interactable->second->rigidBody3D.Teleport(Vector3{ 0, 5, 0 });
-		}
-		if (interactable->second->rigidBody3D.translation.y < -1 && scene->limitYBounds) {
-			interactable->second->rigidBody3D.Teleport(Vector3{ interactable->second->getPosition().x, 5, interactable->second->getPosition().z });
-			std::cout << "Reset " << interactable->second->name << "'s Position \n";
-		}
-
+		clampObject(*interactable->second.get(), scene->limitYBounds);
 		++interactable;
 	}
 
@@ -300,13 +285,8 @@ void Scene_updateScene(float delta) {
 		else
 		{
 			entity->second->update(scene, delta);
-			// Clamp Y Bounds
-			if (entity->second->rigidBody3D.translation.y < -1000.0f) {
-				entity->second->rigidBody3D.Teleport(Vector3{ 0, 5, 0 });
-			}
-			if (entity->second->rigidBody3D.translation.y < 0 && scene->limitYBounds) {
-				entity->second->rigidBody3D.translation.y = 0;
-			}
+
+			clampObject(*entity->second.get(), scene->limitYBounds);
 			++entity;
 		}
 	}
@@ -343,8 +323,6 @@ void Scene_updateScene(float delta) {
 			delete miniGame;
 			scene->SetMiniGame(scene->GetLastMiniGame());
 		}
-
-
 	}
 	else
 	{
@@ -440,7 +418,6 @@ void Scene::SetMiniGame(int value)
 			miniGame = MiniGame_RoShamBoo(player);
 			break;
 	}
-
 
 	if (miniGame) {
 		lastMiniGamePlayed = value;

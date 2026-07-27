@@ -41,6 +41,7 @@ void Entity::update(Scene* scene, float deltaTime)
 	GameObject::update(scene, deltaTime);
 
 #pragma region Status Effects
+	// Check Stamina
 	currentSpeed = isSprinting ? baseSpeed * 2 :
 		isCrouching ? baseSpeed * 0.5f : baseSpeed;
 
@@ -71,7 +72,7 @@ void Entity::onCollision(const GameObject* collider)
 		applyHealthValue(collider->baseDamage, true);
 	}
 }
-
+// Move OnHit to OnCollision
 void Entity::onHit(const Entity* collider)
 {
 	if (collider->type == OBJECT_PROJECTILE || collider->type == OBJECT_ENTITY) {

@@ -159,7 +159,7 @@ void WorldEditor::ShowObjectBrowser()
 	ImGui::TextColored(ImVec4(0, 255, 0, 255), "World Objects");
 	for (auto& object : scene->gameMap.gameObjects)
 	{
-		if (getType(&object) != OBJECT_GENERIC) continue;
+		//if (getType(&object) != OBJECT_GENERIC) continue;
 
 		ImGui::PushID(&object);
 		std::string label = object.name + " (" + std::to_string(object.id) + ")";
@@ -173,8 +173,6 @@ void WorldEditor::ShowObjectBrowser()
 	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Entities");
 	for (auto& object : scene->entities)
 	{
-		//if (getType(&object) != OBJECT_ENTITY) continue;
-
 		ImGui::PushID(&object);
 		std::string label = object.second.get()->name + " (" + std::to_string(object.second.get()->id) + ")";
 		if (ImGui::Selectable(label.c_str(), object.second.get()->id == selectedObjectId))
@@ -187,8 +185,6 @@ void WorldEditor::ShowObjectBrowser()
 	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Interactables");
 	for (auto& object : scene->interactables)
 	{
-		//if (getType(&object) != OBJECT_INTERACTABLE) continue;
-
 		ImGui::PushID(&object);
 		std::string label = object.second.get()->name + " (" + std::to_string(object.second.get()->id) + ")";
 		if (ImGui::Selectable(label.c_str(), object.second.get()->id == selectedObjectId))
@@ -221,7 +217,6 @@ void WorldEditor::ShowObjectBrowser()
 	}
 	else if (object->type == OBJECT_INTERACTABLE) {
 		showInteractableObject(scene->interactables[object->id].get());
-
 	}
 
 	if (ImGui::Button("Duplicate Object"))

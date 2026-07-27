@@ -13,13 +13,14 @@ int main()
 	SetTraceLogLevel(LOG_FATAL);
 #endif
 
+	// Init Settings and Load Data
+
 	//SetConfigFlags(FLAG_WINDOW_MAXIMIZED);
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 
-	SetExitKey(KEY_F9);
-	SetTargetFPS(60);
+	SetTargetFPS(60); // set in settings
 
-	InitWindow(1600, 900, "Project: Veil");
+	InitWindow(1600, 900, "Project: Veil"); // set in settings
 
 #pragma region ImGui
 	rlImGuiSetup(true);
@@ -46,6 +47,7 @@ int main()
 
 	SetWindowFocused();
 	SetExitKey(KEY_NULL);
+
 	while (!WindowShouldClose())
 	{
 

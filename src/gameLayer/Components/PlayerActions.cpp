@@ -10,9 +10,9 @@ void Player::Fire()
 
 void Player::FireLaser()
 {
-	const auto camera = &SceneManager::getInstance().currentScene->player->camera;
+	const auto camera = &SceneManager::getInstance().camera3D;
 	// Create Ray from Camera
-	Ray cameraRay = { camera->position, camera->forward };
+	Ray cameraRay = { camera->position, this->camera.forward };
 
 	// Check Ray Collision with Game Objects
 
@@ -26,7 +26,7 @@ void Player::FireLaser()
 		if (GetRayCollisionBox(cameraRay, obj.rigidBody3D.collisionBox).hit)
 		{
 			obj.onCollision(this);
-			obj.rigidBody3D.AddForce(camera->forward, 0.1f);
+			obj.rigidBody3D.AddForce(this->camera.forward, 0.1f);
 		}
 	}
 
@@ -36,7 +36,7 @@ void Player::FireLaser()
 		if (GetRayCollisionBox(cameraRay, entity->rigidBody3D.collisionBox).hit)
 		{
 			entity->applyHealthValue(baseDamage * 0.1f, true);
-			entity->rigidBody3D.AddForce(camera->forward, 0.1f);
+			entity->rigidBody3D.AddForce(this->camera.forward, 0.1f);
 		}
 	}
 }
@@ -44,6 +44,7 @@ void Player::FireLaser()
 void Player::Interact()
 {
 	const auto scene = SceneManager::getInstance().currentScene;
+	const auto camera = &SceneManager::getInstance().camera3D;
 	auto interactRange = 5;
 
 	if (scene->is2DActive) { return; }
@@ -57,7 +58,7 @@ void Player::Interact()
 		interactRange = defaultInteractRange;
 	}
 
-	const auto cameraRay = Ray(camera.position, camera.forward);
+	const auto cameraRay = Ray(camera->position, this->camera.forward);
 	for (auto& interactable : scene->interactables)
 	{
 		const auto obj = interactable.second.get();

@@ -64,6 +64,19 @@ MiniGame* MiniGame_Maze(Player* player);
 #define MINI_GAME_RO_SHAM_BOO_ID 5
 MiniGame* MiniGame_RoShamBoo(Player* player);// Rock Paper Scissors
 
+static const char* miniGameIdToString(int id)
+{
+	switch (id)
+	{
+	case MINI_GAME_FLAPPY_BIRD_ID: return "Flappy Bird";
+	case MINI_GAME_CRANE_ID:       return "Crane";
+	case MINI_GAME_DOCTOR_ID:      return "Doctor";
+	case MINI_GAME_SIMON_SAYS_ID:  return "Simon Says";
+	case MINI_GAME_MAZE_ID:        return "Maze";
+	case MINI_GAME_RO_SHAM_BOO_ID: return "Ro Sham Boo";
+	default:                       return "Unknown";
+	}
+}
 
 /// Convert and store any objects as pixels before rendering
 /*** Draw MiniGame ***/

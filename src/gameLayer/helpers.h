@@ -47,4 +47,10 @@ public:
 
 };
 
+inline const char* boolToString(bool boolean)
+{
+	if (boolean) { return "True"; }
+	return "false";
+}
+
 #endif

@@ -50,7 +50,6 @@ void SceneManager_draw(SceneManager* manager) {
 	// Draw Scene 2D
 	BeginMode2D(manager->camera2D);
 	if (manager->currentScene) Scene_drawScene2D();
-
 	EndMode2D();
 
 	// Draw Transition

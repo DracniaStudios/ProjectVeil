@@ -39,6 +39,8 @@ void WorldEditor::ShowMiniGameData(Player* player)
 		ImGui::Text("Score Goal: %d", scene->miniGame->data->scoreGoal);
 		ImGui::InputFloat4("Screen Size: %d", &scene->miniGame->data->screen.x);
 		ImGui::InputFloat4("Goal Size: %d", &scene->miniGame->data->goal.x);
+		if (ImGui::Button("Reset")) { scene->miniGame->data->isReset = true; }
+		if (ImGui::Button("Complete")) { CompleteMiniGame(scene->miniGame->data, scene->player, BUFF_RANGE, true); }
 		ImGui::Separator();
 
 		auto& obstacles = scene->miniGame->data->obstacles;

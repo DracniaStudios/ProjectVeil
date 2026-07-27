@@ -14,8 +14,7 @@ void WorldEditor::update(Player* player)
 		if (IsKeyPressed(KEY_FOUR)) { isPlayerActive = !isPlayerActive; }
 		if (IsKeyPressed(KEY_FIVE)) { isCameraActive = !isCameraActive; }
 		if (IsKeyPressed(KEY_SIX)) { isMiniGameActive = !isMiniGameActive; }
-		//if (IsKeyPressed(KEY_SEVEN)) { isEntityActive = !isEntityActive; }
-		if (IsKeyPressed(KEY_EIGHT)) { isAssetActive = !isAssetActive; }
+		if (IsKeyPressed(KEY_SEVEN)) { isAssetActive = !isAssetActive; }
 	}
 
 	// Developer tool shortcuts, kept from the standalone Developer Window
@@ -27,7 +26,6 @@ void WorldEditor::update(Player* player)
 	if (isPlacementActive) ShowPlacementPanel();
 	if (isPlayerActive) ShowPlayerData(player);
 	if (isCameraActive) ShowCameraData(player);
-	//if (isEntityActive) ShowEntityInspector();
 	if (isMiniGameActive) ShowMiniGameData(player);
 	if (isAssetActive) ShowAssetData();
 }
@@ -43,10 +41,10 @@ void WorldEditor::ShowEditorHub()
 	ImGui::Checkbox("Player Data (Ctrl+4)", &isPlayerActive);
 	ImGui::Checkbox("Camera Data (Ctrl+5)", &isCameraActive);
 	ImGui::Checkbox("Mini Game Data (Ctrl+6)", &isMiniGameActive);
-	//ImGui::Checkbox("Entity Inspector (Ctrl+7)", &isEntityActive);
-	ImGui::Checkbox("Asset Data (Ctrl+8)", &isAssetActive);
+	ImGui::Checkbox("Asset Data (Ctrl+7)", &isAssetActive);
 	ImGui::Separator();
 
+	// Mini Console 
 	if (!statusMessage.empty()) { ImGui::Text("%s", statusMessage.c_str()); }
 
 	if (ImGui::Button("Close Editor (F1)")) { isEditorActive = false; }
@@ -54,43 +52,38 @@ void WorldEditor::ShowEditorHub()
 	ImGui::End();
 }
 
-GameObject* WorldEditor::findGameObject(std::uint64_t id)
+GameObject* FindGameObjectByID(uint8_t id)
 {
-	if (id == 0) { return nullptr; }
-
-	auto scene = SceneManager::getInstance().currentScene;
-	for (auto& object : scene->gameMap.gameObjects)
-	{
-		if (object.id == id) { return &object; }
+	const auto scene = SceneManager::getInstance().currentScene;
+	for (size_t i = 0; i < scene->gameMap.gameObjects.size(); ++i) {
+		auto obj = &scene->gameMap.gameObjects[i];
+		if (obj->id == id) { return obj; }
 	}
 	return nullptr;
-}
+};
 
-Entity* WorldEditor::findEntity(std::uint64_t id)
+Entity* FindEntityByID(uint8_t id)
 {
-	if (id == 0) { return nullptr; }
+	const auto scene = SceneManager::getInstance().currentScene;
+	auto it = scene->entities.find(id);
+	if (it == scene->entities.end()) { return nullptr; }
+	return it->second.get();
+};
 
-	auto& entities = SceneManager::getInstance().currentScene->entities;
-	auto entity = entities.find(id);
-	if (entity == entities.end()) { return nullptr; }
-	return entity->second.get();
-}
-InteractableObject* WorldEditor::findInteractable(std::uint64_t id)
+InteractableObject* FindInteractableByID(uint8_t id)
 {
-	if (id == 0) { return nullptr; }
-
-	auto& entities = SceneManager::getInstance().currentScene->interactables;
-	auto entity = entities.find(id);
-	if (entity == entities.end()) { return nullptr; }
-	return entity->second.get();
-}
+	const auto scene = SceneManager::getInstance().currentScene;
+	auto it = scene->interactables.find(id);
+	if (it == scene->interactables.end()) { return nullptr; }
+	return it->second.get();
+};
 
 GameObject* WorldEditor::getSelectedObject()
 {
 	return
-		findInteractable(selectedObjectId) != nullptr ? findInteractable(selectedObjectId) :
-		findEntity(selectedObjectId) != nullptr ? findEntity(selectedObjectId) :
-		findGameObject(selectedObjectId);
+		FindInteractableByID(selectedObjectId) != nullptr ? FindInteractableByID(selectedObjectId) :
+		FindEntityByID(selectedObjectId) != nullptr ? FindEntityByID(selectedObjectId) :
+		FindGameObjectByID(selectedObjectId);
 }
 
 Asset* WorldEditor::getActiveTexture()

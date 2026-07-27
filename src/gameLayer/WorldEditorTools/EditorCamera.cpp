@@ -12,7 +12,6 @@ bool SelectObjectInWorldSpace(EditorCamera* editor, Camera3D* camera) {
 		// Check Mouse Ray and Object Collision
 		if (auto collider = GetRayCollisionBox(mouseRay, object->rigidBody3D.collisionBox); collider.hit) {
 			auto worldEditor = &WorldEditor::getInstance();
-
 			worldEditor->SelectObject(object->id);
 			return true;
 		}
@@ -51,8 +50,8 @@ void UpdateDirection(EditorCamera* editor, Camera3D* camera) {
 	auto up = Vector3(0.0f, 1.0f, 0.0f);
 
 	// FPS-style camera look
-	static float yaw = 0.0f;
-	static float pitch = 0.0f;
+	static float yaw = 0.0f; // X
+	static float pitch = 0.0f; // Y
 	const float sensitivity = -0.005f;
 
 	Vector2 mouseDelta = GetMouseDelta();
@@ -88,7 +87,6 @@ void UpdateMovement(EditorCamera* editor, Camera3D* camera) {
 	auto inputSystem = &InputSystem::getInstance();
 
 	if (inputSystem->IsActionDown(ACTION_MOVE_SPRINT)) { speed *= 2; }
-
 	if (inputSystem->IsActionDown(ACTION_EDITOR_UP)) { editor->position.y += speed * 0.1f; }
 	if (inputSystem->IsActionDown(ACTION_EDITOR_DOWN)) { editor->position.y -= speed * 0.1f; }
 

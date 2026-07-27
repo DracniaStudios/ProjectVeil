@@ -29,6 +29,7 @@ static bool isTextureFile(const fs::path& path)
 // by raylib as part of LoadModel and must not become assets of their own.
 static bool isModelFile(const fs::path& path)
 {
+	// Objects Don't Animate
 	const std::string ext = lowerExtension(path);
 	return ext == ".obj" || ext == ".glb" || ext == ".gltf";
 }
@@ -106,7 +107,6 @@ void AssetManager::loadFolder(const char* folder, bool recursive)
 		}
 	}
 	std::sort(files.begin(), files.end());
-
 
 	for (const auto& file : files)
 	{

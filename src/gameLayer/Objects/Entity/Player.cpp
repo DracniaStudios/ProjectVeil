@@ -19,7 +19,8 @@ void SetMoveDirection(Player* player) {
 	if (auto* movementBuff = player->getBuff(BUFF_MOVEMENT);
 		movementBuff && movementBuff->remaining_time() > 0)
 	{
-		speed *= 2; jumpPower += player->baseJumpPower * 2;
+		speed *= 2; 
+		jumpPower += player->baseJumpPower * 2;
 	}
 
 	// Player Movement Input
@@ -47,11 +48,11 @@ void UpdateActions(Player* player) {
 	if (!WorldEditor::getInstance().IsEnabled()) {
 		if (inputSystem->IsActionPressed(ACTION_USE_ITEM)) { player->Fire(); }
 		if (inputSystem->IsActionDown(ACTION_USE_ITEM2)) { player->FireLaser(); }
+		if (inputSystem->IsActionPressed(ACTION_MOVE_INTERACT)) { player->Interact(); }
+		if (inputSystem->IsActionPressed(ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(20);
 	}
 
-	if (inputSystem->IsActionPressed(ACTION_MOVE_INTERACT)) { player->Interact(); }
 
-	if (inputSystem->IsActionPressed(ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(20);
 }
 
 void updateCollision(Player* player) {
@@ -66,6 +67,28 @@ void updateCollision(Player* player) {
 			}
 		}
 	}
+
+	for (auto& obj : SceneManager::getInstance().currentScene->entities)
+	{
+		auto ent = obj.second.get();
+		if (ent != player)
+		{
+			if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, ent->rigidBody3D.collisionBox))
+			{
+				player->rigidBody3D.resolveConstrains(player, ent);
+			}
+		}
+	}
+	for (auto& obj : SceneManager::getInstance().currentScene->interactables)
+	{
+		auto ent = obj.second.get();
+		if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, ent->rigidBody3D.collisionBox))
+		{
+			player->rigidBody3D.resolveConstrains(player, ent);
+		}
+	}
+
+
 }
 
 void updateArtifact(Player* player) {
@@ -85,8 +108,8 @@ void updateArtifact(Player* player) {
 	const auto camera = player->camera;
 	const auto offset = Vector3Add(camera.forward, player->rigidBody3D.left);//camera->left / 2);
 
-	player->artifact->rigidBody3D.translation = Vector3Add(camera.position, offset);
-	player->artifact->rigidBody3D.angularVelocity = Vector3(0.1f, 0, 0.1f);
+	player->artifact->rigidBody3D.translation = Vector3Add(SceneManager::getInstance().camera3D.position, offset);
+	player->artifact->rigidBody3D.angularVelocity = getRandomVector3(player->rng); // 0.1, 0, 0.1
 	player->artifact->update(scene, GetFrameTime());
 	
 	
@@ -125,9 +148,8 @@ void Player::onDisable()
 
 void Player::render2D()
 {
-	auto inputSystem = &InputSystem::getInstance();
 	if (!this->isEnabled) return;
-	
+	auto inputSystem = &InputSystem::getInstance();
 	auto scene = SceneManager::getInstance().currentScene;
 
 	if (scene->isMiniActive && scene->miniGame != nullptr)
@@ -202,7 +224,7 @@ FMOD_3D_ATTRIBUTES Player::getListener() {
 	Vector3 up = Vector3Normalize(Vector3CrossProduct(forward, right));
 
 	FMOD_3D_ATTRIBUTES listenerAttributes = {};
-	listenerAttributes.position = Vector3ToFMOD(camera->position);
+	listenerAttributes.position = Vector3ToFMOD(SceneManager::getInstance().camera3D.position);
 	listenerAttributes.velocity = Vector3ToFMOD(getVelocity());
 	listenerAttributes.forward = Vector3ToFMOD(forward);
 	listenerAttributes.up = Vector3ToFMOD(up);

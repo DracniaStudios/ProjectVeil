@@ -21,8 +21,8 @@ void InteractableObject::onInteract()
 	auto rng = std::ranlux24_base(std::random_device{}());
 	defaultColor = getRandomColor(rng);
 
-	//AudioManager::getInstance().Play("anime_wow");
 	AudioManager::getInstance().Play3D(defaultSound, *this);
+
 	// Play3D only populates soundInstance when it falls back to the FMOD Studio event path;
 	// a plain loaded sound (the common case) leaves it null.
 	if (soundInstance != nullptr) {
@@ -43,4 +43,23 @@ void InteractableObject::onInteract()
 		// Give Player Specific Item
 		return;
 	}
+}
+
+Json InteractableObject::formatToJson()
+{
+	Json j;
+	addCommonToJson(j);
+	j["InteractType"] = interactType;
+	j["InteractValue"] = interactValue;
+	j["IsInteractable"] = isInteractable;
+	return j;
+}
+
+bool InteractableObject::loadFromJson(Json& j)
+{
+	if (!loadCommonFromJson(j)) { return false; }
+	interactType = static_cast<InteractionType>(j.value("InteractType", 0));
+	interactValue = j.value("InteractValue", 0);
+	isInteractable = j.value("IsInteractable", true);
+	return true;
 }

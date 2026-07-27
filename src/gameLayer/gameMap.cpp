@@ -33,9 +33,7 @@ void GameMap::create(Vector3 size)
 GameObject* GameMap::saveObject(GameObject& object)
 {
 	auto scene = SceneManager::getInstance().currentScene;
-	auto id = scene->instanceHolder.getIdAndIncrement();
-
-	object.id = id;
+	object.id = scene->instanceHolder.getIdAndIncrement();
 
 	/// Set RigidBody3D Data
 	if (object.rigidBody3D.scale == Vector3Zero())
@@ -54,6 +52,7 @@ GameObject* GameMap::saveObject(GameObject& object)
 
 	// The sort above reorders the vector, so the object we just added is no
 	// longer necessarily at back() — find it by the id we just assigned.
+	auto id = object.id;
 	auto it = std::find_if(gameObjects.begin(), gameObjects.end(), [id](const GameObject& o) { return o.id == id; });
 	return &(*it);
 }
@@ -125,7 +124,7 @@ void GameMap::removeInteractable(InteractableObject* object)
 	scene->interactables.erase(object->id);
 }
 
-GameObject* GameMap::FindGameObjectByID(int id)
+GameObject* GameMap::FindGameObjectByID(uint8_t id)
 {
 	const auto scene = SceneManager::getInstance().currentScene;
 	for (size_t i = 0; i < scene->gameMap.gameObjects.size(); ++i) {
@@ -135,7 +134,7 @@ GameObject* GameMap::FindGameObjectByID(int id)
 	return nullptr;
 };
 
-Entity* GameMap::FindEntityByID(int id)
+Entity* GameMap::FindEntityByID(uint8_t id)
 {
 	const auto scene = SceneManager::getInstance().currentScene;
 	auto it = scene->entities.find(id);
@@ -143,7 +142,7 @@ Entity* GameMap::FindEntityByID(int id)
 	return it->second.get();
 };
 
-InteractableObject* GameMap::FindInteractableByID(int id)
+InteractableObject* GameMap::FindInteractableByID(uint8_t id)
 {
 	const auto scene = SceneManager::getInstance().currentScene;
 	auto it = scene->interactables.find(id);

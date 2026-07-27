@@ -2,8 +2,6 @@
 
 #include <SceneManager.h>
 
-static Color colliderColor;
-
 static BoundingBox getBoundingBox(Model mdl, Vector3 pos)
 {
 	permaAssertComment(mdl.meshCount == 0, "No Meshes In Model");
@@ -44,7 +42,6 @@ GameObject::GameObject()
 }
 
 /** Asset Binding **/
-
 void GameObject::loadVisuals()
 {
 	// Model: shared AssetManager handle when one is named, else a unit cube
@@ -151,7 +148,7 @@ void GameObject::render3D()
 {
 	if (!isEnabled) { return; }
 
-	if (displayCollider) { DrawBoundingBox(rigidBody3D.collisionBox, colliderColor); }
+	if (displayCollider) { DrawBoundingBox(rigidBody3D.collisionBox, WHITE); }
 
 	if (display3DModel) {
 		// Bake scale + orientation into the transform — meshes stay unit-sized,
@@ -173,11 +170,6 @@ void GameObject::render3D()
 		DrawSphere(rigidBody3D.up + rigidBody3D.translation, 0.1f, BLUE);
 		DrawSphere(rigidBody3D.down + rigidBody3D.translation, 0.1f, PURPLE);
 	}
-
-	auto displayRay = [&](Ray ray, Color color)
-	{
-		DrawLine3D(ray.position, Vector3Add(ray.position, Vector3Scale(ray.direction, 0.5f)), color);
-	};
 }
 
 void GameObject::update(Scene* scene, float deltaTime)
@@ -245,10 +237,6 @@ FMOD_3D_ATTRIBUTES GameObject::get3DAttributes() const
 }
 #pragma endregion
 
-
-
-//****** Interactable Objects *************//
-
 /** GameObject Save Data **/
 #pragma region Save GameObject
 
@@ -256,7 +244,6 @@ void GameObject::addCommonToJson(Json& j)
 {
 	// Save Common Object Data
 	j["RigidBody3D"] = rigidBody3D.formatToJson();
-	j["Life"] = lifeSpan;
 	j["ObjectType"] = getType();
 	j["Name"] = name;
 
@@ -340,24 +327,4 @@ bool GameObject::loadFromJson(Json& j)
 {
 	return loadCommonFromJson(j);
 }
-
-Json InteractableObject::formatToJson()
-{
-	Json j;
-	addCommonToJson(j);
-	j["InteractType"] = interactType;
-	j["InteractValue"] = interactValue;
-	j["IsInteractable"] = isInteractable;
-	return j;
-}
-
-bool InteractableObject::loadFromJson(Json& j)
-{
-	if (!loadCommonFromJson(j)) { return false; }
-	interactType = static_cast<InteractionType>(j.value("InteractType", 0));
-	interactValue = j.value("InteractValue", 0);
-	isInteractable = j.value("IsInteractable", true);
-	return true;
-}
-
 #pragma endregion

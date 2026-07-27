@@ -207,5 +207,5 @@ void Settings::Init() {
 	}
 }
 void Settings::Update() {
-
+	// Settings Menu
 }

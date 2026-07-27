@@ -22,8 +22,8 @@ void PlayerCamera::UpdateCameraFPS(Camera3D* camera)
 	UpdateCamera(camera, CAMERA_CUSTOM);
 
 	// FPS-style camera look
-	static float yaw = 0.0f;
-	static float pitch = 0.0f;
+	static float yaw = 0.0f; // X
+	static float pitch = 0.0f; // Y
 	const float sensitivity = -0.003f;
 
 	Vector2 mouseDelta = GetMouseDelta();
@@ -48,11 +48,11 @@ void PlayerCamera::UpdateCameraFPS(Camera3D* camera)
 	flatForward = Vector3Normalize(flatForward);
 
 	// Update Camera Angles
-	player->camera.back = Vector3Scale(camForward, -1);
-	player->camera.right = Vector3{ -camForward.z, 0, camForward.x };
-	player->camera.left = Vector3{ camForward.z, 0, -camForward.x };
-	player->camera.up = Vector3{ 0, 1, 0 };
-	player->camera.down = Vector3{ 0, -1, 0 };
+	back = Vector3Scale(camForward, -1);
+	right = Vector3{ -camForward.z, 0, camForward.x };
+	left = Vector3{ camForward.z, 0, -camForward.x };
+	up = Vector3{ 0, 1, 0 };
+	down = Vector3{ 0, -1, 0 };
 
 	// Update Player Angles
 	if (Vector3Length(flatForward) > 0.001f) {
@@ -65,6 +65,4 @@ void PlayerCamera::UpdateCameraFPS(Camera3D* camera)
 	}
 	position = Vector3Add(player->rigidBody3D.translation, offset);
 	camera->position = Vector3Add(player->rigidBody3D.translation, offset);
-
-
 }
