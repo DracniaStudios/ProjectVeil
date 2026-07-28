@@ -27,28 +27,62 @@ void WorldEditor::ShowWorldSettings()
 	ImGui::Text("Next ID: %llu", static_cast<unsigned long long>(scene->instanceHolder.idCounter));
 	ImGui::Separator();
 
-	/// World Save Data
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "World Data");
-
-	if (ImGui::Button("Save World"))
-	{
-		statusMessage = SaveSystem::SaveWorld(scene) ? "Saved world.json" : "Failed to save world";
-	}
-	if (ImGui::Button("Load World"))
-	{
-		if (SaveSystem::LoadWorld(*scene))
-		{
-			selectedObjectId = 0; // Ids from the old world are stale
-			statusMessage = "Loaded world.json";
-		}
-		else
-		{
-			statusMessage = "Failed to load world";
-		}
-	}
-
 	if (ImGui::Button("Save Game")) { SaveSystem::SaveGame("Default Save", scene); }
 	if (ImGui::Button("Load Game")) { SaveSystem::LoadGame("Default Save", *scene); }
+	ImGui::Separator();
+
+	/// World Save Data
+	if (ImGui::BeginChild("World Saves")) {
+
+		ImGui::TextColored(ImVec4(255, 0, 255, 255), "World Data");
+
+		ImGui::RadioButton("Save Game", &saveState, 0);
+		ImGui::RadioButton("Load Game", &saveState, 1);
+
+		if (ImGui::Button("Default Save World"))
+		{
+		statusMessage = SaveSystem::SaveWorld("world", scene) ? "Saved world.json" : "Failed to save world";
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Default Load World"))
+		{
+			if (SaveSystem::LoadWorld("world", *scene))
+			{
+				selectedObjectId = 0; // Ids from the old world are stale
+				statusMessage = "Loaded world.json";
+			}
+			else
+			{
+				statusMessage = "Failed to load world";
+			}
+		}
+
+		for (auto& file : SaveSystem::GetSaveFiles()) {
+
+			std::string save = "Save " + file;
+			std::string load = "Load " + file;
+			if (ImGui::Button(save.c_str())) {
+				if (SaveSystem::SaveWorld(file, scene)) {
+					selectedObjectId = 0;
+					statusMessage = "Saved " + file;
+				}
+				else {
+					statusMessage = "Failed To Save " + file;
+				}
+			}
+			ImGui::SameLine();
+			if (ImGui::Button(load.c_str())) {
+				if (SaveSystem::LoadWorld(file, *scene)) {
+					selectedObjectId = 0;
+					statusMessage = "Loaded " + file;
+				}
+				else {
+					statusMessage = "Failed To Load " + file;
+				}
+			}
+		}
+		ImGui::EndChild();
+	}
 	if (!statusMessage.empty()) { ImGui::Text("%s", statusMessage.c_str()); }
 
 	ImGui::End();

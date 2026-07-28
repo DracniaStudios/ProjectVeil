@@ -7,7 +7,7 @@
 
 constexpr int VERSION = 2;
 
-constexpr const char* WORLD_SAVE_PATH = RESOURCES_PATH "../saves/world.json";
+constexpr const char* WORLD_SAVE_PATH = RESOURCES_PATH "scenes/";
 
 namespace SaveSystem
 {
@@ -236,7 +236,7 @@ namespace SaveSystem
 		if (scene->gameMap.gameObjects.size() > OBJECT_LIMIT) { return false; }
 
 		const std::string savePath = RESOURCES_PATH "../saves/";
-		const std::filesystem::path path = savePath + fileName;
+		const std::filesystem::path path = savePath + fileName + ".json";
 		if (!WriteJsonAtomic(path, SceneToJson(scene))) { return false; }
 
 		std::cout << "[Save System] Saved Game: " << path.string() << "\n";
@@ -249,7 +249,7 @@ namespace SaveSystem
 		Json j;
 
 		const std::string savePath = RESOURCES_PATH "../saves/";
-		const std::filesystem::path path = savePath + fileName;
+		const std::filesystem::path path = savePath + fileName + ".json";
 
 		scene.gameMap.gameObjects.clear();
 		scene.entities.clear();
@@ -263,7 +263,7 @@ namespace SaveSystem
 		return true;
 	}
 
-	bool SaveWorld(Scene* scene)
+	bool SaveWorld(std::string fileName, Scene* scene)
 	{
 		if (scene == nullptr) { return false; }
 
@@ -271,6 +271,7 @@ namespace SaveSystem
 		if (scene->gameMap.gameObjects.size() > OBJECT_LIMIT) { return false; }
 
 		Json j;
+		std::filesystem::path path = WORLD_SAVE_PATH + fileName + ".json";
 
 		// Primary Data
 		j["Version"] = VERSION;
@@ -300,16 +301,18 @@ namespace SaveSystem
 		}
 		j["Interactables"] = interactables;
 
-		if (!WriteJsonAtomic(WORLD_SAVE_PATH, j)) { return false; }
+		if (!WriteJsonAtomic(path, j)) { return false; }
 
-		std::cout << "[Save System] Saved World: " << WORLD_SAVE_PATH << "\n";
+		std::cout << "[Save System] Saved World: " << path << "\n";
 		return true;
 	}
 
-	bool LoadWorld(Scene& scene)
+	bool LoadWorld(std::string fileName, Scene& scene)
 	{
 		Json j;
-		if (!ReadJsonFromFile(WORLD_SAVE_PATH, j)) { return false; }
+		std::filesystem::path path = WORLD_SAVE_PATH + fileName + ".json";
+		std::cout << "[Save System] Attempt Loading World: " << path;
+		if (!ReadJsonFromFile(path.string().c_str(), j)) { return false; }
 
 		if (j.value("Version", 0) > VERSION)
 		{
@@ -373,7 +376,26 @@ namespace SaveSystem
 		scene.instanceHolder.idCounter =
 			std::max(scene.instanceHolder.idCounter, j.value("IdCounter", scene.instanceHolder.idCounter));
 
-		std::cout << "[Save System] Loaded World: " << WORLD_SAVE_PATH << "\n";
+		std::cout << "[Save System] Loaded World: " << path << "\n";
 		return true;
 	}
+
+	std::vector<std::string> GetSaveFiles() {
+		//std::cout << "[Save System] Get Save Files reads All File Names. !!!BUG PRONED CODE!!! \n";
+		std::error_code errorCode;
+		std::vector<std::string> fileNames;
+		
+		// Get All Files in Worlds Folder
+		for (const auto& entry : std::filesystem::recursive_directory_iterator(WORLD_SAVE_PATH, errorCode)) {
+			
+			// Check if it's a world FIle
+
+			// What Defines a World File?
+			
+			if (entry.is_regular_file()) { fileNames.push_back(entry.path().stem().string()); }
+		}
+
+		return fileNames;
+	}
+
 }

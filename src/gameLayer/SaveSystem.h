@@ -18,11 +18,9 @@ namespace SaveSystem
 	bool LoadGame(const char* fileName, Scene& scene);
 
 	// Save/Load world geometry only (map size + objects + interactables) to the fixed world.json
-	bool SaveWorld(Scene* scene);
-	bool LoadWorld(Scene& scene);
+	bool SaveWorld(std::string fileName, Scene* scene);
+	bool LoadWorld(std::string fileName, Scene& scene);
 
-	// Save Settings Data
-	//bool SaveSettings(const char* fileName);
-	//bool LoadSettings(const char* fileName);
+	std::vector<std::string> GetSaveFiles();
 }
 #endif

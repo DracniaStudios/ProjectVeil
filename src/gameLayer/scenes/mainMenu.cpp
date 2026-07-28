@@ -34,8 +34,7 @@ Scene* Scene_MainMenuConstruct()
 	scene->draw2D = Scene_MainMenuDraw2D;
 	scene->draw3D = Scene_MainMenuDraw3D;
    
-	SaveSystem::LoadGame("world.json", *scene);
-	//SaveSystem::LoadGame("mainMenu.json", *scene);
+	SaveSystem::LoadGame("mainMenu.json", *scene);
 
 	auto BGM = InteractableObject(INTERACT_ITEM, 0); 
 

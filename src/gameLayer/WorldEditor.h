@@ -35,6 +35,9 @@ class WorldEditor
 	bool isMiniGameActive = false;
 	bool isAssetActive = false;
 
+	/** World Settings **/
+	int saveState = 0;
+
 	/** Selection State **/
 	std::uint64_t selectedObjectId = 0; // Id instead of pointer — survives gameObjects reallocation
 	int activeTextureIndex = -1; // Index into AssetManager::assets

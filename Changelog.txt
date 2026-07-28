@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
-// Version: 0.2.37 
+// Version: 0.2.38 
 // Due: 2026-07-31 (Game Mechanics)
-// Date: 2026-07-27 (Current Development Date)
+// Date: 2026-07-28 (Current Development Date)
 
 [Notice] Don't Upload Resource Folder, Send Directly to other developers
 [Notice] Change Save System to read all types of data files from Json and return the Json data when called.
@@ -9,27 +9,22 @@
 [Notice] Add a Complete Game Buff to Player for Minigames
 [Notice] Apply Settings To World (Master Volume)
 [Notice] Add Stamina Check For Entities
+[Notice] Recursive Folder Search Helper?
 
 [ Issues ]
 
+- Found an issue where SaveNames are set to a the new name? (world.json.json).
 
 [ Added ]
 
-- Added Reset & Complete buttons to MiniGame panel.
-- Added Save & Load Game buttons to World Settings.
+- World Data now saves in Resources Folder.
+- Save System now returns fave files (Currently From Specific Path).
 
 [ Updated ]
 
-- Updated multiple scripts to use Manager's Camera.
-- Updated PlayerCamera to change data of itself.
-- Updated Player to check collisions with Entites and Interactables.
+- Updated World Settings To Save & Load Files from Scenes folder.
+- Updated MainMenu to use MainMenu.json
 
 [ Fixed ]
 
-- Fixed a repetition issue where Objects would clamp inside of the world space.
-- Fixed an issue where FindingObjects used int instead of uint8_t.
-- Fixed an issue where the Collider Box displayed as NULL.
-- Fixed an issue where the ExitKey was declared twice.
-
 [ Removed ]
-- Added EditorUtils.h to Helpers.h
