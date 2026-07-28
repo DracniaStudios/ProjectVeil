@@ -52,7 +52,7 @@ void WorldEditor::ShowEditorHub()
 	ImGui::End();
 }
 
-GameObject* FindGameObjectByID(uint8_t id)
+GameObject* FindGameObjectByID(uint64_t id)
 {
 	const auto scene = SceneManager::getInstance().currentScene;
 	for (size_t i = 0; i < scene->gameMap.gameObjects.size(); ++i) {
@@ -62,7 +62,7 @@ GameObject* FindGameObjectByID(uint8_t id)
 	return nullptr;
 };
 
-Entity* FindEntityByID(uint8_t id)
+Entity* FindEntityByID(uint64_t id)
 {
 	const auto scene = SceneManager::getInstance().currentScene;
 	auto it = scene->entities.find(id);
@@ -70,7 +70,7 @@ Entity* FindEntityByID(uint8_t id)
 	return it->second.get();
 };
 
-InteractableObject* FindInteractableByID(uint8_t id)
+InteractableObject* FindInteractableByID(uint64_t id)
 {
 	const auto scene = SceneManager::getInstance().currentScene;
 	auto it = scene->interactables.find(id);

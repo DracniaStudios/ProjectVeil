@@ -49,7 +49,7 @@ void close_game()
 {
 	std::cout << "Close Game \n";
 	std::ofstream f(RESOURCES_PATH "debug.log");
-	SaveSystem::SaveGame("backup.json", SceneManager::getInstance().currentScene);
+	SaveSystem::SaveGame("backup", SceneManager::getInstance().currentScene);
 	f << "\n CLOSED\n";
 	f.close();
 }

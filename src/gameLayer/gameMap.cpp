@@ -124,7 +124,7 @@ void GameMap::removeInteractable(InteractableObject* object)
 	scene->interactables.erase(object->id);
 }
 
-GameObject* GameMap::FindGameObjectByID(uint8_t id)
+GameObject* GameMap::FindGameObjectByID(uint64_t id)
 {
 	const auto scene = SceneManager::getInstance().currentScene;
 	for (size_t i = 0; i < scene->gameMap.gameObjects.size(); ++i) {
@@ -134,7 +134,7 @@ GameObject* GameMap::FindGameObjectByID(uint8_t id)
 	return nullptr;
 };
 
-Entity* GameMap::FindEntityByID(uint8_t id)
+Entity* GameMap::FindEntityByID(uint64_t id)
 {
 	const auto scene = SceneManager::getInstance().currentScene;
 	auto it = scene->entities.find(id);
@@ -142,7 +142,7 @@ Entity* GameMap::FindEntityByID(uint8_t id)
 	return it->second.get();
 };
 
-InteractableObject* GameMap::FindInteractableByID(uint8_t id)
+InteractableObject* GameMap::FindInteractableByID(uint64_t id)
 {
 	const auto scene = SceneManager::getInstance().currentScene;
 	auto it = scene->interactables.find(id);
