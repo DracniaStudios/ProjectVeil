@@ -26,9 +26,9 @@ struct GameMap {
 	void removeInteractable(InteractableObject* object);
 
 	// Find Data
-	GameObject* FindGameObjectByID(std::uint8_t id);
-	Entity* FindEntityByID(std::uint8_t id);
-	InteractableObject* FindInteractableByID(std::uint8_t id);
+	GameObject* FindGameObjectByID(std::uint64_t id);
+	Entity* FindEntityByID(std::uint64_t id);
+	InteractableObject* FindInteractableByID(std::uint64_t id);
 
 	// Return Data
 	Vector3 getMapSize() const { return Vector3(size.x, size.y, size.z);}

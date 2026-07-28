@@ -4,7 +4,7 @@
 
 #include <SceneManager.h>
 #include <Player.h>
-#include <Helpers.h>
+#include <helpers.h>
 
 struct EditorCamera : Camera3D {
 	Vector3 forward = {};
