@@ -211,8 +211,11 @@ namespace SaveSystem
 					continue;
 				}
 
+				// Interactables live only in Scene::interactables, not in gameObjects
+				// (see GameMap::saveInteractable/removeInteractable) — pushing the loaded
+				// copy into gameObjects here sliced it to a plain GameObject and duplicated
+				// the entity under the same ID.
 				scene.interactables[interactable.id] = std::make_unique<InteractableObject>(interactable);
-				scene.gameMap.gameObjects.push_back(interactable);
 			}
 		}
 
@@ -376,8 +379,11 @@ namespace SaveSystem
 					continue;
 				}
 
+				// Interactables live only in Scene::interactables, not in gameObjects
+				// (see GameMap::saveInteractable/removeInteractable) — pushing the loaded
+				// copy into gameObjects here sliced it to a plain GameObject and duplicated
+				// the entity under the same ID.
 				scene.interactables[interactable.id] = std::make_unique<InteractableObject>(interactable);
-				scene.gameMap.gameObjects.push_back(interactable);
 			}
 		}
 
