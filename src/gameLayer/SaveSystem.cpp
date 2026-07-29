@@ -12,18 +12,27 @@ constexpr const char* WORLD_SAVE_PATH = RESOURCES_PATH "scenes/";
 namespace SaveSystem
 {
 	using Json = nlohmann::json;
+	namespace fs = std::filesystem;
+
+	static std::string lowerExtension(const fs::path& path)
+	{
+		std::string ext = path.extension().string();
+		std::transform(ext.begin(), ext.end(), ext.begin(),
+			[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+		return ext;
+	}
 
 	// Write json to a temp file first so a crash mid-save never corrupts the real one,
 	// keeping the previous save as a backup
-	static bool WriteJsonAtomic(const std::filesystem::path& path, const Json& j)
+	static bool WriteJsonAtomic(const fs::path& path, const Json& j)
 	{
-		const std::filesystem::path tmpPath = path.string() + ".tmp";
-		const std::filesystem::path bakPath = path.string() + ".bak";
+		const fs::path tmpPath = path.string() + ".tmp";
+		const fs::path bakPath = path.string() + ".bak";
 
 		std::error_code errorCode;
 		if (path.has_parent_path())
 		{
-			std::filesystem::create_directories(path.parent_path(), errorCode);
+			fs::create_directories(path.parent_path(), errorCode);
 		}
 
 		std::ofstream file(tmpPath, std::ios::binary);
@@ -34,9 +43,9 @@ namespace SaveSystem
 
 		// Backing up the previous save is best-effort (it may not exist yet); only the
 		// final rename actually delivers the new save, so its failure must be reported.
-		std::filesystem::rename(path, bakPath, errorCode);
+		fs::rename(path, bakPath, errorCode);
 		errorCode.clear();
-		std::filesystem::rename(tmpPath, path, errorCode);
+		fs::rename(tmpPath, path, errorCode);
 		if (errorCode)
 		{
 			std::cerr << "[Save System] Failed to finalize save file: " << path.string() << " (" << errorCode.message() << ")\n";
@@ -236,7 +245,7 @@ namespace SaveSystem
 		if (scene->gameMap.gameObjects.size() > OBJECT_LIMIT) { return false; }
 
 		const std::string savePath = RESOURCES_PATH "../saves/";
-		const std::filesystem::path path = savePath + fileName + ".json";
+		const fs::path path = savePath + fileName + ".json";
 		if (!WriteJsonAtomic(path, SceneToJson(scene))) { return false; }
 
 		std::cout << "[Save System] Saved Game: " << path.string() << "\n";
@@ -249,7 +258,7 @@ namespace SaveSystem
 		Json j;
 
 		const std::string savePath = RESOURCES_PATH "../saves/";
-		const std::filesystem::path path = savePath + fileName + ".json";
+		const fs::path path = savePath + fileName + ".json";
 
 		scene.gameMap.gameObjects.clear();
 		scene.entities.clear();
@@ -271,7 +280,7 @@ namespace SaveSystem
 		if (scene->gameMap.gameObjects.size() > OBJECT_LIMIT) { return false; }
 
 		Json j;
-		std::filesystem::path path = WORLD_SAVE_PATH + fileName + ".json";
+		fs::path path = WORLD_SAVE_PATH + fileName + ".json";
 
 		// Primary Data
 		j["Version"] = VERSION;
@@ -310,7 +319,7 @@ namespace SaveSystem
 	bool LoadWorld(std::string fileName, Scene& scene)
 	{
 		Json j;
-		std::filesystem::path path = WORLD_SAVE_PATH + fileName + ".json";
+		fs::path path = WORLD_SAVE_PATH + fileName + ".json";
 		std::cout << "[Save System] Attempt Loading World: " << path;
 		if (!ReadJsonFromFile(path.string().c_str(), j)) { return false; }
 
@@ -386,12 +395,13 @@ namespace SaveSystem
 		std::vector<std::string> fileNames;
 		
 		// Get All Files in Worlds Folder
-		for (const auto& entry : std::filesystem::recursive_directory_iterator(WORLD_SAVE_PATH, errorCode)) {
-			
-			// Check if it's a world FIle
+		for (const auto& entry : fs::recursive_directory_iterator(WORLD_SAVE_PATH, errorCode)) {
+			// Check Only For Json Files
+			const std::string ext = lowerExtension(entry.path());
+			if (ext != ".json") { continue; }
 
 			// What Defines a World File?
-			
+
 			if (entry.is_regular_file()) { fileNames.push_back(entry.path().stem().string()); }
 		}
 

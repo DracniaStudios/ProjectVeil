@@ -51,7 +51,9 @@ Json InteractableObject::formatToJson()
 	addCommonToJson(j);
 	j["InteractType"] = interactType;
 	j["InteractValue"] = interactValue;
+	j["ActivatorValue"] = activatorValue;
 	j["IsInteractable"] = isInteractable;
+	// Maybe Is Completed
 	return j;
 }
 
@@ -60,6 +62,7 @@ bool InteractableObject::loadFromJson(Json& j)
 	if (!loadCommonFromJson(j)) { return false; }
 	interactType = static_cast<InteractionType>(j.value("InteractType", 0));
 	interactValue = j.value("InteractValue", 0);
+	activatorValue = j.value("ActivatorValue", -1);
 	isInteractable = j.value("IsInteractable", true);
 	return true;
 }

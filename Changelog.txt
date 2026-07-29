@@ -1,30 +1,36 @@
 // Game Name: Subject Veil
-// Version: 0.2.38 
+// Version: 0.2.39 
 // Due: 2026-07-31 (Game Mechanics)
-// Date: 2026-07-28 (Current Development Date)
+// Date: 2026-07-29 (Current Development Date)
 
-[Notice] Don't Upload Resource Folder, Send Directly to other developers
-[Notice] Change Save System to read all types of data files from Json and return the Json data when called.
 [Notice] World Editor doesn't use new InputSystem.
 [Notice] Add a Complete Game Buff to Player for Minigames
 [Notice] Apply Settings To World (Master Volume)
 [Notice] Add Stamina Check For Entities
 [Notice] Recursive Folder Search Helper?
+[Notice] Add Name Select Option To Save System
+[Notice] Teleport Player
+[Notice] Lock Velocity On RigidBody3D
+[Notice] Rotation Vector3 To Quaternion
+[Notice] Create Maze Minigame
+[Notice] AirTime Increase Down Veloctity
 
 [ Issues ]
 
-- Found an issue where SaveNames are set to a the new name? (world.json.json).
+- Found an issue where the Interactable Object is Loaded as a GameObject when Loading World
 
 [ Added ]
 
-- World Data now saves in Resources Folder.
-- Save System now returns fave files (Currently From Specific Path).
+- Added Color Changer in ObjectBrowser.
 
 [ Updated ]
 
-- Updated World Settings To Save & Load Files from Scenes folder.
-- Updated MainMenu to use MainMenu.json
+- Updated InteractableObject to save ActivatorID;
+- Updates SaveSystem to Check for .json files in GameSaveFiles.
+- Updated PlayerInspector to change Player Position and Velocity.
 
 [ Fixed ]
+
+- Fixed an issue where RigidBody3D would collide while being disabled.
 
 [ Removed ]

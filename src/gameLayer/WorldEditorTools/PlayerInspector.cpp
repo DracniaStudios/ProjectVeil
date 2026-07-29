@@ -28,8 +28,18 @@ void WorldEditor::ShowPlayerData(Player* player)
 	{
 		ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody3D.isEnabled);
 		ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player->rigidBody3D.forward.x, player->rigidBody3D.forward.y, player->rigidBody3D.forward.z);
-		ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.translation.x, player->rigidBody3D.translation.y, player->rigidBody3D.translation.z);
-		ImGui::Text("Player Velocity 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.GetVelocity().x, player->rigidBody3D.GetVelocity().y, player->rigidBody3D.GetVelocity().z);
+
+		//ImGui::Text("Player Position 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.translation.x, player->rigidBody3D.translation.y, player->rigidBody3D.translation.z);
+		Vector3 stagePosition = player->rigidBody3D.getPosition();
+		if (ImGui::InputFloat3("Player Position 3D", &stagePosition.x)) {
+			player->rigidBody3D.Teleport(stagePosition);
+		}
+		//ImGui::Text("Player Velocity 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.GetVelocity().x, player->rigidBody3D.GetVelocity().y, player->rigidBody3D.GetVelocity().z);
+		Vector3 stageVelocity = player->rigidBody3D.GetVelocity();
+		if (ImGui::InputFloat3("Player Vecocity 3D", &stageVelocity.x)) {
+			player->rigidBody3D.velocity = stageVelocity;
+		}
+
 		ImGui::Text("Player Scale 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.scale.x, player->rigidBody3D.scale.y, player->rigidBody3D.scale.z);
 
 	}

@@ -257,6 +257,9 @@ public:
 	Vector3 angularVelocity = {}; // radians/sec, axis = spin axis
 	Vector3 velocity = {};
 	Vector3 acceleration = {};
+	bool lockAngularVelocity = false;
+	bool lockVelocity = false;
+	bool lockAcceleration = false;
 	
 	bool upTouch = false;
 	bool downTouch = false; // isGrounded

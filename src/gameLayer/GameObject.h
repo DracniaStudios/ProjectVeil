@@ -82,6 +82,7 @@ struct GameObject
 	std::string defaultSound = "test_beep";
 	std::string soundParameterName = "Parameter";
 	int soundParameterValue = 0;
+	bool isLooping = false; // Add File Save
 	FMOD_3D_ATTRIBUTES get3DAttributes() const;
 
 	Vector3 getPosition() const { return rigidBody3D.translation; }

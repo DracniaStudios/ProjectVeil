@@ -87,6 +87,7 @@ float RigidBody3D::getPenetrationDepth(const RigidBody3D& other) const
 void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 {
 	if (&other->rigidBody3D == this) return;
+	if (other->rigidBody3D.canCollide == false || self->rigidBody3D.canCollide == false) return;
 
 	// Update Collision Flags
 	checkRayCollision(other->rigidBody3D);
@@ -270,7 +271,10 @@ void RigidBody3D::Update(float deltaTime)
 {
 	if (scale == Vector3Zero()) { scale = Vector3One(); }
 	if (rotation == Quaternion{ 0, 0, 0, 0 }) { rotation = QuaternionIdentity(); }
-	if (!isEnabled) return;
+	if (!isEnabled) {
+		canCollide = false;
+		return;
+	}
 	if (!isStatic) {
 		if (useGravity) ApplyGravity();
 		UpdateForce(deltaTime);

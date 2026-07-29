@@ -102,6 +102,20 @@ void WorldEditor::showGameObject(GameObject* object) {
 	}
 	ImGui::Spacing();
 
+	Vector4 color = Vector4(
+		object->defaultColor.r,
+		object->defaultColor.g,
+		object->defaultColor.b,
+		object->defaultColor.a);
+	ImGui::TextColored(ImVec4(color.x, color.y, color.z, color.w), "Color");
+	if (ImGui::InputFloat4("Color", &color.x)) {
+		object->defaultColor = Color(
+			color.x,
+			color.y,
+			color.z,
+			color.w
+		);
+	}
 	// Texture
 	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Texture");
 	ImGui::Image((ImTextureRef)(intptr_t)object->model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture.id, ImVec2(64, 64));
@@ -125,6 +139,20 @@ void WorldEditor::showGameObject(GameObject* object) {
 	{
 		object->setModel("");
 	}
+
+	/*
+	char* soundName;
+	if (ImGui::InputText("Default Sound", soundName, 128)) {
+		object->defaultSound = soundName;
+	}
+	char* parameterName = {};
+	if (ImGui::InputText("Parameter Name", parameterName, 128)) {
+		object->defaultSound = parameterName;
+	}
+	*/
+	ImGui::InputInt("Parameter Value", &object->soundParameterValue, 1, 1);
+	ImGui::Checkbox("IsLooping", &object->isLooping);// Not Implemented
+
 	ImGui::Spacing();
 
 	// Object Flags
