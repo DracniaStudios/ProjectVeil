@@ -43,9 +43,9 @@ inline void CompleteMiniGame(MiniGameData* data, Player* player, Buff buff, bool
 		data->isComplete = true;
 		if (CooldownTimer* getBuff = player->getBuff(buff); getBuff != nullptr) { getBuff->use(); }
 		// May Switch Inbetween Enable and Disable States
-
 		if (player->interactObject != nullptr) {
-			player->interactObject->isEnabled = !player->interactObject->isEnabled;
+			if (player->interactObject->isEnabled) { player->interactObject->onDisable(); }
+			else { player->interactObject->onEnable(); }
 		}
 	}
 }
