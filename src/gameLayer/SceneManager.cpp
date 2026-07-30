@@ -1,5 +1,7 @@
 #include "SceneManager.h"
 
+#include <LightingSystem.h>
+
 SceneManager* SceneManager_new() {
 	SceneManager* manager = (SceneManager*)malloc(sizeof(SceneManager));
 	return manager;
@@ -42,11 +44,23 @@ void SceneManager_update(SceneManager* manager, float delta) {
 
 void SceneManager_draw(SceneManager* manager) {
 
+	auto lighting = &LightingSystem::getInstance();
+
+	// Lighting runs in three ordered stages, all before the camera pass:
+	//   1. Update  - picks the shadow-casting light, drives the flashlight from
+	//                the active camera, and uploads every light/atmosphere uniform.
+	//   2. Shadow  - retargets the framebuffer to render the depth map, so it
+	//                cannot happen inside BeginMode3D.
+	//   3. Bind    - binds the finished depth texture for the camera pass.
+	lighting->Update(manager->camera3D, GetFrameTime());
+	lighting->RenderShadowPass(manager->currentScene);
+
 	// Draw Scene 3D
 	BeginMode3D(manager->camera3D);
+	lighting->BindShadowMap();
 	if (manager->currentScene) Scene_drawScene3D();
 	EndMode3D();
-	
+
 	// Draw Scene 2D
 	BeginMode2D(manager->camera2D);
 	if (manager->currentScene) Scene_drawScene2D();

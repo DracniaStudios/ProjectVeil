@@ -36,6 +36,13 @@
 *.out
 *.app
 
+# Resource Directories
+resources/audio/
+resources/blocks/
+resources/icons/
+resources/models/
+
+
 # Build directories
 build/
 Build/

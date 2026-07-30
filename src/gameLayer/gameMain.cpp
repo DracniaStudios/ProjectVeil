@@ -7,8 +7,16 @@ bool init_game()
 	InitAudioDevice();
 
 	AssetManager::getInstance().loadAll();
+
+	// Lighting must come up AFTER AssetManager (so the shader can be written
+	// into every shared asset model) but BEFORE SceneManager_init, which
+	// constructs the Main Menu scene and loads its save file. Objects created
+	// while the system was still down would keep raylib's unlit shader and
+	// render half-lit with no error anywhere.
+	LightingSystem::getInstance().Init();
+
 	SceneManager_init(&SceneManager::getInstance());
-	
+
 	// Camera
 	SceneManager::getInstance().camera3D.position = Vector3{ 0, 10, 10 };
 	SceneManager::getInstance().camera3D.target = Vector3{ 0, 0, 0 };
@@ -31,7 +39,10 @@ bool update_game()
 {
 	float deltaTime = GetFrameTime();
 
-	ClearBackground(WHITE);
+	// Nothing draws a sky, so the clear colour *is* the horizon. Clearing to the
+	// fog colour lets distant geometry dissolve into the background instead of
+	// fading toward a bright wall.
+	ClearBackground(LightingSystem::getInstance().fogColor);
 
 	// Update Input System
 	InputSystem::getInstance().Update();
@@ -52,4 +63,9 @@ void close_game()
 	SaveSystem::SaveGame("backup", SceneManager::getInstance().currentScene);
 	f << "\n CLOSED\n";
 	f.close();
+
+	// Materials only hold a copy of the Shader struct, so every model's shader
+	// id dangles once this runs — it has to be the last engine call. ProjectVeil.cpp
+	// invokes close_game() before CloseWindow(), while the GL context is alive.
+	LightingSystem::getInstance().Shutdown();
 }

@@ -1,5 +1,6 @@
 #include "GameObject.h"
 
+#include <LightingSystem.h>
 #include <SceneManager.h>
 
 static BoundingBox getBoundingBox(Model mdl, Vector3 pos)
@@ -32,6 +33,13 @@ GameObject::GameObject()
 	if (model.materialCount == 0) {
 		model.materials[MATERIAL_MAP_DIFFUSE] = LoadMaterialDefault();
 	}
+
+	// raylib's DrawMesh() reads material.shader, so lighting has to be written
+	// into the material — BeginShaderMode() only affects the rlgl batch and
+	// would leave models unlit. loadVisuals() repeats this on every rebind;
+	// this call covers an object drawn before its first bind. It is a no-op
+	// until LightingSystem::Init() has run.
+	LightingSystem::getInstance().ApplyToModel(model);
 
 	// Set Initial Data
 	rigidBody3D.collisionBox = GetMeshBoundingBox(model.meshes[0]);
@@ -79,6 +87,11 @@ void GameObject::loadVisuals()
 	{
 		model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
 	}
+
+	// Every runtime model binding funnels through here — editor placement,
+	// duplication, setModel(), onEnable() and loadCommonFromJson() — which makes
+	// this the one place that guarantees new geometry is lit.
+	LightingSystem::getInstance().ApplyToModel(model);
 }
 
 void GameObject::setModel(const std::string& assetName)
@@ -254,6 +267,7 @@ void GameObject::addCommonToJson(Json& j)
 
 	// Renderer
 	j["Color"] = { defaultColor.r, defaultColor.g, defaultColor.b, defaultColor.a };
+	j["CastsShadow"] = castsShadow;
 
 	if (!textureName.empty()) { j["Texture"] = textureName; }
 	if (!modelName.empty()) { j["Model"] = modelName; }
@@ -299,6 +313,10 @@ bool GameObject::loadCommonFromJson(Json& j)
 		defaultColor.b = j["Color"][2];
 		defaultColor.a = j["Color"][3];
 	}
+
+	// Defaults to true so worlds saved before the lighting system still cast
+	// shadows instead of silently going flat
+	castsShadow = j.value("CastsShadow", true);
 
 	if (j.contains("Texture") && j["Texture"].is_string())
 	{

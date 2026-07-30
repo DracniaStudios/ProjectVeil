@@ -22,6 +22,12 @@ Scene* Scene_new() {
 	scene->player->artifact->rigidBody3D.scale = Vector3(0.1f, 0.1f, 0.1f);
 	scene->player->artifact->rigidBody3D.canCollide = false;
 	scene->player->artifact->rigidBody3D.SetGravity(0, 0, 0);
+
+	// The artifact is pinned a unit in front of the camera, so in the shadow
+	// pass it sits between the light and everything else and paints a shadow
+	// over the entire view. It is lit normally — it just never casts.
+	scene->player->artifact->castsShadow = false;
+
 	scene->player->artifact->setModel("RubixCube");
 	scene->player->artifact->defaultSound = "Artifact_Load_Up";
 

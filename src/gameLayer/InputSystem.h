@@ -29,6 +29,7 @@ enum ActionType : uint8_t {
 	// Item Actions
 	ACTION_USE_ITEM,
 	ACTION_USE_ITEM2,
+	ACTION_USE_FLASHLIGHT,
 
 	// Editor Actions
 	ACTION_EDITOR_UP,

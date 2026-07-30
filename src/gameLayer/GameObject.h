@@ -71,6 +71,12 @@ struct GameObject
 	Texture texture = {};
 	Color defaultColor = WHITE;
 
+	// Shadow casting is opt-out per object: LightingSystem::DrawShadowCasters
+	// renders every object with this flag into the shadow map. Cleared for
+	// geometry pinned to the camera (e.g. the player's artifact), which would
+	// otherwise smear a shadow across the whole view.
+	bool castsShadow = true;
+
 	// Record the asset by name and rebind the runtime handle
 	void setModel(const std::string& assetName);
 	void setTexture(const std::string& assetName);

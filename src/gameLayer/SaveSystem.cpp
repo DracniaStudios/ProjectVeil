@@ -3,9 +3,12 @@
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <LightingSystem.h>
 #include <SceneManager.h>
 
-constexpr int VERSION = 2;
+// 3 added the "Lighting" section. The loader only rejects files NEWER than
+// this, so version 2 saves (which have no lights) still load.
+constexpr int VERSION = 3;
 
 constexpr const char* WORLD_SAVE_PATH = RESOURCES_PATH "scenes/";
 
@@ -94,6 +97,10 @@ namespace SaveSystem
 		j["Map"]["SizeY"] = scene->gameMap.size.y;
 		j["Map"]["SizeZ"] = scene->gameMap.size.z;
 
+		// Lighting (lights + atmosphere). Lives on the LightingSystem singleton
+		// rather than on Scene, the same way the cameras live on SceneManager.
+		j["Lighting"] = LightingSystem::getInstance().formatToJson();
+
 		// Game Objects (interactables live in their own section)
 		Json objects = Json::object();
 		for (auto& obj : scene->gameMap.gameObjects)
@@ -159,6 +166,17 @@ namespace SaveSystem
 			scene.gameMap.size.x = j["Map"].value("SizeX", scene.gameMap.size.x);
 			scene.gameMap.size.y = j["Map"].value("SizeY", scene.gameMap.size.y);
 			scene.gameMap.size.z = j["Map"].value("SizeZ", scene.gameMap.size.z);
+		}
+
+		// Lighting — a version 2 save has no "Lighting" section at all, and an
+		// unlit world reads as a broken build, so fall back to the default rig
+		if (j.contains("Lighting"))
+		{
+			LightingSystem::getInstance().loadFromJson(j["Lighting"]);
+		}
+		else
+		{
+			LightingSystem::getInstance().CreateDefaultRig();
 		}
 
 		// Load Game Objects
@@ -292,6 +310,9 @@ namespace SaveSystem
 		j["Map"]["SizeY"] = scene->gameMap.size.y;
 		j["Map"]["SizeZ"] = scene->gameMap.size.z;
 
+		// Lighting is authored level data, so it belongs in the world file too
+		j["Lighting"] = LightingSystem::getInstance().formatToJson();
+
 		// Game Objects (interactables live in their own section, projectiles are transient)
 		Json objects = Json::object();
 		for (auto& obj : scene->gameMap.gameObjects)
@@ -342,6 +363,17 @@ namespace SaveSystem
 			scene.gameMap.size.x = j["Map"].value("SizeX", scene.gameMap.size.x);
 			scene.gameMap.size.y = j["Map"].value("SizeY", scene.gameMap.size.y);
 			scene.gameMap.size.z = j["Map"].value("SizeZ", scene.gameMap.size.z);
+		}
+
+		// Lighting — pre-lighting world files have no section, so install the
+		// default rig rather than leaving the level pitch black
+		if (j.contains("Lighting"))
+		{
+			LightingSystem::getInstance().loadFromJson(j["Lighting"]);
+		}
+		else
+		{
+			LightingSystem::getInstance().CreateDefaultRig();
 		}
 
 		// Load Game Objects

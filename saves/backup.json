@@ -1,9 +1,11 @@
 {
   "Entities": {},
-  "IdCounter": 24,
+  "IdCounter": 6,
   "Interactables": {
-    "18": {
+    "0": {
+      "ActivatorValue": 6,
       "CanBeSelected": true,
+      "CastsShadow": true,
       "Color": [
         0,
         121,
@@ -35,8 +37,10 @@
         "VelocityZ": 0.0
       }
     },
-    "19": {
+    "1": {
+      "ActivatorValue": 7,
       "CanBeSelected": true,
+      "CastsShadow": true,
       "Color": [
         0,
         121,
@@ -68,8 +72,10 @@
         "VelocityZ": 0.0
       }
     },
-    "20": {
+    "2": {
+      "ActivatorValue": 8,
       "CanBeSelected": true,
+      "CastsShadow": true,
       "Color": [
         0,
         121,
@@ -101,8 +107,10 @@
         "VelocityZ": 0.0
       }
     },
-    "21": {
+    "3": {
+      "ActivatorValue": 9,
       "CanBeSelected": true,
+      "CastsShadow": true,
       "Color": [
         0,
         121,
@@ -134,8 +142,10 @@
         "VelocityZ": 0.0
       }
     },
-    "22": {
+    "4": {
+      "ActivatorValue": 10,
       "CanBeSelected": true,
+      "CastsShadow": true,
       "Color": [
         0,
         121,
@@ -167,8 +177,10 @@
         "VelocityZ": 0.0
       }
     },
-    "23": {
+    "5": {
+      "ActivatorValue": 11,
       "CanBeSelected": true,
+      "CastsShadow": true,
       "Color": [
         0,
         121,
@@ -201,575 +213,95 @@
       }
     }
   },
+  "Lighting": {
+    "Ambient": [
+      40,
+      44,
+      58,
+      255
+    ],
+    "AmbientStrength": 0.14000000059604645,
+    "Exposure": 1.0,
+    "FogColor": [
+      8,
+      9,
+      12,
+      255
+    ],
+    "FogDensity": 0.029999999329447746,
+    "Lights": [
+      {
+        "CastsShadow": true,
+        "Color": [
+          150,
+          172,
+          210,
+          255
+        ],
+        "Direction": [
+          -0.44999998807907104,
+          -1.0,
+          -0.3499999940395355
+        ],
+        "InnerCone": 20.0,
+        "Intensity": 0.550000011920929,
+        "IsEnabled": true,
+        "Name": "Moonlight",
+        "OuterCone": 35.0,
+        "Position": [
+          0.0,
+          5.0,
+          0.0
+        ],
+        "Range": 20.0,
+        "Type": 0
+      },
+      {
+        "CastsShadow": false,
+        "Color": [
+          255,
+          196,
+          130,
+          255
+        ],
+        "Direction": [
+          0.0,
+          -1.0,
+          0.0
+        ],
+        "InnerCone": 20.0,
+        "Intensity": 1.100000023841858,
+        "IsEnabled": true,
+        "Name": "Spawn Lamp",
+        "OuterCone": 35.0,
+        "Position": [
+          0.0,
+          6.0,
+          0.0
+        ],
+        "Range": 24.0,
+        "Type": 1
+      }
+    ],
+    "ShadowBias": 0.0017999999690800905,
+    "ShadowDistance": 60.0,
+    "ShadowResolution": 4096,
+    "ShadowSoftness": 1.0,
+    "ShadowsEnabled": true,
+    "Shininess": 16.0,
+    "SpecularStrength": 0.25
+  },
   "Map": {
-    "SizeX": 100.0,
-    "SizeY": 1.0,
-    "SizeZ": 100.0
+    "SizeX": 10.0,
+    "SizeY": 10.0,
+    "SizeZ": 10.0
   },
-  "Objects": {
-    "0": {
-      "CanBeSelected": false,
-      "Color": [
-        196,
-        149,
-        86,
-        255
-      ],
-      "IsDestructible": false,
-      "IsEnabled": true,
-      "Name": "Floor",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 0.0,
-        "PosY": -1.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 100.0,
-        "ScaleY": 1.0,
-        "ScaleZ": 100.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Asphalt031"
-    },
-    "1": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 0.0,
-        "PosY": 5.0,
-        "PosZ": 50.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 100.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 0.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Wood067"
-    },
-    "10": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": -15.0,
-        "PosY": 5.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 2.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 40.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "11": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 15.0,
-        "PosY": 5.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 2.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 40.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "12": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 10.0,
-        "PosY": 5.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 10.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "13": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 10.0,
-        "PosY": 5.0,
-        "PosZ": 10.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 10.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "14": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 10.0,
-        "PosY": 5.0,
-        "PosZ": 20.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 10.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "15": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 10.0,
-        "PosY": 5.0,
-        "PosZ": -10.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 10.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "16": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 10.0,
-        "PosY": 5.0,
-        "PosZ": -20.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 10.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "17": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 0.0,
-        "PosY": 10.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 30.0,
-        "ScaleY": 1.0,
-        "ScaleZ": 42.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "2": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 0.0,
-        "PosY": 5.0,
-        "PosZ": -50.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 100.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 0.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Wood067"
-    },
-    "3": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 50.0,
-        "PosY": 5.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 0.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 100.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Wood067"
-    },
-    "4": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": -50.0,
-        "PosY": 5.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 0.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 100.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Wood067"
-    },
-    "5": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": -10.0,
-        "PosY": 5.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 10.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "6": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": -10.0,
-        "PosY": 5.0,
-        "PosZ": 10.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 10.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "7": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": -10.0,
-        "PosY": 5.0,
-        "PosZ": 20.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 10.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "8": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": -10.0,
-        "PosY": 5.0,
-        "PosZ": -10.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 10.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    },
-    "9": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Cell Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": -10.0,
-        "PosY": 5.0,
-        "PosZ": -20.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 10.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Metal030"
-    }
-  },
+  "Objects": {},
   "Player": {
     "BaseDamage": 1.0,
     "BaseSpeed": 1.0,
     "CanBeSelected": true,
+    "CastsShadow": true,
     "Color": [
       255,
       255,
@@ -789,7 +321,7 @@
       "IsEnabled": true,
       "IsStatic": false,
       "PosX": 0.0,
-      "PosY": 0.4769580364227295,
+      "PosY": 1.2864577770233154,
       "PosZ": 0.0,
       "RotW": 1.0,
       "RotX": 0.0,
@@ -799,7 +331,7 @@
       "ScaleY": 2.0,
       "ScaleZ": 1.0,
       "VelocityX": 0.0,
-      "VelocityY": 0.0,
+      "VelocityY": -2.998624563217163,
       "VelocityZ": 0.0
     },
     "Stamina": 100.0
@@ -809,5 +341,5 @@
     "IsMiniActive": false,
     "LimitYBounds": false
   },
-  "Version": 2
+  "Version": 3
 }

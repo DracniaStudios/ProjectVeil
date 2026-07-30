@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
-// Version: 0.2.39 
+// Version: 0.3.0
 // Due: 2026-07-31 (Game Mechanics)
-// Date: 2026-07-29 (Current Development Date)
+// Date: 2026-07-30 (Current Development Date)
 
 [Notice] World Editor doesn't use new InputSystem.
 [Notice] Add a Complete Game Buff to Player for Minigames
@@ -21,10 +21,22 @@
 
 [ Added ]
 
+- Added Lighting System (LightingSystem) with 8 forward lights: Directional, Point, and Spot.
+- Added GLSL 330 lighting shaders in resources/shaders/glsl330.
+- Added Directional Shadow Mapping with a depth-only FBO, 3x3 PCF, and slope-scaled bias.
+- Added Ambient, Distance Fog, and Exposure atmosphere controls.
+- Added Player Flashlight on ACTION_USE_FLASHLIGHT (KEY_L / Gamepad D-Pad Up).
+- Added Lighting Inspector to the World Editor (Ctrl+8).
+- Added castsShadow flag to GameObject (defaults to true, saved with the object).
 - Added Color Changer in ObjectBrowser.
 
 [ Updated ]
 
+- Updated GameObject::loadVisuals to bind the lighting shader on every model rebind.
+- Updated SaveSystem to version 3, saving Lights and atmosphere in both Game and World files.
+- Updated Settings so Shadows selects the shadow map resolution and Luminosity drives Exposure.
+- Updated update_game to clear the backbuffer to the fog color instead of WHITE.
+- Updated init_game so LightingSystem starts before SceneManager builds the first Scene.
 - Updated InteractableObject to save ActivatorID;
 - Updates SaveSystem to Check for .json files in GameSaveFiles.
 - Updated PlayerInspector to change Player Position and Velocity.
@@ -34,3 +46,5 @@
 - Fixed an issue where RigidBody3D would collide while being disabled.
 
 [ Removed ]
+
+- Removed Resources/* from GitHub to save space for Assets.

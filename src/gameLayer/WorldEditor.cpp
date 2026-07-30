@@ -15,6 +15,7 @@ void WorldEditor::update(Player* player)
 		if (IsKeyPressed(KEY_FIVE)) { isCameraActive = !isCameraActive; }
 		if (IsKeyPressed(KEY_SIX)) { isMiniGameActive = !isMiniGameActive; }
 		if (IsKeyPressed(KEY_SEVEN)) { isAssetActive = !isAssetActive; }
+		if (IsKeyPressed(KEY_EIGHT)) { isLightingActive = !isLightingActive; }
 	}
 
 	// Developer tool shortcuts, kept from the standalone Developer Window
@@ -28,6 +29,7 @@ void WorldEditor::update(Player* player)
 	if (isCameraActive) ShowCameraData(player);
 	if (isMiniGameActive) ShowMiniGameData(player);
 	if (isAssetActive) ShowAssetData();
+	if (isLightingActive) ShowLightingData();
 }
 
 void WorldEditor::ShowEditorHub()
@@ -42,6 +44,7 @@ void WorldEditor::ShowEditorHub()
 	ImGui::Checkbox("Camera Data (Ctrl+5)", &isCameraActive);
 	ImGui::Checkbox("Mini Game Data (Ctrl+6)", &isMiniGameActive);
 	ImGui::Checkbox("Asset Data (Ctrl+7)", &isAssetActive);
+	ImGui::Checkbox("Lighting (Ctrl+8)", &isLightingActive);
 	ImGui::Separator();
 
 	// Mini Console 

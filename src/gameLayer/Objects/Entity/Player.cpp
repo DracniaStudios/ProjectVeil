@@ -1,6 +1,7 @@
 #include "Player.h"
 
 #include <raymath.h>
+#include <LightingSystem.h>
 #include <SceneManager.h>
 #include <WorldEditor.h>
 
@@ -50,6 +51,12 @@ void UpdateActions(Player* player) {
 		if (inputSystem->IsActionDown(ACTION_USE_ITEM2)) { player->FireLaser(); }
 		if (inputSystem->IsActionPressed(ACTION_MOVE_INTERACT)) { player->Interact(); }
 		if (inputSystem->IsActionPressed(ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(20);
+
+		// The flashlight is owned by LightingSystem and follows whichever camera
+		// is active, so the player only owns the toggle. Sitting inside this
+		// block keeps it suppressed while the World Editor has focus, matching
+		// fire/interact/jump.
+		if (inputSystem->IsActionPressed(ACTION_USE_FLASHLIGHT)) { LightingSystem::getInstance().ToggleFlashlight(); }
 	}
 
 

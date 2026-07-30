@@ -34,6 +34,7 @@ class WorldEditor
 	bool isEntityActive = false;
 	bool isMiniGameActive = false;
 	bool isAssetActive = false;
+	bool isLightingActive = false;
 
 	/** World Settings **/
 	int saveState = 0;
@@ -69,6 +70,9 @@ class WorldEditor
 	int currentGameID = 0;
 	int miniGameObstacleIndex = -1; // Index instead of pointer — obstacles vector reallocates during play
 
+	/** Lighting Inspector State **/
+	int selectedLightIndex = -1; // Index instead of pointer — the lights vector reallocates on add/remove
+
 	/** Feedback **/
 	std::string statusMessage;
 
@@ -83,6 +87,7 @@ class WorldEditor
 	void ShowCameraData(Player* player);
 	void ShowMiniGameData(Player* player);
 	void ShowAssetData();
+	void ShowLightingData();
 
 	/** Helpers **/
 	GameObject* getSelectedObject();

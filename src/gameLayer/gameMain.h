@@ -7,6 +7,7 @@
 #include <SceneManager.h>
 #include <AssetManager.h>
 #include <AudioManager.h>
+#include <LightingSystem.h>
 #include <Settings.h>
 #include <InputSystem.h>
 

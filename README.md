@@ -34,7 +34,7 @@ The engine favors a lightweight, data-oriented `GameObject` / `Entity` model ove
 |---|---|
 | Language | C++23 |
 | Build System | CMake (with presets for Windows, Linux, and macOS) |
-| Rendering / Windowing | [raylib 6.0](https://www.raylib.com/) |
+| Rendering / Windowing | [raylib 6.0](https://www.raylib.com/) (OpenGL 3.3 core, GLSL 330) |
 | Editor UI | [Dear ImGui (docking)](https://github.com/ocornut/imgui) via [rlImgui](https://github.com/raylib-extras/rlImGui) |
 | Procedural Noise | [FastNoise2](https://github.com/Auburn/FastNoise2) |
 | Serialization | [nlohmann/json](https://github.com/nlohmann/json) |
@@ -48,6 +48,7 @@ CI builds are run via GitHub Actions across Linux and Windows using both GCC/Cla
 
 - **Entity / GameObject Model** — a shared base (`GameObject`) for anything that exists in the world, with `Entity` and `InteractableObject` specializations, JSON (de)serialization hooks, lifetime/decay handling, and per-object render/update/collision callbacks.
 - **Scene & Map Management** — `SceneManager` and `Scene` own the active `GameMap`, player, camera, entities, and interactables, and support switching between 3D world mode and 2D mini-game mode.
+- **Lighting System** — forward-rendered lighting with up to 8 simultaneous directional/point/spot lights, directional shadow mapping (depth-only FBO with 3×3 PCF and slope-scaled bias), ambient and exponential distance fog, exposure, a camera-tracking player flashlight, and a live Lighting Inspector. Lights are authored in-editor and serialized with the world. See [Release.md](Release.md) and [docs/LightingSystemPlan.md](docs/LightingSystemPlan.md).
 - **Physics** — custom 2D and 3D rigid body implementations (`RigidBody2D` / `RigidBody3D`) with gravity, drag, AABB collision, constraint resolution, and raycast-based collision checks.
 - **Asset Manager** — a singleton responsible for loading and looking up textures/materials by name, backing all world and UI rendering.
 - **Save System** — JSON-backed serialization for game objects, entities, and world state, with save/load of full scenes to disk.
@@ -101,7 +102,9 @@ ProjectVeil/
 │       │   └── Interactable/ # Interactable world objects (e.g. LockedBox)
 │       ├── Utility/          # Arena/Pool allocators
 │       └── scenes/           # Scene constructors (e.g. Main Menu)
-├── resources/            # Textures, models, and icons
+├── docs/                 # Development plans (e.g. LightingSystemPlan.md)
+├── resources/            # Textures, models, icons, and shaders
+│   └── shaders/glsl330/  # Forward lighting vertex/fragment shaders
 ├── saves/                # Serialized world save data
 └── thirdparty/           # Vendored dependencies (raylib, imgui, FastNoise2, json, FMOD, rlImgui)
 ```

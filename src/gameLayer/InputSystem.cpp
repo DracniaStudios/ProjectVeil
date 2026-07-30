@@ -89,6 +89,7 @@ void InputSystem::SetDefaultActions() {
 	// Item Actions
 	CreateAction(ACTION_USE_ITEM, "Item_Left", KEY_T, GAMEPAD_BUTTON_LEFT_TRIGGER_2);
 	CreateAction(ACTION_USE_ITEM2, "Item_Right", KEY_G, GAMEPAD_BUTTON_RIGHT_TRIGGER_2);
+	CreateAction(ACTION_USE_FLASHLIGHT, "Flashlight", KEY_L, GAMEPAD_BUTTON_RIGHT_FACE_UP);
 	
 	// Editor Actions
 	CreateAction(ACTION_EDITOR_UP, "Editor_Up", KEY_LEFT_CONTROL, GAMEPAD_BUTTON_RIGHT_TRIGGER_1);
