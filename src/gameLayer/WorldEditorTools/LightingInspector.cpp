@@ -229,19 +229,24 @@ void WorldEditor::ShowLightingData()
 
 	// Only one directional light can own the single shadow map, so enabling it
 	// here clears the flag on every other light rather than silently losing.
+	// Gated on LIGHT_DIRECTIONAL: SelectShadowLight() ignores every other type,
+	// so ticking this on a point/spot light must not steal ownership away from
+	// the light that can actually cast one.
 	bool castsShadow = light.castsShadow;
 	if (ImGui::Checkbox("Casts Shadow (directional only)", &castsShadow))
 	{
 		light.castsShadow = castsShadow;
-		if (castsShadow)
+		if (castsShadow && light.type == LIGHT_DIRECTIONAL)
 		{
 			for (int i = 0; i < static_cast<int>(lights.size()); i++)
 			{
 				if (i != selectedLightIndex) { lights[i].castsShadow = false; }
 			}
-			statusMessage = (light.type == LIGHT_DIRECTIONAL)
-				? light.name + " now owns the shadow map"
-				: "Only directional lights can cast shadows";
+			statusMessage = light.name + " now owns the shadow map";
+		}
+		else if (castsShadow)
+		{
+			statusMessage = "Only directional lights can cast shadows";
 		}
 	}
 
