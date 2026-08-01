@@ -1,6 +1,7 @@
 #include "SceneManager.h"
 
 #include <LightingSystem.h>
+#include <WorldEditor.h>
 
 SceneManager* SceneManager_new() {
 	SceneManager* manager = (SceneManager*)malloc(sizeof(SceneManager));
@@ -59,6 +60,20 @@ void SceneManager_draw(SceneManager* manager) {
 	BeginMode3D(manager->camera3D);
 	lighting->BindShadowMap();
 	if (manager->currentScene) Scene_drawScene3D();
+
+	// Light gizmos are an authoring aid, so they only appear while the World
+	// Editor is open. Drawn last because their x-ray mode toggles GL depth
+	// testing, which must not straddle the scene's own draw calls.
+	//
+	// The editor's own overlay (selection outline, transform gizmo, placement
+	// ghost) comes after them for the same reason and because it must win the
+	// pixel: the handles have to stay visible and grabbable even when the object
+	// is buried inside geometry. Both restore the depth state on their way out.
+	if (WorldEditor::getInstance().IsEnabled())
+	{
+		lighting->DrawGizmos();
+		WorldEditor::getInstance().DrawViewport3D();
+	}
 	EndMode3D();
 
 	// Draw Scene 2D

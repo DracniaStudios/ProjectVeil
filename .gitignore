@@ -53,6 +53,7 @@ out/
 # Additive Directories
 .fmod/
 .claude/
+docs/
 saves/backup.json
 saves/settings.json
 

@@ -60,8 +60,6 @@ struct Player : Entity
 	std::ranlux24_base rng;
 
 	// Combat Functions
-	void Fire();
-	void FireLaser();
 	void Interact();
 
 private:

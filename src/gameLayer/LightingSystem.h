@@ -115,6 +115,21 @@ public:
 	void RenderShadowPass(Scene* scene);
 	void BindShadowMap();
 
+	/** Editor Gizmos **/
+	// Debug geometry marking each light's position and the direction it throws
+	// light. Drawn through the rlgl batch (raylib's default unlit shader), so
+	// gizmos stay readable no matter how dark the scene is. SceneManager only
+	// calls this while the World Editor is open — it is an authoring aid.
+	void DrawGizmos() const;
+	// The inspector's selected light gets a halo so it can be picked out of a rig
+	void SetGizmoHighlight(int lightIndex) { gizmoHighlightIndex = lightIndex; }
+
+	bool showGizmos = true;
+	// Position markers and direction arrows always draw on top of geometry.
+	// This extends that to the influence volumes (ranges and cones), which are
+	// otherwise depth-tested so they read as sitting in the world.
+	bool gizmoXray = false;
+
 	/** Material Injection **/
 	void ApplyToModel(Model& model) const;
 	void ApplyToLoadedAssets() const;
@@ -208,6 +223,11 @@ private:
 	void UploadAtmosphere();
 	void DrawShadowCasters(Scene* scene) const;
 
+	// Gizmos are drawn in two layers so a light buried inside geometry can still
+	// be found and aimed: InfluenceShapes is depth-tested, Markers is not.
+	enum class GizmoLayer { InfluenceShapes, Markers };
+	void DrawLightGizmo(const Light& light, bool highlighted, GizmoLayer layer) const;
+
 	Shader lightShader = {};
 	Uniforms uniforms = {};
 
@@ -224,6 +244,7 @@ private:
 	int shadowLightIndex = -1; // Index into `lights`, -1 when nothing casts
 
 	int activeLightCount = 0;
+	int gizmoHighlightIndex = -1; // Index into `lights`, -1 for no selection
 	bool isReady = false;
 };
 

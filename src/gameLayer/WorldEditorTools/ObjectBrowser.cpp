@@ -60,7 +60,11 @@ void WorldEditor::showGameObject(GameObject* object) {
 	std::string dataString = objectTypeToString(object->type);
 	dataString += " Data";
 	ImGui::TextColored(ImVec4(255, 255, 0, 255), "%s", dataString.c_str());
-	ImGui::Text("Name: %s", object->name.c_str());
+	
+	char nameBuffer[128] = {};
+	std::snprintf(nameBuffer, sizeof(nameBuffer), "%s", object->name.c_str());
+	if (ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer))) { object->name = nameBuffer; }
+
 	ImGui::Text("ID: %llu", static_cast<unsigned long long>(object->id));
 	ImGui::Text("Type: %d", static_cast<int>(object->type));
 	ImGui::Checkbox("Selectable", &object->canBeSelected);
@@ -70,17 +74,33 @@ void WorldEditor::showGameObject(GameObject* object) {
 	// Transform (Teleport keeps the collision box in sync with the new position)
 	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Transform");
 	Vector3 position = object->getPosition();
-	if (ImGui::InputFloat3("Position: ", &position.x))
+	if (ImGui::DragFloat3("Position: ", &position.x))
 	{
 		object->rigidBody3D.Teleport(position);
 	}
-	Vector4 rotation = object->getRotation();
-	if (ImGui::InputFloat4("Rotaton: ", &rotation.x))
+	// Rotation edits go through cached Euler degrees (see WorldEditor.h). Resync
+	// from the quaternion only when the selection changed or something else moved
+	// the rotation out from under us — angular velocity, a scene load, a script.
+	const Quaternion currentRotation = object->getRotation();
+	if (rotationEulerOwnerId != object->id || currentRotation != rotationEulerSource)
 	{
+		const Vector3 euler = QuaternionToEuler(currentRotation);
+		rotationEulerDegrees = { euler.x * RAD2DEG, euler.y * RAD2DEG, euler.z * RAD2DEG };
+		rotationEulerOwnerId = object->id;
+		rotationEulerSource = currentRotation;
+	}
+	// Drag to scrub a degree at a time, ctrl+click to type an exact angle
+	if (ImGui::DragFloat3("Rotation (deg): ", &rotationEulerDegrees.x, 1.0f))
+	{
+		const Quaternion rotation = QuaternionNormalize(QuaternionFromEuler(
+			rotationEulerDegrees.x * DEG2RAD,   // pitch (X)
+			rotationEulerDegrees.y * DEG2RAD,   // yaw   (Y)
+			rotationEulerDegrees.z * DEG2RAD)); // roll  (Z)
 		object->rigidBody3D.rotation = rotation;
+		rotationEulerSource = rotation;
 	}
 	// Scale is applied through the model transform each frame — no mesh regen needed
-	ImGui::InputFloat3("Scale: ", &object->rigidBody3D.scale.x);
+	ImGui::DragFloat3("Scale: ", &object->rigidBody3D.scale.x);
 	ImGui::Spacing();
 
 	// RigidBody
@@ -100,6 +120,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 	{
 		object->rigidBody3D.angularVelocity = angularVelocity;
 	}
+	ImGui::Text("Air Time: %f", object->rigidBody3D.GetAirTime());
 	ImGui::Spacing();
 
 	Vector4 color = Vector4(
@@ -247,56 +268,13 @@ void WorldEditor::ShowObjectBrowser()
 		showInteractableObject(scene->interactables[object->id].get());
 	}
 
-	if (ImGui::Button("Duplicate Object"))
-	{
-		// Copying through the GameObject base (rather than the Entity/InteractableObject
-		// subclass) would slice off their extra data, and still leave copy.type set to
-		// OBJECT_ENTITY/OBJECT_INTERACTABLE while only ever being saved into gameObjects
-		// — a later lookup by that stale type then indexes scene->entities/interactables
-		// with an id that was never inserted, handing back a null pointer.
-		if (object->type == OBJECT_ENTITY) {
-			Entity copy = *static_cast<Entity*>(object);
-			copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), Vector3(1, 0, 0)));
-
-			Entity* spawned = scene->gameMap.saveEntity(copy);
-			selectedObjectId = spawned->id;
-			statusMessage = "Duplicated: " + spawned->name;
-		}
-		else if (object->type == OBJECT_INTERACTABLE) {
-			InteractableObject copy = *static_cast<InteractableObject*>(object);
-			copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), Vector3(1, 0, 0)));
-
-			InteractableObject* spawned = scene->gameMap.saveInteractable(copy);
-			selectedObjectId = spawned->id;
-			statusMessage = "Duplicated: " + spawned->name;
-		}
-		else {
-			GameObject copy = *object;
-
-			copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), Vector3(1, 0, 0)));
-
-			// saveObject may reallocate gameObjects — object is stale after this call.
-			// onEnable() rebinds visuals, giving the copy its own model instead of sharing meshes
-			GameObject* spawned = scene->gameMap.saveObject(copy);
-			selectedObjectId = spawned->id;
-			statusMessage = "Duplicated: " + spawned->name;
-		}
-	}
-	else if (ImGui::Button("Delete Object"))
-	{
-		if (scene->interactables.contains(object->id))
-		{
-			scene->gameMap.removeInteractable(scene->interactables[object->id].get());
-		}
-		else if(scene->entities.contains(object->id)) {
-			scene->gameMap.removeEntity(scene->entities[object->id].get());
-		}
-		else
-		{
-			scene->gameMap.removeObject(object);
-		}
-		selectedObjectId = 0;
-	}
+	// Both route through the shared commands so the buttons, the keyboard
+	// shortcuts and the viewport all take the identical path — including
+	// cancelling any in-flight gizmo drag before the object is destroyed, and
+	// recording the spawn so Ctrl+Z can take it back.
+	if (ImGui::Button("Duplicate Object")) { DuplicateSelection(); }
+	ImGui::SameLine();
+	if (ImGui::Button("Delete Object")) { DeleteSelection(); }
 
 	ImGui::EndChild();
 	ImGui::End();

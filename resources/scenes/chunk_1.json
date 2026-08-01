@@ -1,10 +1,10 @@
 {
-  "Entities": {},
-  "IdCounter": 34,
+  "IdCounter": 48,
   "Interactables": {
     "33": {
       "ActivatorValue": 32,
       "CanBeSelected": true,
+      "CastsShadow": true,
       "Color": [
         255,
         255,
@@ -38,6 +38,110 @@
       "Texture": "Ice002"
     }
   },
+  "Lighting": {
+    "Ambient": [
+      40,
+      44,
+      58,
+      255
+    ],
+    "AmbientStrength": 0.14000000059604645,
+    "Exposure": 1.0,
+    "FogColor": [
+      8,
+      9,
+      12,
+      255
+    ],
+    "FogDensity": 0.029999999329447746,
+    "Lights": [
+      {
+        "CastsShadow": true,
+        "Color": [
+          150,
+          172,
+          210,
+          255
+        ],
+        "Direction": [
+          -0.44999998807907104,
+          -1.0,
+          -0.3499999940395355
+        ],
+        "InnerCone": 20.0,
+        "Intensity": 0.550000011920929,
+        "IsEnabled": true,
+        "Name": "Moonlight",
+        "OuterCone": 35.0,
+        "Position": [
+          0.0,
+          5.0,
+          0.0
+        ],
+        "Range": 20.0,
+        "Type": 0
+      },
+      {
+        "CastsShadow": false,
+        "Color": [
+          255,
+          196,
+          130,
+          255
+        ],
+        "Direction": [
+          0.0,
+          -1.0,
+          0.0
+        ],
+        "InnerCone": 13.088000297546387,
+        "Intensity": 5.0,
+        "IsEnabled": true,
+        "Name": "Spawn Lamp",
+        "OuterCone": 31.46500015258789,
+        "Position": [
+          0.0,
+          59.0,
+          0.0
+        ],
+        "Range": 101.42400360107422,
+        "Type": 2
+      },
+      {
+        "CastsShadow": false,
+        "Color": [
+          255,
+          255,
+          255,
+          255
+        ],
+        "Direction": [
+          0.0,
+          -1.0,
+          0.0
+        ],
+        "InnerCone": 20.0,
+        "Intensity": 1.0,
+        "IsEnabled": true,
+        "Name": "Point Light 3",
+        "OuterCone": 35.0,
+        "Position": [
+          53.655670166015625,
+          7.358127593994141,
+          -2.6980414390563965
+        ],
+        "Range": 20.0,
+        "Type": 1
+      }
+    ],
+    "ShadowBias": 0.0017999999690800905,
+    "ShadowDistance": 60.0,
+    "ShadowResolution": 4096,
+    "ShadowSoftness": 1.0,
+    "ShadowsEnabled": true,
+    "Shininess": 16.0,
+    "SpecularStrength": 0.25
+  },
   "Map": {
     "SizeX": 100.0,
     "SizeY": 100.0,
@@ -46,6 +150,7 @@
   "Objects": {
     "1": {
       "CanBeSelected": true,
+      "CastsShadow": true,
       "Color": [
         255,
         255,
@@ -54,7 +159,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
-      "Name": "Floor",
+      "Name": "Artifact Display Floor",
       "ObjectType": 0,
       "RigidBody3D": {
         "IsEnabled": true,
@@ -75,39 +180,9 @@
       },
       "Texture": "Tiles133A"
     },
-    "10": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": false,
-      "IsEnabled": true,
-      "Name": "Floor",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": -27.5,
-        "PosY": 0.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 20.0,
-        "ScaleY": 1.0,
-        "ScaleZ": 75.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Ground088"
-    },
     "12": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         0,
         0,
@@ -137,7 +212,8 @@
       }
     },
     "15": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         0,
         0,
@@ -167,7 +243,8 @@
       }
     },
     "16": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         0,
         0,
@@ -197,7 +274,8 @@
       }
     },
     "17": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         0,
         0,
@@ -227,7 +305,8 @@
       }
     },
     "18": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         0,
         0,
@@ -257,7 +336,8 @@
       }
     },
     "19": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         255,
         255,
@@ -288,7 +368,8 @@
       "Texture": "frame"
     },
     "2": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         255,
         255,
@@ -319,7 +400,8 @@
       "Texture": "Chip001"
     },
     "20": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         100,
         100,
@@ -350,7 +432,8 @@
       "Texture": "Ground088"
     },
     "21": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         100,
         100,
@@ -381,7 +464,8 @@
       "Texture": "Ground088"
     },
     "24": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         100,
         100,
@@ -412,7 +496,8 @@
       "Texture": "Ground088"
     },
     "25": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         100,
         100,
@@ -443,7 +528,8 @@
       "Texture": "Ground088"
     },
     "26": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         100,
         100,
@@ -474,7 +560,8 @@
       "Texture": "Ground088"
     },
     "27": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         100,
         100,
@@ -505,7 +592,8 @@
       "Texture": "Ground088"
     },
     "28": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         100,
         100,
@@ -536,7 +624,8 @@
       "Texture": "Ground088"
     },
     "29": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         255,
         255,
@@ -567,7 +656,8 @@
       "Texture": "Marble021"
     },
     "3": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         255,
         255,
@@ -599,7 +689,8 @@
       "Texture": "Chip001"
     },
     "30": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         100,
         100,
@@ -630,7 +721,8 @@
       "Texture": "Ground088"
     },
     "31": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         100,
         100,
@@ -639,7 +731,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
-      "Name": "Cavern Wall",
+      "Name": "Cavern Roof",
       "ObjectType": 0,
       "RigidBody3D": {
         "IsEnabled": true,
@@ -661,7 +753,8 @@
       "Texture": "Ground088"
     },
     "32": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         255,
         255,
@@ -691,8 +784,169 @@
       },
       "Texture": "Chip001"
     },
+    "34": {
+      "CanBeSelected": false,
+      "CastsShadow": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": false,
+      "IsEnabled": true,
+      "Name": "Outside Floor",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 45.5,
+        "PosY": 0.0,
+        "PosZ": -1.0,
+        "RotW": 0.9975640773773193,
+        "RotX": 0.0,
+        "RotY": 0.06975647062063217,
+        "RotZ": 0.0,
+        "ScaleX": 17.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 15.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Ground088"
+    },
+    "36": {
+      "CanBeSelected": false,
+      "CastsShadow": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": false,
+      "IsEnabled": true,
+      "Name": "Cavern Floor",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 25.0,
+        "PosY": 0.0,
+        "PosZ": 0.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 11.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 13.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Ground088"
+    },
+    "37": {
+      "CanBeSelected": false,
+      "CastsShadow": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": false,
+      "IsEnabled": true,
+      "Name": "Cavern Floor",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 35.0,
+        "PosY": 0.0,
+        "PosZ": 0.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 11.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 14.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Ground088"
+    },
+    "38": {
+      "CanBeSelected": false,
+      "CastsShadow": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": false,
+      "IsEnabled": true,
+      "Name": "Outside Floor",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 53.5,
+        "PosY": 0.0,
+        "PosZ": -5.0,
+        "RotW": 0.9238795042037964,
+        "RotX": 0.0,
+        "RotY": 0.3826834559440613,
+        "RotZ": 0.0,
+        "ScaleX": 15.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 9.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Ground088"
+    },
+    "39": {
+      "CanBeSelected": false,
+      "CastsShadow": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": false,
+      "IsEnabled": true,
+      "Name": "Outside Floor",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 60.5,
+        "PosY": 0.0,
+        "PosZ": -13.0,
+        "RotW": 0.7986355423927307,
+        "RotX": 0.0,
+        "RotY": 0.6018149852752686,
+        "RotZ": 0.0,
+        "ScaleX": 13.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 10.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Ground088"
+    },
     "4": {
       "CanBeSelected": true,
+      "CastsShadow": true,
       "Color": [
         255,
         255,
@@ -722,8 +976,233 @@
       },
       "Texture": "Ground088"
     },
+    "41": {
+      "CanBeSelected": false,
+      "CastsShadow": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": false,
+      "IsEnabled": true,
+      "Name": "Outside Roof",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 45.5,
+        "PosY": 10.0,
+        "PosZ": -1.0,
+        "RotW": 0.9975640773773193,
+        "RotX": 0.0,
+        "RotY": 0.06975647062063217,
+        "RotZ": 0.0,
+        "ScaleX": 17.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 8.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Ground088"
+    },
+    "42": {
+      "CanBeSelected": false,
+      "CastsShadow": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": false,
+      "IsEnabled": true,
+      "Name": "Outside Roof",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 55.5,
+        "PosY": 10.0,
+        "PosZ": -5.0,
+        "RotW": 0.9238795042037964,
+        "RotX": 0.0,
+        "RotY": 0.3826834559440613,
+        "RotZ": 0.0,
+        "ScaleX": 13.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 8.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Ground088"
+    },
+    "43": {
+      "CanBeSelected": false,
+      "CastsShadow": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": false,
+      "IsEnabled": true,
+      "Name": "Outside Floor",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 59.5,
+        "PosY": 10.0,
+        "PosZ": -13.0,
+        "RotW": 0.7986355423927307,
+        "RotX": 0.0,
+        "RotY": 0.6018149852752686,
+        "RotZ": 0.0,
+        "ScaleX": 13.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 8.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Ground088"
+    },
+    "44": {
+      "CanBeSelected": false,
+      "CastsShadow": true,
+      "Color": [
+        100,
+        100,
+        100,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Name": "Cavern Wall",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 46.0,
+        "PosY": 5.0,
+        "PosZ": 3.0,
+        "RotW": 0.9816272854804993,
+        "RotX": 0.0,
+        "RotY": 0.19080902636051178,
+        "RotZ": 0.0,
+        "ScaleX": 18.0,
+        "ScaleY": 10.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Ground088"
+    },
+    "45": {
+      "CanBeSelected": false,
+      "CastsShadow": true,
+      "Color": [
+        100,
+        100,
+        100,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Name": "Cavern Wall",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 60.0,
+        "PosY": 5.0,
+        "PosZ": -6.0,
+        "RotW": 0.9170600771903992,
+        "RotX": 0.0,
+        "RotY": 0.39874908328056335,
+        "RotZ": 0.0,
+        "ScaleX": 18.0,
+        "ScaleY": 10.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Ground088"
+    },
+    "46": {
+      "CanBeSelected": false,
+      "CastsShadow": true,
+      "Color": [
+        100,
+        100,
+        100,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Name": "Cavern Wall",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 44.0,
+        "PosY": 5.0,
+        "PosZ": -7.0,
+        "RotW": 0.9981349110603333,
+        "RotX": 0.0,
+        "RotY": 0.06104854866862297,
+        "RotZ": 0.0,
+        "ScaleX": 15.0,
+        "ScaleY": 10.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Ground088"
+    },
+    "47": {
+      "CanBeSelected": false,
+      "CastsShadow": true,
+      "Color": [
+        100,
+        100,
+        100,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Name": "Cavern Wall",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "IsEnabled": true,
+        "IsStatic": true,
+        "PosX": 54.0,
+        "PosY": 5.0,
+        "PosZ": -11.0,
+        "RotW": 0.9205048680305481,
+        "RotX": 0.0,
+        "RotY": 0.3907311260700226,
+        "RotZ": 0.0,
+        "ScaleX": 10.0,
+        "ScaleY": 10.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Ground088"
+    },
     "5": {
-      "CanBeSelected": true,
+      "CanBeSelected": false,
+      "CastsShadow": true,
       "Color": [
         255,
         255,
@@ -737,14 +1216,14 @@
       "RigidBody3D": {
         "IsEnabled": true,
         "IsStatic": true,
-        "PosX": 10.0,
+        "PosX": 11.0,
         "PosY": 0.0,
         "PosZ": 0.0,
         "RotW": 1.0,
         "RotX": 0.0,
         "RotY": 0.0,
         "RotZ": 0.0,
-        "ScaleX": 15.0,
+        "ScaleX": 17.0,
         "ScaleY": 1.0,
         "ScaleZ": 3.0,
         "VelocityX": 0.0,
@@ -752,143 +1231,8 @@
         "VelocityZ": 0.0
       },
       "Texture": "Ground088"
-    },
-    "6": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": false,
-      "IsEnabled": true,
-      "Name": "Floor",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 27.5,
-        "PosY": 0.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 20.0,
-        "ScaleY": 1.0,
-        "ScaleZ": 75.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Ground088"
-    },
-    "7": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": false,
-      "IsEnabled": true,
-      "Name": "Floor",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 0.0,
-        "PosY": 0.0,
-        "PosZ": 27.5,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 75.0,
-        "ScaleY": 1.0,
-        "ScaleZ": 20.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Ground088"
-    },
-    "8": {
-      "CanBeSelected": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": false,
-      "IsEnabled": true,
-      "Name": "Floor",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "IsEnabled": true,
-        "IsStatic": true,
-        "PosX": 0.0,
-        "PosY": 0.0,
-        "PosZ": -27.5,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 75.0,
-        "ScaleY": 1.0,
-        "ScaleZ": 20.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Ground088"
     }
   },
-  "Player": {
-    "BaseDamage": 1.0,
-    "BaseSpeed": 1.0,
-    "CanBeSelected": true,
-    "Color": [
-      255,
-      255,
-      255,
-      255
-    ],
-    "Health": 100.0,
-    "IsDestructible": true,
-    "IsEnabled": true,
-    "MaxHealth": 100.0,
-    "MaxStamina": 100.0,
-    "Name": "GameObject",
-    "ObjectType": 1,
-    "Pos2X": 800.0,
-    "Pos2Y": 899.0,
-    "RigidBody3D": {
-      "IsEnabled": true,
-      "IsStatic": false,
-      "PosX": 1.9899358749389648,
-      "PosY": -2.9577078819274902,
-      "PosZ": 0.0,
-      "RotW": 1.0,
-      "RotX": 0.0,
-      "RotY": 0.0,
-      "RotZ": 0.0,
-      "ScaleX": 1.0,
-      "ScaleY": 2.0,
-      "ScaleZ": 1.0,
-      "VelocityX": 0.0,
-      "VelocityY": -2.999856472015381,
-      "VelocityZ": 0.0
-    },
-    "Stamina": 100.0
-  },
-  "Scene": {
-    "Is2DActive": true,
-    "IsMiniActive": false,
-    "LimitYBounds": false
-  },
-  "Version": 2
+  "Version": 3,
+  "WorldOnly": true
 }

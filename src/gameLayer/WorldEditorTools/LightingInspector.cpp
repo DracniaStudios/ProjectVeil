@@ -73,6 +73,15 @@ void WorldEditor::ShowLightingData()
 			: "None");
 	ImGui::Separator();
 
+	/// Gizmos — the in-world position and direction indicators
+	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Gizmos");
+	ImGui::Checkbox("Show Light Gizmos", &lighting->showGizmos);
+	ImGui::Checkbox("X-Ray Ranges And Cones", &lighting->gizmoXray);
+	ImGui::TextDisabled("Markers and arrows always draw on top.");
+	ImGui::TextDisabled("X-Ray does the same for ranges and cones.");
+	ImGui::TextDisabled("Gizmos only render while the editor (F1) is open.");
+	ImGui::Separator();
+
 	/// Atmosphere
 	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Atmosphere");
 	EditColor("Ambient Color", lighting->ambientColor);
@@ -199,6 +208,10 @@ void WorldEditor::ShowLightingData()
 	ImGui::EndChild();
 	ImGui::Separator();
 
+	// Halo the selected light's gizmo. Set before the early-out below so the
+	// highlight clears when the selection goes away.
+	lighting->SetGizmoHighlight(selectedLightIndex);
+
 	// Re-validated every frame: a world load or a delete can shrink the list
 	// out from under the stored index.
 	if (selectedLightIndex < 0 || selectedLightIndex >= static_cast<int>(lights.size()))
@@ -250,10 +263,14 @@ void WorldEditor::ShowLightingData()
 		}
 	}
 
-	// Position is meaningless for a directional light (it is at infinity), and
-	// direction is meaningless for a point light.
-	if (light.type != LIGHT_DIRECTIONAL) { ImGui::InputFloat3("Position", &light.position.x); }
-	if (light.type != LIGHT_POINT) { ImGui::InputFloat3("Direction", &light.direction.x); }
+	// A directional light is at infinity, so the shader ignores its position —
+	// but the gizmo has to be anchored somewhere visible, so the field stays
+	// editable under a name that says what it actually does.
+	if (light.type == LIGHT_DIRECTIONAL) { ImGui::InputFloat3("Gizmo Anchor", &light.position.x); }
+	else { ImGui::DragFloat3("Position", &light.position.x); }
+
+	// Direction is meaningless for a point light
+	if (light.type != LIGHT_POINT) { ImGui::DragFloat3("Direction", &light.direction.x); }
 
 	if (ImGui::Button("Move To Camera"))
 	{

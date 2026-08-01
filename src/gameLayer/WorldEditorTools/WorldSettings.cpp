@@ -47,7 +47,10 @@ void WorldEditor::ShowWorldSettings()
 		{
 			if (SaveSystem::LoadWorld("world", *scene))
 			{
-				selectedObjectId = 0; // Ids from the old world are stale
+				// Ids from the old world are stale — and so is anything holding
+				// one: the selection, an in-flight gizmo drag, and every entry
+				// in the undo history.
+				ResetSelectionState();
 				statusMessage = "Loaded world.json";
 			}
 			else
@@ -62,7 +65,7 @@ void WorldEditor::ShowWorldSettings()
 			std::string load = "Load " + file;
 			if (ImGui::Button(save.c_str())) {
 				if (SaveSystem::SaveWorld(file, scene)) {
-					selectedObjectId = 0;
+					ResetSelectionState();
 					statusMessage = "Saved " + file;
 				}
 				else {
@@ -72,7 +75,7 @@ void WorldEditor::ShowWorldSettings()
 			ImGui::SameLine();
 			if (ImGui::Button(load.c_str())) {
 				if (SaveSystem::LoadWorld(file, *scene)) {
-					selectedObjectId = 0;
+					ResetSelectionState();
 					statusMessage = "Loaded " + file;
 				}
 				else {

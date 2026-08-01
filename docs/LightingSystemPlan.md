@@ -402,6 +402,39 @@ themselves; 0, 4, 5, 6, and 7 cannot move without introducing one of the failure
 
 ---
 
+## Addendum — Light Gizmos (follow-on increment)
+
+Delivered after the system above shipped: an in-world visual indicator for each light's **location** and the
+**direction** it throws light. Built as an extension of Step 10 (editor tooling), not a change to the render path.
+
+Drawn through raylib's default batch shader — deliberately unlit, so a gizmo stays readable in a scene that is
+mostly black, which is exactly when a level designer needs it.
+
+Per type, the indicator answers the two questions the light's parameters raise:
+
+| Type | Location | Direction | Influence |
+|---|---|---|---|
+| Directional | anchor sphere | bundle of parallel arrows + ring | — (source is at infinity) |
+| Point | sphere | six axis spikes (no single direction) | three rings at `range` |
+| Spot | sphere | arrow down the cone axis | inner + outer cone caps, four edge lines |
+
+Two decisions worth recording:
+
+- **Two draw layers.** Markers and direction arrows draw with depth testing *off*; influence volumes draw with it
+  *on*. The first capture pass showed the flaw in a single depth-tested pass — a light behind geometry simply
+  disappears, which defeats the indicator. Splitting the layers keeps every light findable and aimable while the
+  ranges and cones still read as sitting in the world. **X-Ray Ranges And Cones** promotes the volumes to the
+  overlay pass as well.
+- **A directional light's `position` becomes a gizmo anchor.** The shader ignores it (the source is at infinity), but
+  the indicator has to be drawn somewhere, so the field stays editable under the name **Gizmo Anchor**.
+
+One implementation trap, of the same family as Step 14's: rlgl *batches* geometry and submits it later, so toggling
+`rlDisableDepthTest()` around gizmo draws does nothing useful unless the batch is flushed with
+`rlDrawRenderBatchActive()` on both sides. Without the flush the state change lands on unrelated draw calls and hides
+scene geometry instead of revealing gizmos.
+
+---
+
 ## Deferred — Requires a Project Decision
 
 These are ready to build but each needs **direction from the project owner** before it is worth the render budget:
@@ -412,3 +445,5 @@ These are ready to build but each needs **direction from the project owner** bef
 - **Normal and roughness map sampling** — depends on whether the AmbientCG texture sets are re-exported with their
   full map complement (only `_Color` is currently vendored).
 - **Light volume culling** — needed only once authored light counts routinely exceed the 8-light limit.
+- **Clickable gizmos** — selecting a light by clicking its marker needs a ray/marker intersection test against the
+  editor camera, and a decision about how it interacts with the existing object-picking selection.

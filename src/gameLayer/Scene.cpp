@@ -66,15 +66,20 @@ void Scene::ResetID() {
 /** Physics Solutions **/
 
 // Refresh a body's collision box after a positional correction so subsequent
-// solver iterations use the updated position rather than the stale one
+// solver iterations use the updated position rather than the stale one.
+// Forwards to the rigid body so the solver, RigidBody3D::Update() and the
+// editor's frozen path can never disagree on how a box is built.
 static void refreshCollisionBox(RigidBody3D& body)
 {
-	body.collisionBox = {
-		Vector3Subtract(body.translation, Vector3Scale(body.scale, 0.5f)),
-		Vector3Add(body.translation,      Vector3Scale(body.scale, 0.5f))
-	};
+	body.SyncCollisionBox();
 }
 
+// Collision runs in two phases. The CheckCollisionBoxes tests below are the
+// BROAD phase: rigidBody3D.collisionBox is the axis-aligned box enclosing each
+// body, so if two of those miss, the oriented boxes inside them cannot touch.
+// Only pairs that survive reach resolveConstrains, which runs the exact
+// separating-axis test. Keeping the cheap gate matters — the narrow phase walks
+// 15 axes per pair and this loop is O(n^2) per iteration.
 static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 {
 	solverIterations = static_cast<int>(Clamp(static_cast<float>(solverIterations), 4, 8));
@@ -229,6 +234,16 @@ void Scene_updateScene(float delta) {
 		}
 	}
 
+	// While the editor holds the simulation, nothing may integrate. Physics used
+	// to keep running underneath the editor, which meant a freshly placed object
+	// fell under gravity the instant it existed, a dragged object fought the
+	// solver for its own position, and lifeSpan/deathSpan ticked objects out
+	// from under the person editing them.
+	//
+	// Collision boxes are still refreshed each frame: mouse picking reads them,
+	// and RigidBody3D::Update() is the only thing that normally rebuilds them.
+	const bool editorFrozen = worldEditor->IsEnabled() && worldEditor->IsSimulationPaused();
+
 	auto clampObject = [](GameObject& object, bool limit) {
 		// Clamp Y Bounds
 		if (object.rigidBody3D.translation.y < -1000.0f) {
@@ -243,7 +258,11 @@ void Scene_updateScene(float delta) {
 
 	/** Update Player **/
 	if (auto player = scene->player) {
-		if (scene->is2DActive)
+		if (editorFrozen)
+		{
+			player->rigidBody3D.SyncCollisionBox();
+		}
+		else if (scene->is2DActive)
 		{
 			player->update2D(delta);
 		}
@@ -253,9 +272,10 @@ void Scene_updateScene(float delta) {
 			clampObject(*player, scene->limitYBounds);
 		}
 	}
-	
+
 	/* Update GameObjects */
 	for (auto& object : scene->gameMap.gameObjects) {
+		if (editorFrozen) { object.rigidBody3D.SyncCollisionBox(); continue; }
 		object.update(scene, delta);
 		clampObject(object, scene->limitYBounds);
 	}
@@ -263,6 +283,7 @@ void Scene_updateScene(float delta) {
 	/* Update Interactables */
 	for (auto interactable = scene->interactables.begin(); interactable != scene->interactables.end();) {
 		interactable->second->id = interactable->first;
+		if (editorFrozen) { interactable->second->rigidBody3D.SyncCollisionBox(); ++interactable; continue; }
 		interactable->second->update(scene, delta);
 		clampObject(*interactable->second.get(), scene->limitYBounds);
 		++interactable;
@@ -273,6 +294,11 @@ void Scene_updateScene(float delta) {
 	{
 		// Update Data
 		entity->second->id = entity->first;
+
+		// Frozen entities are not culled either: an entity sitting at zero
+		// health would otherwise be deleted out from under the inspector
+		// examining it.
+		if (editorFrozen) { entity->second->rigidBody3D.SyncCollisionBox(); ++entity; continue; }
 
 		bool shouldKill = entity->second->health <= 0;
 
@@ -307,7 +333,10 @@ void Scene_updateScene(float delta) {
 	});
 
 	/* Update Collisions */
-	solveCollision(scene, delta, 8);
+	// The solver applies positional corrections, so running it against a frozen
+	// scene would push a just-placed object out of the wall it was deliberately
+	// snapped flush against.
+	if (!editorFrozen) { solveCollision(scene, delta, 8); }
 
 	/** Update MiniGame **/
 	if (auto miniGame = scene->miniGame)
@@ -370,6 +399,8 @@ void Scene_drawScene2D() {
 void Scene_drawScene3D() {
 	auto manager = &SceneManager::getInstance();
 	if (auto scene = manager->currentScene) {
+		if (WorldEditor::getInstance().IsEnabled()) { DrawGrid(100.0f, 1.0f); }
+		
 		scene->draw3D();
 
 		for (auto& object : scene->gameMap.gameObjects) {

@@ -132,76 +132,139 @@ void WorldEditor::ShowPlacementPanel()
 		ImGui::Separator();
 	}
 
-	// Spawn a copy so the staging object stays around for repeat placement
-	auto spawnAt = [&](Vector3 position)
-		{
-			GameObject object = stagingObject;
-
-			// Record assets by name — the save call binds them via onEnable()
-			if (Asset* texture = getActiveTexture()) { object.textureName = texture->name; }
-			if (Asset* model = getActiveModel()) { object.modelName = model->name; }
-
-			object.rigidBody3D.translation = position;
-			object.rigidBody3D.Teleport(position);
-
-			GameObject* spawned = nullptr;
-			switch (placementKind)
-			{
-			case PLACE_ENTITY:
-			{
-				Entity entity = {};
-				static_cast<GameObject&>(entity) = object; // shared base fields
-				entity.type = OBJECT_ENTITY; // base copy overwrote the constructor's type
-				entity.maxHealth = stagingMaxHealth;
-				entity.maxStamina = stagingMaxStamina;
-				entity.baseSpeed = stagingBaseSpeed;
-				spawned = scene->gameMap.saveEntity(entity);
-				break;
-			}
-			case PLACE_INTERACTABLE:
-			{
-				InteractableObject interactable(
-					static_cast<InteractionType>(stagingInteractType),
-					stagingInteractValue, stagingActivatorValue);
-				static_cast<GameObject&>(interactable) = object; // shared base fields
-				interactable.type = OBJECT_INTERACTABLE; // base copy overwrote the constructor's type
-				// saveInteractable skips the zero-scale fix saveObject/saveEntity apply
-				if (interactable.rigidBody3D.scale == Vector3Zero())
-				{
-					interactable.rigidBody3D.scale = Vector3One();
-				}
-				spawned = scene->gameMap.saveInteractable(interactable);
-				break;
-			}
-			default:
-				spawned = scene->gameMap.saveObject(object);
-				break;
-			}
-
-			selectedObjectId = spawned->id;
-			statusMessage = "Spawned: " + spawned->name;
-		};
+	/** Point & Place **/
+	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Point & Place");
+	ImGui::Checkbox("Armed (P)", &placementMode);
+	if (placementMode)
+	{
+		ImGui::TextDisabled("Left click in the viewport to place, Esc to cancel");
+	}
+	ImGui::Checkbox("Rest On Surface", &placeAlignToSurface);
+	ImGui::Checkbox("Snap To Grid", &placementSnap);
+	if (ImGui::DragFloat("Grid Step", &placementGridStep, 0.05f, 0.0f, 100.0f))
+	{
+		// A zero or negative step would divide by zero inside SnapValue; it is
+		// treated as "no snapping" there, but clamping keeps the field honest.
+		placementGridStep = fmaxf(placementGridStep, 0.0f);
+	}
+	ImGui::Separator();
 
 	const char* spawnLabel =
 		placementKind == PLACE_ENTITY ? "Spawn Entity" :
 		placementKind == PLACE_INTERACTABLE ? "Spawn Interactable" : "Spawn Game Object";
-	if (ImGui::Button(spawnLabel)) { spawnAt(stagingObject.getPosition()); }
+	if (ImGui::Button(spawnLabel)) { SpawnStagedObject(stagingObject.getPosition()); }
 	if (scene->player != nullptr && ImGui::Button("Spawn At Player"))
 	{
 		Vector3 position = Vector3Add(
 			scene->player->rigidBody3D.translation,
 			Vector3Scale(scene->player->camera.forward, 3.0f)
 		);
-		spawnAt(position);
+		SpawnStagedObject(position);
 	}
-	if (scene->player != nullptr && ImGui::Button("Spawn At Camera"))
+	if (ImGui::Button("Spawn At Camera"))
 	{
 		Vector3 position = Vector3Add(
 			manager->camera3D.position,
 			Vector3Scale(manager->camera3D.up, 3.0f)
 		);
-		spawnAt(position);
+		SpawnStagedObject(position);
 	}
 
 	ImGui::End();
+}
+
+/**
+ * Spawns a copy of the staging object at a world position.
+ *
+ * Shared by the buttons above and by point-and-place, so the two paths cannot
+ * drift apart — the subtle part is that each placement kind has to be built
+ * through its own type. Assigning through the GameObject base would slice off an
+ * Entity's or Interactable's own fields while leaving `type` claiming otherwise,
+ * and a later lookup by that type would then index a container the object was
+ * never inserted into.
+ *
+ * The staging object itself is never handed to the scene, so the panel keeps its
+ * settings for the next placement.
+ */
+GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
+{
+	auto scene = SceneManager::getInstance().currentScene;
+	if (scene == nullptr) { statusMessage = "No scene loaded"; return nullptr; }
+
+	GameObject object = stagingObject;
+
+	// The copy inherited the staging object's model handle *and* its ownsModel
+	// flag, but staging is still using that model — and will keep using it for
+	// the next placement. Without disowning, the loadVisuals() inside the save
+	// call below would free it out from under the panel.
+	object.disownModel();
+
+	// Record assets by name — the save call binds them via onEnable()
+	if (Asset* texture = getActiveTexture()) { object.textureName = texture->name; }
+	if (Asset* model = getActiveModel()) { object.modelName = model->name; }
+
+	object.rigidBody3D.Teleport(position);
+
+	// saveObject/saveEntity only repair an exactly-zero scale. A negative extent
+	// typed into the panel would survive into the world and invert the object's
+	// collision box, leaving it both unclickable and uncollidable.
+	if (object.rigidBody3D.scale != Vector3Zero())
+	{
+		object.rigidBody3D.scale = SanitizeScale(object.rigidBody3D.scale);
+	}
+
+	GameObject* spawned = nullptr;
+	switch (placementKind)
+	{
+	case PLACE_ENTITY:
+	{
+		Entity entity = {};
+		// The Entity constructor runs GameObject's, which generates a fallback
+		// cube. The assignment below overwrites that handle wholesale, so
+		// without this the mesh is orphaned — one leak per Entity spawned.
+		// Safe to free unconditionally: this object was constructed on the line
+		// above and nothing has copied it.
+		entity.releaseGeneratedModel();
+		static_cast<GameObject&>(entity) = object; // shared base fields
+		entity.type = OBJECT_ENTITY; // base copy overwrote the constructor's type
+		entity.maxHealth = stagingMaxHealth;
+		entity.maxStamina = stagingMaxStamina;
+		entity.baseSpeed = stagingBaseSpeed;
+		spawned = scene->gameMap.saveEntity(entity);
+		break;
+	}
+	case PLACE_INTERACTABLE:
+	{
+		InteractableObject interactable(
+			static_cast<InteractionType>(stagingInteractType),
+			stagingInteractValue, stagingActivatorValue);
+		// Same as the Entity branch: release the constructor's fallback cube
+		// before the assignment orphans it.
+		interactable.releaseGeneratedModel();
+		static_cast<GameObject&>(interactable) = object; // shared base fields
+		interactable.type = OBJECT_INTERACTABLE; // base copy overwrote the constructor's type
+		// saveInteractable skips the zero-scale fix saveObject/saveEntity apply
+		if (interactable.rigidBody3D.scale == Vector3Zero())
+		{
+			interactable.rigidBody3D.scale = Vector3One();
+		}
+		spawned = scene->gameMap.saveInteractable(interactable);
+		break;
+	}
+	default:
+		spawned = scene->gameMap.saveObject(object);
+		break;
+	}
+
+	if (spawned == nullptr) { statusMessage = "Spawn failed"; return nullptr; }
+
+	// saveObject/saveEntity repair a zero scale, but none of them rebuild the
+	// collision box afterwards — and with the simulation frozen nothing else
+	// will. A freshly placed object would be invisible to the very mouse ray
+	// that placed it until physics was resumed.
+	spawned->rigidBody3D.SyncCollisionBox();
+
+	selectedObjectId = spawned->id;
+	statusMessage = "Spawned: " + spawned->name;
+	return spawned;
 }

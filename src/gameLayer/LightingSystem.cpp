@@ -29,6 +29,64 @@ namespace
 		return Vector3Scale(vector, 1.0f / sqrtf(lengthSquared));
 	}
 
+	/** Editor Gizmo Drawing **/
+
+	constexpr float GIZMO_BODY_RADIUS = 0.28f;
+	constexpr float GIZMO_SUN_RAY_LENGTH = 4.0f;
+	constexpr float GIZMO_SUN_SPREAD = 1.0f;
+
+	// Build an orthonormal basis perpendicular to `normal`, for circles and
+	// cones that have to face an arbitrary direction.
+	void BuildBasis(Vector3 normal, Vector3& right, Vector3& up)
+	{
+		// Any reference axis works except one parallel to the normal, which
+		// would make the cross product degenerate.
+		const Vector3 reference = (fabsf(normal.y) > 0.99f)
+			? Vector3{ 1.0f, 0.0f, 0.0f }
+			: Vector3{ 0.0f, 1.0f, 0.0f };
+
+		right = Vector3Normalize(Vector3CrossProduct(normal, reference));
+		up = Vector3CrossProduct(normal, right); // Already unit: both inputs are unit and perpendicular
+	}
+
+	// Circle drawn from line segments. raylib's DrawCircle3D takes an axis and
+	// an angle, which is awkward to derive from a plain direction vector; a
+	// segment loop over an explicit basis keeps the orientation obvious.
+	void DrawCircleFacing(Vector3 center, Vector3 normal, float radius, Color color, int segments = 24)
+	{
+		if (radius <= 0.0f || segments < 3) { return; }
+
+		Vector3 right = {};
+		Vector3 up = {};
+		BuildBasis(normal, right, up);
+
+		Vector3 previous = Vector3Add(center, Vector3Scale(right, radius));
+		for (int i = 1; i <= segments; i++)
+		{
+			const float angle = (2.0f * PI * static_cast<float>(i)) / static_cast<float>(segments);
+			const Vector3 point = Vector3Add(center,
+				Vector3Add(Vector3Scale(right, cosf(angle) * radius),
+					Vector3Scale(up, sinf(angle) * radius)));
+
+			DrawLine3D(previous, point, color);
+			previous = point;
+		}
+	}
+
+	// A shaft plus a cone head — the actual "which way does this light point"
+	// indicator. DrawCylinderEx with a zero end radius gives the arrowhead.
+	void DrawArrow(Vector3 origin, Vector3 direction, float length, float headRadius, Color color)
+	{
+		if (length <= 0.0f) { return; }
+
+		const Vector3 tip = Vector3Add(origin, Vector3Scale(direction, length));
+		const float headLength = fminf(headRadius * 3.0f, length * 0.5f);
+		const Vector3 headBase = Vector3Subtract(tip, Vector3Scale(direction, headLength));
+
+		DrawLine3D(origin, headBase, color);
+		DrawCylinderEx(headBase, tip, headRadius, 0.0f, 8, color);
+	}
+
 	/**
 	 * Build a depth-only framebuffer whose depth attachment is a *texture*.
 	 *
@@ -662,6 +720,174 @@ void LightingSystem::BindShadowMap()
 	// object across raylib's own rlEnableShader/rlDisableShader calls.
 	const int slot = SHADOW_MAP_SLOT;
 	SetShaderValue(lightShader, uniforms.shadowMap, &slot, SHADER_UNIFORM_INT);
+}
+#pragma endregion
+
+#pragma region Editor Gizmos
+void LightingSystem::DrawLightGizmo(const Light& light, bool highlighted, GizmoLayer layer) const
+{
+	// A disabled light still draws, greyed out, so it can be found and switched
+	// back on rather than becoming invisible level furniture.
+	const Color bodyColor = light.isEnabled ? light.color : Color{ 110, 110, 110, 255 };
+	const Color rayColor = Fade(bodyColor, light.isEnabled ? 0.85f : 0.35f);
+	const Color shapeColor = Fade(bodyColor, light.isEnabled ? 0.40f : 0.18f);
+
+	const Vector3 origin = light.position;
+	const Vector3 direction = SafeNormalize(light.direction, Vector3{ 0.0f, -1.0f, 0.0f });
+	const bool markers = (layer == GizmoLayer::Markers);
+
+	if (markers)
+	{
+		// The position marker, in the light's own colour so a rig reads at a glance
+		DrawSphereEx(origin, GIZMO_BODY_RADIUS, 6, 8, bodyColor);
+
+		// Selection halo drawn white, so it reads against any light colour
+		if (highlighted) { DrawSphereWires(origin, GIZMO_BODY_RADIUS * 2.2f, 8, 8, WHITE); }
+	}
+
+	switch (light.type)
+	{
+		case LIGHT_DIRECTIONAL:
+		{
+			// A directional light has no real position — the shader only uses its
+			// direction — so `position` serves purely as the gizmo's anchor. A
+			// bundle of parallel arrows says "this direction, everywhere".
+			Vector3 right = {};
+			Vector3 up = {};
+			BuildBasis(direction, right, up);
+
+			if (markers)
+			{
+				DrawArrow(origin, direction, GIZMO_SUN_RAY_LENGTH, 0.22f, rayColor);
+
+				for (int i = 0; i < 4; i++)
+				{
+					const float angle = (2.0f * PI * static_cast<float>(i)) / 4.0f;
+					const Vector3 offset = Vector3Add(
+						Vector3Scale(right, cosf(angle) * GIZMO_SUN_SPREAD),
+						Vector3Scale(up, sinf(angle) * GIZMO_SUN_SPREAD));
+
+					DrawArrow(Vector3Add(origin, offset), direction, GIZMO_SUN_RAY_LENGTH, 0.14f, rayColor);
+				}
+			}
+			else
+			{
+				// Ring binding the bundle together, so the anchor reads as one light
+				DrawCircleFacing(origin, direction, GIZMO_SUN_SPREAD, shapeColor);
+			}
+			break;
+		}
+
+		case LIGHT_POINT:
+		{
+			if (markers)
+			{
+				// Spikes on all six axes — a point light has no single direction,
+				// and showing that is the point of the indicator.
+				const float spikeLength = fminf(light.range * 0.25f, 1.5f);
+				const Vector3 axes[6] = {
+					{ 1.0f, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f },
+					{ 0.0f, 1.0f, 0.0f }, { 0.0f, -1.0f, 0.0f },
+					{ 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, -1.0f }
+				};
+
+				for (const Vector3& axis : axes)
+				{
+					DrawLine3D(origin, Vector3Add(origin, Vector3Scale(axis, spikeLength)), rayColor);
+				}
+			}
+			else
+			{
+				// Three rings at `range`. Attenuation reaches exactly zero there,
+				// so this is the light's true boundary, not an approximation.
+				DrawCircleFacing(origin, Vector3{ 1.0f, 0.0f, 0.0f }, light.range, shapeColor, 32);
+				DrawCircleFacing(origin, Vector3{ 0.0f, 1.0f, 0.0f }, light.range, shapeColor, 32);
+				DrawCircleFacing(origin, Vector3{ 0.0f, 0.0f, 1.0f }, light.range, shapeColor, 32);
+			}
+			break;
+		}
+
+		case LIGHT_SPOT:
+		{
+			if (markers)
+			{
+				DrawArrow(origin, direction, light.range, 0.22f, rayColor);
+				break;
+			}
+
+			const float outer = Clamp(light.outerConeDegrees, 0.0f, 89.9f);
+			const float inner = Clamp(light.innerConeDegrees, 0.0f, outer);
+
+			const Vector3 capCenter = Vector3Add(origin, Vector3Scale(direction, light.range));
+			const float outerRadius = light.range * tanf(outer * DEG2RAD);
+			const float innerRadius = light.range * tanf(inner * DEG2RAD);
+
+			// Flat caps stand in for the true spherical cap (the shader compares
+			// cosines, not distances) — the usual editor shorthand, and accurate
+			// enough to aim a light with.
+			DrawCircleFacing(capCenter, direction, outerRadius, shapeColor, 32);
+			DrawCircleFacing(capCenter, direction, innerRadius, Fade(bodyColor, 0.65f), 32);
+
+			// Four edge lines give the cone a readable silhouette
+			Vector3 right = {};
+			Vector3 up = {};
+			BuildBasis(direction, right, up);
+
+			for (int i = 0; i < 4; i++)
+			{
+				const float angle = (2.0f * PI * static_cast<float>(i)) / 4.0f;
+				const Vector3 edge = Vector3Add(capCenter,
+					Vector3Add(Vector3Scale(right, cosf(angle) * outerRadius),
+						Vector3Scale(up, sinf(angle) * outerRadius)));
+
+				DrawLine3D(origin, edge, shapeColor);
+			}
+			break;
+		}
+
+		default: break;
+	}
+}
+
+void LightingSystem::DrawGizmos() const
+{
+	if (!showGizmos) { return; }
+
+	const int highlight = gizmoHighlightIndex;
+	const int lightCount = static_cast<int>(lights.size());
+
+	// Influence volumes are depth-tested so they read as sitting in the world,
+	// occluded by the geometry they actually light. X-ray moves them into the
+	// overlay pass below instead.
+	if (!gizmoXray)
+	{
+		for (int i = 0; i < lightCount; i++)
+		{
+			DrawLightGizmo(lights[i], i == highlight, GizmoLayer::InfluenceShapes);
+		}
+	}
+
+	// Overlay pass. Position markers and direction arrows always draw on top:
+	// a light buried in a wall still has to be findable and aimable, which is
+	// the entire point of the indicator.
+	//
+	// rlgl batches geometry and submits it later, so the batch has to be flushed
+	// on both sides of the depth-test toggle — otherwise the state change lands
+	// on the wrong draw calls and hides scene geometry instead.
+	rlDrawRenderBatchActive();
+	rlDisableDepthTest();
+
+	for (int i = 0; i < lightCount; i++)
+	{
+		if (gizmoXray) { DrawLightGizmo(lights[i], i == highlight, GizmoLayer::InfluenceShapes); }
+		DrawLightGizmo(lights[i], i == highlight, GizmoLayer::Markers);
+	}
+
+	// The flashlight is deliberately skipped: it rides the active camera, so its
+	// gizmo would be a solid blob jammed against the near plane every frame.
+
+	rlDrawRenderBatchActive();
+	rlEnableDepthTest();
 }
 #pragma endregion
 

@@ -2,45 +2,6 @@
 
 #include <SceneManager.h>
 
-// Projectile Variant
-void Player::Fire()
-{
-	std::cout << "Player Fire Projectile \n";
-}
-
-void Player::FireLaser()
-{
-	const auto camera = &SceneManager::getInstance().camera3D;
-	// Create Ray from Camera
-	Ray cameraRay = { camera->position, this->camera.forward };
-
-	// Check Ray Collision with Game Objects
-
-	const auto scene = SceneManager::getInstance().currentScene;
-
-	// gameMap.gameObjects stores plain GameObjects (anything saved there was
-	// sliced), so casting them to Entity* to deal damage wrote past the end
-	// of the object — only push them around
-	for (auto& obj : scene->gameMap.gameObjects)
-	{
-		if (GetRayCollisionBox(cameraRay, obj.rigidBody3D.collisionBox).hit)
-		{
-			obj.onCollision(this);
-			obj.rigidBody3D.AddForce(this->camera.forward, 0.1f);
-		}
-	}
-
-	// Real entities live in scene->entities and can take damage
-	for (auto& [id, entity] : scene->entities)
-	{
-		if (GetRayCollisionBox(cameraRay, entity->rigidBody3D.collisionBox).hit)
-		{
-			entity->applyHealthValue(baseDamage * 0.1f, true);
-			entity->rigidBody3D.AddForce(this->camera.forward, 0.1f);
-		}
-	}
-}
-
 void Player::Interact()
 {
 	const auto scene = SceneManager::getInstance().currentScene;

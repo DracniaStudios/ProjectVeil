@@ -6,6 +6,11 @@
 #include <Player.h>
 #include <helpers.h>
 
+#include <WorldEditorTools/EditorGizmo.h>
+#include <WorldEditorTools/EditorPicking.h>
+
+#include <vector>
+
 struct EditorCamera : Camera3D {
 	Vector3 forward = {};
 	Vector3 back = {};
@@ -16,7 +21,42 @@ struct EditorCamera : Camera3D {
 	Vector2 sensitivity = Vector2{ 0.01f, 0.01f };
 	Vector2 lookRotation = {};
 
+	// Look angles live on the camera rather than as function-local statics, so
+	// they can be derived from whatever camera the editor takes over from
+	// instead of starting at zero and snapping the view somewhere arbitrary.
+	float yaw = 0.0f;
+	float pitch = 0.0f;
+	bool isSeeded = false;
+
 	void Update(Camera3D* camera);
+
+	// Adopts a pose from the camera the editor is replacing. Called once when
+	// the editor opens; without it the first F1 teleports the view to the origin
+	// because EditorCamera default-constructs its own position at {0,0,0}.
+	void SyncFrom(const Camera3D& camera);
+
+	// Frames a point at a given distance, keeping the current look direction.
+	void FocusOn(Vector3 target, float distance);
+};
+
+/**
+ * One reversible edit.
+ *
+ * Transform edits store the values from *before* the change; spawns store only
+ * the id, and undo by deleting it. Deletion is deliberately not undoable —
+ * resurrecting a polymorphic object from a GameObject copy is exactly the
+ * slicing bug this codebase has already had to fix once, and a silently wrong
+ * restore is worse than no restore.
+ */
+struct EditorEdit
+{
+	enum Kind { EDIT_TRANSFORM, EDIT_SPAWN };
+
+	Kind kind = EDIT_TRANSFORM;
+	std::uint64_t id = 0;
+	Vector3 position = {};
+	Quaternion rotation = QuaternionIdentity();
+	Vector3 scale = Vector3One();
 };
 
 class WorldEditor
@@ -44,10 +84,36 @@ class WorldEditor
 	int activeTextureIndex = -1; // Index into AssetManager::assets
 	int activeModelIndex = -1; // Index into AssetManager::assets
 
+	/** Viewport Manipulation **/
+	EditorGizmo gizmo = {};
+
+	// Physics keeps running while the editor is open, which means a freshly
+	// placed object falls under gravity the instant it exists and a dragged
+	// object fights the solver for its position. Editing therefore freezes the
+	// simulation by default; the toggle is exposed so gameplay can still be
+	// observed live. See Scene_updateScene for what the freeze actually skips.
+	bool simulationPaused = true;
+
+	// Bounded so a long session cannot grow the history without limit
+	static constexpr size_t UNDO_LIMIT = 128;
+	std::vector<EditorEdit> undoStack = {};
+	EditorEdit pendingEdit = {}; // Captured on drag start, pushed on drag end
+
 	/** Placement State **/
 	// Which kind of object the Placement Panel spawns
 	enum PlacementKind { PLACE_GAME_OBJECT, PLACE_ENTITY, PLACE_INTERACTABLE };
 	int placementKind = PLACE_GAME_OBJECT;
+
+	/** Point & Place State **/
+	bool placementMode = false;        // Armed: the mouse drops objects into the world
+	bool placeAlignToSurface = true;   // Rest the object on the surface it lands on
+	bool placementSnap = true;
+	float placementGridStep = 1.0f;
+
+	// Recomputed every frame from the mouse ray, consumed by DrawViewport3D
+	bool placementPreviewValid = false;
+	Vector3 placementPreviewPosition = {};
+	Vector3 placementPreviewNormal = { 0.0f, 1.0f, 0.0f };
 
 	GameObject stagingObject = {};
 	char inputName[128] = "New Block";
@@ -65,6 +131,14 @@ class WorldEditor
 
 	/** Object & Entity Inspector State **/
 	std::uint64_t inspectEntityId = 0; // Id instead of pointer — survives entity removal (gameplay death, Load Game)
+
+	// Rotation is stored as a quaternion but edited as Euler degrees. The typed
+	// values are cached rather than re-derived each frame: QuaternionToEuler is
+	// discontinuous (180 flips to -180, gimbal lock collapses two axes), so a
+	// live round-trip would make the fields jump around under the user's cursor.
+	std::uint64_t rotationEulerOwnerId = 0;   // Object the cached angles belong to
+	Vector3 rotationEulerDegrees = {};        // What the widget shows
+	Quaternion rotationEulerSource = {};      // Quaternion those angles produced
 
 	/** Mini Game Inspector State **/
 	int currentGameID = 0;
@@ -89,13 +163,44 @@ class WorldEditor
 	void ShowAssetData();
 	void ShowLightingData();
 
+	/** Viewport Interaction (EditorViewport.cpp) **/
+	// Arbitrates the mouse between ImGui, the camera, the gizmo, placement and
+	// selection — in that order. The ordering is the whole design; see the
+	// implementation for why each step has to come where it does.
+	void UpdateViewportInput();
+	void UpdateHotkeys();
+	void UpdatePlacementPreview(Scene* scene, const Camera3D& camera, bool canPlace);
+
+	// Writes a manipulated transform back onto a body, keeping every derived
+	// value (collision box, lastPosition, velocities) consistent with it
+	void ApplyTransform(GameObject* object, const GizmoTransform& transform);
+
+	void PushEdit(const EditorEdit& edit);
+	void Undo();
+
+	/** Selection Commands **/
+	void SelectUnderMouse(Scene* scene, const Camera3D& camera);
+	void DeleteSelection();
+	void DuplicateSelection();
+	void FocusOnSelection();
+	void SnapSelectionToGrid();
+	// Drops selection, any in-flight drag, and the edit history together. Ids
+	// from a previous world do not survive a load, so neither may anything
+	// holding them.
+	void ResetSelectionState();
+
 	/** Helpers **/
 	GameObject* getSelectedObject();
 	Asset* getActiveTexture();
 	Asset* getActiveModel();
+	GizmoTransform getSelectedTransform(const GameObject* object) const;
+	// Spawns a copy of stagingObject at a world position, honouring placementKind.
+	// Shared by the Placement Panel's buttons and by point-and-place.
+	GameObject* SpawnStagedObject(Vector3 position);
 	void showGameObject(GameObject* object);
 	void showEntity(Entity* object);
 	void showInteractableObject(InteractableObject* object);
+	void showTransformTools();
 
 
 
@@ -112,10 +217,20 @@ public:
 	}
 
 	EditorCamera editorCamera = {};
-	
+
 	/** Functions **/
 	void update(Player* player);
+
+	// Selection outline, transform gizmo and placement ghost. Must be called
+	// inside BeginMode3D — SceneManager_draw does it after the light gizmos.
+	void DrawViewport3D();
+
 	bool IsEnabled() const { return isEditorActive; }
+
+	// Scene_updateScene asks this before stepping physics. Only meaningful while
+	// the editor is open; the caller checks IsEnabled() as well.
+	bool IsSimulationPaused() const { return simulationPaused; }
+
 	void SelectObject(std::uint64_t id) { selectedObjectId = id; }
 };
 

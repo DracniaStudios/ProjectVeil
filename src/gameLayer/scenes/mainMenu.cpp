@@ -19,8 +19,6 @@ void Scene_MainMenuDraw3D()
 {
 	auto manager = &SceneManager::getInstance();
 	auto scene = manager->currentScene;
-
-	DrawGrid(100.0f, 1.0f);
 	// Weird Interaction Between Rendering Ray and layer Objects
 }
 
@@ -35,21 +33,6 @@ Scene* Scene_MainMenuConstruct()
 	scene->draw3D = Scene_MainMenuDraw3D;
    
 	SaveSystem::LoadGame("mainMenu", *scene);
-
-	auto BGM = InteractableObject(INTERACT_ITEM, 0); 
-
-	for (int i = 0; i < 6; i++) {
-		auto miniGame = InteractableObject(INTERACT_MINIGAME, i, i + 6);
-		miniGame.name = "Minigame Player";
-		miniGame.type = OBJECT_INTERACTABLE;
-		miniGame.rigidBody3D.isStatic = true;
-		miniGame.rigidBody3D.Teleport(20, 5, i * 5);
-		miniGame.rigidBody3D.scale = Vector3(1, 1, 1);
-		miniGame.defaultColor = BLUE;
-		miniGame.defaultSound = "Calabases";
-
-		scene->gameMap.saveInteractable(miniGame);
-	}
 
 	return scene;
 }

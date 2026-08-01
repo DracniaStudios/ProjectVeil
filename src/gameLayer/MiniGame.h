@@ -42,7 +42,8 @@ inline void CompleteMiniGame(MiniGameData* data, Player* player, Buff buff, bool
 	if (data->score >= data->scoreGoal || forceComplete) {
 		data->isComplete = true;
 		if (CooldownTimer* getBuff = player->getBuff(buff); getBuff != nullptr) { getBuff->use(); }
-		// May Switch Inbetween Enable and Disable States
+		
+		// Check for Activator Object and Enable/Disable
 		if (player->interactObject != nullptr) {
 			if (player->interactObject->isEnabled) { player->interactObject->onDisable(); }
 			else { player->interactObject->onEnable(); }

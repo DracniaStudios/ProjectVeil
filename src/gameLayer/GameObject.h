@@ -83,6 +83,29 @@ struct GameObject
 	// Rebind model + texture handles from modelName/textureName
 	void loadVisuals();
 
+	/**
+	 * Model ownership.
+	 *
+	 * `ownsModel` means "this object generated this model and is its sole owner".
+	 * The implicit copy constructor copies both `model` and `ownsModel`, so a
+	 * copy would otherwise claim a handle its source is still using. The
+	 * invariant that keeps releasing safe is therefore:
+	 *
+	 *   no two *live* objects may hold the same handle with ownsModel == true
+	 *
+	 * Copies are the only way to break it, so any code that copies a GameObject
+	 * and then binds the copy into the scene must call disownModel() first.
+	 * There are exactly two such places, both in the World Editor:
+	 * WorldEditor::SpawnStagedObject and WorldEditor::DuplicateSelection.
+	 */
+
+	// Drops an inherited handle without freeing it — the original still owns it
+	void disownModel();
+
+	// Frees a model this object generated for itself. A no-op on a shared
+	// AssetManager model, which this object does not own.
+	void releaseGeneratedModel();
+
 	// Audio
 	FMOD::Studio::EventInstance* soundInstance = nullptr;
 	std::string defaultSound = "test_beep";

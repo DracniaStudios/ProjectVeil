@@ -1,116 +1,132 @@
 #include <WorldEditor.h>
 
-bool SelectObjectInWorldSpace(EditorCamera* editor, Camera3D* camera) {
-	auto& scene = SceneManager::getInstance().currentScene;
-	// Get Mouse To World Space.
-	const auto mouseRay = GetScreenToWorldRay(GetMousePosition(), *camera);
+#include <cmath>
 
-	// Dangerous
-	for (size_t i = 0; i < scene->gameMap.gameObjects.size(); ++i) {
-		auto object = &scene->gameMap.gameObjects[i];
-		if (!object->canBeSelected) continue;
-		// Check Mouse Ray and Object Collision
-		if (auto collider = GetRayCollisionBox(mouseRay, object->rigidBody3D.collisionBox); collider.hit) {
-			auto worldEditor = &WorldEditor::getInstance();
-			worldEditor->SelectObject(object->id);
-			return true;
-		}
+namespace
+{
+	// Look angles are clamped just short of straight up/down. At exactly +/-pi/2
+	// the forward vector becomes parallel to the world up axis and the right/left
+	// basis derived from it collapses to zero, which makes strafing stop working
+	// and the view roll unpredictably.
+	constexpr float kMaximumPitch = 1.5f;
+
+	constexpr float kLookSensitivity = -0.005f;
+	constexpr float kBaseSpeed = 5.0f;
+	constexpr float kSprintMultiplier = 2.0f;
+
+	// The original movement code advanced a fixed distance per frame. Scaling by
+	// deltaTime against 60 FPS keeps the tuned feel while making the camera
+	// frame-rate independent; the cap stops a single long frame (an asset load,
+	// a shader recompile) from launching the camera across the map.
+	float FrameStep()
+	{
+		return Clamp(GetFrameTime() * 60.0f, 0.0f, 3.0f);
 	}
 
-	for (auto entity = scene->entities.begin(); entity != scene->entities.end(); ++entity) {
-		auto object = entity->second.get();
-		if (!object->canBeSelected) continue;
-		// Check Mouse Ray and Object Collision
-		if (auto collider = GetRayCollisionBox(mouseRay, object->rigidBody3D.collisionBox); collider.hit) {
-			auto worldEditor = &WorldEditor::getInstance();
+	/** Rebuilds the camera basis and target from the current yaw/pitch. */
+	void ApplyOrientation(EditorCamera* editor, Camera3D* camera)
+	{
+		const Vector3 forward = Vector3Normalize(Vector3{
+			cosf(editor->pitch) * sinf(editor->yaw),
+			sinf(editor->pitch),
+			cosf(editor->pitch) * cosf(editor->yaw)
+		});
 
-			worldEditor->SelectObject(object->id);
-			return true;
-		}
+		editor->forward = forward;
+		editor->back = Vector3Scale(forward, -1.0f);
+		editor->right = Vector3{ -forward.z, 0.0f, forward.x };
+		editor->left = Vector3{ forward.z, 0.0f, -forward.x };
+		editor->up = Vector3{ 0.0f, 1.0f, 0.0f };
+		editor->down = Vector3{ 0.0f, -1.0f, 0.0f };
+
+		camera->up = editor->up;
+
+		// The target has to be rebuilt every frame, not only while looking
+		// around. It used to be written exclusively inside the look handler, so
+		// flying with WASD moved the position while the target stayed pinned to
+		// wherever the mouse last left it — the view swung around a fixed point
+		// instead of moving forward.
+		camera->position = editor->position;
+		camera->target = Vector3Add(editor->position, Vector3Scale(forward, 10.0f));
 	}
 
-	for (auto entity = scene->interactables.begin(); entity != scene->interactables.end(); ++entity) {
-		auto object = entity->second.get();
-		if (!object->canBeSelected) continue;
-		// Check Mouse Ray and Object Collision
-		if (auto collider = GetRayCollisionBox(mouseRay, object->rigidBody3D.collisionBox); collider.hit) {
-			auto worldEditor = &WorldEditor::getInstance();
+	void UpdateLook(EditorCamera* editor)
+	{
+		const Vector2 mouseDelta = GetMouseDelta();
 
-			worldEditor->SelectObject(object->id);
-			return true;
-		}
+		editor->yaw += mouseDelta.x * kLookSensitivity;
+		editor->pitch += mouseDelta.y * kLookSensitivity;
+		editor->pitch = Clamp(editor->pitch, -kMaximumPitch, kMaximumPitch);
 	}
 
-	std::cout << "No Object Selected \n";
-	return false;
+	void UpdateMovement(EditorCamera* editor)
+	{
+		auto inputSystem = &InputSystem::getInstance();
+
+		float speed = kBaseSpeed * 0.1f * FrameStep();
+		if (inputSystem->IsActionDown(ACTION_MOVE_SPRINT)) { speed *= kSprintMultiplier; }
+
+		if (inputSystem->IsActionDown(ACTION_EDITOR_UP)) { editor->position.y += speed; }
+		if (inputSystem->IsActionDown(ACTION_EDITOR_DOWN)) { editor->position.y -= speed; }
+
+		if (inputSystem->IsActionDown(ACTION_MOVE_FORWARD)) { editor->position += editor->forward * speed; }
+		if (inputSystem->IsActionDown(ACTION_MOVE_BACKWARD)) { editor->position += editor->back * speed; }
+		if (inputSystem->IsActionDown(ACTION_MOVE_LEFT)) { editor->position += editor->left * speed; }
+		if (inputSystem->IsActionDown(ACTION_MOVE_RIGHT)) { editor->position += editor->right * speed; }
+	}
 }
 
-void UpdateDirection(EditorCamera* editor, Camera3D* camera) {
+void EditorCamera::SyncFrom(const Camera3D& camera)
+{
+	position = camera.position;
 
-	auto up = Vector3(0.0f, 1.0f, 0.0f);
+	// Recover yaw/pitch from the pose being adopted, using the inverse of the
+	// forward vector built in ApplyOrientation. Starting from zeroed angles
+	// instead would snap the view to a fixed heading the moment the editor opens.
+	const Vector3 forward = Vector3Subtract(camera.target, camera.position);
+	if (Vector3LengthSqr(forward) > 1.0e-6f)
+	{
+		const Vector3 direction = Vector3Normalize(forward);
+		pitch = Clamp(asinf(Clamp(direction.y, -1.0f, 1.0f)), -kMaximumPitch, kMaximumPitch);
+		yaw = atan2f(direction.x, direction.z);
+	}
 
-	// FPS-style camera look
-	static float yaw = 0.0f; // X
-	static float pitch = 0.0f; // Y
-	const float sensitivity = -0.005f;
-
-	Vector2 mouseDelta = GetMouseDelta();
-	yaw += mouseDelta.x * sensitivity;
-	pitch += mouseDelta.y * sensitivity;
-	if (pitch > 1.5f) pitch = 1.5f;
-	if (pitch < -1.5f) pitch = -1.5f;
-
-	Vector3 camForward = {
-		cosf(pitch) * sinf(yaw),
-		sinf(pitch),
-		cosf(pitch) * cosf(yaw)
-	};
-
-	// Camera Look Direction
-	editor->forward = camForward = Vector3Normalize(camForward);
-	camera->target = Vector3Add(camera->position, Vector3Scale(camForward, 10.0f));
-
-	// Set Camera Direction
-
-	// Update EditorCamera Angles
-	editor->back = Vector3Scale(camForward, -1);
-	editor->right = Vector3{ -camForward.z, 0, camForward.x };
-	editor->left = Vector3{ camForward.z, 0, -camForward.x };
-	camera->up = editor->up = Vector3{ 0, 1, 0 };
-	editor->down = Vector3{ 0, -1, 0 };
-
-	UpdateCamera(camera, CAMERA_CUSTOM);
+	isSeeded = true;
 }
 
-void UpdateMovement(EditorCamera* editor, Camera3D* camera) {
-	auto speed = 5;
-	auto inputSystem = &InputSystem::getInstance();
-
-	if (inputSystem->IsActionDown(ACTION_MOVE_SPRINT)) { speed *= 2; }
-	if (inputSystem->IsActionDown(ACTION_EDITOR_UP)) { editor->position.y += speed * 0.1f; }
-	if (inputSystem->IsActionDown(ACTION_EDITOR_DOWN)) { editor->position.y -= speed * 0.1f; }
-
-	Vector2 moveDirection = Vector2Zero();
-
-	moveDirection.x = inputSystem->IsActionDown(ACTION_MOVE_LEFT) ? -1.0 :
-		inputSystem->IsActionDown(ACTION_MOVE_RIGHT) ? 1.0f : 0;
-	moveDirection.y = inputSystem->IsActionDown(ACTION_MOVE_FORWARD) ? 1.0 :
-		inputSystem->IsActionDown(ACTION_MOVE_BACKWARD) ? -1.0f : 0;
-
-	if (moveDirection.y > 0) { editor->position += (editor->forward * speed) * 0.1f; }
-	if (moveDirection.y < 0) { editor->position += (editor->back * speed) * 0.1f; }
-	if (moveDirection.x < 0) { editor->position += (editor->left * speed) * 0.1f; }
-	if (moveDirection.x > 0) { editor->position += (editor->right * speed) * 0.1f; }
-
-	camera->position = editor->position;
+void EditorCamera::FocusOn(Vector3 target, float distance)
+{
+	// Pull back along the current heading rather than choosing a new one, so
+	// focusing reframes the object without also disorienting the user.
+	if (Vector3LengthSqr(forward) < 1.0e-6f) { forward = Vector3{ 0.0f, 0.0f, 1.0f }; }
+	position = Vector3Subtract(target, Vector3Scale(Vector3Normalize(forward), fmaxf(distance, 1.0f)));
 }
 
-void EditorCamera::Update(Camera3D* camera) {
-	
-	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) { UpdateDirection(this, camera); }
-	
-	UpdateMovement(this, camera);
+void EditorCamera::Update(Camera3D* camera)
+{
+	if (camera == nullptr) { return; }
 
-	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) { SelectObjectInWorldSpace(this, camera); }
+	// First activation adopts the camera being replaced. WorldEditor::update
+	// normally does this on the F1 edge; this covers any path that reaches the
+	// editor camera without one (a scene constructed with the editor already on).
+	if (!isSeeded) { SyncFrom(*camera); }
 
-};
+	const ImGuiIO& io = ImGui::GetIO();
+
+	// Dragging inside an ImGui window must not also spin the camera, and typing
+	// into a text field must not fly it: WASD are movement bindings, so naming
+	// an object would otherwise send the viewport across the map.
+	 
+	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) { UpdateLook(this); }
+	//if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && !io.WantCaptureMouse) { UpdateLook(this); }
+	if (!io.WantCaptureKeyboard) { UpdateMovement(this); }
+
+	// Orientation is applied unconditionally so the target tracks the position
+	// even on frames where neither look nor movement ran.
+	ApplyOrientation(this, camera);
+
+	// Object picking deliberately does not live here any more. It moved to
+	// WorldEditor::UpdateViewportInput, where it can be ordered against the
+	// gizmo and the placement tool — clicking a gizmo handle used to also
+	// reselect whatever object happened to be behind it.
+}

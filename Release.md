@@ -61,7 +61,24 @@ built around.
 
 ### Tooling
 
+- **In-world light gizmos** — a visual indicator for every light's position and the direction it throws light,
+  drawn through raylib's default unlit shader so they stay readable no matter how dark the scene is:
+  - **Position marker** — a sphere at the light, in the light's own colour, so a rig can be read at a glance.
+    Disabled lights draw greyed out rather than vanishing.
+  - **Directional** — a bundle of parallel arrows along the light's direction, tied together by a ring. Since a
+    directional light is at infinity, its `position` is repurposed as the gizmo anchor and is editable in the
+    inspector as **Gizmo Anchor**.
+  - **Point** — spikes on all six axes (no single direction) plus three rings at `range`. Attenuation reaches
+    exactly zero at `range`, so the rings are the light's true boundary, not an approximation.
+  - **Spot** — an arrow down the cone axis, plus inner and outer cone caps and four edge lines for silhouette.
+  - **Selection halo** — a white wire sphere on whichever light the inspector has selected.
+  - **Two-layer drawing.** Markers and direction arrows always draw on top of geometry; influence volumes (ranges
+    and cones) are depth-tested so they read as sitting in the world. A light buried inside a wall therefore stays
+    findable and aimable, which is the whole point of the indicator. **X-Ray Ranges And Cones** moves the volumes
+    into the overlay pass too.
+  - Gizmos render only while the World Editor (`F1`) is open — they are an authoring aid, not gameplay rendering.
 - **New Lighting Inspector** (`Ctrl+8` inside the World Editor, `F1`):
+  - Gizmo toggles: show/hide and X-ray.
   - Live diagnostics — shader id, active light count, shadow map size, current shadow caster.
   - Atmosphere: ambient colour/strength, fog colour/density, exposure, specular strength, shininess.
   - Shadows: enable, resolution, bias, distance, softness, and reload-from-settings.
@@ -116,8 +133,10 @@ No `CMakeLists.txt` change was needed: sources are globbed and `resources/` is a
 
 1. `F1` opens the World Editor, `Ctrl+8` the Lighting panel.
 2. Fly the editor camera to where the light belongs and press **Add Point Light At Camera**.
-3. Tune colour, intensity and range. `Range` is where the light reaches exactly zero.
-4. For a key light, add a directional light, aim it with `Direction`, and tick **Casts Shadow**.
+3. Tune colour, intensity and range. `Range` is where the light reaches exactly zero — the gizmo's rings sit exactly
+   on that boundary, so you can size a light against the geometry it has to reach.
+4. For a key light, add a directional light, aim it with `Direction` (the arrow bundle updates live), park its
+   **Gizmo Anchor** somewhere visible, and tick **Casts Shadow**.
 5. Set the mood with ambient colour/strength and fog colour/density.
 6. Save through the World Settings panel — lights travel with the world file.
 
@@ -143,6 +162,9 @@ Ambient `40,44,58` @ 0.14 · Fog `8,9,12` @ 0.030 · Exposure 1.0 · Shadow dist
   world geometry, and fog dissolving the distance.
 - **Shadows confirmed by a controlled A/B capture** — identical camera pose, only `shadowsEnabled` differing. Surfaces
   occluded by an overhead slab lose their direct light with shadows on and regain it with shadows off.
+- **Gizmos confirmed by capture** with a three-light rig (directional, point, spot). Markers, arrows, range rings,
+  cone caps and the selection halo all render; with x-ray off the volumes are correctly occluded by geometry while
+  the markers and arrows stay visible on top; with x-ray on the volumes show through.
 
 ---
 
@@ -160,8 +182,12 @@ Ambient `40,44,58` @ 0.14 · Fog `8,9,12` @ 0.030 · Exposure 1.0 · Shadow dist
   linear is an engine-wide change touching texture loading, the 2D/UI pass and every authored colour.
 - **Albedo only.** Normal, roughness and occlusion maps are not sampled — the vendored AmbientCG sets only ship
   `_Color`.
-- **Debug draws stay unlit.** `DrawGrid`, wireframes, bounding boxes and direction gizmos go through the rlgl batch
+- **Debug draws stay unlit.** `DrawGrid`, wireframes, bounding boxes and light gizmos go through the rlgl batch
   shader by design.
+- **Gizmos are not clickable.** They show where a light is and where it points, but selection still happens through
+  the inspector's list. Picking a light by clicking its gizmo would need a ray/marker intersection test against the
+  editor camera.
+- **No flashlight gizmo.** It rides the active camera, so its indicator would be a blob jammed against the near plane.
 - **The 2D/UI and mini-game passes are unaffected**, as intended.
 
 ---

@@ -1,50 +1,40 @@
 // Game Name: Subject Veil
 // Version: 0.3.0
-// Due: 2026-07-31 (Game Mechanics)
-// Date: 2026-07-30 (Current Development Date)
+// Due: 2026-07-7 (Month 3)
+// Date: 2026-07-31 (Current Development Date)
 
 [Notice] World Editor doesn't use new InputSystem.
-[Notice] Add a Complete Game Buff to Player for Minigames
+[Notice] Add a Complete Game Timer to Player for Minigames
 [Notice] Apply Settings To World (Master Volume)
 [Notice] Add Stamina Check For Entities
 [Notice] Recursive Folder Search Helper?
 [Notice] Add Name Select Option To Save System
-[Notice] Teleport Player
 [Notice] Lock Velocity On RigidBody3D
-[Notice] Rotation Vector3 To Quaternion
 [Notice] Create Maze Minigame
-[Notice] AirTime Increase Down Veloctity
+[Notice] Get Smaller Texture Resolutions and load them based on Settings
+[Notice] Only load Files when they're being used
 
 [ Issues ]
 
-- Found an issue where the Interactable Object is Loaded as a GameObject when Loading World
 
 [ Added ]
 
-- Added Lighting System (LightingSystem) with 8 forward lights: Directional, Point, and Spot.
-- Added GLSL 330 lighting shaders in resources/shaders/glsl330.
-- Added Directional Shadow Mapping with a depth-only FBO, 3x3 PCF, and slope-scaled bias.
-- Added Ambient, Distance Fog, and Exposure atmosphere controls.
-- Added Player Flashlight on ACTION_USE_FLASHLIGHT (KEY_L / Gamepad D-Pad Up).
-- Added Lighting Inspector to the World Editor (Ctrl+8).
-- Added castsShadow flag to GameObject (defaults to true, saved with the object).
-- Added Color Changer in ObjectBrowser.
+- Added new Gizmos to WorldEditor and Lighting System.
 
 [ Updated ]
 
-- Updated GameObject::loadVisuals to bind the lighting shader on every model rebind.
-- Updated SaveSystem to version 3, saving Lights and atmosphere in both Game and World files.
-- Updated Settings so Shadows selects the shadow map resolution and Luminosity drives Exposure.
-- Updated update_game to clear the backbuffer to the fog color instead of WHITE.
-- Updated init_game so LightingSystem starts before SceneManager builds the first Scene.
-- Updated InteractableObject to save ActivatorID;
-- Updates SaveSystem to Check for .json files in GameSaveFiles.
-- Updated PlayerInspector to change Player Position and Velocity.
+- Updated RigidBody3D to increase Gravity Vecolicy while in the air.
+- Updated Lighting System to create Light Gizmos for proper setup.
+- Updated WorldEditor to freeze Physics Simulation.
+- Updated WorldEditor to show Transform Gizmos for selected GameObjects.
+- Updated ObjectBrowser to change GameObject names.
+- Updated ObjectBrowser to use DragInputs for RigidBody3D data.
 
 [ Fixed ]
 
-- Fixed an issue where RigidBody3D would collide while being disabled.
+- Fixed an issue where the Rigidbody3D Collision Box didn't align with rotation.
+- Fixed an issue where the Rigidbody3D rotation was being changed at a Quaternion level to a Vector3 level.
 
 [ Removed ]
 
-- Removed Resources/* from GitHub to save space for Assets.
+- Player Fire/Fire Laser.

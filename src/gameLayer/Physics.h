@@ -198,6 +198,20 @@ inline Vector3& operator/=(Vector3& a, const Vector3& b)
 struct GameMap;
 struct GameObject;
 
+/**
+ * Result of a narrow-phase contact test.
+ *
+ * Produced by RigidBody3D::getContact() and consumed by the resolution code, so
+ * a single separating-axis test answers "do they touch", "which way do I push"
+ * and "how far" at once rather than being recomputed for each question.
+ */
+struct ContactInfo
+{
+	bool hit = false;
+	Vector3 normal = {};  // Unit length, pointing from the first body toward the second
+	float depth = 0.0f;   // Overlap along `normal` — how far they must separate
+};
+
 struct Transform3D : public Transform
 {
 	// translation
@@ -279,6 +293,44 @@ public:
 	BoundingBox* GetColliderBox() { return &collisionBox; }
 	Vector3 GetVelocity() const { return velocity; }
 	Vector3 GetAcceleration() const { return acceleration; }
+	float GetAirTime() const { return airTime; }
+
+	/**
+	 * World-space half-extents of the collision volume, accounting for rotation.
+	 *
+	 * The solver is axis-aligned, so a rotated body is represented by the
+	 * smallest axis-aligned box that still contains it. Every half-extent in the
+	 * collision path goes through here, so the box, the penetration depth, the
+	 * contact normal and the touch rays can never disagree about how big a body
+	 * is.
+	 *
+	 * Returns exactly `scale * 0.5f` for an unrotated body, so nothing changes
+	 * for the axis-aligned common case.
+	 *
+	 * This is the BROAD-phase volume. The narrow phase (getContact) uses the
+	 * true oriented box and does not inherit this slack.
+	 */
+	Vector3 GetWorldHalfExtents() const;
+
+	/**
+	 * The oriented box, as the narrow phase sees it.
+	 *
+	 * `translation` is its centre, GetLocalHalfExtents() its extents along its
+	 * own axes, and GetWorldAxes() those axes expressed in world space. Together
+	 * they are the OBB that getContact() tests.
+	 */
+	void GetWorldAxes(Vector3 axes[3]) const;
+	Vector3 GetLocalHalfExtents() const { return Vector3Scale(scale, 0.5f); }
+
+	/// Editor Support
+	// Rebuilds the AABB from the current translation/scale without stepping the
+	// simulation, and repairs a degenerate scale/rotation on the way through.
+	//
+	// Update() normally does both, but the World Editor freezes the simulation
+	// while objects are being manipulated — and mouse picking reads collisionBox.
+	// Without this the editor would only be able to re-click an object where it
+	// used to be, and a zeroed quaternion would never be repaired.
+	void SyncCollisionBox();
 
 	/// Force Application
 	void ApplyGravity();
@@ -290,6 +342,23 @@ public:
 	void Update(float deltaTime);
 
 	/// Collision Detection
+	/**
+	 * Narrow phase: exact oriented-box overlap by the separating axis theorem.
+	 *
+	 * Two convex shapes are apart if and only if some axis exists on which their
+	 * projections do not overlap. For two boxes it is enough to test 15
+	 * candidates — each box's 3 face normals, plus the 9 cross products of their
+	 * edge directions. A gap on any one proves separation and returns early; if
+	 * all 15 overlap, the smallest overlap is the contact normal and depth.
+	 *
+	 * The 9 cross products are not optional: without them two boxes can pass
+	 * through one another corner-first, which is exactly the case an
+	 * axis-aligned test cannot see.
+	 */
+	ContactInfo getContact(const RigidBody3D& other) const;
+
+	// Convenience wrappers over getContact(). Prefer getContact() when more than
+	// one of these is needed — each of these runs a full separating-axis test.
 	bool isCollidingWith(const RigidBody3D& other) const;
 	Vector3 getCollisionNormal(const RigidBody3D& other) const;
 	float getPenetrationDepth(const RigidBody3D& other) const;
@@ -298,12 +367,22 @@ public:
 	/// Constraint Resolution
 	void resolveConstrains(GameObject* self, GameObject* otherObject);
 	void resolveCollision(RigidBody3D& other);
+	// Resolves against an already-computed contact, so the solver does not repeat
+	// the narrow-phase test it just ran
+	void resolveCollision(RigidBody3D& other, const ContactInfo& contact);
 
 	// Save & Load Data
 	Json formatToJson();
 	bool loadFromJson(const Json& j);
 
 };
+
+/**
+ * Wireframe box that honours rotation, unlike raylib's axis-aligned
+ * DrawCubeWires/DrawBoundingBox. Used by the collider debug draw and by the
+ * World Editor's selection outline so both match what render3D actually draws.
+ */
+void DrawOrientedBoxWires(Vector3 center, Vector3 size, Quaternion rotation, Color color);
 
 struct Transform2D : Transform
 {

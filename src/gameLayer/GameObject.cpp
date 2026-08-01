@@ -18,7 +18,6 @@ static BoundingBox getBoundingBox(Model mdl, Vector3 pos)
 GameObject::GameObject()
 {
 	isEnabled = true;
-
 	rigidBody3D = {};
 
 	// Fallback unit cube so the object renders before assets are bound.
@@ -49,9 +48,39 @@ GameObject::GameObject()
 
 }
 
+/** Model Ownership **/
+void GameObject::disownModel()
+{
+	// Deliberately does not unload: the object this handle was copied from is
+	// still using it. Clearing `model` as well means the next loadVisuals()
+	// cannot mistake an inherited handle for one of its own.
+	model = {};
+	ownsModel = false;
+}
+
+void GameObject::releaseGeneratedModel()
+{
+	// Only primitives this object generated for itself are unloadable. A named
+	// asset's model is shared by every object using it and belongs to the
+	// AssetManager, so this is a no-op there rather than a free.
+	if (!ownsModel) { return; }
+
+	if (model.meshCount > 0) { UnloadModel(model); }
+	model = {};
+	ownsModel = false;
+}
+
 /** Asset Binding **/
 void GameObject::loadVisuals()
 {
+	// Release whatever this object generated for itself before replacing it.
+	// Every rebind used to orphan the previous cube's GPU buffers — one leak per
+	// projectile fired, per object in a loaded world, and per Entity spawned in
+	// the editor. This is safe because ownsModel is only ever true on the sole
+	// owner; see the ownership note in GameObject.h for the invariant and the
+	// two call sites that maintain it.
+	releaseGeneratedModel();
+
 	// Model: shared AssetManager handle when one is named, else a unit cube
 	Asset* modelAsset = modelName.empty() ? nullptr : GetAssetPtrByName(modelName, ASSET_MODEL);
 	if (modelAsset != nullptr && modelAsset->model.meshCount > 0)
@@ -65,8 +94,6 @@ void GameObject::loadVisuals()
 		{
 			std::cerr << "Missing model asset '" << modelName << "' on " << name << " — using cube\n";
 		}
-		// Fresh cube per rebind: object copies share the previous handle
-		// (and its material), so it can be neither reused nor unloaded here
 		model = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
 		ownsModel = true;
 	}
@@ -143,12 +170,8 @@ void GameObject::onDisable()
 
 	// Textures and named models belong to the AssetManager — only unload
 	// primitives this object generated for itself
-	if (ownsModel && model.meshCount > 0)
-	{
-		UnloadModel(model);
-		model = {};
-		ownsModel = false;
-	}
+	releaseGeneratedModel();
+
 	if (mesh.vertexCount > 0)
 	{
 		UnloadMesh(mesh);
@@ -165,7 +188,16 @@ void GameObject::render3D()
 {
 	if (!isEnabled) { return; }
 
-	if (displayCollider) { DrawBoundingBox(rigidBody3D.collisionBox, WHITE); }
+	if (displayCollider)
+	{
+		// Two volumes, because they are genuinely different things once an object
+		// is rotated. White is the axis-aligned box the solver actually tests;
+		// green is the object's true oriented shape. They coincide exactly while
+		// the object is unrotated, and the gap between them at other angles is
+		// the slack an AABB solver has to accept — not a bug, but worth seeing.
+		DrawBoundingBox(rigidBody3D.collisionBox, WHITE);
+		DrawOrientedBoxWires(rigidBody3D.translation, rigidBody3D.scale, rigidBody3D.rotation, GREEN);
+	}
 
 	if (display3DModel) {
 		// Bake scale + orientation into the transform — meshes stay unit-sized,
@@ -191,6 +223,7 @@ void GameObject::render3D()
 
 void GameObject::update(Scene* scene, float deltaTime)
 {
+	rigidBody3D.isEnabled = isEnabled;
 	if (!isEnabled) { return; }
 
 	// Rigidbody Data (Update() refreshes collisionBox from translation/scale)

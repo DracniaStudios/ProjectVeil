@@ -4,6 +4,86 @@
 #include <iostream>
 #include <SceneManager.h>
 
+#include <cfloat>
+#include <cmath>
+
+
+namespace
+{
+	// A zeroed quaternion normalises to zero and would collapse a body to a
+	// point, making it pass through everything. SyncCollisionBox repairs the
+	// stored value, but a body can be read before it has ever ticked.
+	Quaternion SafeOrientation(Quaternion rotation)
+	{
+		const float lengthSquared = rotation.x * rotation.x + rotation.y * rotation.y
+			+ rotation.z * rotation.z + rotation.w * rotation.w;
+		if (lengthSquared < 1.0e-8f) { return QuaternionIdentity(); }
+		return QuaternionNormalize(rotation);
+	}
+}
+
+#pragma region Extents
+void RigidBody3D::GetWorldAxes(Vector3 axes[3]) const
+{
+	const Quaternion orientation = SafeOrientation(rotation);
+
+	// Rotation preserves length, so these come out unit length — which the
+	// projection maths below relies on.
+	axes[0] = Vector3RotateByQuaternion(Vector3{ 1.0f, 0.0f, 0.0f }, orientation);
+	axes[1] = Vector3RotateByQuaternion(Vector3{ 0.0f, 1.0f, 0.0f }, orientation);
+	axes[2] = Vector3RotateByQuaternion(Vector3{ 0.0f, 0.0f, 1.0f }, orientation);
+}
+
+Vector3 RigidBody3D::GetWorldHalfExtents() const
+{
+	const Vector3 half = GetLocalHalfExtents();
+
+	Vector3 axes[3];
+	GetWorldAxes(axes);
+
+	// Sum the absolute contribution of each rotated local axis to each world
+	// axis. This is the standard |R| * halfExtents construction, written through
+	// Vector3RotateByQuaternion so it cannot disagree with the QuaternionToMatrix
+	// path render3D draws through, and so it does not depend on raylib's matrix
+	// storage order.
+	return {
+		fabsf(axes[0].x) * half.x + fabsf(axes[1].x) * half.y + fabsf(axes[2].x) * half.z,
+		fabsf(axes[0].y) * half.x + fabsf(axes[1].y) * half.y + fabsf(axes[2].y) * half.z,
+		fabsf(axes[0].z) * half.x + fabsf(axes[1].z) * half.y + fabsf(axes[2].z) * half.z
+	};
+}
+
+void DrawOrientedBoxWires(Vector3 center, Vector3 size, Quaternion rotation, Color color)
+{
+	const Quaternion orientation = SafeOrientation(rotation);
+	const Vector3 half = Vector3Scale(size, 0.5f);
+
+	// Eight corners of the local box, rotated into world space. Each index bit
+	// selects the sign of one axis.
+	Vector3 corner[8] = {};
+	for (int index = 0; index < 8; ++index)
+	{
+		const Vector3 local = {
+			(index & 1) ? half.x : -half.x,
+			(index & 2) ? half.y : -half.y,
+			(index & 4) ? half.z : -half.z
+		};
+		corner[index] = Vector3Add(center, Vector3RotateByQuaternion(local, orientation));
+	}
+
+	// Index pairs differing by exactly one bit are exactly the 12 edges
+	static constexpr int edges[12][2] = {
+		{0,1},{2,3},{4,5},{6,7},
+		{0,2},{1,3},{4,6},{5,7},
+		{0,4},{1,5},{2,6},{3,7}
+	};
+
+	for (const auto& edge : edges)
+	{
+		DrawLine3D(corner[edge[0]], corner[edge[1]], color);
+	}
+}
+#pragma endregion
 
 #pragma region Collision
 void RigidBody3D::checkRayCollision(const RigidBody3D& other)
@@ -26,11 +106,13 @@ void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 			return collision.hit && collision.distance <= Vector3Length(translation - ray.position) + touchDistance;
 		};
 
-	// Face Translation
+	// Face Translation — rotation-aware, so the rays leave from the faces of the
+	// volume the solver actually tests rather than from an unrotated one
 	Vector3 c = translation;
-	float hx = scale.x * 0.5f;
-	float hy = scale.y * 0.5f;
-	float hz = scale.z * 0.5f;
+	const Vector3 half = GetWorldHalfExtents();
+	float hx = half.x;
+	float hy = half.y;
+	float hz = half.z;
 
 	// Check each face with a raycast and accumulate touch flags so testing
 	// against several bodies doesn't overwrite earlier hits (cleared once
@@ -43,43 +125,113 @@ void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 	leftTouch |= hitWithinRange(generateRay({ c.x - hx, c.y, c.z }, left));
 }
 
+namespace
+{
+	// Below this, a cross product of two box edges is degenerate: the edges are
+	// parallel, so the axis carries nothing the face axes have not already
+	// covered. Normalising it would divide by ~0 and manufacture a random normal.
+	constexpr float kAxisEpsilon = 1.0e-6f;
+
+	// Cross-product axes must beat the best face axis by this margin to be
+	// chosen as the contact normal. A box resting flat produces several axes
+	// within floating-point noise of each other, and picking an edge normal
+	// there shoves the box sideways instead of up — visible as resting jitter.
+	constexpr float kFaceAxisPreference = 1.05f;
+
+	// Half-width of an oriented box's shadow on a unit axis: the sum of each
+	// local axis's extent projected onto it.
+	float ProjectedRadius(const Vector3 axes[3], Vector3 half, Vector3 axis)
+	{
+		return fabsf(Vector3DotProduct(axis, axes[0])) * half.x
+			+ fabsf(Vector3DotProduct(axis, axes[1])) * half.y
+			+ fabsf(Vector3DotProduct(axis, axes[2])) * half.z;
+	}
+}
+
+ContactInfo RigidBody3D::getContact(const RigidBody3D& other) const
+{
+	ContactInfo contact = {};
+
+	Vector3 axesA[3];
+	Vector3 axesB[3];
+	GetWorldAxes(axesA);
+	other.GetWorldAxes(axesB);
+
+	const Vector3 halfA = GetLocalHalfExtents();
+	const Vector3 halfB = other.GetLocalHalfExtents();
+	const Vector3 delta = Vector3Subtract(other.getCenter(), getCenter());
+
+	// The 15 candidates: 3 face normals from each box, then the 9 edge-edge
+	// cross products. Face axes come first so that ties resolve to them.
+	Vector3 candidates[15];
+	int count = 0;
+	for (int i = 0; i < 3; ++i) { candidates[count++] = axesA[i]; }
+	for (int i = 0; i < 3; ++i) { candidates[count++] = axesB[i]; }
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < 3; ++j)
+		{
+			candidates[count++] = Vector3CrossProduct(axesA[i], axesB[j]);
+		}
+	}
+
+	float bestScore = FLT_MAX; // biased, decides which axis wins
+	float bestDepth = 0.0f;    // true overlap on that axis, used to separate
+	Vector3 bestAxis = {};
+
+	for (int i = 0; i < count; ++i)
+	{
+		Vector3 axis = candidates[i];
+
+		const float lengthSquared = Vector3LengthSqr(axis);
+		if (lengthSquared < kAxisEpsilon) { continue; } // parallel edges
+
+		axis = Vector3Scale(axis, 1.0f / sqrtf(lengthSquared));
+
+		const float distance = fabsf(Vector3DotProduct(delta, axis));
+		const float overlap = ProjectedRadius(axesA, halfA, axis)
+			+ ProjectedRadius(axesB, halfB, axis)
+			- distance;
+
+		// A gap on any single axis proves the boxes are apart. That is the whole
+		// theorem, and it lets the common non-touching case leave early.
+		if (overlap <= 0.0f) { return contact; }
+
+		const float score = (i >= 6) ? overlap * kFaceAxisPreference : overlap;
+		if (score < bestScore)
+		{
+			bestScore = score;
+			bestDepth = overlap;
+			bestAxis = axis;
+		}
+	}
+
+	// Every candidate degenerate — only reachable with a collapsed body
+	if (bestScore == FLT_MAX) { return contact; }
+
+	// The resolution code pushes `this` backwards along the normal, so it has to
+	// point from this body toward the other.
+	if (Vector3DotProduct(delta, bestAxis) < 0.0f) { bestAxis = Vector3Negate(bestAxis); }
+
+	contact.hit = true;
+	contact.normal = bestAxis;
+	contact.depth = bestDepth;
+	return contact;
+}
+
 bool RigidBody3D::isCollidingWith(const RigidBody3D& other) const
 {
-	return CheckCollisionBoxes(collisionBox, other.collisionBox);
+	return getContact(other).hit;
 }
 
 Vector3 RigidBody3D::getCollisionNormal(const RigidBody3D& other) const
 {
-	Vector3 delta = other.getCenter() - getCenter();
-
-	Vector3 halfA = scale * 0.5f;
-	Vector3 halfB = other.scale * 0.5f;
-
-	float overlapX = (halfA.x + halfB.x) - std::abs(delta.x);
-	float overlapY = (halfA.y + halfB.y) - std::abs(delta.y);
-	float overlapZ = (halfA.z + halfB.z) - std::abs(delta.z);
-
-	// Return the normal along the axis with the smallest overlap (shallowest penetration)
-	if (overlapX <= overlapY && overlapX <= overlapZ)
-		return delta.x > 0 ? Vector3{ 1, 0, 0 } : Vector3{ -1, 0, 0 };
-	else if (overlapY <= overlapZ)
-		return delta.y > 0 ? Vector3{ 0, 1, 0 } : Vector3{ 0, -1, 0 };
-	else
-		return delta.z > 0 ? Vector3{ 0, 0, 1 } : Vector3{ 0, 0, -1 };
+	return getContact(other).normal;
 }
 
 float RigidBody3D::getPenetrationDepth(const RigidBody3D& other) const
 {
-	Vector3 delta = other.getCenter() - getCenter();
-
-	Vector3 halfA = scale * 0.5f;
-	Vector3 halfB = other.scale * 0.5f;
-
-	float overlapX = (halfA.x + halfB.x) - std::abs(delta.x);
-	float overlapY = (halfA.y + halfB.y) - std::abs(delta.y);
-	float overlapZ = (halfA.z + halfB.z) - std::abs(delta.z);
-
-	return std::min({ overlapX, overlapY, overlapZ });
+	return getContact(other).depth;
 }
 
 // ─── Constraint Resolution ─────────────────────────────────────────────────
@@ -92,7 +244,13 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 	// Update Collision Flags
 	checkRayCollision(other->rigidBody3D);
 
-	if (isCollidingWith(other->rigidBody3D))
+	// One separating-axis test drives both the event and the resolution. The
+	// narrow phase walks 15 axes and the solver runs 8 iterations over every
+	// overlapping pair, so asking isColliding/normal/depth separately — as this
+	// used to — paid for four full tests where one does.
+	const ContactInfo contact = getContact(other->rigidBody3D);
+
+	if (contact.hit)
 	{
 		// Call Collision Event on Owner only on first contact with this object;
 		// the solver runs several iterations per frame and damage/events must
@@ -111,26 +269,39 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 	{
 		collidingWith = nullptr;
 		isColliding = false;
+		return; // nothing overlapping, nothing to separate
 	}
 
 	// Reset Position to prevent tunneling
-	resolveCollision(other->rigidBody3D);
+	resolveCollision(other->rigidBody3D, contact);
 }
 
 void RigidBody3D::resolveCollision(RigidBody3D& other)
 {
-	if (!isCollidingWith(other)) return;
+	// Standalone entry point: runs its own narrow phase, then defers below
+	const ContactInfo contact = getContact(other);
+	if (contact.hit) { resolveCollision(other, contact); }
+}
+
+void RigidBody3D::resolveCollision(RigidBody3D& other, const ContactInfo& contact)
+{
+	if (!contact.hit) return;
 	if (isStatic && other.isStatic) return;
 
-	// If this is static, let the dynamic body handle it to keep logic in one place
+	// If this is static, let the dynamic body handle it to keep logic in one
+	// place. The normal points from this body toward `other`, so swapping the
+	// roles has to flip it — otherwise the dynamic body is pushed the wrong way,
+	// straight through the static one it just hit.
 	if (isStatic && !other.isStatic)
 	{
-		other.resolveCollision(*this);
+		ContactInfo flipped = contact;
+		flipped.normal = Vector3Negate(contact.normal);
+		other.resolveCollision(*this, flipped);
 		return;
 	}
 
-	Vector3 normal = getCollisionNormal(other);
-	float penetration = getPenetrationDepth(other);
+	const Vector3 normal = contact.normal;
+	const float penetration = contact.depth;
 
 	// Positional Correction
 	const float slop = 0.01f;// Ignore small penetrations to prevent jitter
@@ -228,7 +399,7 @@ void RigidBody3D::UpdateForce(float deltaTime)
 
 	// Control Air Time
 	if (downTouch) { airTime = 0; }
-	else { airTime += deltaTime; }
+	else { airTime += deltaTime; acceleration.y -= airTime; }
 
 	// Apply acceleration to velocity
 	velocity += acceleration * deltaTime;
@@ -254,9 +425,10 @@ void RigidBody3D::UpdateForce(float deltaTime)
 	upTouch = downTouch = frontTouch = backTouch = leftTouch = rightTouch = false;
 
 	const float touchMargin = 0.15f;
+	const Vector3 nearHalf = GetWorldHalfExtents();
 	BoundingBox nearBox = {
-		{ translation.x - scale.x * 0.5f - touchMargin, translation.y - scale.y * 0.5f - touchMargin, translation.z - scale.z * 0.5f - touchMargin },
-		{ translation.x + scale.x * 0.5f + touchMargin, translation.y + scale.y * 0.5f + touchMargin, translation.z + scale.z * 0.5f + touchMargin }
+		{ translation.x - nearHalf.x - touchMargin, translation.y - nearHalf.y - touchMargin, translation.z - nearHalf.z - touchMargin },
+		{ translation.x + nearHalf.x + touchMargin, translation.y + nearHalf.y + touchMargin, translation.z + nearHalf.z + touchMargin }
 	};
 
 	for (auto& obj : gameMap->gameObjects)
@@ -269,8 +441,6 @@ void RigidBody3D::UpdateForce(float deltaTime)
 
 void RigidBody3D::Update(float deltaTime)
 {
-	if (scale == Vector3Zero()) { scale = Vector3One(); }
-	if (rotation == Quaternion{ 0, 0, 0, 0 }) { rotation = QuaternionIdentity(); }
 	if (!isEnabled) {
 		canCollide = false;
 		return;
@@ -299,8 +469,27 @@ void RigidBody3D::Update(float deltaTime)
 	lastPosition = translation;
 
 	// Update collision box to match current position and scale
-	collisionBox.min = { translation.x - scale.x * 0.5f, translation.y - scale.y * 0.5f, translation.z - scale.z * 0.5f };
-	collisionBox.max = { translation.x + scale.x * 0.5f, translation.y + scale.y * 0.5f, translation.z + scale.z * 0.5f };
+	SyncCollisionBox();
+}
+
+void RigidBody3D::SyncCollisionBox()
+{
+	// The same degenerate-value repairs Update() performs before integrating.
+	// They are repeated here because the editor's frozen path never reaches
+	// Update(), and a zero scale produces an inverted collision box (min > max)
+	// that both CheckCollisionBoxes and the editor's ray test read as "no hit" —
+	// the object silently becomes unclickable and uncollidable.
+	if (scale == Vector3Zero()) { scale = Vector3One(); }
+	if (rotation == Quaternion{ 0, 0, 0, 0 }) { rotation = QuaternionIdentity(); }
+
+	// Rotation-aware: the box is the smallest axis-aligned volume that contains
+	// the rotated body. It used to be built from `scale` alone, so rotating an
+	// object left its collision box pointing the old way — a 45-degree wall was
+	// solid where it was not and passable where it was.
+	const Vector3 extent = GetWorldHalfExtents();
+
+	collisionBox.min = { translation.x - extent.x, translation.y - extent.y, translation.z - extent.z };
+	collisionBox.max = { translation.x + extent.x, translation.y + extent.y, translation.z + extent.z };
 }
 
 void RigidBody3D::ApplyGravity()
