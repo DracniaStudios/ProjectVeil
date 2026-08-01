@@ -99,8 +99,15 @@ void WorldEditor::showGameObject(GameObject* object) {
 		object->rigidBody3D.rotation = rotation;
 		rotationEulerSource = rotation;
 	}
-	// Scale is applied through the model transform each frame — no mesh regen needed
-	ImGui::DragFloat3("Scale: ", &object->rigidBody3D.scale.x);
+	// Scale is applied through the model transform each frame — no mesh regen needed.
+	// Sanitized on every edit like the gizmo and Placement Panel scale paths: a
+	// zero or negative component inverts the collision box (min > max), which both
+	// CheckCollisionBoxes and the viewport's ray test read as "no hit" — the object
+	// silently becomes unclickable and uncollidable.
+	if (ImGui::DragFloat3("Scale: ", &object->rigidBody3D.scale.x))
+	{
+		object->rigidBody3D.scale = SanitizeScale(object->rigidBody3D.scale);
+	}
 	ImGui::Spacing();
 
 	// RigidBody
