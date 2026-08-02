@@ -223,8 +223,11 @@ void GameObject::render3D()
 
 void GameObject::update(Scene* scene, float deltaTime)
 {
-	rigidBody3D.isEnabled = isEnabled;
-	if (!isEnabled) { return; }
+	// Only force the RigidBody off when the whole object is disabled — forcing
+	// it back on every tick would clobber the independent RigidBody isEnabled
+	// checkbox exposed in ObjectBrowser/PlacementPanel (e.g. a visible object
+	// with physics deliberately turned off would have physics resume next frame).
+	if (!isEnabled) { rigidBody3D.isEnabled = false; return; }
 
 	// Rigidbody Data (Update() refreshes collisionBox from translation/scale)
 	{

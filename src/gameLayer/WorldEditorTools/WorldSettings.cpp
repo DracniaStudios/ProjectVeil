@@ -65,7 +65,8 @@ void WorldEditor::ShowWorldSettings()
 			std::string load = "Load " + file;
 			if (ImGui::Button(save.c_str())) {
 				if (SaveSystem::SaveWorld(file, scene)) {
-					ResetSelectionState();
+					// Saving doesn't reassign ids, unlike loading — the selection
+					// and undo history are still valid, so leave them alone.
 					statusMessage = "Saved " + file;
 				}
 				else {

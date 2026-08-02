@@ -398,8 +398,15 @@ void RigidBody3D::UpdateForce(float deltaTime)
 	auto gameMap = &SceneManager::getInstance().currentScene->gameMap;
 
 	// Control Air Time
+	// Extra downward pull grows the longer a body free-falls, capped at the
+	// base gravity magnitude (i.e. gravity can at most double) so it stays a
+	// gentle "falls feel heavier over time" effect. Left uncapped, airTime
+	// grows every frame with no decay and is re-applied every frame on top of
+	// itself, so velocity grows roughly with airTime^2 instead of linearly —
+	// long falls (pits, elevators, high ledges) blew past the velocity cap far
+	// faster than intended and could tunnel through thin floor colliders.
 	if (downTouch) { airTime = 0; }
-	else { airTime += deltaTime; acceleration.y -= airTime; }
+	else { airTime += deltaTime; acceleration.y -= fminf(airTime, appliedGravity.y); }
 
 	// Apply acceleration to velocity
 	velocity += acceleration * deltaTime;
