@@ -399,7 +399,21 @@ void RigidBody3D::UpdateForce(float deltaTime)
 
 	// Control Air Time
 	if (downTouch) { airTime = 0; }
-	else { airTime += deltaTime; acceleration.y -= airTime; }
+	else
+	{
+		airTime += deltaTime;
+
+		// Falling feels snappier the longer a body free-falls, but the boost was
+		// unbounded: velocity grows roughly with airTime^2, so a long fall (e.g.
+		// off the map into open space) reaches the 999 units/s clamp below in
+		// well under a minute. At that speed a single frame's movement can
+		// exceed the thickness of typical floor/wall geometry, and collision
+		// here is a discrete per-frame test, so the body tunnels straight
+		// through instead of stopping. Saturating the boost keeps the effect
+		// without letting acceleration run away.
+		constexpr float kMaxAirTimeGravityBoost = 5.0f;
+		acceleration.y -= fminf(airTime, kMaxAirTimeGravityBoost);
+	}
 
 	// Apply acceleration to velocity
 	velocity += acceleration * deltaTime;
