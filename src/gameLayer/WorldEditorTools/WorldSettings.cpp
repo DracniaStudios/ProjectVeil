@@ -26,8 +26,21 @@ void WorldEditor::ShowWorldSettings()
 	ImGui::Text("Next ID: %llu", static_cast<unsigned long long>(scene->instanceHolder.idCounter));
 	ImGui::Separator();
 
-	if (ImGui::Button("Save Game")) { SaveSystem::SaveGame("Default Save", scene); }
-	if (ImGui::Button("Load Game")) { SaveSystem::LoadGame("Default Save", *scene); }
+	if (ImGui::Button("Save Game")) {
+		statusMessage = SaveSystem::SaveGame("Default Save", scene) ? "Saved Default Save" : "Failed to save Default Save";
+	}
+	if (ImGui::Button("Load Game")) {
+		if (SaveSystem::LoadGame("Default Save", *scene)) {
+			// Ids from the loaded save are stale — and so is anything holding
+			// one: the selection, an in-flight gizmo drag, and every entry
+			// in the undo history.
+			ResetSelectionState();
+			statusMessage = "Loaded Default Save";
+		}
+		else {
+			statusMessage = "Failed to load Default Save";
+		}
+	}
 	ImGui::Separator();
 
 	/// World Save Data
@@ -65,7 +78,6 @@ void WorldEditor::ShowWorldSettings()
 			std::string load = "Load " + file;
 			if (ImGui::Button(save.c_str())) {
 				if (SaveSystem::SaveWorld(file, scene)) {
-					ResetSelectionState();
 					statusMessage = "Saved " + file;
 				}
 				else {

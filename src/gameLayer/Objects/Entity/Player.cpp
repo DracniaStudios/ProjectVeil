@@ -16,12 +16,13 @@ void SetMoveDirection(Player* player) {
 		player->isCrouching ? player->baseSpeed / 2 : player->baseSpeed;
 
 	auto& jumpPower = player->currentJumpPower;
+	jumpPower = player->baseJumpPower;
 
 	if (auto* movementBuff = player->getBuff(BUFF_MOVEMENT);
 		movementBuff && movementBuff->remaining_time() > 0)
 	{
-		speed *= 2; 
-		jumpPower += player->baseJumpPower * 2;
+		speed *= 2;
+		jumpPower = player->baseJumpPower * 2;
 	}
 
 	// Player Movement Input
@@ -48,7 +49,7 @@ void UpdateActions(Player* player) {
 
 	if (!WorldEditor::getInstance().IsEnabled()) {
 		if (inputSystem->IsActionPressed(ACTION_MOVE_INTERACT)) { player->Interact(); }
-		if (inputSystem->IsActionPressed(ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(20);
+		if (inputSystem->IsActionPressed(ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(player->currentJumpPower);
 
 		// The flashlight is owned by LightingSystem and follows whichever camera
 		// is active, so the player only owns the toggle. Sitting inside this

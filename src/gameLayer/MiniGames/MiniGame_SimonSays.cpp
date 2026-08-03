@@ -52,9 +52,9 @@ void SimonSays::update(MiniGameData* data, Player* player, float delta)
 	// scoreGoal (out-of-bounds) or awarding more than one point per frame.
 	if (data->score < static_cast<int>(data->obstacles.size())) {
 		if (inputSystem->IsActionPressed(ACTION_MOVE_FORWARD) && data->obstacles[data->score].y == 0) { data->score++; }
-		if (inputSystem->IsActionPressed(ACTION_MOVE_LEFT) && data->obstacles[data->score].y == 1) { data->score++; }
-		if (inputSystem->IsActionPressed(ACTION_MOVE_BACKWARD) && data->obstacles[data->score].y == 2) { data->score++; }
-		if (inputSystem->IsActionPressed(ACTION_MOVE_RIGHT) && data->obstacles[data->score].y == 3) { data->score++; }
+		else if (inputSystem->IsActionPressed(ACTION_MOVE_LEFT) && data->obstacles[data->score].y == 1) { data->score++; }
+		else if (inputSystem->IsActionPressed(ACTION_MOVE_BACKWARD) && data->obstacles[data->score].y == 2) { data->score++; }
+		else if (inputSystem->IsActionPressed(ACTION_MOVE_RIGHT) && data->obstacles[data->score].y == 3) { data->score++; }
 	}
 	
 	CompleteMiniGame(data, player, BUFF_HEARING);

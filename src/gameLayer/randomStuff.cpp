@@ -10,12 +10,12 @@ int getRandomInt(std::ranlux24_base& rng, int min, int max)
 {
 	if (min > max)
 	{
-		std::uniform_real_distribution<> dis(max, min);
+		std::uniform_int_distribution<int> dis(max, min);
 		return dis(rng);
 	}
 	else
 	{
-		std::uniform_real_distribution<> dis(min, max);
+		std::uniform_int_distribution<int> dis(min, max);
 		return dis(rng);
 	}
 
@@ -58,7 +58,7 @@ Rarity GetRandomRarity(Rarity minRarity, Rarity maxRarity)
 	int maxIndex = static_cast<int>(maxRarity);
 
 	std::vector<double> limitedWeights(
-		weights.begin() + minIndex + 1,
+		weights.begin() + minIndex,
 		weights.begin() + maxIndex + 1
 	);
 
@@ -68,7 +68,7 @@ Rarity GetRandomRarity(Rarity minRarity, Rarity maxRarity)
 	);
 
 	int index = dist(gen);
-	return static_cast<Rarity>(index);
+	return static_cast<Rarity>(index + minIndex);
 
 }
 

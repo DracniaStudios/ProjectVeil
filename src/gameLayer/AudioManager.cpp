@@ -23,8 +23,9 @@ void AudioManager::init()
 		std::cout << "[AudioManager] FMOD::Studio::System::init failed: " << FMOD_ErrorString(result) << "\n";
 		studioSystem->release();
 		studioSystem = nullptr;
+		return;
 	}
-	
+
 	// Load Core System
 	studioSystem->getCoreSystem(&system);
 }
@@ -257,6 +258,7 @@ bool AudioManager::PlayEvent3D(const std::string& eventPath, GameObject& object)
 	if (object.soundInstance != nullptr) {
 		if (object.soundInstance->isValid()) {
 			object.soundInstance->stop(FMOD_STUDIO_STOP_ALLOWFADEOUT);
+			object.soundInstance->release(); // Fading-out instance still gets cleaned up by FMOD once stopped
 		}
 		object.soundInstance = nullptr;
 	}

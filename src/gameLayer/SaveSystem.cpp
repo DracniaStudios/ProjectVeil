@@ -281,11 +281,11 @@ namespace SaveSystem
 		const std::string savePath = RESOURCES_PATH "../saves/";
 		const fs::path path = savePath + fileName + ".json";
 
+		if (!ReadJsonFromFile(path.string().c_str(), j)) { return false; }
+
 		scene.gameMap.gameObjects.clear();
 		scene.entities.clear();
 		scene.instanceHolder.idCounter = 0;
-		if (!ReadJsonFromFile(path.string().c_str(), j)) { return false; }
-
 		if (!ApplyJsonToScene(j, scene)) { return false; }
 
 		std::cout << "[Save System] Loaded Game: " << path.string() << "\n";
