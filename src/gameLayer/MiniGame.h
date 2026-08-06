@@ -47,6 +47,7 @@ inline void CompleteMiniGame(MiniGameData* data, Player* player, Buff buff, bool
 		if (player->interactObject != nullptr) {
 			if (player->interactObject->isEnabled) { player->interactObject->onDisable(); }
 			else { player->interactObject->onEnable(); }
+			player->interactObject->rigidBody3D.canCollide = false;
 		}
 	}
 }

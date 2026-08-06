@@ -40,6 +40,15 @@ struct GameObject
 	bool displayCollider = false;
 	bool isSelectable = true;// WorldEditor
 	
+	/// Flags
+	bool isEnabled = true;
+	bool canBeSelected = true;
+	bool isAlive = true;
+	bool isDestructible = true;
+	bool pendingDestroy = false; // removal is deferred to the end of the frame
+	bool ownsModel = false; // generated primitive (unloadable) vs shared AssetManager model
+	bool castsShadow = true; // Shadow Casting is based on each object and rendered in the shadow pass.
+	
 	/// Status
 	float lifeSpan = 0;
 	float deathSpan = 1;
@@ -50,13 +59,6 @@ struct GameObject
 	// GameMap::gameObjects keep their damage after slicing to GameObject
 	float baseDamage = 1.0f;
 
-	/// Flags
-	bool isEnabled = true;
-	bool canBeSelected = true;
-	bool isAlive = true;
-	bool isDestructible = true;
-	bool pendingDestroy = false; // removal is deferred to the end of the frame
-
 	/// Physics
 	RigidBody3D rigidBody3D = {};
 
@@ -66,16 +68,10 @@ struct GameObject
 	std::string modelName = "";   // empty = generated unit cube
 	std::string textureName = ""; // empty = material default
 	Model model = {};
-	bool ownsModel = false; // generated primitive (unloadable) vs shared AssetManager model
 	Mesh mesh = {};
 	Texture texture = {};
 	Color defaultColor = WHITE;
 
-	// Shadow casting is opt-out per object: LightingSystem::DrawShadowCasters
-	// renders every object with this flag into the shadow map. Cleared for
-	// geometry pinned to the camera (e.g. the player's artifact), which would
-	// otherwise smear a shadow across the whole view.
-	bool castsShadow = true;
 
 	// Record the asset by name and rebind the runtime handle
 	void setModel(const std::string& assetName);
@@ -149,7 +145,7 @@ enum InteractionType
 struct InteractableObject : GameObject
 {
 public:
-
+	InteractableObject() = default; // Default constructor
 	InteractableObject(InteractionType type, int value);
 	InteractableObject(InteractionType type, int value, int activator);
 

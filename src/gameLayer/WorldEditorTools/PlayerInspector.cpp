@@ -1,5 +1,18 @@
 #include "WorldEditor.h"
 
+void showInventory(Inventory* inventory) {
+	ImGui::BeginChild("##Inventory");
+	for (int i = 0; i < inventory->getItemsVector().size(); ++i) {
+		ImGui::PushID(i);
+		const Item& item = inventory->getItemsVector()[i];
+		ImGui::Text("Item: %s", item.name.c_str());
+		ImGui::Text("ID: %d", item.id);
+		ImGui::Text("Type: %s", itemTypeToString(item.type));
+		ImGui::PopID();
+	}
+	ImGui::EndChild();
+}
+
 void WorldEditor::ShowPlayerData(Player* player)
 {
 	auto scene = SceneManager::getInstance().currentScene;
@@ -85,6 +98,9 @@ void WorldEditor::ShowPlayerData(Player* player)
 	if (ImGui::Button("Drain Stamina")) { player->stamina -= 1; }
 	ImGui::InputFloat("Player Health: ", &player->health, 1, 1);
 	ImGui::InputFloat("Player Stamina: ", &player->stamina, 1, 1);
+
+	// Inventory
+	showInventory(&player->data.inventory);
 	ImGui::End();
 
 }

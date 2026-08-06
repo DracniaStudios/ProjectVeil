@@ -77,7 +77,7 @@ class WorldEditor
 	bool isLightingActive = false;
 
 	/** World Settings **/
-	int saveState = 0;
+	std::string worldName = "world";
 
 	/** Selection State **/
 	std::uint64_t selectedObjectId = 0; // Id instead of pointer — survives gameObjects reallocation

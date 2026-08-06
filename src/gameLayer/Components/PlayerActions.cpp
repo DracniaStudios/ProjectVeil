@@ -36,5 +36,5 @@ void Player::Interact()
 		}
 	}
 	
-	if (artifact->isEnabled) { scene->SetMiniGame(artifactMode); return; }
+	if (artifact && artifact->isEnabled) { scene->SetMiniGame(artifactMode); return; }
 }

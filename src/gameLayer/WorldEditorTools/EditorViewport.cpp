@@ -90,7 +90,7 @@ void WorldEditor::UpdateViewportInput()
 		// A half-finished drag must not survive into placement mode: the gizmo
 		// would keep writing to an object the user is no longer looking at.
 		gizmo.Cancel();
-		UpdatePlacementPreview(scene, camera, canGrab);
+		UpdatePlacementPreview(scene, camera, !cameraLooking);
 		return;
 	}
 	placementPreviewValid = false;
@@ -130,7 +130,8 @@ void WorldEditor::UpdateViewportInput()
 	}
 
 	// Step 5.
-	if (canGrab && !gizmoOwnsMouse && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+	//canGrab
+	if (gizmo.mode == GIZMO_SELECT && !gizmoOwnsMouse && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 	{
 		SelectUnderMouse(scene, camera);
 	}

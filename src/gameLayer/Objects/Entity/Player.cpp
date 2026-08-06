@@ -16,12 +16,14 @@ void SetMoveDirection(Player* player) {
 		player->isCrouching ? player->baseSpeed / 2 : player->baseSpeed;
 
 	auto& jumpPower = player->currentJumpPower;
+	jumpPower = player->isSprinting ? player->baseJumpPower * 1.5f :
+		player->isCrouching ? player->baseJumpPower / 2 : player->baseJumpPower;
 
 	if (auto* movementBuff = player->getBuff(BUFF_MOVEMENT);
 		movementBuff && movementBuff->remaining_time() > 0)
 	{
 		speed *= 2; 
-		jumpPower += player->baseJumpPower * 2;
+		jumpPower *= 2;
 	}
 
 	// Player Movement Input
@@ -56,8 +58,6 @@ void UpdateActions(Player* player) {
 		// fire/interact/jump.
 		if (inputSystem->IsActionPressed(ACTION_USE_FLASHLIGHT)) { LightingSystem::getInstance().ToggleFlashlight(); }
 	}
-
-
 }
 
 void updateCollision(Player* player) {
@@ -92,8 +92,6 @@ void updateCollision(Player* player) {
 			player->rigidBody3D.resolveConstrains(player, ent);
 		}
 	}
-
-
 }
 
 void updateArtifact(Player* player) {
@@ -111,21 +109,12 @@ void updateArtifact(Player* player) {
 
 	// Artifact
 	const auto camera = player->camera;
-	const auto offset = Vector3Add(camera.forward, player->rigidBody3D.left);//camera->left / 2);
+	const auto offset = Vector3Add(camera.forward, player->rigidBody3D.left);//camera->left / 2);scene->player->artifact->name = "Artifact";
 
 	player->artifact->rigidBody3D.translation = Vector3Add(SceneManager::getInstance().camera3D.position, offset);
-	player->artifact->rigidBody3D.angularVelocity = getRandomVector3(player->rng); // 0.1, 0, 0.1
 	player->artifact->update(scene, GetFrameTime());
-	
-	
-	// All Sides need to face the player, these are direct references for current position
-	// More Animatin than mechanic
-	// Quaternion Red = {0, 0.3, 0, 1}
-	// Quaternion Orange = {0, 0.95, 0, -0.3}
-	// Quaternion Green = {0, 0.87, 0, 0.47}
-	// Quaternion Blue = {0, -0.4, 0, 1}
-	// Quaternion White = {0.65, 0.2, -0.2, 0.7}
-	// Quaternion Yellow = {-0.68, 0.2, 0.2, 0.7}
+
+
 }
 
 #pragma endregion
@@ -174,7 +163,7 @@ void Player::render2D()
 void Player::render3D()
 {
 	if (!this->isEnabled) { return; }
-	artifact->render3D();
+	if (artifact) { artifact->render3D(); }
 	GameObject::render3D();
 }
 
@@ -212,7 +201,9 @@ void Player::update3D(float deltaTime)
 	
 	updateCollision(this);
 
-	updateArtifact(this);
+	if (artifact) {
+		updateArtifact(this);
+	}
 
 	stamina = Clamp(stamina, 0, getMaxStamina());
 	health = Clamp(health, 0, getMaxHealth());

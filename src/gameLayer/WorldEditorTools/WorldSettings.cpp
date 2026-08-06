@@ -2,6 +2,14 @@
 
 #include <SaveSystem.h>
 
+void NewWorld(Scene& scene) {
+
+	scene.gameMap.create(Vector3(10.0f, 1.0f, 10.0f));
+	scene.entities.clear();
+	scene.interactables.clear();
+	scene.ResetID();
+}
+
 void WorldEditor::ShowWorldSettings()
 {
 	auto scene = SceneManager::getInstance().currentScene;
@@ -26,8 +34,19 @@ void WorldEditor::ShowWorldSettings()
 	ImGui::Text("Next ID: %llu", static_cast<unsigned long long>(scene->instanceHolder.idCounter));
 	ImGui::Separator();
 
-	if (ImGui::Button("Save Game")) { SaveSystem::SaveGame("Default Save", scene); }
-	if (ImGui::Button("Load Game")) { SaveSystem::LoadGame("Default Save", *scene); }
+	if (ImGui::Button("Save Game")) { 
+		SaveSystem::SaveGame("Default Save", scene); 
+	}
+	if (ImGui::Button("Load Game")) { 
+		if (SaveSystem::LoadGame("Default Save", *scene)) {
+			// IDs in the loaded scene may have changed, so reset the selection state to avoid dangling references
+			ResetSelectionState();
+			statusMessage = "Loaded Default Save";
+		}
+		else {
+			statusMessage = "Failed to load Default Save";
+		}
+	}
 	ImGui::Separator();
 
 	/// World Save Data
@@ -35,34 +54,34 @@ void WorldEditor::ShowWorldSettings()
 	{
 		ImGui::TextColored(ImVec4(255, 0, 255, 255), "World Data");
 
-		ImGui::RadioButton("Save Game", &saveState, 0);
-		ImGui::RadioButton("Load Game", &saveState, 1);
+		char nameBuffer[128] = {};
+		std::snprintf(nameBuffer, sizeof(nameBuffer), "%s", worldName.c_str());
+		if (ImGui::InputText("World Name", nameBuffer, sizeof(nameBuffer))) { worldName = nameBuffer; }
 
-		if (ImGui::Button("Default Save World"))
+		if (ImGui::Button("New World")) { NewWorld(*scene); }
+		if (ImGui::Button("Save World"))
 		{
-		statusMessage = SaveSystem::SaveWorld("world", scene) ? "Saved world.json" : "Failed to save world";
+		statusMessage = SaveSystem::SaveWorld(worldName, scene) ? "Saved " + worldName + ".json" : "Failed to save " + worldName;
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("Default Load World"))
+		if (ImGui::Button("Load World"))
 		{
-			if (SaveSystem::LoadWorld("world", *scene))
+			if (SaveSystem::LoadWorld(worldName, *scene))
 			{
-				// Ids from the old world are stale — and so is anything holding
-				// one: the selection, an in-flight gizmo drag, and every entry
-				// in the undo history.
+				// Resets World and Gizmos States
 				ResetSelectionState();
-				statusMessage = "Loaded world.json";
+				statusMessage = "Loaded " + worldName + ".json";
 			}
 			else
 			{
-				statusMessage = "Failed to load world";
+				statusMessage = "Failed to load " + worldName;
 			}
 		}
 
 		for (auto& file : SaveSystem::GetSaveFiles()) {
-
 			std::string save = "Save " + file;
 			std::string load = "Load " + file;
+			ImGui::PushID(file.length());
 			if (ImGui::Button(save.c_str())) {
 				if (SaveSystem::SaveWorld(file, scene)) {
 					ResetSelectionState();
@@ -82,6 +101,7 @@ void WorldEditor::ShowWorldSettings()
 					statusMessage = "Failed To Load " + file;
 				}
 			}
+			ImGui::PopID();
 		}
 	}
 	ImGui::EndChild();

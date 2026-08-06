@@ -58,7 +58,7 @@ Rarity GetRandomRarity(Rarity minRarity, Rarity maxRarity)
 	int maxIndex = static_cast<int>(maxRarity);
 
 	std::vector<double> limitedWeights(
-		weights.begin() + minIndex + 1,
+		weights.begin() + minIndex,
 		weights.begin() + maxIndex + 1
 	);
 
@@ -68,7 +68,7 @@ Rarity GetRandomRarity(Rarity minRarity, Rarity maxRarity)
 	);
 
 	int index = dist(gen);
-	return static_cast<Rarity>(index);
+	return static_cast<Rarity>(index + minIndex);
 
 }
 

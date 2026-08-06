@@ -23,11 +23,17 @@ else()
 	#add_compile_options(0mavx2 -CMakeFindDependencyMacro)
 endif()
 
-
-if (PRODUCTION_BUILD)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)# LINK time optimization
+include (CheckIPOSupported)
+check_ipo_supported(RESULT ipo_supported OUTPUT ipo_error)
+if (ipo_supported)
+	message (STATUS "IPO / LTO enabled")
+	if (PRODUCTION_BUILD)
+	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)# LINK time optimization
+	else()
+	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
+	endif()
 else()
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
+	message(WARNING "IPO / LTO not supported: ${ipo_error}")
 endif()
 
 # Static Link Libraries

@@ -399,7 +399,14 @@ void RigidBody3D::UpdateForce(float deltaTime)
 
 	// Control Air Time
 	if (downTouch) { airTime = 0; }
-	else { airTime += deltaTime; acceleration.y -= airTime; }
+	else { 
+		airTime += deltaTime; 
+
+		// Saturating the boost in Velocity to avoid excessive acceleration when falling for a long time.
+		acceleration.y -= airTime; 
+		constexpr float kMaxAirTimeBoost = 50.0f; // Maximum boost to velocity due to air time
+		acceleration.y -= fminf(airTime, kMaxAirTimeBoost);
+	}
 
 	// Apply acceleration to velocity
 	velocity += acceleration * deltaTime;
@@ -545,6 +552,7 @@ Json RigidBody3D::formatToJson()
 
 	j["IsStatic"] = isStatic;
 	j["IsEnabled"] = isEnabled;
+	j["CanCollide"] = canCollide;
 
 	return j;
 }
@@ -580,6 +588,7 @@ bool RigidBody3D::loadFromJson(const Json& j)
 
 	isStatic = j.value("IsStatic", false);
 	isEnabled = j.value("IsEnabled", true);
+	canCollide = j.value("CanCollide", true);
 
 	lastPosition = translation;
 

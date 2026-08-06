@@ -2,6 +2,8 @@
 
 void WorldEditor::update(Player* player)
 {
+	if (PRODUCTION_BUILD == 1) { return; }
+
 	if (IsKeyPressed(KEY_F1))
 	{
 		isEditorActive = !isEditorActive;

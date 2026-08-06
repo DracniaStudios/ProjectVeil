@@ -149,7 +149,7 @@ void FlappyBird::update(MiniGameData* data, Player* player, float deltaTime)
 
 	// Player Logic
 	{
-		static int speed = 50;
+		static int speed = 100;
 		
 		player->rigidBody2D.applyGravity();
 		if (inputSystem->IsActionPressed(ACTION_MOVE_JUMP)) { player->rigidBody2D.jump(200); }

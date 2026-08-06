@@ -9,8 +9,8 @@
 // Create GameMap and Floor Space
 void GameMap::create(Vector3 size)
 {
+	gameObjects.clear();
 	this->size = size;
-
 	auto rng = std::ranlux24_base(std::random_device{}());
 
 	GameObject floor{};

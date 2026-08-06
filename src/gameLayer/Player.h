@@ -5,6 +5,7 @@
 #include <raylib.h>
 #include <Entity.h>
 #include <randomStuff.h>
+#include <Inventory.h>
 
 struct PlayerCamera : Camera3D
 {
@@ -26,13 +27,20 @@ struct PlayerCamera : Camera3D
 
 };
 
+struct PlayerData {
+	Inventory inventory = Inventory{};
+	int miniGamesUnlocked = -1;
+};
+
 struct Player : Entity
 {
+	PlayerData data = {};
+
 	// Game Mechanics
 	RigidBody2D rigidBody2D = {};
 	Vector2 moveDirection = {};
 	PlayerCamera camera = {};
-	GameObject* artifact = {};
+	GameObject* artifact = nullptr;
 	GameObject* interactObject = {};
 	int artifactMode = 0;
 

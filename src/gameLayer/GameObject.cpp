@@ -151,7 +151,6 @@ void GameObject::onEnable()
 
 	// RigidBody3D::Update() latches canCollide false while disabled and never
 	// clears it on its own, so re-enabling must restore it explicitly here.
-	rigidBody3D.canCollide = true;
 
 	loadVisuals();
 

@@ -100,7 +100,10 @@ void WorldEditor::showGameObject(GameObject* object) {
 		rotationEulerSource = rotation;
 	}
 	// Scale is applied through the model transform each frame — no mesh regen needed
-	ImGui::DragFloat3("Scale: ", &object->rigidBody3D.scale.x);
+	if (ImGui::DragFloat3("Scale: ", &object->rigidBody3D.scale.x))
+	{
+		object->rigidBody3D.scale = { object->rigidBody3D.scale.x, object->rigidBody3D.scale.y, object->rigidBody3D.scale.z };
+	}
 	ImGui::Spacing();
 
 	// RigidBody
@@ -182,6 +185,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::Checkbox("isStatic", &object->rigidBody3D.isStatic);
 	ImGui::Checkbox("isVisible", &object->display3DModel);
 	ImGui::Checkbox("isDestructible", &object->isDestructible);
+	ImGui::Checkbox("Can Collide", &object->rigidBody3D.canCollide);
 
 	ImGui::Separator();
 	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Debug");

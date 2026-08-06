@@ -24,13 +24,15 @@ int main()
 
 #pragma region ImGui
 	rlImGuiSetup(true);
-
+	ImGui_ImplRaylib_Init();
 	ImGuiIO& io = ImGui::GetIO();
 	io.FontGlobalScale = 2;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.AddMousePosEvent(GetMousePosition().x, GetMousePosition().y);
+	io.AddMouseButtonEvent(MOUSE_BUTTON_LEFT, IsMouseButtonDown(MOUSE_BUTTON_LEFT));
+	io.AddMouseButtonEvent(MOUSE_BUTTON_RIGHT, IsMouseButtonDown(MOUSE_BUTTON_RIGHT));
 
 	ImGui::StyleColorsDark();
-
 #pragma endregion
 
 #pragma region FMOD
@@ -50,18 +52,17 @@ int main()
 
 	while (!WindowShouldClose())
 	{
-
 #pragma region ImGui
-		BeginDrawing();
-
+		ImGui_ImplRaylib_ProcessEvents();
+		ImGui_ImplRaylib_NewFrame();
 		rlImGuiBegin();
 
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, {});
 		ImGui::PushStyleColor(ImGuiCol_DockingEmptyBg, {});
 		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID);
 		ImGui::PopStyleColor(2);
-
 #pragma endregion
+		BeginDrawing();
 
 		if (IsKeyPressed(KEY_F11)) { ToggleFullscreen(); }
 		
@@ -81,6 +82,9 @@ int main()
 
 		bool gameRunning = update_game();
 
+		ImGui::Render();
+
+		ImGui_ImplRaylib_RenderDrawData(ImGui::GetDrawData());
 		rlImGuiEnd();
 		EndDrawing();
 
@@ -89,6 +93,7 @@ int main()
 
 	AudioManager::getInstance().shutdown();
 
+	//ImGui_ImplRaylib_Shutdown();
 	rlImGuiShutdown();
 
 	close_game();

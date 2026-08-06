@@ -18,10 +18,8 @@ InteractableObject::InteractableObject(const InteractionType interact, int value
 
 void InteractableObject::onInteract()
 {
-	auto rng = std::ranlux24_base(std::random_device{}());
-	defaultColor = getRandomColor(rng);
-
 	AudioManager::getInstance().Play3D(defaultSound, *this);
+	auto scene = SceneManager::getInstance().currentScene;
 
 	// Play3D only populates soundInstance when it falls back to the FMOD Studio event path;
 	// a plain loaded sound (the common case) leaves it null.
@@ -31,16 +29,10 @@ void InteractableObject::onInteract()
 
 	if (interactType == INTERACT_MINIGAME)
 	{
-		auto scene = SceneManager::getInstance().currentScene;
 		scene->SetMiniGame(interactValue);
-		scene->player->interactObject = scene->gameMap.FindGameObjectByID(activatorValue);
+		// Set Activator Object else self.
+		scene->player->interactObject = activatorValue != 0 ? scene->gameMap.FindGameObjectByID(activatorValue) : this;
 		isRunningMiniGame = true;
-		return;
-	}
-
-	if (interactType == INTERACT_ITEM)
-	{
-		// Give Player Specific Item
 		return;
 	}
 }
