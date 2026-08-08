@@ -2,6 +2,45 @@
 
 #include <SceneManager.h>
 #include <gameMap.h>
+
+
+void ActivateMiniGame(InteractableObject* interactable)
+{
+	std::cout << "[InteractableObject] Activating MiniGame: " << interactable->interactValue << "\n";
+	auto scene = SceneManager::getInstance().currentScene;
+	scene->SetMiniGame(interactable->interactValue);
+	// Set Activator Object else self.
+	scene->player->interactObject = interactable->activatorValue != 0 ? scene->gameMap.FindGameObjectByID(interactable->activatorValue) : interactable;
+	interactable->isRunningMiniGame = true;
+}
+
+void UnlockMiniGame(InteractableObject* interactable)
+{
+	std::cout << "[InteractableObject] Unlocking MiniGame: " << interactable->interactValue << "\n";
+	auto scene = SceneManager::getInstance().currentScene;
+	scene->player->artifactUnlocked = std::max(scene->player->artifactUnlocked, interactable->interactValue);
+	interactable->isInteractable = false;
+}
+
+void AddItemToInventory(InteractableObject* interactable)
+{
+	std::cout << "[InteractableObject] Adding Item to Inventory: " << interactable->interactValue << "\n";
+	auto scene = SceneManager::getInstance().currentScene;
+
+	// Search in vector
+	auto it = std::ranges::find(scene->player->inventory, interactable);
+
+	if (it != scene->player->inventory.end()) {
+		// Item already in inventory
+		return;
+	}
+	
+	scene->player->inventory.push_back(interactable);
+	interactable->onDisable();
+
+	std::cout << "[InteractableObject] Item added to inventory.\n";
+}
+
 InteractableObject::InteractableObject(const InteractionType interact, int value)
 {
 	type = OBJECT_INTERACTABLE;
@@ -27,14 +66,12 @@ void InteractableObject::onInteract()
 		soundInstance->setParameterByName(soundParameterName.c_str(), soundParameterValue);
 	}
 
-	if (interactType == INTERACT_MINIGAME)
-	{
-		scene->SetMiniGame(interactValue);
-		// Set Activator Object else self.
-		scene->player->interactObject = activatorValue != 0 ? scene->gameMap.FindGameObjectByID(activatorValue) : this;
-		isRunningMiniGame = true;
-		return;
-	}
+	std::cout << "[InteractObject] Interacted with " << name << "\n";
+
+	if (interactType == INTERACT_MINIGAME) { ActivateMiniGame(this); }
+	if (interactType == INTERACT_UNLOCK) { UnlockMiniGame(this); }
+	if (interactType == INTERACT_ITEM) { AddItemToInventory(this); }
+
 }
 
 Json InteractableObject::formatToJson()

@@ -4,42 +4,35 @@
 // Date: 2026-08-6 (Current Development Date)
 
 [Notice] World Editor doesn't use new InputSystem.
-[Notice] Add a Complete Game Timer to Player for Minigames
-[Notice] Apply Settings To World (Master Volume)
-[Notice] Add Stamina Check For Entities
-[Notice] Recursive Folder Search Helper?
-[Notice] Add Name Select Option To Save System
-[Notice] Lock Velocity On RigidBody3D
 [Notice] Create Maze Minigame
 [Notice] Get Smaller Texture Resolutions and load them based on Settings
 [Notice] Only load Files when they're being used
 [Concept] Load World With Chunks? | Possible Procedural Generation
-[Function] Give PLayer Items that Unlock Mingames
+[Conecpt] AssetManager Adds Items from Item Folder To "Asset Manager" (Similar to Models and Textures)
 
 [ Issues ]
 
-- Placement Viewport doesn't place objects
-
 [ Added ]
 
-- Added Inventory into engine, the player can now interact with items to add into the inventory.
-- Added Items into game, the items are world Objects ready to be picked up.
-- Added PlayerData struct to hold savable Data.
+- Added Interactable Modes "Unlock and "Item"
+- Added AudioType to AudioManager.
 
 [ Updated ]
 
-- Updated RigidBody3D to save canCollide flag
-- Updated InteractableObject to use a virtual Constructor.
-- Increated the speed for FlappyBird Minigame.
-- Updated WorldEditor to disable in Production Build.
-- Updated WorldEditor to select objects in Select Mode.
-- Updated WorldSettings to save by SaveName.
+- Updated Player to hold InteractableObject* list for Inventory.
+- Updated Placement Panel to show "Unlock" option.
+- Updated AudioManager to check for AudioType on Sound and Adjust volume from Settings.
+- Updated Rigidbody3D to lock Physics Values (Position, Rotation, Velocity, etc).
 
 [ Fixed ]
 
-- Fixed an issue where the PLayer Artifact was not being checked for nullptr.
-- Fixed an issue where GameObjects were not reset on GameMap create.
+- Fixed an issue where InteractableObject's GameObject data was inaccessible.
+- Fixed an issue were Entities didn't check for stamina before sprinting.
+- Fixed an issue where RubixCube Model didn't show different stages (Origin is not centered).
 
 [ Removed ]
 
-- Artifact now sits as an Item instead of under player.
+- Removed Inventory System (finding better implementation or solution).
+- Removed MagicIcon Set.
+- Removed Skeleton.
+- Removed Dead Maz Caravan.

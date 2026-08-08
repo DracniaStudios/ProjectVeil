@@ -42,7 +42,7 @@ void Entity::update(Scene* scene, float deltaTime)
 
 #pragma region Status Effects
 	// Check Stamina
-	currentSpeed = isSprinting ? baseSpeed * 2 :
+	currentSpeed = isSprinting && stamina >= 1 ? baseSpeed * 2 :
 		isCrouching ? baseSpeed * 0.5f : baseSpeed;
 
 	if (auto* movementBuff = getBuff(BUFF_MOVEMENT);
@@ -50,9 +50,13 @@ void Entity::update(Scene* scene, float deltaTime)
 		currentSpeed *= 2;
 	}
 	
-	if (isSprinting) stamina -= 0.5f;
+	if (isSprinting) {
+		stamina -= 0.5f;
+	}
+	else{
+		stamina += 0.01f;
+	}
 	stamina = Clamp(stamina, 0, getMaxStamina());
-	
 	health = Clamp(health, 0, getMaxHealth());
 
 #pragma endregion

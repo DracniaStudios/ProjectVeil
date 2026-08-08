@@ -163,6 +163,9 @@ void AssetManager::loadFolder(const char* folder, bool recursive)
 
 void AssetManager::loadAll()
 {
+	loadFolder("", true);
+
+	/*
 	// UI Decals (non-recursive: icons/MagicSphere tilesets stay unloaded)
 	loadFolder("icons", false);
 
@@ -171,5 +174,5 @@ void AssetManager::loadAll()
 
 	// Models
 	loadFolder("models", true);
-
+	*/
 }

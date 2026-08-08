@@ -1,18 +1,5 @@
 #include "WorldEditor.h"
 
-void showInventory(Inventory* inventory) {
-	ImGui::BeginChild("##Inventory");
-	for (int i = 0; i < inventory->getItemsVector().size(); ++i) {
-		ImGui::PushID(i);
-		const Item& item = inventory->getItemsVector()[i];
-		ImGui::Text("Item: %s", item.name.c_str());
-		ImGui::Text("ID: %d", item.id);
-		ImGui::Text("Type: %s", itemTypeToString(item.type));
-		ImGui::PopID();
-	}
-	ImGui::EndChild();
-}
-
 void WorldEditor::ShowPlayerData(Player* player)
 {
 	auto scene = SceneManager::getInstance().currentScene;
@@ -63,6 +50,7 @@ void WorldEditor::ShowPlayerData(Player* player)
 	ImGui::Text("Life Span: %f", player->lifeSpan);
 	ImGui::Text("Life End: %f", player->deathSpan);
 	ImGui::Text("Artifact Mode: %d", player->artifactMode);
+	ImGui::Text("Artifact Unlocked: %d", player->artifactUnlocked);
 	ImGui::Spacing();
 
 	/// Show Player Directional Data and Flags
@@ -99,8 +87,23 @@ void WorldEditor::ShowPlayerData(Player* player)
 	ImGui::InputFloat("Player Health: ", &player->health, 1, 1);
 	ImGui::InputFloat("Player Stamina: ", &player->stamina, 1, 1);
 
+	ImGui::Separator();
+
 	// Inventory
-	showInventory(&player->data.inventory);
+	ImGui::BeginChild("##Inventory");
+
+	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Inventory");
+
+	auto inventory = &player->inventory;
+
+	for (int i = 0; i < inventory->size(); ++i) {
+		ImGui::PushID(i);
+		const auto& item = inventory->at(i);
+		ImGui::Text("Item: %s", item->name);
+		ImGui::Text("ID: %d", item->id);
+		ImGui::PopID();
+	}
+	ImGui::EndChild();
 	ImGui::End();
 
 }

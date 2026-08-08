@@ -78,6 +78,9 @@ void WorldEditor::showGameObject(GameObject* object) {
 	{
 		object->rigidBody3D.Teleport(position);
 	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Lock Position", &object->rigidBody3D.lockTranslation);
+
 	// Rotation edits go through cached Euler degrees (see WorldEditor.h). Resync
 	// from the quaternion only when the selection changed or something else moved
 	// the rotation out from under us — angular velocity, a scene load, a script.
@@ -104,6 +107,8 @@ void WorldEditor::showGameObject(GameObject* object) {
 	{
 		object->rigidBody3D.scale = { object->rigidBody3D.scale.x, object->rigidBody3D.scale.y, object->rigidBody3D.scale.z };
 	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Lock Rotation", &object->rigidBody3D.lockRotation);
 	ImGui::Spacing();
 
 	// RigidBody
@@ -113,16 +118,26 @@ void WorldEditor::showGameObject(GameObject* object) {
 	{
 		object->rigidBody3D.velocity = velocity;
 	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Lock Velocity", &object->rigidBody3D.lockVelocity);
+
 	Vector3 acceleration = object->rigidBody3D.GetAcceleration();
 	if (ImGui::InputFloat3("Acceleration: ", &acceleration.x))
 	{
 		object->rigidBody3D.acceleration = acceleration;
 	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Lock Acceleration", &object->rigidBody3D.lockAcceleration);
+
 	Vector3 angularVelocity = object->rigidBody3D.angularVelocity;
 	if (ImGui::InputFloat3("Angular Velocity: ", &angularVelocity.x))
 	{
 		object->rigidBody3D.angularVelocity = angularVelocity;
 	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Lock Angular Velocity", &object->rigidBody3D.lockAngularVelocity);
+	ImGui::Spacing();
+
 	ImGui::Text("Air Time: %f", object->rigidBody3D.GetAirTime());
 	ImGui::Spacing();
 

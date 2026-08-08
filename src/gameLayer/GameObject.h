@@ -139,10 +139,11 @@ enum InteractionType
 {
 	INTERACT_NONE,
 	INTERACT_MINIGAME,
-	INTERACT_ITEM,
+	INTERACT_UNLOCK,
+	INTERACT_ITEM
 };
 
-struct InteractableObject : GameObject
+struct InteractableObject : public GameObject
 {
 public:
 	InteractableObject() = default; // Default constructor
@@ -155,6 +156,19 @@ public:
 	bool isInteractable = true;
 	bool isRunningMiniGame = false;
 
+	virtual void render3D() override {
+		GameObject::render3D();
+	};
+	virtual void update(Scene* scene, float deltaTime) override
+	{
+		GameObject::update(scene, deltaTime);
+	};
+	virtual void onEnable() override {
+		GameObject::onEnable();
+	};
+	virtual void onDisable() override {
+		GameObject::onDisable();
+	};
 	virtual void onInteract();
 
 	// Save Data
@@ -173,6 +187,7 @@ inline ObjectType getType(void* object)
 inline const char* interactTypeToString(InteractionType type) {
 	switch (type) {
 		case INTERACT_MINIGAME: return "Mini Game";
+		case INTERACT_UNLOCK: return "Unlock";
 		case INTERACT_ITEM: return "Item";
 		default: return "None";
 	}

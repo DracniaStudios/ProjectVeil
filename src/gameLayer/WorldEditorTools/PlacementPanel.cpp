@@ -59,6 +59,7 @@ void WorldEditor::ShowPlacementPanel()
 
 	// Transform Data
 	ImGui::InputFloat3("Position: ", &stagingObject.rigidBody3D.translation.x);
+	ImGui::Checkbox("Lock Position", &stagingObject.rigidBody3D.lockTranslation);
 	ImGui::InputFloat3("Scale: ", &stagingObject.rigidBody3D.scale.x);
 	ImGui::Spacing();
 
@@ -112,7 +113,7 @@ void WorldEditor::ShowPlacementPanel()
 	else if (placementKind == PLACE_INTERACTABLE)
 	{
 		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Interactable");
-		ImGui::Combo("Interact Type", &stagingInteractType, "None\0Mini Game\0Item\0");
+		ImGui::Combo("Interact Type", &stagingInteractType, "None\0Mini Game\0Unlock\0Item\0");
 
 		if (stagingInteractType == INTERACT_MINIGAME)
 		{
@@ -124,6 +125,9 @@ void WorldEditor::ShowPlacementPanel()
 			ImGui::Text("%s", miniGameIdToString(stagingInteractValue));
 			ImGui::InputInt("Activator ID", &stagingActivatorValue);
 			ImGui::TextDisabled("Object toggled when the mini game completes");
+		}
+		else if (stagingInteractType == INTERACT_UNLOCK) {
+			ImGui::InputInt("Item ID", &stagingInteractValue);
 		}
 		else if (stagingInteractType == INTERACT_ITEM)
 		{

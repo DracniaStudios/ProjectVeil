@@ -23,6 +23,15 @@ inline FMOD_VECTOR Vector3ToFMOD(Vector3 vector) {
 	return vec;
 }
 
+enum AudioType {
+	AUDIO_NONE,
+	AUDIO_MASTER,
+	AUDIO_MUSIC,
+	AUDIO_SFX,
+	AUDIO_GAMEPLAY_SFX,
+	AUDIO_DIALOGUE,
+};
+
 class AudioManager
 {
 	AudioManager() = default;
@@ -45,10 +54,10 @@ public:
 	void update();
 	void shutdown();
 
-	bool Play(const std::string& name,float volume = 1.0f);
-	bool Play3D(const std::string& name, GameObject& object, float volume = 1.0f);
-	bool PlayEvent(const std::string& eventPath);
-	bool PlayEvent3D(const std::string& eventPath, GameObject& object);
+	bool Play(const std::string& name, AudioType type = AUDIO_NONE, float volume = 1.0f);
+	bool Play3D(const std::string& name, GameObject& object, AudioType type = AUDIO_NONE, float volume = 1.0f);
+	bool PlayEvent(const std::string& eventPath, AudioType type = AUDIO_NONE, float volume = 1.0f);
+	bool PlayEvent3D(const std::string& eventPath, GameObject& object, AudioType type = AUDIO_NONE, float volume = 1.0f);
 
 private:
 	FMOD::System* system = nullptr;

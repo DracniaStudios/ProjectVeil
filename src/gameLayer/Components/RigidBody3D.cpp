@@ -401,9 +401,8 @@ void RigidBody3D::UpdateForce(float deltaTime)
 	if (downTouch) { airTime = 0; }
 	else { 
 		airTime += deltaTime; 
-
 		// Saturating the boost in Velocity to avoid excessive acceleration when falling for a long time.
-		acceleration.y -= airTime; 
+		acceleration.y -= airTime;
 		constexpr float kMaxAirTimeBoost = 50.0f; // Maximum boost to velocity due to air time
 		acceleration.y -= fminf(airTime, kMaxAirTimeBoost);
 	}
@@ -422,8 +421,9 @@ void RigidBody3D::UpdateForce(float deltaTime)
 
 	// Apply drag to velocity (normalized so damping is framerate-independent,
 	// tuned to match the old per-frame factor at 60 FPS)
-	velocity *= powf(drag, deltaTime * 60.0f);
-
+	if (!lockVelocity) {
+		velocity *= powf(drag, deltaTime * 60.0f);
+	}
 	// Reset acceleration for the next frame
 	acceleration = {};
 
@@ -453,19 +453,25 @@ void RigidBody3D::Update(float deltaTime)
 		return;
 	}
 	if (!isStatic) {
-		if (useGravity) ApplyGravity();
-		UpdateForce(deltaTime);
-
-		// Integrate angular velocity into the rotation quaternion
-		float angSpeed = Vector3Length(angularVelocity);
-		if (angSpeed > 0.001f)
-		{
-			Quaternion spin = QuaternionFromAxisAngle(angularVelocity / angSpeed, angSpeed * deltaTime);
-			rotation = QuaternionNormalize(QuaternionMultiply(spin, rotation));
+		if (!lockTranslation) {
+			if (useGravity) ApplyGravity();
+			UpdateForce(deltaTime);
 		}
 
-		// Angular drag; settle quickly once grounded
-		angularVelocity *= expf((downTouch ? -6.0f : -0.4f) * deltaTime);
+		if (!lockRotation) {
+			// Integrate angular velocity into the rotation quaternion
+			float angSpeed = Vector3Length(angularVelocity);
+			if (angSpeed > 0.001f)
+			{
+				Quaternion spin = QuaternionFromAxisAngle(angularVelocity / angSpeed, angSpeed * deltaTime);
+				rotation = QuaternionNormalize(QuaternionMultiply(spin, rotation));
+			}
+
+			// Angular drag; settle quickly once grounded
+			if (!lockAngularVelocity) {
+				angularVelocity *= expf((downTouch ? -6.0f : -0.4f) * deltaTime);
+			}
+		}
 	}
 	else
 	{
@@ -554,6 +560,13 @@ Json RigidBody3D::formatToJson()
 	j["IsEnabled"] = isEnabled;
 	j["CanCollide"] = canCollide;
 
+	j["LockAngularVelocity"] = lockAngularVelocity;
+	j["LockVelocity"] = lockVelocity;
+	j["LockAcceleration"] = lockAcceleration;
+	j["LockTranslation"] = lockTranslation;
+	j["LockRotation"] = lockRotation;
+	j["LockScale"] = lockScale;
+
 	return j;
 }
 
@@ -589,6 +602,13 @@ bool RigidBody3D::loadFromJson(const Json& j)
 	isStatic = j.value("IsStatic", false);
 	isEnabled = j.value("IsEnabled", true);
 	canCollide = j.value("CanCollide", true);
+
+	lockAngularVelocity = j["LockAngularVelocity"] ;
+	lockVelocity = j["LockVelocity"];
+	lockAcceleration = j["LockAcceleration"];
+	lockTranslation = j["LockTranslation"];
+	lockRotation = j["LockRotation"];
+	lockScale = j["LockScale"];
 
 	lastPosition = translation;
 

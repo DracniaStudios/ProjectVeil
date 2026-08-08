@@ -15,6 +15,7 @@
 #include <MiniGame.h>
 #include <asserts.h>
 #include <SaveSystem.h>
+#include <Settings.h>
 
 #include <stdlib.h>
 #include <iostream>

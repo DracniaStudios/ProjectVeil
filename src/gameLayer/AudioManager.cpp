@@ -6,6 +6,22 @@
 #include <iostream>
 #include <SceneManager.h>
 
+void updateVolume(float& currentVolume, AudioType type) {
+
+	auto settings = &Settings::getInstance();
+
+	currentVolume *= settings->masterVolume.value;
+	switch (type) {
+		case AUDIO_MUSIC: currentVolume *= settings->musicVolume.value; break;
+		case AUDIO_SFX: currentVolume *= settings->sfxVolume.value; break;
+		case AUDIO_GAMEPLAY_SFX: currentVolume *= settings->gameplaySFX.value; break;
+		case AUDIO_DIALOGUE: currentVolume *= settings->dialogueVolume.value; break;
+		default: break;
+	}
+
+}
+
+
 void AudioManager::init()
 {
 	// Load Studio Sysytem
@@ -174,9 +190,11 @@ void AudioManager::shutdown()
 	}
 }
 
-bool AudioManager::Play(const std::string& name, float volume)
+bool AudioManager::Play(const std::string& name, AudioType type, float volume)
 {
 	if (!system) return false;
+
+	//
 
 	const auto it = sounds.find(name);
 	if (it == sounds.end())
@@ -191,12 +209,13 @@ bool AudioManager::Play(const std::string& name, float volume)
 	if (channel)
 	{
 		channel->setMode(FMOD_2D); // sounds are loaded as 3D; play this one flat
+		updateVolume(volume, type);
 		channel->setVolume(volume);
 		channel->setPaused(false);
 	}
 	return true;
 }
-bool AudioManager::Play3D(const std::string& name, GameObject& object, float volume)
+bool AudioManager::Play3D(const std::string& name, GameObject& object, AudioType type, float volume)
 {
 	if (!system) return false;
 
@@ -217,13 +236,14 @@ bool AudioManager::Play3D(const std::string& name, GameObject& object, float vol
 		FMOD_VECTOR pos = Vector3ToFMOD(object.getPosition());
 		FMOD_VECTOR vel = Vector3ToFMOD(object.getVelocity());
 		channel->set3DAttributes(&pos, &vel);
+		updateVolume(volume, type);
 		channel->setVolume(volume);
 		channel->setPaused(false);
 	}
 	return true;
 }
 
-bool AudioManager::PlayEvent(const std::string& eventPath) {
+bool AudioManager::PlayEvent(const std::string& eventPath, AudioType type, float volume) {
 	if (!studioSystem) return false;
 
 	FMOD::Studio::EventDescription* description = nullptr;
@@ -237,12 +257,14 @@ bool AudioManager::PlayEvent(const std::string& eventPath) {
 
 	FMOD::Studio::EventInstance* instance = nullptr;
 	description->createInstance(&instance);
+	updateVolume(volume, type);
+	instance->setVolume(volume);
 	instance->start();
 	instance->release(); // Destroy when finished playing sound
 	return true;
 }
 
-bool AudioManager::PlayEvent3D(const std::string& eventPath, GameObject& object) {
+bool AudioManager::PlayEvent3D(const std::string& eventPath, GameObject& object, AudioType type, float volume) {
 	if (!studioSystem) return false;
 
 	FMOD::Studio::EventDescription* description = nullptr;
@@ -272,7 +294,8 @@ bool AudioManager::PlayEvent3D(const std::string& eventPath, GameObject& object)
 	// Position the event before it starts so the first frame is already spatialized
 	FMOD_3D_ATTRIBUTES attributes = object.get3DAttributes();
 	object.soundInstance->set3DAttributes(&attributes);
-
+	updateVolume(volume, type);
+	object.soundInstance->setVolume(volume);
 	object.soundInstance->start();
 	object.soundInstance->release(); // Destroy when finished playing sound
 	return true;

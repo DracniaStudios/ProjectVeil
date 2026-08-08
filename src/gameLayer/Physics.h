@@ -268,12 +268,16 @@ public:
 	bool canCollide = true;
 
 	BoundingBox collisionBox = {};
+	Vector3 collisionBoxScale = Vector3(1.0f, 1.0f, 1.0f);
 	Vector3 angularVelocity = {}; // radians/sec, axis = spin axis
 	Vector3 velocity = {};
 	Vector3 acceleration = {};
 	bool lockAngularVelocity = false;
 	bool lockVelocity = false;
 	bool lockAcceleration = false;
+	bool lockTranslation = false;
+	bool lockRotation = false;
+	bool lockScale;
 	
 	bool upTouch = false;
 	bool downTouch = false; // isGrounded
