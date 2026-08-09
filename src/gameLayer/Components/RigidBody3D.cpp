@@ -603,12 +603,12 @@ bool RigidBody3D::loadFromJson(const Json& j)
 	isEnabled = j.value("IsEnabled", true);
 	canCollide = j.value("CanCollide", true);
 
-	lockAngularVelocity = j["LockAngularVelocity"] ;
-	lockVelocity = j["LockVelocity"];
-	lockAcceleration = j["LockAcceleration"];
-	lockTranslation = j["LockTranslation"];
-	lockRotation = j["LockRotation"];
-	lockScale = j["LockScale"];
+	lockAngularVelocity = j.value("LockAngularVelocity", false);
+	lockVelocity = j.value("LockVelocity", false);
+	lockAcceleration = j.value("LockAcceleration", false);
+	lockTranslation = j.value("LockTranslation", false);
+	lockRotation = j.value("LockRotation", false);
+	lockScale = j.value("LockScale", false);
 
 	lastPosition = translation;
 
