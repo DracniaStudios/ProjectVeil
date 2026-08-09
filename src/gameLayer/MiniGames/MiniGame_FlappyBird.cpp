@@ -46,7 +46,6 @@ MiniGame* MiniGame_FlappyBird(Player* player)
 
 void FlappyBird::render(MiniGameData* data, Player* player)
 {
-	auto rng(std::random_device{}());
 	/// Draw Background Screen
 	Rectangle screen = getScreenScale({ 0.25f, 0.3f, 0.5f, 0.5f });
 	

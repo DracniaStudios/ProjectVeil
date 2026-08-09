@@ -400,9 +400,8 @@ void RigidBody3D::UpdateForce(float deltaTime)
 	// Control Air Time
 	if (downTouch) { airTime = 0; }
 	else { 
-		airTime += deltaTime; 
+		airTime += deltaTime;
 		// Saturating the boost in Velocity to avoid excessive acceleration when falling for a long time.
-		acceleration.y -= airTime;
 		constexpr float kMaxAirTimeBoost = 50.0f; // Maximum boost to velocity due to air time
 		acceleration.y -= fminf(airTime, kMaxAirTimeBoost);
 	}
@@ -603,12 +602,12 @@ bool RigidBody3D::loadFromJson(const Json& j)
 	isEnabled = j.value("IsEnabled", true);
 	canCollide = j.value("CanCollide", true);
 
-	lockAngularVelocity = j["LockAngularVelocity"] ;
-	lockVelocity = j["LockVelocity"];
-	lockAcceleration = j["LockAcceleration"];
-	lockTranslation = j["LockTranslation"];
-	lockRotation = j["LockRotation"];
-	lockScale = j["LockScale"];
+	lockAngularVelocity = j.value("LockAngularVelocity", false);
+	lockVelocity = j.value("LockVelocity", false);
+	lockAcceleration = j.value("LockAcceleration", false);
+	lockTranslation = j.value("LockTranslation", false);
+	lockRotation = j.value("LockRotation", false);
+	lockScale = j.value("LockScale", false);
 
 	lastPosition = translation;
 
