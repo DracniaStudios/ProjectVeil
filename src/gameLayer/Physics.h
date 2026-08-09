@@ -277,7 +277,7 @@ public:
 	bool lockAcceleration = false;
 	bool lockTranslation = false;
 	bool lockRotation = false;
-	bool lockScale;
+	bool lockScale = false;
 	
 	bool upTouch = false;
 	bool downTouch = false; // isGrounded

@@ -150,6 +150,10 @@ namespace SaveSystem
 		scene.gameMap.gameObjects.clear();
 		scene.entities.clear();
 		scene.interactables.clear();
+		// Player::inventory is a list of non-owning pointers into the map just
+		// cleared above; the player object itself survives the load, so those
+		// pointers would otherwise dangle (inventory contents aren't persisted yet).
+		if (scene.player) { scene.player->inventory.clear(); }
 		scene.instanceHolder.idCounter = j.value("IdCounter", scene.instanceHolder.idCounter);
 
 		// Scene Flags
@@ -360,6 +364,10 @@ namespace SaveSystem
 		scene.gameMap.gameObjects.clear();
 		scene.interactables.clear();
 		scene.entities.clear();
+		// Player::inventory is a list of non-owning pointers into the map just
+		// cleared above; the player object itself survives the load, so those
+		// pointers would otherwise dangle (inventory contents aren't persisted yet).
+		if (scene.player) { scene.player->inventory.clear(); }
 		scene.instanceHolder.idCounter = 0;
 
 		// Map Data

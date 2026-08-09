@@ -96,11 +96,11 @@ void WorldEditor::ShowPlayerData(Player* player)
 
 	auto inventory = &player->inventory;
 
-	for (int i = 0; i < inventory->size(); ++i) {
-		ImGui::PushID(i);
+	for (size_t i = 0; i < inventory->size(); ++i) {
+		ImGui::PushID(static_cast<int>(i));
 		const auto& item = inventory->at(i);
-		ImGui::Text("Item: %s", item->name);
-		ImGui::Text("ID: %d", item->id);
+		ImGui::Text("Item: %s", item->name.c_str());
+		ImGui::Text("ID: %d", static_cast<int>(item->id));
 		ImGui::PopID();
 	}
 	ImGui::EndChild();
