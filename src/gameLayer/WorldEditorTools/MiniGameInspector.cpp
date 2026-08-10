@@ -17,6 +17,15 @@ void WorldEditor::ShowMiniGameData(Player* player)
 	if (ImGui::Button("Launch Mini Game"))
 	{
 		miniGameObstacleIndex = -1; // Selection belongs to the previous game's obstacle list
+
+		// Free the previously active minigame before replacing it, matching the
+		// cleanup Scene::Update() performs on natural completion/reset
+		if (scene->miniGame != nullptr)
+		{
+			delete scene->miniGame->data;
+			delete scene->miniGame;
+		}
+
 		switch (currentGameID)
 		{
 			// Select Mini Game
