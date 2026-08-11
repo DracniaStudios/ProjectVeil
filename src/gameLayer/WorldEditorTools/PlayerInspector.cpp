@@ -100,7 +100,7 @@ void WorldEditor::ShowPlayerData(Player* player)
 		ImGui::PushID(static_cast<int>(i));
 		const auto& item = inventory->at(i);
 		ImGui::Text("Item: %s", item->name.c_str());
-		ImGui::Text("ID: %d", static_cast<int>(item->id));
+		ImGui::Text("ID: %llu", (unsigned long long)item->id);
 		ImGui::PopID();
 	}
 	ImGui::EndChild();
