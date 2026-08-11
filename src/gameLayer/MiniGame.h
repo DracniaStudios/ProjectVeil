@@ -45,9 +45,15 @@ inline void CompleteMiniGame(MiniGameData* data, Player* player, Buff buff, bool
 		
 		// Check for Activator Object and Enable/Disable
 		if (player->interactObject != nullptr) {
-			if (player->interactObject->isEnabled) { player->interactObject->onDisable(); }
-			else { player->interactObject->onEnable(); }
-			player->interactObject->rigidBody3D.canCollide = false;
+			if (player->interactObject->isEnabled) {
+				player->interactObject->onDisable();
+				// onDisable() doesn't touch physics state, so clear collision explicitly
+				player->interactObject->rigidBody3D.canCollide = false;
+			}
+			else {
+				// onEnable() already restores canCollide = true; don't clobber it back to false
+				player->interactObject->onEnable();
+			}
 		}
 	}
 }

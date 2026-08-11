@@ -6,16 +6,13 @@
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
-#include <vector>
-
-#include <GameObject.h>
 
 class Arena
 {
 public:
 	explicit Arena(size_t bytes) : size(bytes), offset(0)
 	{
-		buffer = std::make_unique<std::vector<GameObject>[]>(size);
+		buffer = std::make_unique<std::byte[]>(size);
 	}
 
 	// Disable copying to prevent accidental double-allocations or pointer desync
@@ -31,7 +28,7 @@ public:
 		if (std::align(alignment, bytes, current_ptr, space_left))
 		{
 			// Recalculate offset based on the aligned pointer location
-			offset = static_cast<std::vector<GameObject>*>(current_ptr) - buffer.get() + bytes;
+			offset = static_cast<std::byte*>(current_ptr) - buffer.get() + bytes;
 			return current_ptr;
 		}
 
@@ -44,7 +41,7 @@ public:
 	}
 
 private:
-	std::unique_ptr<std::vector<GameObject>[]> buffer;
+	std::unique_ptr<std::byte[]> buffer;
 	size_t size;
 	size_t offset;
 };
