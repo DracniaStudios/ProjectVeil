@@ -38,7 +38,7 @@ struct Player : Entity
 	std::vector<InteractableObject*> inventory;
 
 	int artifactMode = 0;
-	int artifactUnlocked = 1;
+	int artifactUnlocked = -1;
 
 	// Status
 	int baseJumpPower = 20;

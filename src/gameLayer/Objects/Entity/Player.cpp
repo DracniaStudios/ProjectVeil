@@ -103,18 +103,17 @@ void updateArtifact(Player* player) {
 	player->artifactMode += inputSystem->IsActionPressed(ACTION_USE_ARTIFACT_RIGHT) ? 1
 		: inputSystem->IsActionPressed(ACTION_USE_ARTIFACT_LEFT) ? -1
 		: 0;
-	player->artifactMode = static_cast<int>(Clamp(static_cast<float>(player->artifactMode), 0, 5));
-
+	player->artifactMode = static_cast<int>(Clamp(static_cast<float>(player->artifactMode), 0, player->artifactUnlocked));
 	if (inputSystem->IsActionPressed(ACTION_USE_ARTIFACT)) { scene->SetMiniGame(player->artifactMode); };
 
 	// Artifact
 	const auto camera = player->camera;
-	const auto offset = Vector3Add(camera.forward, player->rigidBody3D.left);//camera->left / 2);scene->player->artifact->name = "Artifact";
+	const auto offset = Vector3Add(camera.forward, player->rigidBody3D.left);//camera->left / 2);
 
-	player->artifact->rigidBody3D.translation = Vector3Add(SceneManager::getInstance().camera3D.position, offset);
-	player->artifact->update(scene, GetFrameTime());
-
-
+	if (player->artifact) {
+		player->artifact->rigidBody3D.translation = Vector3Add(SceneManager::getInstance().camera3D.position, offset);
+		player->artifact->update(scene, GetFrameTime());
+	}
 }
 
 #pragma endregion
@@ -201,9 +200,7 @@ void Player::update3D(float deltaTime)
 	
 	updateCollision(this);
 
-	if (artifact) {
-		updateArtifact(this);
-	}
+	if (artifact) { updateArtifact(this); }
 
 	stamina = Clamp(stamina, 0, getMaxStamina());
 	health = Clamp(health, 0, getMaxHealth());

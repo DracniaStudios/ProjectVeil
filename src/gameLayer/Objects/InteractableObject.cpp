@@ -4,12 +4,14 @@
 #include <gameMap.h>
 
 
-void ActivateMiniGame(InteractableObject* interactable)
+void ActivateMiniGame(InteractableObject* interactable, bool bypass)
 {
 	std::cout << "[InteractableObject] Activating MiniGame: " << interactable->interactValue << "\n";
 	auto scene = SceneManager::getInstance().currentScene;
+
+	if (!bypass && scene->player->artifactUnlocked < interactable->interactValue) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
+		
 	scene->SetMiniGame(interactable->interactValue);
-	// Set Activator Object else self.
 	scene->player->interactObject = interactable->activatorValue != 0 ? scene->gameMap.FindGameObjectByID(interactable->activatorValue) : interactable;
 	interactable->isRunningMiniGame = true;
 }
@@ -17,9 +19,35 @@ void ActivateMiniGame(InteractableObject* interactable)
 void UnlockMiniGame(InteractableObject* interactable)
 {
 	std::cout << "[InteractableObject] Unlocking MiniGame: " << interactable->interactValue << "\n";
-	auto scene = SceneManager::getInstance().currentScene;
-	scene->player->artifactUnlocked = std::max(scene->player->artifactUnlocked, interactable->interactValue);
-	interactable->isInteractable = false;
+	auto player = SceneManager::getInstance().currentScene->player;
+	player->artifactUnlocked = std::max(player->artifactUnlocked, interactable->interactValue);
+
+	// Check If Player Has Artifact
+	if (player->artifact == nullptr) {
+		std::cout << "Create Artifact \n";
+		// Create Artifact
+		player->artifact = new GameObject;
+		player->artifact->name = "Artifact";
+		player->artifact->isDestructible = false;
+		player->artifact->rigidBody3D.scale = Vector3One();
+		player->artifact->rigidBody3D.canCollide = false;
+		player->artifact->rigidBody3D.SetGravity(0.0f, 0.0f, 0.0f);
+		player->artifact->rigidBody3D.angularVelocity = Vector3(0.0f, 1.0f, 0.0f);
+		player->artifact->rigidBody3D.lockAngularVelocity = true;
+		player->artifact->defaultSound = "Artifact_Load_Up";
+
+		// Set Model Based On Upgrade
+		std::string model = "RubixCube" + std::to_string(player->artifactUnlocked);
+		player->artifact->setModel(model);
+	}
+
+	if (player->artifact) {
+		// Set Model Based On Upgrade
+		std::string model = "RubixCube" + std::to_string(player->artifactUnlocked);
+		player->artifact->setModel(model);
+	}
+
+
 }
 
 void AddItemToInventory(InteractableObject* interactable)
@@ -59,6 +87,7 @@ void InteractableObject::onInteract()
 {
 	AudioManager::getInstance().Play3D(defaultSound, *this);
 	auto scene = SceneManager::getInstance().currentScene;
+	std::cout << "[InteractObject] Interacted with " << name << "\n";
 
 	// Play3D only populates soundInstance when it falls back to the FMOD Studio event path;
 	// a plain loaded sound (the common case) leaves it null.
@@ -66,9 +95,8 @@ void InteractableObject::onInteract()
 		soundInstance->setParameterByName(soundParameterName.c_str(), soundParameterValue);
 	}
 
-	std::cout << "[InteractObject] Interacted with " << name << "\n";
-
-	if (interactType == INTERACT_MINIGAME) { ActivateMiniGame(this); }
+	// Set to Boolead Before Disabling Interactable
+	if (interactType == INTERACT_MINIGAME) { ActivateMiniGame(this, activatorValue); }
 	if (interactType == INTERACT_UNLOCK) { UnlockMiniGame(this); }
 	if (interactType == INTERACT_ITEM) { AddItemToInventory(this); }
 

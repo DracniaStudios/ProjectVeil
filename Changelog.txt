@@ -7,32 +7,28 @@
 [Notice] Create Maze Minigame
 [Notice] Get Smaller Texture Resolutions and load them based on Settings
 [Notice] Only load Files when they're being used
+[Notice] Add Mass to Rigidbody3D
 [Concept] Load World With Chunks? | Possible Procedural Generation
 [Conecpt] AssetManager Adds Items from Item Folder To "Asset Manager" (Similar to Models and Textures)
+[Notice] Save Rigidbody Locks if locked;
 
 [ Issues ]
 
+- Interact Object Doesn't activate objects.
+- Loading Chunk_1 creates extra objects that are not used.
+
 [ Added ]
 
-- Added Interactable Modes "Unlock and "Item"
-- Added AudioType to AudioManager.
+- Added an InputInt for InteractionType in ObjectBrowser.
 
 [ Updated ]
 
-- Updated Player to hold InteractableObject* list for Inventory.
-- Updated Placement Panel to show "Unlock" option.
-- Updated AudioManager to check for AudioType on Sound and Adjust volume from Settings.
-- Updated Rigidbody3D to lock Physics Values (Position, Rotation, Velocity, etc).
+- Updated Activate Minigame To check if MiniGame is unlocked.
 
 [ Fixed ]
 
-- Fixed an issue where InteractableObject's GameObject data was inaccessible.
-- Fixed an issue were Entities didn't check for stamina before sprinting.
-- Fixed an issue where RubixCube Model didn't show different stages (Origin is not centered).
+- Fixed an issue where the Artifact is not added into the Player.
+- Fixed an issue where the Artifact was not scaled to the corrent size.
 
 [ Removed ]
 
-- Removed Inventory System (finding better implementation or solution).
-- Removed MagicIcon Set.
-- Removed Skeleton.
-- Removed Dead Maz Caravan.

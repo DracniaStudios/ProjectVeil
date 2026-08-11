@@ -6,6 +6,11 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Interactable");
 
 	ImGui::Text("Interact Type: %s", interactTypeToString(object->interactType));
+	int stageInteractType = static_cast<int>(object->interactType);
+	if (ImGui::InputInt("InteractType", &stageInteractType)) {
+		object->interactType = static_cast<InteractionType>(stagingInteractType);
+
+	}
 	ImGui::InputInt("Interact Value", &object->interactValue);
 	ImGui::InputInt("Activator Value", &object->activatorValue);
 	ImGui::Checkbox("Interactable", &object->isInteractable);

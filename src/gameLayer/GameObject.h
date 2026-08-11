@@ -137,7 +137,7 @@ struct GameObject
 /** Interfaces **/
 enum InteractionType
 {
-	INTERACT_NONE,
+	INTERACT_NONE = 0,
 	INTERACT_MINIGAME,
 	INTERACT_UNLOCK,
 	INTERACT_ITEM
