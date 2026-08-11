@@ -12,7 +12,7 @@ void SetMoveDirection(Player* player) {
 
 	/// Player Movement
 	auto& speed = player->currentSpeed;
-	speed = player->isSprinting ? player->baseSpeed * 2 :
+	speed = player->isSprinting && player->stamina >= 1 ? player->baseSpeed * 2 :
 		player->isCrouching ? player->baseSpeed / 2 : player->baseSpeed;
 
 	auto& jumpPower = player->currentJumpPower;
@@ -203,6 +203,14 @@ void Player::update3D(float deltaTime)
 
 	if (artifact) {
 		updateArtifact(this);
+	}
+
+	// Check Stamina (mirrors Entity::update's sprint drain/regen)
+	if (isSprinting) {
+		stamina -= 0.5f;
+	}
+	else {
+		stamina += 0.01f;
 	}
 
 	stamina = Clamp(stamina, 0, getMaxStamina());

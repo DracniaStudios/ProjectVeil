@@ -400,9 +400,8 @@ void RigidBody3D::UpdateForce(float deltaTime)
 	// Control Air Time
 	if (downTouch) { airTime = 0; }
 	else { 
-		airTime += deltaTime; 
+		airTime += deltaTime;
 		// Saturating the boost in Velocity to avoid excessive acceleration when falling for a long time.
-		acceleration.y -= airTime;
 		constexpr float kMaxAirTimeBoost = 50.0f; // Maximum boost to velocity due to air time
 		acceleration.y -= fminf(airTime, kMaxAirTimeBoost);
 	}

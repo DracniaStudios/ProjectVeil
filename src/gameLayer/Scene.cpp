@@ -414,6 +414,15 @@ void Scene::SetMiniGame(int value)
 		return;
 	}
 
+	// Replacing an already-active mini game without freeing it would leak both
+	// the MiniGame and its MiniGameData.
+	if (miniGame)
+	{
+		delete miniGame->data;
+		delete miniGame;
+		miniGame = nullptr;
+	}
+
 	player->rigidBody2D = {};
 	is2DActive = true;
 	isMiniActive = true;

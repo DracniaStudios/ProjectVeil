@@ -37,6 +37,7 @@ void AddItemToInventory(InteractableObject* interactable)
 	
 	scene->player->inventory.push_back(interactable);
 	interactable->onDisable();
+	interactable->isInteractable = false;
 
 	std::cout << "[InteractableObject] Item added to inventory.\n";
 }

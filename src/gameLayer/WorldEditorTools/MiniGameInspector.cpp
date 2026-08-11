@@ -17,16 +17,7 @@ void WorldEditor::ShowMiniGameData(Player* player)
 	if (ImGui::Button("Launch Mini Game"))
 	{
 		miniGameObstacleIndex = -1; // Selection belongs to the previous game's obstacle list
-		switch (currentGameID)
-		{
-			// Select Mini Game
-			case 1: scene->miniGame = MiniGame_Crane(player);break;
-			case 2: scene->miniGame = MiniGame_Doctor(player);break;
-			case 3: scene->miniGame = MiniGame_SimonSays(player);break;
-			case 4: scene->miniGame = MiniGame_Maze(player);break;
-			case 5: scene->miniGame = MiniGame_RoShamBoo(player);break;
-			default: scene->miniGame = MiniGame_FlappyBird(player); break;
-		}
+		scene->SetMiniGame(currentGameID);
 	}
 	ImGui::Separator();
 
