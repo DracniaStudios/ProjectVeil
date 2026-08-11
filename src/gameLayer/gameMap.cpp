@@ -121,6 +121,10 @@ void GameMap::removeInteractable(InteractableObject* object)
 	// saveInteractable), so there is nothing to remove from gameObjects here.
 	if (object == nullptr) return;
 	auto scene = SceneManager::getInstance().currentScene;
+	// Player::inventory holds non-owning pointers into this map — drop any
+	// reference before the unique_ptr below frees the object, or the next
+	// inventory read (e.g. WorldEditor's Player Inspector) is a use-after-free.
+	if (scene->player) { std::erase(scene->player->inventory, object); }
 	scene->interactables.erase(object->id);
 }
 

@@ -86,8 +86,8 @@ void Crane::update(MiniGameData* data, Player* player, float deltaTime)
 		static int speed = 2;
 
 		if (inputSystem->IsActionDown(ACTION_MOVE_JUMP)) { player->rigidBody2D.jump(-200); }
-		if (inputSystem->IsActionPressed(ACTION_MOVE_LEFT)) { player->rigidBody2D.translation += Vector3(-speed, 0); }
-		if (inputSystem->IsActionPressed(ACTION_MOVE_RIGHT)) { player->rigidBody2D.translation += Vector3(speed, 0); }
+		if (inputSystem->IsActionDown(ACTION_MOVE_LEFT)) { player->rigidBody2D.translation += Vector3(-speed, 0); }
+		if (inputSystem->IsActionDown(ACTION_MOVE_RIGHT)) { player->rigidBody2D.translation += Vector3(speed, 0); }
 
 		if (player->rigidBody2D.getPosition().y < data->screen.y)
 		{

@@ -32,7 +32,7 @@ Scene* Scene_MainMenuConstruct()
 	scene->draw2D = Scene_MainMenuDraw2D;
 	scene->draw3D = Scene_MainMenuDraw3D;
    
-	SaveSystem::LoadGame("mainMenu", *scene);
+	//SaveSystem::LoadGame("mainMenu", *scene);
 	SaveSystem::LoadWorld("chunk_1", *scene);
 
 	return scene;
