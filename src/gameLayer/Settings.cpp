@@ -22,7 +22,12 @@ static bool JsonToSettings(Json& j, std::vector<GameSettings*> list) {
 	}
 
 	for (auto& setting : list) {
-		if (j.contains(setting->name)) {
+		// A hand-edited or corrupted settings.json can put a non-numeric value
+		// under a numeric setting's key; nlohmann::json's implicit conversion
+		// throws in that case, and Settings::Init() runs before any window or
+		// game state exists, so an unguarded throw here would crash on launch
+		// with no diagnostic at all.
+		if (j.contains(setting->name) && j[setting->name].is_number()) {
 			setting->value = j[setting->name];
 		}
 	}

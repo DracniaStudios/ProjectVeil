@@ -18,8 +18,10 @@ MiniGame* MiniGame_SimonSays(Player* player)
 	auto rng = std::ranlux24_base(std::random_device{}());
 	for (int i = 0; i < game->data->scoreGoal; ++i)
 	{
-		// Holds ID and Type
-		game->data->obstacles.push_back(Rectangle{static_cast<float>(i), static_cast<float>(getRandomInt(rng, 0, 4))});
+		// Holds ID and Type. update() only recognizes obstacle values 0-3 (one
+		// per direction) — getRandomInt is inclusive of its upper bound, so this
+		// must stay 3, not 4, or a generated obstacle could never be cleared.
+		game->data->obstacles.push_back(Rectangle{static_cast<float>(i), static_cast<float>(getRandomInt(rng, 0, 3))});
 		
 	}
 

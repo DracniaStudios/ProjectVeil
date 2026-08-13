@@ -21,7 +21,7 @@ public:
 
 	int cooldownID = -1;
 	// Initialize Timer with default Settings
-	CooldownTimer(double seconds) : cooldown_duration(seconds), ready_Time(Clock::now()) {};
+	CooldownTimer(double seconds) : ready_Time(Clock::now()), cooldown_duration(seconds) {};
 
 	// Check if timer has ended
 	bool is_ready() const { return Clock::now() >= ready_Time; }

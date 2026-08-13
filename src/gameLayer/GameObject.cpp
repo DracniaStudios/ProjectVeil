@@ -252,8 +252,6 @@ void GameObject::update(Scene* scene, float deltaTime)
 	}
 }
 
-static float setLife(float life, int time) { return static_cast<float>(life + time); }
-
 void GameObject::Destroy()
 {
 	// Removal is deferred: Destroy() can be called from inside the update

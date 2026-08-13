@@ -177,9 +177,18 @@ void Player::update2D(float deltaTime, bool canMove)
 	moveDirection = Vector2Zero();
 	moveDirection.x = inputSystem->IsActionDown(ACTION_MOVE_LEFT) ? -1.0 : inputSystem->IsActionDown(ACTION_MOVE_RIGHT) ? 1.0f : 0;
 	moveDirection.y = inputSystem->IsActionDown(ACTION_MOVE_FORWARD) ? 1.0 : inputSystem->IsActionDown(ACTION_MOVE_BACKWARD) ? -1.0f : 0;
-	
+
 	auto speed = inputSystem->IsActionDown(ACTION_MOVE_SPRINT) ? baseSpeed * 2 : baseSpeed;
-	
+
+	// moveDirection/speed used to be computed here and then thrown away — this
+	// left is2DActive mode (toggled with TAB) with movement keys that read
+	// input but never moved the player. Applied the same way SetMoveDirection
+	// does for the 3D player, scaled by deltaTime so it isn't tied to frame rate.
+	if (canMove)
+	{
+		rigidBody2D.translation += Vector3(moveDirection.x, moveDirection.y) * speed * 60.0f * deltaTime;
+	}
+
 	rigidBody2D.update(deltaTime);
 }
 

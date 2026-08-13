@@ -8,17 +8,15 @@ float getRandomFloat(std::ranlux24_base& rng, float min, float max)
 
 int getRandomInt(std::ranlux24_base& rng, int min, int max)
 {
-	if (min > max)
-	{
-		std::uniform_real_distribution<> dis(max, min);
-		return dis(rng);
-	}
-	else
-	{
-		std::uniform_real_distribution<> dis(min, max);
-		return dis(rng);
-	}
-
+	// uniform_real_distribution is half-open on [min, max), and truncating the
+	// result to int discards the fraction — so max was only ever reachable in
+	// the same rare case any other value near it would be, which is to say
+	// effectively never. Callers picking from an inclusive range (e.g. 1-3)
+	// silently lost their top value. std::uniform_int_distribution is
+	// inclusive on both ends and matches the "int" the function returns.
+	if (min > max) { std::swap(min, max); }
+	std::uniform_int_distribution<int> dis(min, max);
+	return dis(rng);
 }
 
 bool getRandomChance(std::ranlux24_base& rng, float chance)

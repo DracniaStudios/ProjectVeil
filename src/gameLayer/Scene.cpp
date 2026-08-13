@@ -29,22 +29,20 @@ std::uint64_t InstanceID::getIdAndIncrement()
 	return id;
 }
 
-// Removes Unintended IDs and Updates.
+// Renumbers every object sequentially from 0.
 void Scene::ResetID() {
 	instanceHolder.idCounter = 0;
 
-	// Remove Invalid ID Objects
-	// Reset IDs
-	for (size_t i = 0; i < gameMap.gameObjects.size(); ) {
-		auto object = &gameMap.gameObjects[i];
-
-		// removeObject erases in place, shifting the next element into slot i,
-		// so don't advance i when we remove — otherwise that shifted element
-		// gets skipped and never has its ID sanitized.
-		if (object->id >= gameMap.gameObjects.size()) { gameMap.removeObject(object); continue; }
-
-		object->id = instanceHolder.getIdAndIncrement();
-		i++;
+	// `id` is a monotonically increasing counter value, not an array position,
+	// so it has no relationship to gameObjects.size() — comparing the two used
+	// to delete any object whose id happened to be >= the current object
+	// count. NewWorld() is this function's only caller, and it runs after
+	// gameMap.create() has already assigned the fresh floor object whatever
+	// idCounter was left at by the previous world, so `id >= size()` (1) was
+	// true for that floor in any session where idCounter wasn't already 0 —
+	// silently deleting it and leaving "New World" with an empty scene.
+	for (auto& object : gameMap.gameObjects) {
+		object.id = instanceHolder.getIdAndIncrement();
 	}
 }
 
