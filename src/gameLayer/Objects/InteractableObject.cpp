@@ -86,7 +86,6 @@ InteractableObject::InteractableObject(const InteractionType interact, int value
 void InteractableObject::onInteract()
 {
 	AudioManager::getInstance().Play3D(defaultSound, *this);
-	auto scene = SceneManager::getInstance().currentScene;
 	std::cout << "[InteractObject] Interacted with " << name << "\n";
 
 	// Play3D only populates soundInstance when it falls back to the FMOD Studio event path;

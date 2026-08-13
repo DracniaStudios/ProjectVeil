@@ -57,6 +57,24 @@ namespace SaveSystem
 		return true;
 	}
 
+	// Save-file object/entity/interactable keys are always written as
+	// std::to_string(id) by this file, but a hand-edited or corrupted save can
+	// put anything in a JSON key — std::stoull throws on those instead of
+	// returning a sentinel, which would otherwise crash a load outright.
+	static bool TryParseId(const std::string& key, std::uint64_t& outId)
+	{
+		try
+		{
+			size_t consumed = 0;
+			outId = std::stoull(key, &consumed);
+			return consumed == key.size();
+		}
+		catch (const std::exception&)
+		{
+			return false;
+		}
+	}
+
 	static bool ReadJsonFromFile(const char* fileName, Json& out)
 	{
 		std::ifstream file(fileName, std::ios::binary);
@@ -189,7 +207,11 @@ namespace SaveSystem
 			for (auto& [key, objData] : j["Objects"].items())
 			{
 				GameObject obj = {};
-				obj.id = std::stoull(key);
+				if (!TryParseId(key, obj.id))
+				{
+					std::cerr << "[Save System] Skipping GameObject with non-numeric key: " << key << "\n";
+					continue;
+				}
 
 				if (!obj.loadFromJson(objData))
 				{
@@ -207,7 +229,11 @@ namespace SaveSystem
 			for (auto& [key, entData] : j["Entities"].items())
 			{
 				auto entity = std::make_unique<Entity>();
-				entity->id = std::stoull(key);
+				if (!TryParseId(key, entity->id))
+				{
+					std::cerr << "[Save System] Skipping Entity with non-numeric key: " << key << "\n";
+					continue;
+				}
 
 				if (!entity->loadFromJson(entData))
 				{
@@ -224,8 +250,15 @@ namespace SaveSystem
 		{
 			for (auto& [key, intData] : j["Interactables"].items())
 			{
-				InteractableObject interactable(INTERACT_MINIGAME, std::stoull(key));
-				interactable.id = std::stoull(key);
+				std::uint64_t id = 0;
+				if (!TryParseId(key, id))
+				{
+					std::cerr << "[Save System] Skipping Interactable with non-numeric key: " << key << "\n";
+					continue;
+				}
+
+				InteractableObject interactable(INTERACT_MINIGAME, 0);
+				interactable.id = id;
 
 				if (!interactable.loadFromJson(intData))
 				{
@@ -396,7 +429,11 @@ namespace SaveSystem
 			for (auto& [key, objData] : j["Objects"].items())
 			{
 				GameObject obj = {};
-				obj.id = std::stoull(key);
+				if (!TryParseId(key, obj.id))
+				{
+					std::cerr << "[Save System] Skipping GameObject with non-numeric key: " << key << "\n";
+					continue;
+				}
 
 				if (!obj.loadFromJson(objData))
 				{
@@ -413,8 +450,15 @@ namespace SaveSystem
 		{
 			for (auto& [key, intData] : j["Interactables"].items())
 			{
-				InteractableObject interactable(INTERACT_MINIGAME, std::stoull(key));
-				interactable.id = std::stoull(key);
+				std::uint64_t id = 0;
+				if (!TryParseId(key, id))
+				{
+					std::cerr << "[Save System] Skipping Interactable with non-numeric key: " << key << "\n";
+					continue;
+				}
+
+				InteractableObject interactable(INTERACT_MINIGAME, 0);
+				interactable.id = id;
 
 				if (!interactable.loadFromJson(intData))
 				{

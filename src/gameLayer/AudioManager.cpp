@@ -90,6 +90,13 @@ void AudioManager::loadAll()
 				continue;
 			}
 
+			// A duplicate stem name (e.g. two files differing only by extension)
+			// would otherwise overwrite the map entry and leak the sound it replaces.
+			if (auto existing = sounds.find(name); existing != sounds.end())
+			{
+				existing->second->release();
+			}
+
 			sounds[name] = sound;
 			std::cout << "[AudioManager] Loaded sound \"" << name << "\" from " << path << "\n";
 		}
