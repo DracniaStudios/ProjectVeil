@@ -4,7 +4,7 @@
 #include <gameMap.h>
 
 
-void ActivateMiniGame(InteractableObject* interactable, bool bypass)
+void ActivateMiniGame(InteractableObject* interactable, bool bypass = false)
 {
 	std::cout << "[InteractableObject] Activating MiniGame: " << interactable->interactValue << "\n";
 	auto scene = SceneManager::getInstance().currentScene;
@@ -47,7 +47,7 @@ void UnlockMiniGame(InteractableObject* interactable)
 		player->artifact->setModel(model);
 	}
 
-
+	interactable->isInteractable = false;
 }
 
 void AddItemToInventory(InteractableObject* interactable)
@@ -95,8 +95,7 @@ void InteractableObject::onInteract()
 		soundInstance->setParameterByName(soundParameterName.c_str(), soundParameterValue);
 	}
 
-	// Set to Boolead Before Disabling Interactable
-	if (interactType == INTERACT_MINIGAME) { ActivateMiniGame(this, activatorValue); }
+	if (interactType == INTERACT_MINIGAME) { ActivateMiniGame(this); }
 	if (interactType == INTERACT_UNLOCK) { UnlockMiniGame(this); }
 	if (interactType == INTERACT_ITEM) { AddItemToInventory(this); }
 

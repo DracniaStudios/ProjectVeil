@@ -8,8 +8,7 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 	ImGui::Text("Interact Type: %s", interactTypeToString(object->interactType));
 	int stageInteractType = static_cast<int>(object->interactType);
 	if (ImGui::InputInt("InteractType", &stageInteractType)) {
-		object->interactType = static_cast<InteractionType>(stagingInteractType);
-
+		object->interactType = static_cast<InteractionType>(stageInteractType);
 	}
 	ImGui::InputInt("Interact Value", &object->interactValue);
 	ImGui::InputInt("Activator Value", &object->activatorValue);
