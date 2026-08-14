@@ -18,7 +18,7 @@ void assertFuncProduction(
 
 	std::string rez = "Assertion failed\n\nFile:\n";
 	rez += file_name; rez += "\n\n";
-	rez += "Line: "; rez += line_number; rez += "\n\n";
+	rez += "Line: "; rez += std::to_string(line_number); rez += "\n\n";
 	rez += "Expression: "; rez += expression; rez += "\n\n";
 	rez += "Comment: "; rez += comment; rez += "\n\nPlease report this error to the developer.";
 
@@ -55,7 +55,7 @@ void assertFuncInternal(
 
 	std::string rez = "Assertion failed\n\nFile:\n";
 	rez += file_name; rez += "\n\n";
-	rez += "Line: "; rez += line_number; rez += "\n\n";
+	rez += "Line: "; rez += std::to_string(line_number); rez += "\n\n";
 	rez += "Expression: "; rez += expression; rez += "\n\n";
 	rez += "Comment: "; rez += comment; rez += "\n\nPress retry to debug.";
 

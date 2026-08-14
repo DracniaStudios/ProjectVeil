@@ -45,6 +45,8 @@ void Unlock(InteractableObject* interactable)
 		std::string model = "RubixCube" + std::to_string(player->artifactUnlocked);
 		player->artifact->setModel(model);
 	}
+
+	interactable->isInteractable = false;
 }
 
 void AddItemToInventory(InteractableObject* interactable)
@@ -94,8 +96,6 @@ void InteractableObject::onInteract()
 	if (interactType == INTERACT_MINIGAME) { ActivateMiniGame(this); }
 	if (interactType == INTERACT_UNLOCK) { Unlock(this); }
 	if (interactType == INTERACT_ITEM) { AddItemToInventory(this); }
-
-	isInteractable = false;
 
 }
 
