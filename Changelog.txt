@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
 // Version: 0.3.0
-// Due: 2026-08-14 (Month 3)
-// Date: 2026-08-6 (Current Development Date)
+// Due: 2026-08-21 (Month 3)
+// Date: 2026-08-14 (Current Development Date)
 
 [Notice] World Editor doesn't use new InputSystem.
 [Notice] Create Maze Minigame
@@ -12,6 +12,8 @@
 [Conecpt] AssetManager Adds Items from Item Folder To "Asset Manager" (Similar to Models and Textures)
 [Notice] Save Rigidbody Locks if locked;
 
+Create The AI for the Entity, this will create the challenge for the character and begin the vertical slice.
+
 [ Issues ]
 
 - Interact Object Doesn't activate objects.
@@ -19,16 +21,13 @@
 
 [ Added ]
 
-- Added an InputInt for InteractionType in ObjectBrowser.
 
 [ Updated ]
 
-- Updated Activate Minigame To check if MiniGame is unlocked.
 
 [ Fixed ]
 
-- Fixed an issue where the Artifact is not added into the Player.
-- Fixed an issue where the Artifact was not scaled to the corrent size.
+
 
 [ Removed ]
 

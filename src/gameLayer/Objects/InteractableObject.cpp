@@ -16,7 +16,7 @@ void ActivateMiniGame(InteractableObject* interactable, bool bypass = false)
 	interactable->isRunningMiniGame = true;
 }
 
-void UnlockMiniGame(InteractableObject* interactable)
+void Unlock(InteractableObject* interactable)
 {
 	std::cout << "[InteractableObject] Unlocking MiniGame: " << interactable->interactValue << "\n";
 	auto player = SceneManager::getInstance().currentScene->player;
@@ -40,14 +40,11 @@ void UnlockMiniGame(InteractableObject* interactable)
 		std::string model = "RubixCube" + std::to_string(player->artifactUnlocked);
 		player->artifact->setModel(model);
 	}
-
-	if (player->artifact) {
+	else {
 		// Set Model Based On Upgrade
 		std::string model = "RubixCube" + std::to_string(player->artifactUnlocked);
 		player->artifact->setModel(model);
 	}
-
-	interactable->isInteractable = false;
 }
 
 void AddItemToInventory(InteractableObject* interactable)
@@ -95,8 +92,10 @@ void InteractableObject::onInteract()
 	}
 
 	if (interactType == INTERACT_MINIGAME) { ActivateMiniGame(this); }
-	if (interactType == INTERACT_UNLOCK) { UnlockMiniGame(this); }
+	if (interactType == INTERACT_UNLOCK) { Unlock(this); }
 	if (interactType == INTERACT_ITEM) { AddItemToInventory(this); }
+
+	isInteractable = false;
 
 }
 
