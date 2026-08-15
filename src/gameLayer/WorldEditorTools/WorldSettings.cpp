@@ -84,7 +84,6 @@ void WorldEditor::ShowWorldSettings()
 			ImGui::PushID(file.length());
 			if (ImGui::Button(save.c_str())) {
 				if (SaveSystem::SaveWorld(file, scene)) {
-					ResetSelectionState();
 					statusMessage = "Saved " + file;
 				}
 				else {

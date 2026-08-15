@@ -99,12 +99,14 @@ void Entity::Attack()
 	projectile.mesh = GenMeshSphere(0.2f, 16, 16);
 
 	projectile.rigidBody3D.SetVelocity(Vector3Scale(rigidBody3D.forward, projectile.baseSpeed * 10));
-	
-	projectile.Decay(3);
+
 	projectile.health = -1;
 	projectile.isAlive = false;
 
-	SceneManager::getInstance().currentScene->gameMap.saveObject(projectile);
+	// onEnable() (run inside saveObject()) resets deathSpan, so Decay() must be
+	// applied to the saved copy afterward for the 3-second lifetime to stick.
+	GameObject* saved = SceneManager::getInstance().currentScene->gameMap.saveObject(projectile);
+	saved->Decay(3);
 }
 
 /** Save Data **/

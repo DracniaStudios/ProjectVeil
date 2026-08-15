@@ -349,7 +349,9 @@ void Scene_updateScene(float delta) {
 	}
 
 	// Pause To Inventory
-	if (IsKeyPressed(KEY_TAB)) { scene->is2DActive = !scene->is2DActive; }
+	// Gated on isMiniActive so TAB can't be used to regain 3D player control
+	// while a minigame is still running in the background.
+	if (IsKeyPressed(KEY_TAB) && !scene->isMiniActive) { scene->is2DActive = !scene->is2DActive; }
 
 	// World Editor (includes the developer tool windows)
 	WorldEditor::getInstance().update(scene->player);
@@ -410,6 +412,14 @@ void Scene::SetMiniGame(int value)
 	{
 		std::cout << "[Scene.cpp] Ignoring SetMiniGame with unknown id: " << value << "\n";
 		return;
+	}
+
+	// Replacing an already-running minigame without freeing it would leak both
+	// the MiniGame and its MiniGameData.
+	if (miniGame) {
+		delete miniGame->data;
+		delete miniGame;
+		miniGame = nullptr;
 	}
 
 	player->rigidBody2D = {};

@@ -18,6 +18,13 @@ MiniGame* MiniGame_FlappyBird(Player* player)
 
 	game->data->scoreGoal = 3;
 
+	// isLeftGoalActive/isRightGoalActive are file-scope, not part of MiniGameData,
+	// so a retry/reset (which reconstructs the MiniGame via this function) must
+	// reset them explicitly or the new game inherits whichever goal was active
+	// when the previous attempt ended.
+	isLeftGoalActive = false;
+	isRightGoalActive = true;
+
 	player->rigidBody2D.scale = Vector3(5.0f, 5.0f, 5.0f);
 	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
 

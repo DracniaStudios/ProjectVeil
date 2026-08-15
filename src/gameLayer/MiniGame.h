@@ -8,6 +8,7 @@
 #include <helpers.h>
 #include <randomStuff.h>
 #include <Player.h>
+#include <gameMap.h>
 
 struct Scene;
 
@@ -44,15 +45,22 @@ inline void CompleteMiniGame(MiniGameData* data, Player* player, Buff buff, bool
 		if (CooldownTimer* getBuff = player->getBuff(buff); getBuff != nullptr) { getBuff->use(); }
 		
 		// Check for Activator Object and Enable/Disable
-		if (player->interactObject != nullptr) {
-			if (player->interactObject->isEnabled) {
-				player->interactObject->onDisable();
+		// interactObjectId refers into GameMap::gameObjects, which GameMap::saveObject()
+		// re-sorts (and may reallocate) on every insert, so it's re-resolved here rather
+		// than cached as a pointer that could end up pointing at an unrelated object.
+		GameObject* target = player->interactObject != nullptr
+			? player->interactObject
+			: (player->interactObjectId != 0 ? GameMap::FindGameObjectByID(player->interactObjectId) : nullptr);
+
+		if (target != nullptr) {
+			if (target->isEnabled) {
+				target->onDisable();
 				// onDisable() doesn't touch physics state, so clear collision explicitly
-				player->interactObject->rigidBody3D.canCollide = false;
+				target->rigidBody3D.canCollide = false;
 			}
 			else {
 				// onEnable() already restores canCollide = true; don't clobber it back to false
-				player->interactObject->onEnable();
+				target->onEnable();
 			}
 		}
 	}

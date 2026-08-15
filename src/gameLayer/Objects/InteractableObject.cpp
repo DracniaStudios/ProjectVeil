@@ -12,7 +12,14 @@ void ActivateMiniGame(InteractableObject* interactable, bool bypass = false)
 	if (!bypass && scene->player->artifactUnlocked < interactable->interactValue) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
 		
 	scene->SetMiniGame(interactable->interactValue);
-	scene->player->interactObject = interactable->activatorValue != 0 ? scene->gameMap.FindGameObjectByID(interactable->activatorValue) : interactable;
+	if (interactable->activatorValue != 0) {
+		scene->player->interactObject = nullptr;
+		scene->player->interactObjectId = interactable->activatorValue;
+	}
+	else {
+		scene->player->interactObject = interactable;
+		scene->player->interactObjectId = 0;
+	}
 	interactable->isRunningMiniGame = true;
 }
 
