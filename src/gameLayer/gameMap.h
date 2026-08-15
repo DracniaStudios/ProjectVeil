@@ -26,7 +26,7 @@ struct GameMap {
 	void removeInteractable(InteractableObject* object);
 
 	// Find Data
-	GameObject* FindGameObjectByID(std::uint64_t id);
+	static GameObject* FindGameObjectByID(std::uint64_t id);
 	Entity* FindEntityByID(std::uint64_t id);
 	InteractableObject* FindInteractableByID(std::uint64_t id);
 

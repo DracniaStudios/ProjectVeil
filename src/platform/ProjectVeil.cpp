@@ -71,11 +71,11 @@ int main()
 			lockMouse = !lockMouse;
 			if (lockMouse)
 			{
-				EnableCursor();
+				DisableCursor();
 			}
 			else
 			{
-				DisableCursor();
+				EnableCursor();
 			}
 		}
 		AudioManager::getInstance().update();

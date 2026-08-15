@@ -127,7 +127,8 @@ void WorldEditor::ShowPlacementPanel()
 			ImGui::TextDisabled("Object toggled when the mini game completes");
 		}
 		else if (stagingInteractType == INTERACT_UNLOCK) {
-			ImGui::InputInt("Item ID", &stagingInteractValue);
+			// Feeds player->artifactUnlocked, not an inventory item.
+			ImGui::InputInt("Artifact Tier", &stagingInteractValue);
 		}
 		else if (stagingInteractType == INTERACT_ITEM)
 		{

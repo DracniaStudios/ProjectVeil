@@ -150,7 +150,8 @@ void WorldEditor::showGameObject(GameObject* object) {
 		object->defaultColor.g,
 		object->defaultColor.b,
 		object->defaultColor.a);
-	ImGui::TextColored(ImVec4(color.x, color.y, color.z, color.w), "Color");
+	// ImVec4 color channels are normalized 0-1, unlike the 0-255 Color/Vector4 above.
+	ImGui::TextColored(ImVec4(color.x / 255.0f, color.y / 255.0f, color.z / 255.0f, color.w / 255.0f), "Color");
 	if (ImGui::InputFloat4("Color", &color.x)) {
 		object->defaultColor = Color(
 			color.x,
