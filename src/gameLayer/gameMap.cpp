@@ -47,8 +47,6 @@ GameObject* GameMap::saveObject(GameObject& object)
 
 	std::cout << "Added Object \n";
 
-	// The sort above reorders the vector, so the object we just added is no
-	// longer necessarily at back() — find it by the id we just assigned.
 	auto id = object.id;
 	auto it = std::find_if(gameObjects.begin(), gameObjects.end(), [id](const GameObject& o) { return o.id == id; });
 	return &(*it);
