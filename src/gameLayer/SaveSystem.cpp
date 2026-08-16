@@ -290,7 +290,17 @@ namespace SaveSystem
 			}
 		}
 
-		if (scene.gameMap.gameObjects.size() > scene.instanceHolder.idCounter) { scene.instanceHolder.idCounter = scene.gameMap.gameObjects.size(); }
+		// Derive the counter floor from the ids the file actually contains.
+		// Comparing the counter against gameObjects.size() (as this used to)
+		// compares a monotonic id against a container length — they are
+		// unrelated, so a save whose objects are numbered above their own count
+		// still let the next spawn collide with an id already in use.
+		std::uint64_t highestId = 0;
+		for (const auto& obj : scene.gameMap.gameObjects) { highestId = std::max(highestId, obj.id); }
+		for (const auto& [id, entity] : scene.entities) { highestId = std::max(highestId, id); }
+		for (const auto& [id, interactable] : scene.interactables) { highestId = std::max(highestId, id); }
+
+		scene.instanceHolder.idCounter = std::max(scene.instanceHolder.idCounter, highestId + 1);
 
 		return true;
 	}
@@ -474,9 +484,25 @@ namespace SaveSystem
 			}
 		}
 
-		// Avoid id collisions with entities/objects created since the save
-		scene.instanceHolder.idCounter =
-			std::max(scene.instanceHolder.idCounter, j.value("IdCounter", scene.instanceHolder.idCounter));
+		// Avoid id collisions with objects created after the load.
+		//
+		// The stored IdCounter alone is not enough: a world file hand-authored
+		// or written by an older build may not carry the key at all, in which
+		// case this fell back to the counter zeroed above and the very next
+		// object placed in the editor was handed an id another object already
+		// answered to. FindGameObjectByID returns the first match, so the
+		// duplicate would shadow the original for picking, activator lookup and
+		// save/load alike. Deriving the floor from the ids actually present
+		// makes the file's own contents authoritative.
+		std::uint64_t highestId = 0;
+		for (const auto& obj : scene.gameMap.gameObjects) { highestId = std::max(highestId, obj.id); }
+		for (const auto& [id, interactable] : scene.interactables) { highestId = std::max(highestId, id); }
+
+		scene.instanceHolder.idCounter = std::max({
+			scene.instanceHolder.idCounter,
+			j.value("IdCounter", scene.instanceHolder.idCounter),
+			highestId + 1
+		});
 
 		std::cout << "[Save System] Loaded World: " << path << "\n";
 		return true;

@@ -27,8 +27,23 @@ struct GameMap {
 
 	// Find Data
 	static GameObject* FindGameObjectByID(std::uint64_t id);
-	Entity* FindEntityByID(std::uint64_t id);
-	InteractableObject* FindInteractableByID(std::uint64_t id);
+	static Entity* FindEntityByID(std::uint64_t id);
+	static InteractableObject* FindInteractableByID(std::uint64_t id);
+
+	/**
+	 * Resolve an id against every world container, not just gameObjects.
+	 *
+	 * The three Find*ByID above each search one container, and objects are
+	 * distributed across all three: plain objects live in gameMap.gameObjects,
+	 * entities in Scene::entities and interactables in Scene::interactables —
+	 * an interactable is deliberately never pushed into gameObjects (see
+	 * saveInteractable/removeInteractable and the SaveSystem loaders).
+	 *
+	 * Callers holding an id authored in the editor cannot know which container
+	 * the target ended up in, so asking only one of them is a silent miss.
+	 * Ids are unique across all three, so the search order is arbitrary.
+	 */
+	static GameObject* FindWorldObjectByID(std::uint64_t id);
 
 	// Return Data
 	Vector3 getMapSize() const { return Vector3(size.x, size.y, size.z);}

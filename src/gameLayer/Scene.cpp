@@ -29,9 +29,14 @@ std::uint64_t InstanceID::getIdAndIncrement()
 	return id;
 }
 
-// Renumbers every object sequentially from 0.
+// Renumbers every object sequentially from the first assignable id.
 void Scene::ResetID() {
-	instanceHolder.idCounter = 0;
+	// InstanceID::idCounter starts at 2 because 0 is the "no object" sentinel
+	// (ActivateMiniGame reads an activatorValue of 0 as "none") and 1 is
+	// PLAYER_ID. Restarting at 0 handed those two ids straight back out: after
+	// one "New World" the second object in the map answered to PLAYER_ID, so
+	// FindGameObjectByID(PLAYER_ID) returned a wall instead of the player.
+	instanceHolder = InstanceID{};
 
 	// `id` is a monotonically increasing counter value, not an array position,
 	// so it has no relationship to gameObjects.size() — comparing the two used
@@ -331,16 +336,25 @@ void Scene_updateScene(float delta) {
 		if (miniGame->data->isComplete)
 		{
 			scene->is2DActive = false;
-			scene->isMiniActive = false;
-			scene->miniGame = nullptr;
-			delete miniGame->data;
-			delete miniGame;
+			scene->ReleaseMiniGame();
 		}
 		else if (miniGame->data->isReset)
 		{
-			delete miniGame->data;
-			delete miniGame;
-			scene->SetMiniGame(scene->GetLastMiniGame());
+			// Release BEFORE asking for the replay.
+			//
+			// This path used to delete both allocations and leave the freed
+			// pointer in scene->miniGame. That was survivable while SetMiniGame
+			// simply overwrote the pointer, but SetMiniGame now frees whatever it
+			// is replacing — so it saw the stale non-null pointer, dereferenced
+			// it for ->data and freed the same two allocations a second time.
+			// Every failed Flappy Bird or Crane attempt took that path.
+			const int replayId = scene->GetLastMiniGame();
+			scene->ReleaseMiniGame();
+			scene->SetMiniGame(replayId);
+
+			// Nothing to replay: hand the player back to the 3D world rather
+			// than stranding them in an empty 2D overlay with no way out.
+			if (scene->miniGame == nullptr) { scene->is2DActive = false; }
 		}
 	}
 	else
@@ -406,6 +420,21 @@ void Scene_drawScene3D() {
 }
 
 
+void Scene::ReleaseMiniGame()
+{
+	if (miniGame != nullptr)
+	{
+		delete miniGame->data;
+		delete miniGame;
+	}
+
+	// Always null on return, whether or not there was anything to free. That is
+	// the property every caller depends on — it is what makes a second release,
+	// or a caller that bails out afterwards, harmless.
+	miniGame = nullptr;
+	isMiniActive = false;
+}
+
 void Scene::SetMiniGame(int value)
 {
 	if (value < MINI_GAME_FLAPPY_BIRD_ID || value > MINI_GAME_RO_SHAM_BOO_ID)
@@ -416,11 +445,7 @@ void Scene::SetMiniGame(int value)
 
 	// Replacing an already-running minigame without freeing it would leak both
 	// the MiniGame and its MiniGameData.
-	if (miniGame) {
-		delete miniGame->data;
-		delete miniGame;
-		miniGame = nullptr;
-	}
+	ReleaseMiniGame();
 
 	player->rigidBody2D = {};
 	is2DActive = true;

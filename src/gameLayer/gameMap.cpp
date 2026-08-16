@@ -153,3 +153,17 @@ InteractableObject* GameMap::FindInteractableByID(uint64_t id)
 	if (it == scene->interactables.end()) { return nullptr; }
 	return it->second.get();
 };
+
+GameObject* GameMap::FindWorldObjectByID(uint64_t id)
+{
+	// 0 is the "no object" sentinel — InstanceID hands out ids from 2, reserving
+	// 0 for "none" and 1 for the player.
+	if (id == 0) { return nullptr; }
+
+	// Interactables first: an id authored as an activator is an interactable in
+	// every world shipped so far. The map lookups are O(1); the gameObjects scan
+	// is linear, so it goes last.
+	if (auto* interactable = FindInteractableByID(id)) { return interactable; }
+	if (auto* entity = FindEntityByID(id)) { return entity; }
+	return FindGameObjectByID(id);
+};
