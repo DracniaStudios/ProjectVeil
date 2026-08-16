@@ -117,7 +117,7 @@ void EditorCamera::Update(Camera3D* camera)
 	// into a text field must not fly it: WASD are movement bindings, so naming
 	// an object would otherwise send the viewport across the map.
 	 
-	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && !io.WantCaptureMouse) { UpdateLook(this); }
+	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) ) { UpdateLook(this); }
 	if (!io.WantCaptureKeyboard) { UpdateMovement(this); }
 
 	// Orientation is applied unconditionally so the target tracks the position

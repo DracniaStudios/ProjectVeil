@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
 // Version: 0.3.0
 // Due: 2026-08-21 (Month 3)
-// Date: 2026-08-14 (Current Development Date)
+// Date: 2026-08-16 (Current Development Date)
 
 [Notice] World Editor doesn't use new InputSystem.
 [Notice] Create Maze Minigame
@@ -12,88 +12,30 @@
 [Conecpt] AssetManager Adds Items from Item Folder To "Asset Manager" (Similar to Models and Textures)
 [Notice] Save Rigidbody Locks if locked;
 
+1. Create Maze Game
+
+
+6. Check for lose condition on minigames. (Create CooldownTimer for Timed Minigames)
+
+8. Check game sorting for each object ( Should only activate on enabling Object Inspector or sort with object inspector.
+
 Create The AI for the Entity, this will create the challenge for the character and begin the vertical slice.
+
 
 [ Issues ]
 
-- Loading Chunk_1 creates extra objects that are not used.
-  (Not reproduced from the file itself: chunk_1.json holds 221 objects with 221
-   distinct transforms and no duplicates. Object id 1 does collide with
-   PLAYER_ID, which is the nearest thing found to a stray object.)
-- Maze minigame is an empty stub with no win, lose or exit condition, so
-  launching it strands the player in 2D mode. Needs designing.
-- ACTION_MOVE_INTERACT and ACTION_USE_ARTIFACT are both bound to F;
-  ACTION_MOVE_CROUCH and ACTION_EDITOR_UP are both bound to Left Ctrl.
-  The double-launch this caused is handled, but the bindings need deciding.
-- backup.json is written on every exit and never read back — the Main Menu
-  always loads chunk_1, so player progress does not survive a restart.
-- Several interactables in chunk_1.json launch a minigame that does not match
-  their name (id 286 "Crane" -> Flappy Bird, 288 "Flappy Bird" -> Ro Sham Boo,
-  289 "Doctor" -> Simon Says, 114 "Crane" -> Doctor).
-- Settings are saved and loaded but never applied (vsync, resolution, texture
-  quality, inverted axes); Settings::Update() is empty and never called.
-- Player is excluded from the entity/interactable collision passes in
-  solveCollision (the block is commented out), so the player walks through them.
-- The mouse is never captured at startup, so the game opens with a free cursor
-  while the FPS camera is already reading mouse delta. Left alone because
-  capturing it would make the F1 editor unusable until ` is pressed — needs a
-  decision about which mode the game should boot into.
-- An authored activator that no longer resolves now logs instead of failing
-  silently, but there is no fallback target. Decide whether completing a
-  minigame with a dead activator should fall back to the interactable itself.
-
 [ Added ]
-
-- Scene::ReleaseMiniGame() — single owner for MiniGame/MiniGameData teardown.
-- GameMap::FindWorldObjectByID() — resolves an id across all three world
-  containers instead of only gameMap.gameObjects.
 
 [ Updated ]
 
-- Player 3D movement and Entity stamina drain/regen are now deltaTime scaled
-  instead of per-frame, so neither depends on frame rate any more.
-- Player::Interact() picks the nearest interactable along the look ray instead
-  of the first one the unordered_map happened to yield, and skips disabled ones.
-- Mini Game Inspector's Launch button routes through Scene::SetMiniGame so the
-  launched game actually enters 2D mode and records itself as the last played.
-- Ro Sham Boo highlights cards from the InputSystem actions instead of hardcoded
-  A/S/D, so it follows rebinds.
-- LoadGame/LoadWorld derive the instance id counter from the highest id present
-  in the file rather than from the object count.
-- GameMap::FindEntityByID/FindInteractableByID are static, matching
-  FindGameObjectByID.
+- Updated Scene to Release MiniGame when UI is Unpaused.
+- Updated GameObjects to be sorted on Enabling Object Browser with KeyBind.
 
 [ Fixed ]
 
-- Interact Object Doesn't activate objects. CompleteMiniGame resolved the
-  activator with GameMap::FindGameObjectByID, which only searches
-  gameMap.gameObjects, but every activator authored in chunk_1.json points at
-  an interactable — and interactables are deliberately never placed in
-  gameObjects. The lookup resolved to nullptr for all of them, so winning a
-  minigame silently opened nothing. Now resolved via FindWorldObjectByID.
-- Double free on the minigame reset path. The reset branch deleted the MiniGame
-  and its data but left the freed pointer in scene->miniGame; SetMiniGame then
-  saw it as non-null and freed the same two allocations again. Every failed
-  Flappy Bird or Crane attempt took that path.
-- Scene::ResetID handed out ids 0 and 1 again after New World, colliding with
-  the "no object" sentinel and PLAYER_ID.
-- Flappy Bird read goal rectangles that only render() computed, so the first
-  update of every game tested against rectangles at the screen origin.
-- Flappy Bird returned out of update() while the player overlapped the inactive
-  goal, freezing gravity, input, the win check and the out-of-bounds checks.
-- Flappy Bird's goal rectangles were globals with external linkage.
-- Entities restored from a save came up with no buff timers, so every getBuff()
-  on them returned null and logged a miss.
-- Entity::Attack leaked a generated sphere mesh per projectile.
-- PoolAllocator strided its free list by the object size instead of the node
-  size, misaligning every link when the node needed stronger alignment.
-- Mini Game Inspector clamped the game id to 0-6; 6 silently launched Flappy
-  Bird.
-- InteractableObject::loadFromJson defaulted a missing ActivatorValue to -1
-  instead of the 0 sentinel every other path uses.
+- Fixed an issue where MiniGames actictivated the Wrong Values
+- Fixed an issue where the Interact & Articfact Interact are on the same key.
 
 [ Removed ]
 
-- Dead static getBoundingBox() in GameObject.cpp, whose assert was inverted.
-- Unused per-frame random_device construction in Crane::render.
 

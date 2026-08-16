@@ -46,9 +46,6 @@ GameObject* GameMap::saveObject(GameObject& object)
 	gameObjects.push_back(object);
 
 	std::cout << "Added Object \n";
-	std::sort(gameObjects.begin(), gameObjects.end(), [](const GameObject& a, const GameObject& b) {
-		return a.id > b.id;
-	});
 
 	// The sort above reorders the vector, so the object we just added is no
 	// longer necessarily at back() — find it by the id we just assigned.

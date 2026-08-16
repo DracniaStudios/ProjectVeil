@@ -54,8 +54,12 @@ out/
 .fmod/
 .claude/
 docs/
+tools/
+
+# Additive Files
 saves/backup.json
 saves/settings.json
+veil-digest.py
 
 # CMake generated files
 CMakeFiles/

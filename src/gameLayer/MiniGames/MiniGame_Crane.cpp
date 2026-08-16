@@ -80,6 +80,7 @@ void Crane::render(MiniGameData* data, Player* player)
 void Crane::update(MiniGameData* data, Player* player, float deltaTime)
 {
 	auto inputSystem = &InputSystem::getInstance();
+	auto scene = SceneManager::getInstance().currentScene;
 
 	/// Player Logic
 	{
@@ -111,6 +112,12 @@ void Crane::update(MiniGameData* data, Player* player, float deltaTime)
 		if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, data->goal))
 		{
 			CompleteMiniGame(data, player, BUFF_RANGE, true);
+		}
+
+		auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
+
+		if (!CheckCollisionRecs(playerRect, data->screen)); {
+			scene->ReleaseMiniGame();
 		}
 	}
 

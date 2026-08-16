@@ -11,9 +11,16 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 		object->interactType = static_cast<InteractionType>(stageInteractType);
 	}
 	ImGui::InputInt("Interact Value", &object->interactValue);
-	ImGui::InputInt("Activator Value", &object->activatorValue);
+	
+	if (object->interactType == INTERACT_MINIGAME) {
+		ImGui::TextDisabled(miniGameIdToString(object->interactValue));
+		ImGui::Checkbox("MiniGame Running", &object->isRunningMiniGame);
+	}
+
+	if (object->interactType == INTERACT_MINIGAME || object->interactType == INTERACT_ITEM) {
+		ImGui::InputInt("Activator Value", &object->activatorValue);
+	}
 	ImGui::Checkbox("Interactable", &object->isInteractable);
-	ImGui::Checkbox("MiniGame Running", &object->isRunningMiniGame);
 
 	ImGui::PopID();
 }

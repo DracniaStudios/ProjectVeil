@@ -13,6 +13,7 @@ MiniGame* MiniGame_RoShamBoo(Player* player)
 	game->data->scoreGoal = 5;
 
 	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.4f, GetScreenHeight() * 0.4f));
+	player->rigidBody2D.canMove = false;
 
 	auto rng = std::ranlux24_base(std::random_device{}());
 	game->data->scoreGoal = getRandomInt(rng, 1, 3);

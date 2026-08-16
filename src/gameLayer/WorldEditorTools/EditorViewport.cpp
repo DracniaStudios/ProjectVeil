@@ -147,6 +147,7 @@ void WorldEditor::UpdateViewportInput()
 void WorldEditor::UpdateHotkeys()
 {
 	const ImGuiIO& io = ImGui::GetIO();
+	auto gameObjects = SceneManager::getInstance().currentScene->gameMap.gameObjects;
 
 	// Typing into an ImGui field must not also drive the editor. Without this,
 	// naming an object "Duplicate" cycles tools and deletes the selection while
@@ -156,7 +157,11 @@ void WorldEditor::UpdateHotkeys()
 	if (IsKeyDown(KEY_LEFT_CONTROL))
 	{
 		if (IsKeyPressed(KEY_ONE)) { isWorldSettingsActive = !isWorldSettingsActive; }
-		if (IsKeyPressed(KEY_TWO)) { isObjectBrowserActive = !isObjectBrowserActive; }
+		if (IsKeyPressed(KEY_TWO)) { isObjectBrowserActive = !isObjectBrowserActive; 
+			std::sort(gameObjects.begin(), gameObjects.end(), [](const GameObject& a, const GameObject& b) {
+				return a.id > b.id;
+			});
+		}
 		if (IsKeyPressed(KEY_THREE)) { isPlacementActive = !isPlacementActive; }
 		if (IsKeyPressed(KEY_FOUR)) { isPlayerActive = !isPlayerActive; }
 		if (IsKeyPressed(KEY_FIVE)) { isCameraActive = !isCameraActive; }

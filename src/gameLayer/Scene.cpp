@@ -171,7 +171,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		// Player Vs. Entities — the player lives outside both containers, so
 		// without this pass it walks straight through every entity (it already
 		// resolves against gameObjects in Player::update3D)
-		/*
+		
 		if (auto player = scene->player)
 		{
 			for (auto& [id, entity] : scene->entities)
@@ -197,7 +197,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 				}
 			}
 		}
-		*/
+		
 	}
 }
 
@@ -206,6 +206,7 @@ void Scene_updateScene(float delta) {
 
 	auto manager = &SceneManager::getInstance();
 	auto worldEditor = &WorldEditor::getInstance();
+	auto inputSystem = &InputSystem::getInstance();
 	auto scene = manager->currentScene;
 	scene->update(delta);
 
@@ -328,7 +329,7 @@ void Scene_updateScene(float delta) {
 	if (!editorFrozen) { solveCollision(scene, delta, 8); }
 
 	/** Update MiniGame **/
-	if (auto miniGame = scene->miniGame)
+	if (auto miniGame = scene->miniGame; miniGame != nullptr)
 	{
 		scene->isMiniActive = true;
 		miniGame->update(miniGame->data, scene->player, delta);
@@ -365,7 +366,15 @@ void Scene_updateScene(float delta) {
 	// Pause To Inventory
 	// Gated on isMiniActive so TAB can't be used to regain 3D player control
 	// while a minigame is still running in the background.
-	if (IsKeyPressed(KEY_TAB) && !scene->isMiniActive) { scene->is2DActive = !scene->is2DActive; }
+	if (inputSystem->IsActionPressed(ACTION_UI_PAUSE)) {
+		if (scene->isMiniActive) {
+			scene->is2DActive = false;
+			scene->ReleaseMiniGame();
+		}
+		else {
+			scene->is2DActive = !scene->is2DActive;
+		}
+	}
 
 	// World Editor (includes the developer tool windows)
 	WorldEditor::getInstance().update(scene->player);

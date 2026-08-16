@@ -448,6 +448,7 @@ struct RigidBody2D : Transform2D
 	bool isEnabled = true;
 	bool isStatic = false;
 	bool useGravity = true;
+	bool canMove = true;
 
 	bool upTouch = false;
 	bool downTouch = false;

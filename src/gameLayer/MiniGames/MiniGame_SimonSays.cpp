@@ -14,6 +14,7 @@ MiniGame* MiniGame_SimonSays(Player* player)
 	game->data->scoreGoal = 25;
 
 	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.2f, GetScreenHeight() * 0.2f));
+	player->rigidBody2D.canMove = false;
 
 	auto rng = std::ranlux24_base(std::random_device{}());
 	for (int i = 0; i < game->data->scoreGoal; ++i)
@@ -58,7 +59,6 @@ void SimonSays::update(MiniGameData* data, Player* player, float delta)
 		else if (inputSystem->IsActionPressed(ACTION_MOVE_BACKWARD) && data->obstacles[data->score].y == 2) { data->score++; }
 		else if (inputSystem->IsActionPressed(ACTION_MOVE_RIGHT) && data->obstacles[data->score].y == 3) { data->score++; }
 	}
-	
 	CompleteMiniGame(data, player, BUFF_HEARING);
 
 }

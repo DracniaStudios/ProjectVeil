@@ -2,7 +2,7 @@
 
 #include <SceneManager.h>
 
-namespace
+namespace FlappyBirdSpace
 {
 	// Which side the player is currently being pushed toward — the game's only
 	// state beyond the score, and it lives outside MiniGameData because
@@ -37,6 +37,7 @@ MiniGame* MiniGame_FlappyBird(Player* player)
 
 	game->data->scoreGoal = 3;
 
+	using namespace FlappyBirdSpace;
 	// isLeftGoalActive/isRightGoalActive are file-scope, not part of MiniGameData,
 	// so a retry/reset (which reconstructs the MiniGame via this function) must
 	// reset them explicitly or the new game inherits whichever goal was active
@@ -46,6 +47,8 @@ MiniGame* MiniGame_FlappyBird(Player* player)
 
 	player->rigidBody2D.scale = Vector3(5.0f, 5.0f, 5.0f);
 	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
+	player->rigidBody2D.canMove = false;
+	player->rigidBody2D.useGravity = false;
 
 	// Generate Obstacle
 	{
@@ -72,6 +75,7 @@ MiniGame* MiniGame_FlappyBird(Player* player)
 
 void FlappyBird::render(MiniGameData* data, Player* player)
 {
+	using namespace FlappyBirdSpace;
 	/// Draw Background Screen
 	Rectangle screen = GetPlayScreen();
 
@@ -108,6 +112,7 @@ void FlappyBird::update(MiniGameData* data, Player* player, float deltaTime)
 {
 	auto scene = SceneManager::getInstance().currentScene;
 	auto inputSystem = &InputSystem::getInstance();
+	using namespace FlappyBirdSpace;
 
 	auto generateObstacle = [&](int count = 4)
 		{
@@ -167,8 +172,15 @@ void FlappyBird::update(MiniGameData* data, Player* player, float deltaTime)
 	if (player->rigidBody2D.getPosition().y > screen.y + screen.height) scene->miniGame->data->isReset = true;
 
 	// Win Condition
-
 	CompleteMiniGame(data, player, BUFF_MOVEMENT);
+
+	// Lose Condition
+	 auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
+
+	if (!CheckCollisionRecs(playerRect, screen)); {
+		scene->ReleaseMiniGame();
+		std::cout << "[MiniGame/FlappyBird] Play Fail Sound\n";
+	}
 
 	// Player Logic
 	{

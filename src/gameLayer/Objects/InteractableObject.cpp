@@ -28,6 +28,7 @@ void Unlock(InteractableObject* interactable)
 	std::cout << "[InteractableObject] Unlocking MiniGame: " << interactable->interactValue << "\n";
 	auto player = SceneManager::getInstance().currentScene->player;
 	player->artifactUnlocked = std::max(player->artifactUnlocked, interactable->interactValue);
+	player->artifactUnlocked = Clamp(player->artifactUnlocked, MINI_GAME_FLAPPY_BIRD_ID, MINI_GAME_RO_SHAM_BOO_ID);
 
 	// Check If Player Has Artifact
 	if (player->artifact == nullptr) {

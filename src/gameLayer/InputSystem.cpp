@@ -82,8 +82,8 @@ void InputSystem::SetDefaultActions() {
 	CreateAction(ACTION_MOVE_JUMP, "Jump", KEY_SPACE, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
 
 	// Artifact Actions
-	CreateAction(ACTION_USE_ARTIFACT, "Artifact_Interact", KEY_F, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
-	CreateAction(ACTION_USE_ARTIFACT_RIGHT, "Artifact_Right", KEY_E, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
+	CreateAction(ACTION_USE_ARTIFACT, "Artifact_Interact", KEY_E, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
+	CreateAction(ACTION_USE_ARTIFACT_RIGHT, "Artifact_Right", KEY_R, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
 	CreateAction(ACTION_USE_ARTIFACT_LEFT, "Artifact_Left", KEY_Q, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
 
 	// Item Actions
