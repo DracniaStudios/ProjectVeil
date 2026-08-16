@@ -20,33 +20,48 @@
 template <typename Object, size_t ObjectCount>
 class PoolAllocator
 {
-	
+	static_assert(ObjectCount > 0, "A pool needs at least one slot");
+
 public:
 	PoolAllocator()
 	{
-		// Pre-allocate contiguous memory big enough for all elements
-		// Ensure each block is at least alrge enough to hold a poitner
-		
-		constexpr size_t objectSize = sizeof(Object) > sizeof(Node*) ? sizeof(Object) : sizeof(Node*);
-		poolBuffer = ::operator new[](ObjectCount* objectSize);
-	
+		// Pre-allocate contiguous memory big enough for all elements.
+		//
+		// Both the size and the stride are sizeof(Node), NOT
+		// max(sizeof(Object), sizeof(Node*)). Node is a union of the object
+		// storage and the free-list pointer, so the compiler pads it out to the
+		// stricter of the two alignments — for a 12-byte, 4-aligned Object on a
+		// 64-bit target that is 16 bytes against the 12 the old expression
+		// produced. Walking the buffer in 12-byte steps then wrote each `next`
+		// pointer into the middle of the preceding slot and ran the last one
+		// four bytes past the end of the allocation.
+		poolBuffer = ::operator new[](ObjectCount * sizeof(Node), std::align_val_t{ alignof(Node) });
+
 		// Link all blocks together into an initial free list
-		freeList = reinterpret_cast<Node*>(poolBuffer);
-		Node* current = freeList;
-		for (size_t i = 0; i < ObjectCount - 1; ++i)
+		Node* nodes = static_cast<Node*>(poolBuffer);
+		freeList = nodes;
+		for (size_t i = 0; i + 1 < ObjectCount; ++i)
 		{
-			char* nextAddress = reinterpret_cast<char*>(current) + objectSize;
-			current->next = reinterpret_cast<Node*>(nextAddress);
-			current = current->next;
+			nodes[i].next = &nodes[i + 1];
 		}
-		current->next = nullptr; // End of List
+		nodes[ObjectCount - 1].next = nullptr; // End of List
 
 	}
 
 	~PoolAllocator()
 	{
-		::operator delete[](poolBuffer);
+		// Must mirror the aligned new above — pairing a plain operator delete[]
+		// with an aligned operator new[] is undefined.
+		::operator delete[](poolBuffer, std::align_val_t{ alignof(Node) });
 	}
+
+	// The pool owns a raw buffer and hands out interior pointers, so a copy
+	// would double-free it and leave the original's live objects pointing into
+	// freed memory. Arena already forbids this for the same reason.
+	PoolAllocator(const PoolAllocator&) = delete;
+	PoolAllocator& operator=(const PoolAllocator&) = delete;
+	PoolAllocator(PoolAllocator&&) = delete;
+	PoolAllocator& operator=(PoolAllocator&&) = delete;
 
 	// Allocate memory and construct the object
 	template <typename... Args>

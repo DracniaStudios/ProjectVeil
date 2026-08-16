@@ -45,12 +45,21 @@ inline void CompleteMiniGame(MiniGameData* data, Player* player, Buff buff, bool
 		if (CooldownTimer* getBuff = player->getBuff(buff); getBuff != nullptr) { getBuff->use(); }
 		
 		// Check for Activator Object and Enable/Disable
-		// interactObjectId refers into GameMap::gameObjects, which GameMap::saveObject()
-		// re-sorts (and may reallocate) on every insert, so it's re-resolved here rather
-		// than cached as a pointer that could end up pointing at an unrelated object.
+		// interactObjectId is re-resolved here rather than cached as a pointer:
+		// an activator in GameMap::gameObjects lives in a plain vector that
+		// GameMap::saveObject() re-sorts (and may reallocate) on every insert, so
+		// a stored pointer could silently start referring to a different object.
+		//
+		// The lookup goes through FindWorldObjectByID, not FindGameObjectByID.
+		// An activator can be authored against any world object, and the two
+		// searches are not interchangeable: FindGameObjectByID only walks
+		// gameMap.gameObjects, while interactables and entities live in their own
+		// maps and are never placed in gameObjects. Every activator authored in
+		// chunk_1.json points at an interactable, so this resolved to nullptr for
+		// all of them — winning a minigame silently opened nothing.
 		GameObject* target = player->interactObject != nullptr
 			? player->interactObject
-			: (player->interactObjectId != 0 ? GameMap::FindGameObjectByID(player->interactObjectId) : nullptr);
+			: GameMap::FindWorldObjectByID(player->interactObjectId);
 
 		if (target != nullptr) {
 			if (target->isEnabled) {
@@ -62,6 +71,14 @@ inline void CompleteMiniGame(MiniGameData* data, Player* player, Buff buff, bool
 				// onEnable() already restores canCollide = true; don't clobber it back to false
 				target->onEnable();
 			}
+		}
+		else if (player->interactObjectId != 0) {
+			// An authored activator that no longer resolves. Worth saying out
+			// loud: this failure mode is invisible in game — the minigame
+			// completes normally and the thing it was meant to open just does
+			// not move — so it went unnoticed for a long time.
+			std::cout << "[MiniGame] Activator " << player->interactObjectId
+				<< " no longer exists — nothing to open\n";
 		}
 	}
 }

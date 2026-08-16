@@ -123,7 +123,11 @@ bool InteractableObject::loadFromJson(Json& j)
 	if (!loadCommonFromJson(j)) { return false; }
 	interactType = static_cast<InteractionType>(j.value("InteractType", 0));
 	interactValue = j.value("InteractValue", 0);
-	activatorValue = j.value("ActivatorValue", -1);
+	// 0 is the "no activator" sentinel every other path uses — both constructors
+	// default to it and ActivateMiniGame tests against it. Defaulting to -1 made
+	// a save written before ActivatorValue existed load as a real-but-
+	// unresolvable id instead of "none".
+	activatorValue = j.value("ActivatorValue", 0);
 	isInteractable = j.value("IsInteractable", true);
 	return true;
 }

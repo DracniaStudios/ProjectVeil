@@ -9,7 +9,13 @@ void WorldEditor::ShowMiniGameData(Player* player)
 
 	ImGui::Text("Display Mini Game Data");
 	ImGui::InputInt("Mini Game ID", &currentGameID, 1, 1);
-	currentGameID = Clamp(currentGameID, 0, 6);
+
+	// Upper bound was 6, one past the last id. Nothing handled 6, so it fell
+	// through to the default branch and quietly launched Flappy Bird while the
+	// field still read "6".
+	currentGameID = Clamp(currentGameID, MINI_GAME_FLAPPY_BIRD_ID, MINI_GAME_RO_SHAM_BOO_ID);
+	ImGui::SameLine();
+	ImGui::TextDisabled("%s", miniGameIdToString(currentGameID));
 
 	ImGui::Checkbox("Is Mini Game Active", &scene->isMiniActive);
 
@@ -18,24 +24,13 @@ void WorldEditor::ShowMiniGameData(Player* player)
 	{
 		miniGameObstacleIndex = -1; // Selection belongs to the previous game's obstacle list
 
-		// Free the previously active minigame before replacing it, matching the
-		// cleanup Scene::Update() performs on natural completion/reset
-		if (scene->miniGame != nullptr)
-		{
-			delete scene->miniGame->data;
-			delete scene->miniGame;
-		}
-
-		switch (currentGameID)
-		{
-			// Select Mini Game
-			case 1: scene->miniGame = MiniGame_Crane(player);break;
-			case 2: scene->miniGame = MiniGame_Doctor(player);break;
-			case 3: scene->miniGame = MiniGame_SimonSays(player);break;
-			case 4: scene->miniGame = MiniGame_Maze(player);break;
-			case 5: scene->miniGame = MiniGame_RoShamBoo(player);break;
-			default: scene->miniGame = MiniGame_FlappyBird(player); break;
-		}
+		// Route through Scene::SetMiniGame rather than constructing the game
+		// here. The open-coded switch this replaces built the MiniGame but left
+		// is2DActive false, isMiniActive stale and lastMiniGamePlayed pointing at
+		// the previous game — so the launched game never drew (Scene_drawScene2D
+		// gates the minigame layer on is2DActive) and losing it replayed the
+		// wrong one. SetMiniGame also owns freeing the game being replaced.
+		scene->SetMiniGame(currentGameID);
 	}
 	ImGui::Separator();
 

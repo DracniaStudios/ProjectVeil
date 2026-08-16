@@ -62,7 +62,9 @@ MiniGame* MiniGame_Crane(Player* player)
 
 void Crane::render(MiniGameData* data, Player* player)
 {
-	std::ranlux24_base rng(std::random_device{}());
+	// An unused std::random_device + generator used to be constructed here, once
+	// per frame. random_device can hit the OS entropy source on construction, so
+	// this was a syscall per frame in the draw path for a value nothing read.
 
 	/// Draw Background Screen
 	DrawRectangleRec(data->screen, BLACK);
