@@ -144,7 +144,7 @@ void Player::onCollision(const GameObject* collider)
 	// that really is an Entity — the same checked-cast discipline the physics
 	// solver uses before calling type-specific reactions.
 	const auto* entity = static_cast<const Entity*>(collider);
-	if (entity->kind != ENTITY_STALKER) { return; }
+	if (entity->kind != ENTITYKIND_STALKER) { return; }
 
 	// Caught. Contact damage rather than Entity::Attack(), which spawns a
 	// projectile — wrong shape for an enemy whose whole threat is reaching you.

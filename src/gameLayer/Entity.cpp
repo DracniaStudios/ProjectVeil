@@ -24,9 +24,9 @@ std::unique_ptr<Entity> Entity::createByKind(EntityKind kind)
 {
 	switch (kind)
 	{
-	case ENTITY_PLAYER:  return std::make_unique<Player>();
-	case ENTITY_STALKER: return std::make_unique<Stalker>();
-	case ENTITY_BASE:    return std::make_unique<Entity>();
+	case ENTITYKIND_PLAYER:  return std::make_unique<Player>();
+	case ENTITYKIND_STALKER: return std::make_unique<Stalker>();
+	case ENTITYKIND_NONE:    return std::make_unique<Entity>();
 	default:
 		// An unknown kind means a save written by a newer build. Fall back to a
 		// plain Entity rather than dropping the row: position and health still

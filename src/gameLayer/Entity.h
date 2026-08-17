@@ -8,32 +8,6 @@
 
 struct Scene;
 
-/**
- * Concrete Entity type, persisted so a subclass survives a save/load round trip.
- *
- * `GameObject::type` answers "what container does this belong to" (entity vs.
- * projectile vs. interactable) and several subclasses deliberately share a
- * value, so it cannot pick a constructor. `kind` is the narrower question —
- * "which class is this exactly" — and is what createByKind() switches on.
- */
-enum EntityKind
-{
-	ENTITY_BASE,
-	ENTITY_PLAYER,
-	ENTITY_STALKER,
-	ENTITY_KIND_COUNT
-};
-
-inline const char* entityKindToString(int kind)
-{
-	switch (kind)
-	{
-	case ENTITY_PLAYER:  return "Player";
-	case ENTITY_STALKER: return "Stalker";
-	default:             return "Entity";
-	}
-}
-
 enum Buff {
 	BUFF_MOVEMENT,
 	BUFF_RANGE,
@@ -45,12 +19,31 @@ enum Buff {
 	MAX_BUFF
 };
 
-enum EntityKind : uint8_t 
+/**
+ * Concrete Entity type, persisted so a subclass survives a save/load round trip.
+ *
+ * `GameObject::type` answers "what container does this belong to" (entity vs.
+ * projectile vs. interactable) and several subclasses deliberately share a
+ * value, so it cannot pick a constructor. `kind` is the narrower question —
+ * "which class is this exactly" — and is what createByKind() switches on.
+ */
+enum EntityKind : std::uint8_t
 {
 	ENTITYKIND_NONE,
 	ENTITYKIND_PLAYER,
-	ENTITYKIND_STALKER
+	ENTITYKIND_STALKER,
+	ENTITYKIND_COUNT
 };
+
+inline const char* entityKindToString(int kind)
+{
+	switch (kind)
+	{
+	case ENTITYKIND_PLAYER:  return "Player";
+	case ENTITYKIND_STALKER: return "Stalker";
+	default:                 return "Entity";
+	}
+}
 
 /*
 struct Buff {
@@ -79,8 +72,6 @@ private:
 	float attackWaitTime = 3.0f;
 public:
 	Entity();
-	virtual std::unique_ptr<Entity> clone() const { return std::make_unique<Entity>(this); };
-	EntityKind kind;
 
 	/** Status **/
 	float health = 1.0f;
@@ -103,7 +94,7 @@ public:
 	/** Identity **/
 	// Which concrete class this is. Set by each subclass's constructor and
 	// round-tripped through JSON so the loader can rebuild the right type.
-	EntityKind kind = ENTITY_BASE;
+	EntityKind kind = ENTITYKIND_NONE;
 
 	/**
 	 * Polymorphic copy.
@@ -146,26 +137,5 @@ public:
 	virtual void Attack();
 
 };
-
-inline Entity createByKind(EntityKind kind) {
-	auto entity = Entity{};
-	entity.kind = kind;
-
-	if (kind == ENTITYKIND_PLAYER) {
-		entity.name = "Player";
-		std::cout << "[Entity.cpp] Create Player \n";
-	}
-	else if (kind == ENTITYKIND_STALKER) {
-		entity.name = "Stalker";
-		entity.baseDamage = 10;
-		std::cout << "[Entity.cpp] Create Stalker \n";
-	}
-	else {
-		entity.name = "New Entity";
-		std::cout << "[Entity.cpp] Create Entity Blank \n";
-	}
-
-	return entity;
-}
 
 #endif

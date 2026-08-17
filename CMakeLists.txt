@@ -133,3 +133,8 @@ add_custom_command(
 # thirdparty/steam-1.64). TARGET_RUNTIME_DLLS above only resolves DLLs on
 # Windows, so Steam handles its own copying to stay cross platform.
 steam_copy_runtime_libraries("${CMAKE_PROJECT_NAME}")
+
+# Same story for FMOD: the .so/.dylib libraries are invisible to
+# TARGET_RUNTIME_DLLS, and on Linux they must be copied under their SONAME
+# rather than their file name for the loader to find them at startup.
+fmod_copy_runtime_libraries("${CMAKE_PROJECT_NAME}")

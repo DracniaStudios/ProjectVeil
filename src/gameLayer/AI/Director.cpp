@@ -31,7 +31,7 @@ void Director::Update(Scene* scene, float deltaTime)
 	Stalker* stalker = nullptr;
 	for (auto& [id, entity] : scene->entities)
 	{
-		if (entity && entity->kind == ENTITY_STALKER)
+		if (entity && entity->kind == ENTITYKIND_STALKER)
 		{
 			stalker = static_cast<Stalker*>(entity.get());
 			break;

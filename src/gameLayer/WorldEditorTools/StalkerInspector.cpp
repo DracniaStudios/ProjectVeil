@@ -44,7 +44,7 @@ void WorldEditor::ShowStalkerData()
 	int found = 0;
 	for (auto& [id, entity] : scene->entities)
 	{
-		if (!entity || entity->kind != ENTITY_STALKER) { continue; }
+		if (!entity || entity->kind != ENTITYKIND_STALKER) { continue; }
 		auto* stalker = static_cast<Stalker*>(entity.get());
 		++found;
 

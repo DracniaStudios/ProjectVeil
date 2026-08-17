@@ -9,7 +9,7 @@
 
 Stalker::Stalker()
 {
-	kind = ENTITY_STALKER;
+	kind = ENTITYKIND_STALKER;
 	type = OBJECT_ENTITY;
 	name = "Stalker";
 
