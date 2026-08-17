@@ -147,7 +147,7 @@ void WorldEditor::UpdateViewportInput()
 void WorldEditor::UpdateHotkeys()
 {
 	const ImGuiIO& io = ImGui::GetIO();
-	auto gameObjects = SceneManager::getInstance().currentScene->gameMap.gameObjects;
+	auto& gameObjects = SceneManager::getInstance().currentScene->gameMap.gameObjects;
 
 	// Typing into an ImGui field must not also drive the editor. Without this,
 	// naming an object "Duplicate" cycles tools and deletes the selection while

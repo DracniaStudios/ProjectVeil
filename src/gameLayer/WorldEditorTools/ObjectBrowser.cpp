@@ -13,7 +13,7 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 	ImGui::InputInt("Interact Value", &object->interactValue);
 	
 	if (object->interactType == INTERACT_MINIGAME) {
-		ImGui::TextDisabled(miniGameIdToString(object->interactValue));
+		ImGui::TextDisabled("%s", miniGameIdToString(object->interactValue));
 		ImGui::Checkbox("MiniGame Running", &object->isRunningMiniGame);
 	}
 

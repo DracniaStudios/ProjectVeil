@@ -87,7 +87,7 @@ void Maze::update(MiniGameData* data, Player* player, float delta)
 
 	auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
 
-	if (!CheckCollisionRecs(playerRect, GetScreen())); {
+	if (!CheckCollisionRecs(playerRect, GetScreen())) {
 
 	}
 	CompleteMiniGame(data, player, BUFF_SEARCH);

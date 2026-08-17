@@ -312,7 +312,7 @@ namespace SaveSystem
 		// Check For Object Limit
 		if (scene->gameMap.gameObjects.size() > OBJECT_LIMIT) { return false; }
 
-		const std::string savePath = RESOURCES_PATH "../saves";
+		const std::string savePath = RESOURCES_PATH "../saves/";
 		const fs::path path = savePath + fileName + ".json";
 		if (!WriteJsonAtomic(path, SceneToJson(scene))) { return false; }
 
