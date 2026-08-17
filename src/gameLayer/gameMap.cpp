@@ -47,8 +47,6 @@ GameObject* GameMap::saveObject(GameObject& object)
 
 	std::cout << "Added Object \n";
 
-	// The sort above reorders the vector, so the object we just added is no
-	// longer necessarily at back() — find it by the id we just assigned.
 	auto id = object.id;
 	auto it = std::find_if(gameObjects.begin(), gameObjects.end(), [id](const GameObject& o) { return o.id == id; });
 	return &(*it);
@@ -77,8 +75,11 @@ Entity* GameMap::saveEntity(Entity& entity)
 	// clone() rather than make_unique<Entity>(entity): the latter slices, so a
 	// Stalker (or any other subclass) handed to this function was stored as a
 	// bare Entity and lost its overrides before it ever ticked.
-	auto entity_ptr = entity.clone();
-	scene->entities[entity.id] = std::move(entity_ptr);
+	//
+	// No std::move around the call: clone() already returns a prvalue, and
+	// wrapping it blocks the copy elision that would otherwise construct in
+	// place.
+	scene->entities[entity.id] = entity.clone();
 
 	std::cout << "Added Entity \n";
 	return scene->entities[entity.id].get();

@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
 // Version: 0.3.0
 // Due: 2026-08-21 (Month 3)
-// Date: 2026-08-16 (Current Development Date)
+// Date: 2026-08-17 (Current Development Date)
 
 [Notice] World Editor doesn't use new InputSystem.
 [Notice] Create Maze Minigame
@@ -13,16 +13,17 @@
 [Notice] Save Rigidbody Locks if locked;
 
 1. Create Maze Game
-
-
 6. Check for lose condition on minigames. (Create CooldownTimer for Timed Minigames)
-
 8. Check game sorting for each object ( Should only activate on enabling Object Inspector or sort with object inspector.
 
 Create The AI for the Entity, this will create the challenge for the character and begin the vertical slice.
 
 
 [ Issues ]
+
+- Maze's out-of-bounds check now evaluates correctly (see Fixed below) but its
+  body is still empty, so leaving the play area has no consequence. Needs a
+  design decision, same as the existing "Maze is an empty stub" note.
 
 [ Added ]
 
@@ -35,6 +36,28 @@ Create The AI for the Entity, this will create the challenge for the character a
 
 - Fixed an issue where MiniGames actictivated the Wrong Values
 - Fixed an issue where the Interact & Articfact Interact are on the same key.
+- Crane and Flappy Bird's lose-condition checks were `if (cond);` — the stray
+  semicolon made the guarded block (ReleaseMiniGame) run unconditionally every
+  frame, so both minigames tore themselves down on their very first update and
+  were unplayable. Maze had the same stray semicolon on an empty block.
+- Maze's CellMap both resize()'d and push_back()'d its cell array, doubling it
+  with an unused, unpositioned first half that got rendered for nothing.
+- The Ctrl+2 object-sort hotkey (added this session) sorted a value-copy of
+  gameMap.gameObjects instead of the scene's actual container, so the sort had
+  no effect on the game state.
+- EditorCamera's right-click look dropped its `!io.WantCaptureMouse` guard, so
+  dragging inside an ImGui panel also spun the 3D viewport underneath it.
+- SaveSystem::SaveGame lost the trailing slash on its save directory in the
+  same change that made the on-close backup save to "backup/<date>", so the
+  two combined into a wrong path ("saves" + "backup/..." with no separator)
+  instead of nesting the backup under saves/.
+- ObjectBrowser passed a minigame name straight through as an ImGui format
+  string instead of via "%s"; harmless today since no name contains '%', but
+  it would misbehave or crash the moment one did.
+- RigidBody2D::canMove (added this session so Flappy Bird/Ro Sham Boo/Simon
+  Says can lock the player in place) was never read — Player::update2D's
+  canMove parameter kept defaulting to true, so the lock had no effect and the
+  player could still walk around during those minigames.
 
 [ Removed ]
 

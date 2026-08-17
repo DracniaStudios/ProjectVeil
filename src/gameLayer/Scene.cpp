@@ -259,7 +259,7 @@ void Scene_updateScene(float delta) {
 		}
 		else if (scene->is2DActive)
 		{
-			player->update2D(delta);
+			player->update2D(delta, player->rigidBody2D.canMove);
 		}
 		else
 		{

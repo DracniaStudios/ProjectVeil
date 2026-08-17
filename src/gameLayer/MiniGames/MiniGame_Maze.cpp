@@ -19,7 +19,6 @@ namespace MazeSpace {
 
 		CellMap(int mapSize) {
 			size = mapSize;
-			map.resize(size * size);
 
 			for (int x = 0; x < mapSize; x++) {
 				for (int y = 0; y < mapSize; y++) {
@@ -87,7 +86,7 @@ void Maze::update(MiniGameData* data, Player* player, float delta)
 
 	auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
 
-	if (!CheckCollisionRecs(playerRect, GetScreen())); {
+	if (!CheckCollisionRecs(playerRect, GetScreen())) {
 
 	}
 	CompleteMiniGame(data, player, BUFF_SEARCH);

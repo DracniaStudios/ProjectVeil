@@ -177,7 +177,7 @@ void FlappyBird::update(MiniGameData* data, Player* player, float deltaTime)
 	// Lose Condition
 	 auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
 
-	if (!CheckCollisionRecs(playerRect, screen)); {
+	if (!CheckCollisionRecs(playerRect, screen)) {
 		scene->ReleaseMiniGame();
 		std::cout << "[MiniGame/FlappyBird] Play Fail Sound\n";
 	}

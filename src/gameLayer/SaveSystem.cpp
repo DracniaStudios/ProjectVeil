@@ -230,9 +230,9 @@ namespace SaveSystem
 			{
 				// The concrete type has to be chosen before loadFromJson() runs,
 				// so read the persisted kind first. Saves written before "Kind"
-				// existed default to ENTITY_BASE, which is what they were.
+				// existed default to ENTITYKIND_NONE, which is what they were.
 				const auto kind = static_cast<EntityKind>(
-					entData.value("Kind", static_cast<int>(ENTITY_BASE)));
+					entData.value("Kind", static_cast<int>(ENTITYKIND_NONE)));
 				auto entity = Entity::createByKind(kind);
 				if (!TryParseId(key, entity->id))
 				{
@@ -246,7 +246,7 @@ namespace SaveSystem
 					continue;
 				}
 
-				scene.entities[entity->id] = std::move(entity);
+				scene.entities[entity->id] = std::move(entity->clone());
 			}
 		}
 
@@ -317,7 +317,7 @@ namespace SaveSystem
 		// Check For Object Limit
 		if (scene->gameMap.gameObjects.size() > OBJECT_LIMIT) { return false; }
 
-		const std::string savePath = RESOURCES_PATH "../saves";
+		const std::string savePath = RESOURCES_PATH "../saves/";
 		const fs::path path = savePath + fileName + ".json";
 		if (!WriteJsonAtomic(path, SceneToJson(scene))) { return false; }
 
