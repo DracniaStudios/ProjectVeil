@@ -59,6 +59,12 @@ struct Player : Entity
 
 	// Flags
 
+	// Being caught is detected here rather than on the stalker. Scene resolves
+	// player-vs-entity contacts with the player as `self`, so the stalker's own
+	// collision callback never fires for this pair. Keeping it on this side
+	// also keeps the stalker free of any reference to the player.
+	void onCollision(const GameObject* collider) override;
+
 	// Render And Update
 	void render2D() override;
 	void render3D() override;

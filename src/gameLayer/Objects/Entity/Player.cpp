@@ -134,6 +134,23 @@ void updateArtifact(Player* player, float deltaTime) {
 
 #pragma endregion
 
+void Player::onCollision(const GameObject* collider)
+{
+	Entity::onCollision(collider);
+
+	if (collider == nullptr || collider->type != OBJECT_ENTITY) { return; }
+
+	// Narrowed by `type` first, so the cast below only ever runs on something
+	// that really is an Entity — the same checked-cast discipline the physics
+	// solver uses before calling type-specific reactions.
+	const auto* entity = static_cast<const Entity*>(collider);
+	if (entity->kind != ENTITY_STALKER) { return; }
+
+	// Caught. Contact damage rather than Entity::Attack(), which spawns a
+	// projectile — wrong shape for an enemy whose whole threat is reaching you.
+	applyHealthValue(entity->baseDamage, true);
+}
+
 void Player::onEnable()
 {
 	maxHealth = 100.0f;

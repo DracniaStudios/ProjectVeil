@@ -4,6 +4,7 @@
 #include <SceneManager.h>
 #include <helpers.h>
 #include <Player.h>
+#include <AI/Stalker.h>
 // Length in milliseconds
 
 // One timer per Buff, keyed by cooldownID — what getBuff() looks up.
@@ -24,7 +25,7 @@ std::unique_ptr<Entity> Entity::createByKind(EntityKind kind)
 	switch (kind)
 	{
 	case ENTITY_PLAYER:  return std::make_unique<Player>();
-	// ENTITY_STALKER is registered here once AI/Stalker.h exists.
+	case ENTITY_STALKER: return std::make_unique<Stalker>();
 	case ENTITY_BASE:    return std::make_unique<Entity>();
 	default:
 		// An unknown kind means a save written by a newer build. Fall back to a
