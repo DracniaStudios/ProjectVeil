@@ -11,6 +11,7 @@
 #include <gameMap.h>
 #include <InputSystem.h>
 #include <Player.h>
+#include <Perception/SoundField.h>
 #include <AssetManager.h>
 #include <MiniGame.h>
 #include <asserts.h>
@@ -69,6 +70,10 @@ public:
 	// Map Data
 	GameMap gameMap = {}; // The GameMap of the Scene
 	MiniGame* miniGame = {}; // Current Mini Game Loaded
+
+	// Perception — the only channel through which AI learns about the player.
+	// Owned by the Scene because emitters and listeners are both scene objects.
+	SoundField soundField = {};
 	
 	// Entity Data
 	Player* player = {};

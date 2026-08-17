@@ -53,6 +53,10 @@ struct Player : Entity
 	int baseJumpPower = 20;
 	float currentJumpPower = 20;
 
+	// Time until the next footstep noise. Footsteps are the player's main
+	// emission into the SoundField, so gait is the primary stealth control.
+	float footstepTimer = 0.0f;
+
 	// Flags
 
 	// Render And Update

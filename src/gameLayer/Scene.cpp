@@ -245,6 +245,12 @@ void Scene_updateScene(float delta) {
 		}
 	};
 
+	// Age out stale noise before anything emits this frame, so an event emitted
+	// now is heard by entities later in the same frame rather than next one.
+	// Frozen editor time must not expire events either, hence the delta passed
+	// through unchanged only when the sim is actually running.
+	if (!editorFrozen) { scene->soundField.Update(delta); }
+
 	/** Update Player **/
 	if (auto player = scene->player) {
 		if (editorFrozen)

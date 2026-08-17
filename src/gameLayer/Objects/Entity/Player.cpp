@@ -208,6 +208,43 @@ void Player::update2D(float deltaTime, bool canMove)
 	rigidBody2D.update(deltaTime);
 }
 
+// Footsteps, the player's loudest routine emission.
+//
+// Cadence and loudness both key off gait, which is what makes crouch-walking a
+// real tactic rather than a cosmetic one: it is quieter per step *and* emits
+// fewer steps. Loudness values match the plan's table (crouch .15 / walk .5 /
+// sprint 1.0).
+static void EmitFootsteps(Player* player, float deltaTime)
+{
+	auto scene = SceneManager::getInstance().currentScene;
+	if (scene == nullptr) { return; }
+
+	// Vertical motion is jumping and falling, not walking; only horizontal
+	// travel makes footfalls.
+	const Vector3 velocity = player->rigidBody3D.GetVelocity();
+	const float planarSpeed = Vector2Length(Vector2{ velocity.x, velocity.z });
+
+	constexpr float kMovingThreshold = 0.5f;
+	if (planarSpeed < kMovingThreshold)
+	{
+		// Land the next step immediately on moving off again, so starting to
+		// walk is audible rather than free for the first half-stride.
+		player->footstepTimer = 0.0f;
+		return;
+	}
+
+	float interval = 0.45f;
+	float loudness = 0.5f;
+	if (player->isCrouching)      { interval = 0.70f; loudness = 0.15f; }
+	else if (player->isSprinting) { interval = 0.28f; loudness = 1.0f; }
+
+	player->footstepTimer -= deltaTime;
+	if (player->footstepTimer > 0.0f) { return; }
+	player->footstepTimer = interval;
+
+	scene->soundField.Emit(player->getPosition(), loudness, SOUND_FOOTSTEP, player->id);
+}
+
 void Player::update3D(float deltaTime)
 {
 	if (!isEnabled) return;
@@ -224,6 +261,10 @@ void Player::update3D(float deltaTime)
 	rigidBody3D.Update(deltaTime);
 
 	updateCollision(this);
+
+	// After the physics step so the noise is stamped at the position the player
+	// actually reached this frame, not the one they started it at.
+	EmitFootsteps(this, deltaTime);
 
 	if (artifact) { updateArtifact(this, deltaTime); }
 
