@@ -75,6 +75,7 @@ class WorldEditor
 	bool isMiniGameActive = false;
 	bool isAssetActive = false;
 	bool isLightingActive = false;
+	bool isStalkerActive = false;
 
 	/** World Settings **/
 	std::string worldName = "world";
@@ -162,6 +163,10 @@ class WorldEditor
 	void ShowMiniGameData(Player* player);
 	void ShowAssetData();
 	void ShowLightingData();
+	// Stalker AI: FSM state, what it last heard, and the Director's hint log.
+	// The hint log is the artifact the slice's acceptance criteria are checked
+	// against — "verify by logging what the Director passes".
+	void ShowStalkerData();
 
 	/** Viewport Interaction (EditorViewport.cpp) **/
 	// Arbitrates the mouse between ImGui, the camera, the gizmo, placement and
