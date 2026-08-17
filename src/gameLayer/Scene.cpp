@@ -319,6 +319,10 @@ void Scene_updateScene(float delta) {
 		}
 	}
 
+	// After the entities have settled, so the Director advises on the state the
+	// stalker actually ended the frame in rather than the previous one.
+	if (!editorFrozen) { scene->director.Update(scene, delta); }
+
 
 	// Sweep objects flagged by Destroy() — removal must happen outside the
 	// update loop above, since erasing mid-iteration invalidates it
