@@ -72,8 +72,7 @@ Entity* GameMap::saveEntity(Entity& entity)
 		entity.rigidBody3D.scale = Vector3One();
 	}
 	/// Add Entity To Scene Entity Data
-	auto entity_ptr = std::make_unique<Entity>(entity);
-	scene->entities[entity.id] = std::move(entity_ptr);
+	scene->entities[entity.id] = std::move(entity.clone());
 
 	std::cout << "Added Entity \n";
 	return scene->entities[entity.id].get();

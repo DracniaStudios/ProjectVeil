@@ -18,9 +18,9 @@
 *.pdb
 
 # Compiled Dynamic libraries
-*.so
-*.dylib
-*.so.*
+#*.so
+#*.dylib
+#*.so.*
 
 # Fortran module files
 *.mod

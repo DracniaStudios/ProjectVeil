@@ -16,6 +16,14 @@ enum Buff {
 	// Attack Timer?
 	MAX_BUFF
 };
+
+enum EntityKind : uint8_t 
+{
+	ENTITYKIND_NONE,
+	ENTITYKIND_PLAYER,
+	ENTITYKIND_STALKER
+};
+
 /*
 struct Buff {
 	CooldownTimer timer = {};
@@ -43,6 +51,9 @@ private:
 	float attackWaitTime = 3.0f;
 public:
 	Entity();
+	virtual std::unique_ptr<Entity> clone() const { return std::make_unique<Entity>(this); };
+	EntityKind kind;
+
 	/** Status **/
 	float health = 1.0f;
 	float maxHealth = 10.0f;
@@ -86,5 +97,26 @@ public:
 	virtual void Attack();
 
 };
+
+inline Entity createByKind(EntityKind kind) {
+	auto entity = Entity{};
+	entity.kind = kind;
+
+	if (kind == ENTITYKIND_PLAYER) {
+		entity.name = "Player";
+		std::cout << "[Entity.cpp] Create Player \n";
+	}
+	else if (kind == ENTITYKIND_STALKER) {
+		entity.name = "Stalker";
+		entity.baseDamage = 10;
+		std::cout << "[Entity.cpp] Create Stalker \n";
+	}
+	else {
+		entity.name = "New Entity";
+		std::cout << "[Entity.cpp] Create Entity Blank \n";
+	}
+
+	return entity;
+}
 
 #endif

@@ -228,7 +228,7 @@ namespace SaveSystem
 		{
 			for (auto& [key, entData] : j["Entities"].items())
 			{
-				auto entity = std::make_unique<Entity>();
+				auto entity = &createByKind(ENTITYKIND_STALKER);
 				if (!TryParseId(key, entity->id))
 				{
 					std::cerr << "[Save System] Skipping Entity with non-numeric key: " << key << "\n";
@@ -241,7 +241,7 @@ namespace SaveSystem
 					continue;
 				}
 
-				scene.entities[entity->id] = std::move(entity);
+				scene.entities[entity->id] = std::move(entity->clone());
 			}
 		}
 
