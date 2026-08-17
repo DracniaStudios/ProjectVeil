@@ -28,6 +28,9 @@ struct PlayerCamera : Camera3D
 
 struct Player : Entity
 {
+	Player() { kind = ENTITY_PLAYER; }
+
+	std::unique_ptr<Entity> clone() const override { return std::make_unique<Player>(*this); }
 
 	// Game Mechanics
 	RigidBody2D rigidBody2D = {};

@@ -228,7 +228,12 @@ namespace SaveSystem
 		{
 			for (auto& [key, entData] : j["Entities"].items())
 			{
-				auto entity = std::make_unique<Entity>();
+				// The concrete type has to be chosen before loadFromJson() runs,
+				// so read the persisted kind first. Saves written before "Kind"
+				// existed default to ENTITY_BASE, which is what they were.
+				const auto kind = static_cast<EntityKind>(
+					entData.value("Kind", static_cast<int>(ENTITY_BASE)));
+				auto entity = Entity::createByKind(kind);
 				if (!TryParseId(key, entity->id))
 				{
 					std::cerr << "[Save System] Skipping Entity with non-numeric key: " << key << "\n";
