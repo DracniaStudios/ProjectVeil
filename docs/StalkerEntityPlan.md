@@ -129,8 +129,10 @@ New `src/gameLayer/AI/Director.h/.cpp`, scene-owned, updated once per frame.
 
 Per your decision, this ships as the **pre-agreed simplified form**: no hint budget or tension pacing yet.
 
-- The Director may read **world facts only** — which station is active, how long since the Stalker last heard anything, how long the current state has run. It **must not read player position.**
-- It emits at most one `DirectorHint { Vector3 region; float confidence; }` on a cooldown, biasing `PATROL` waypoint selection toward the region containing the active task station. That is a world fact, not player ground truth — which is exactly the distinction the locked decision protects.
+- The Director may read **world facts only** — which stations are outstanding, how long since the Stalker last heard anything, how long the current state has run. It **must not read player position.**
+- It emits at most one `DirectorHint { Vector3 region; float confidence; }` on a cooldown, biasing `PATROL` toward an outstanding task station.
+
+> **Correction, made during implementation.** This section originally proposed hinting toward the *active* task station, justified as a world fact rather than player ground truth. That distinction does not survive contact: a running station is exactly where the player is standing, so it would have been a live position feed wearing a world fact's clothes — precisely what the locked sound-only decision exists to prevent. The shipped heuristic hints toward the farthest **unattended** station instead. Outstanding objectives are places the player must eventually go, which is pressure without knowledge.
 - **Every hint is logged** (source fact → emitted region), because the integration ticket's acceptance criterion is *"Verify by logging what the Director passes."* Build the log channel now even though the heuristic is simple; it is the artifact that proves the invariant.
 
 Structure `Director::Evaluate()` so the full version (hint budget, cooldowns, tension curve) replaces the heuristic body without changing the call site.
@@ -172,8 +174,18 @@ No `CMakeLists.txt` change needed (glob is `CONFIGURE_DEPENDS`).
 ## Verification
 
 ```bash
-cmake --preset linux-debug && cmake --build --preset linux-debug
+cmake --preset linux-debug && cmake --build out/build/linux-debug
 ```
+
+> `CMakePresets.json` defines **no** `buildPresets`, so the README's
+> `cmake --build --preset linux-debug` fails with "No such build preset". Build
+> by directory as above.
+
+> **The Linux build cannot link.** FMOD is vendored Windows-only (`.dll`/`.lib`,
+> no `.so`), so linking fails on `main` before any of this work. Everything
+> compiles; producing a runnable binary needs the Windows toolchain. The
+> perception tests are a separate binary for this reason — run
+> `tests/run_tests.sh`.
 
 Then in-game, against the integration ticket's acceptance criteria:
 1. **Patrol** — spawn a Stalker, stand still crouched. It should loop waypoints and never approach you.
