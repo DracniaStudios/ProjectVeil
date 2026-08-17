@@ -117,14 +117,14 @@ void EditorCamera::Update(Camera3D* camera)
 	// into a text field must not fly it: WASD are movement bindings, so naming
 	// an object would otherwise send the viewport across the map.
 	 
-	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) ) { UpdateLook(this); }
+	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) { UpdateLook(this); }
 	if (!io.WantCaptureKeyboard) { UpdateMovement(this); }
 
 	// Orientation is applied unconditionally so the target tracks the position
 	// even on frames where neither look nor movement ran.
 	ApplyOrientation(this, camera);
 
-	// Object picking deliberately does not live here any more. It moved to
+	// Object picking deliberately does not live here anymore. It moved to
 	// WorldEditor::UpdateViewportInput, where it can be ordered against the
 	// gizmo and the placement tool — clicking a gizmo handle used to also
 	// reselect whatever object happened to be behind it.
