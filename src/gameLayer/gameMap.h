@@ -13,6 +13,25 @@ struct GameMap {
 	std::vector<GameObject> gameObjects = {};
 
 	Vector3 size = {10, 10, 10};
+
+	/**
+	 * Where the player is placed when this world loads.
+	 *
+	 * Nothing positioned the player on a world load before this: LoadWorld
+	 * rebuilt the geometry and left the player wherever it already was, which
+	 * on a fresh launch is the RigidBody3D default of (0,0,0). In chunk_1 that
+	 * is the middle of the artifact display — Artifact Display Floor sits at
+	 * the origin, Pedastool at (0,1,0) and Pillar at (0,-10,0) — so every
+	 * session began with the player embedded in the plinth, which read as the
+	 * level having loaded extra geometry on top of them.
+	 *
+	 * hasSpawnPoint distinguishes "authored to be the origin" from "the file
+	 * predates spawn points", so an older world is left alone rather than being
+	 * teleported to a origin that was never chosen.
+	 */
+	Vector3 spawnPoint = {0, 0, 0};
+	bool hasSpawnPoint = false;
+
 	void create(Vector3 size);
 
 	// Alter Data

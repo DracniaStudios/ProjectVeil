@@ -28,6 +28,26 @@ void WorldEditor::ShowWorldSettings()
 	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Game Map Data");
 
 	ImGui::InputFloat3("Map Size", &scene->gameMap.size.x);
+
+	// Spawn point. Authored here and saved with the world; LoadWorld places the
+	// player on it. A world with none leaves the player at the RigidBody3D
+	// default of (0,0,0), which is how chunk_1 used to start every session
+	// inside the artifact display plinth.
+	if (ImGui::InputFloat3("Spawn Point", &scene->gameMap.spawnPoint.x))
+	{
+		scene->gameMap.hasSpawnPoint = true;
+	}
+	if (ImGui::Button("Set Spawn To Player") && scene->player)
+	{
+		scene->gameMap.spawnPoint = scene->player->getPosition();
+		scene->gameMap.hasSpawnPoint = true;
+		statusMessage = "Spawn point set to player position";
+	}
+	if (!scene->gameMap.hasSpawnPoint)
+	{
+		ImGui::TextColored(ImVec4(255, 255, 0, 255),
+			"No spawn point: player starts wherever it already was.");
+	}
 	ImGui::Text("Game Objects: %d", static_cast<int>(scene->gameMap.gameObjects.size()));
 	ImGui::Text("Entities: %d", static_cast<int>(scene->entities.size()));
 	ImGui::Text("Interactables: %d", static_cast<int>(scene->interactables.size()));
