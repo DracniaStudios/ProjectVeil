@@ -86,6 +86,29 @@ static void Step(Scene* scene, Stalker* stalker, float dt)
 	stalker->update(scene, dt);
 }
 
+// Solid world geometry for the avoidance cases. Only GameMap::gameObjects are
+// probed, which is where level geometry lives.
+static BoundingBox AddBlock(Scene* scene, Vector3 centre, Vector3 size)
+{
+	GameObject block = {};
+	block.name = "TestBlock";
+	block.isEnabled = true;
+	block.rigidBody3D.isStatic = true;
+	block.rigidBody3D.canCollide = true;
+	block.rigidBody3D.translation = centre;
+	block.rigidBody3D.scale = size;
+	block.rigidBody3D.SyncCollisionBox();
+	scene->gameMap.gameObjects.push_back(block);
+	return scene->gameMap.gameObjects.back().rigidBody3D.collisionBox;
+}
+
+static bool InsideBox(Vector3 p, const BoundingBox& box)
+{
+	return p.x >= box.min.x && p.x <= box.max.x &&
+	       p.y >= box.min.y && p.y <= box.max.y &&
+	       p.z >= box.min.z && p.z <= box.max.z;
+}
+
 static void TestPatrolToInvestigateOnQuietNoise()
 {
 	std::printf("patrol -> investigate on a quiet noise\n");
@@ -263,6 +286,97 @@ static void TestWaypointAdvanceIsHeightIndependent()
 	delete scene;
 }
 
+static void TestClearPathIsNotDeflected()
+{
+	std::printf("a clear path is steered straight\n");
+	Scene* scene = MakeScene();
+	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
+	s->waypoints = { Vector3{ 10, 0, 0 } };
+	s->currentWaypoint = 0;
+
+	Step(scene, s, 0.016f);
+
+	const Vector3 v = s->rigidBody3D.GetVelocity();
+	Check(v.x > 0.0f, "moves toward the waypoint");
+	Check(std::fabs(v.z) < 0.001f, "with nothing in the way it does not deviate");
+	delete scene;
+}
+
+static void TestSteersAsideForAnObstacle()
+{
+	std::printf("an obstacle ahead deflects the heading\n");
+	Scene* scene = MakeScene();
+	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
+	s->waypoints = { Vector3{ 10, 0, 0 } };
+	s->currentWaypoint = 0;
+
+	// A pillar squarely on the straight line, inside the probe distance.
+	AddBlock(scene, Vector3{ 2, 0, 0 }, Vector3{ 1, 4, 1 });
+
+	Step(scene, s, 0.016f);
+
+	const Vector3 v = s->rigidBody3D.GetVelocity();
+	Check(std::fabs(v.z) > 0.001f, "the heading is deflected off the blocked line");
+	Check(v.x > 0.0f, "and still makes progress toward the target rather than reversing");
+	delete scene;
+}
+
+static void TestRoutesAroundAnObstacleWithoutEnteringIt()
+{
+	std::printf("routes around an obstacle rather than through it\n");
+	Scene* scene = MakeScene();
+	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
+	const Vector3 goal = Vector3{ 12, 0, 0 };
+	s->waypoints = { goal };
+	s->currentWaypoint = 0;
+
+	const BoundingBox pillar = AddBlock(scene, Vector3{ 6, 0, 0 }, Vector3{ 2, 4, 2 });
+
+	// Integrated by hand rather than through the solver: the point is where the
+	// AI steers, and a hand-integrated body passes straight through geometry if
+	// the steering does not avoid it. That makes the containment check below a
+	// real assertion instead of one the collision solver would satisfy anyway.
+	bool everInside = false;
+	bool arrived = false;
+	constexpr float dt = 0.05f;
+
+	for (int i = 0; i < 2000; ++i)
+	{
+		Step(scene, s, dt);
+
+		const Vector3 v = s->rigidBody3D.GetVelocity();
+		Vector3 p = s->getPosition();
+		p.x += v.x * dt;
+		p.z += v.z * dt;
+		s->rigidBody3D.Teleport(p);
+
+		if (InsideBox(p, pillar)) { everInside = true; }
+		if (std::fabs(p.x - goal.x) < 1.5f && std::fabs(p.z - goal.z) < 3.0f) { arrived = true; break; }
+	}
+
+	Check(!everInside, "the path never enters the obstacle");
+	Check(arrived, "and still reaches the far side");
+	delete scene;
+}
+
+static void TestAvoidanceIsSkippedWithoutAWorld()
+{
+	std::printf("no world means no avoidance\n");
+	Scene* scene = MakeScene();
+	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
+
+	// A block that would deflect the heading if the map were consulted. Passing
+	// no map is how the steering behaved before avoidance existed, and it has to
+	// stay a straight line so a stalker driven without a world still works.
+	AddBlock(scene, Vector3{ 2, 0, 0 }, Vector3{ 1, 4, 1 });
+
+	Check(s->DistanceToObstruction(Vector3{ 1, 0, 0 }, 3.0f, &scene->gameMap) < 3.0f,
+		"the block is detected when the map is supplied");
+	Check(s->DistanceToObstruction(Vector3{ 1, 0, 0 }, 3.0f, nullptr) == 3.0f,
+		"and reports clear when it is not");
+	delete scene;
+}
+
 int main()
 {
 	// GameObject's constructor uploads a fallback cube, so a GL context has to
@@ -280,6 +394,10 @@ int main()
 	TestHuntDecaysToSearchOnStimulusAge();
 	TestSearchGivesUpToPatrol();
 	TestWaypointAdvanceIsHeightIndependent();
+	TestClearPathIsNotDeflected();
+	TestSteersAsideForAnObstacle();
+	TestRoutesAroundAnObstacleWithoutEnteringIt();
+	TestAvoidanceIsSkippedWithoutAWorld();
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 

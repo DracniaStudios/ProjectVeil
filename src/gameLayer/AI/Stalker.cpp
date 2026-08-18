@@ -72,7 +72,86 @@ float Stalker::PlanarDistanceTo(Vector3 target) const
 	return Vector2Distance(Vector2{ self.x, self.z }, Vector2{ target.x, target.z });
 }
 
-void Stalker::MoveToward(Vector3 target, float speed, float deltaTime)
+// Rotation about the vertical axis. Steering is planar, so this is the only
+// rotation the avoidance needs.
+static Vector3 RotateAroundY(Vector3 v, float radians)
+{
+	const float c = std::cos(radians);
+	const float s = std::sin(radians);
+	return Vector3{ v.x * c + v.z * s, v.y, -v.x * s + v.z * c };
+}
+
+float Stalker::DistanceToObstruction(Vector3 direction, float maxDistance, const GameMap* map) const
+{
+	if (map == nullptr) { return maxDistance; }
+
+	Ray ray = {};
+	// Cast from the body's centre rather than its base: a ray along the floor
+	// grazes every surface it slides over and reports a permanent obstruction.
+	ray.position = getPosition();
+	ray.direction = direction;
+
+	float nearest = maxDistance;
+
+	for (const auto& object : map->gameObjects)
+	{
+		if (!object.isEnabled) { continue; }
+		// Anything the solver will not stop the stalker against should not stop
+		// it here either, or the AI flinches away from things it can walk through.
+		if (!object.rigidBody3D.canCollide) { continue; }
+
+		const RayCollision hit = GetRayCollisionBox(ray, object.rigidBody3D.collisionBox);
+		if (hit.hit && hit.distance >= 0.0f && hit.distance < nearest)
+		{
+			nearest = hit.distance;
+		}
+	}
+
+	return nearest;
+}
+
+Vector3 Stalker::SteerAround(Vector3 desired, const GameMap* map) const
+{
+	if (map == nullptr) { return desired; }
+
+	const float probe = avoidProbeDistance;
+	if (DistanceToObstruction(desired, probe, map) >= probe) { return desired; }
+
+	// Blocked ahead. Fan outward in widening pairs and take the first heading
+	// that is clear, trying both sides at each angle so the stalker prefers the
+	// smallest deviation that works rather than always turning one way.
+	constexpr float kStepDegrees = 20.0f;
+	constexpr int kSteps = 6; // out to 120 degrees either side
+	constexpr float kDegToRad = 3.14159265358979323846f / 180.0f;
+
+	Vector3 bestDirection = desired;
+	float bestClearance = DistanceToObstruction(desired, probe, map);
+
+	for (int step = 1; step <= kSteps; ++step)
+	{
+		const float angle = static_cast<float>(step) * kStepDegrees * kDegToRad;
+
+		for (const float sign : { 1.0f, -1.0f })
+		{
+			const Vector3 candidate = RotateAroundY(desired, angle * sign);
+			const float clearance = DistanceToObstruction(candidate, probe, map);
+
+			if (clearance >= probe) { return candidate; }
+
+			if (clearance > bestClearance)
+			{
+				bestClearance = clearance;
+				bestDirection = candidate;
+			}
+		}
+	}
+
+	// Everything is blocked — a concave corner. Take the roomiest heading and
+	// keep moving rather than freezing; the collision solver handles the rest.
+	return bestDirection;
+}
+
+void Stalker::MoveToward(Vector3 target, float speed, float deltaTime, const GameMap* map)
 {
 	Vector3 delta = Vector3Subtract(target, getPosition());
 	delta.y = 0.0f; // steering is planar; gravity owns the vertical axis
@@ -80,7 +159,15 @@ void Stalker::MoveToward(Vector3 target, float speed, float deltaTime)
 	const float distance = Vector3Length(delta);
 	if (distance < 0.0001f) { return; }
 
-	const Vector3 direction = Vector3Scale(delta, 1.0f / distance);
+	Vector3 direction = Vector3Scale(delta, 1.0f / distance);
+
+	// Only steer around what is actually between here and the target. Probing
+	// the full distance would make the stalker swerve around a wall it intends
+	// to stop short of.
+	if (distance > arriveDistance)
+	{
+		direction = SteerAround(direction, map);
+	}
 
 	// Preserve the vertical component so the body still falls and lands
 	// normally — overwriting it would leave the stalker hovering.
@@ -211,13 +298,13 @@ void Stalker::update(Scene* scene, float deltaTime)
 		// a detour. It is a suggestion about the room, not about the player.
 		if (waypoints.empty())
 		{
-			if (hasHint) { MoveToward(hintRegion, currentSpeed, deltaTime); }
+			if (hasHint) { MoveToward(hintRegion, currentSpeed, deltaTime, &scene->gameMap); }
 			break;
 		}
 
 		currentWaypoint %= static_cast<int>(waypoints.size());
 		const Vector3 target = waypoints[currentWaypoint];
-		MoveToward(target, currentSpeed, deltaTime);
+		MoveToward(target, currentSpeed, deltaTime, &scene->gameMap);
 
 		if (PlanarDistanceTo(target) <= arriveDistance)
 		{
@@ -243,7 +330,7 @@ void Stalker::update(Scene* scene, float deltaTime)
 		// Investigation moves at base pace — the stalker is curious, not
 		// alerted, and the slower approach is what gives the player room to
 		// reposition after a single noise.
-		MoveToward(lastKnownPosition, currentSpeed * 0.75f, deltaTime);
+		MoveToward(lastKnownPosition, currentSpeed * 0.75f, deltaTime, &scene->gameMap);
 
 		if (PlanarDistanceTo(lastKnownPosition) <= arriveDistance)
 		{
@@ -263,7 +350,7 @@ void Stalker::update(Scene* scene, float deltaTime)
 
 		if (!hasLastKnown) { TransitionTo(STALKER_PATROL); break; }
 
-		MoveToward(lastKnownPosition, currentSpeed, deltaTime);
+		MoveToward(lastKnownPosition, currentSpeed, deltaTime, &scene->gameMap);
 
 		// Losing the trail is a timeout on *stimulus*, not on arrival: standing
 		// on the last known position while the player keeps making noise nearby
@@ -286,7 +373,7 @@ void Stalker::update(Scene* scene, float deltaTime)
 			break;
 		}
 
-		MoveToward(searchTarget, currentSpeed, deltaTime);
+		MoveToward(searchTarget, currentSpeed, deltaTime, &scene->gameMap);
 
 		if (PlanarDistanceTo(searchTarget) <= arriveDistance)
 		{
@@ -322,6 +409,7 @@ Json Stalker::formatToJson()
 	j["SearchDuration"] = searchDuration;
 	j["SearchRadius"] = searchRadius;
 	j["ArriveDistance"] = arriveDistance;
+	j["AvoidProbeDistance"] = avoidProbeDistance;
 	j["CurrentWaypoint"] = currentWaypoint;
 
 	Json route = Json::array();
@@ -352,6 +440,7 @@ bool Stalker::loadFromJson(Json& j)
 	searchDuration = j.value("SearchDuration", searchDuration);
 	searchRadius = j.value("SearchRadius", searchRadius);
 	arriveDistance = j.value("ArriveDistance", arriveDistance);
+	avoidProbeDistance = j.value("AvoidProbeDistance", avoidProbeDistance);
 	currentWaypoint = j.value("CurrentWaypoint", currentWaypoint);
 
 	waypoints.clear();

@@ -9,6 +9,7 @@
 #include <vector>
 
 struct Scene;
+struct GameMap;
 
 /**
  * The slice's single enemy.
@@ -44,6 +45,11 @@ struct Stalker : Entity
 	float searchRadius = 6.0f;
 	// How close counts as having reached a target.
 	float arriveDistance = 1.0f;
+
+	// How far ahead the stalker looks for obstructions. Too short and it turns
+	// after it is already against the wall; too long and it swerves around
+	// geometry it was never going to touch.
+	float avoidProbeDistance = 3.0f;
 
 	/** Patrol route **/
 	// Authored in the World Editor and serialised with the world. Empty is
@@ -85,6 +91,16 @@ struct Stalker : Entity
 	// outright while hunting so a hint can never redirect an active pursuit.
 	void ApplyDirectorHint(Vector3 region, float confidence);
 
+	/**
+	 * Nearest obstruction along `direction`, out to `maxDistance`.
+	 *
+	 * Returns the hit distance, or maxDistance when the path is clear. Only
+	 * GameMap::gameObjects are considered: entities and interactables live in
+	 * their own containers, so the stalker steers around the level but will
+	 * still walk into another entity and let the collision solver separate them.
+	 */
+	float DistanceToObstruction(Vector3 direction, float maxDistance, const GameMap* map) const;
+
 	/** Save Data **/
 	Json formatToJson() override;
 	bool loadFromJson(Json& j) override;
@@ -97,7 +113,31 @@ private:
 	float   hintConfidence = 0.0f;
 
 	void TransitionTo(StalkerState next);
-	void MoveToward(Vector3 target, float speed, float deltaTime);
+
+	/**
+	 * Steer toward a target, going around world geometry in the way.
+	 *
+	 * `map` may be null, which skips avoidance entirely and steers straight —
+	 * that is the behaviour every caller had before avoidance existed, and it
+	 * keeps a stalker driven without a world (the FSM tests) working.
+	 */
+	void MoveToward(Vector3 target, float speed, float deltaTime, const GameMap* map);
+
+
+	/**
+	 * Pick a heading that makes progress toward `desired` without walking into
+	 * a wall.
+	 *
+	 * A whisker scan: if the straight path is clear it is used unchanged,
+	 * otherwise the direction is rotated outward in steps and the first clear
+	 * heading wins, falling back to whichever probe saw furthest. This is
+	 * deliberately local and stateless — it handles walls and pillars, and it
+	 * can still stall in a deep concave corner where every heading is blocked.
+	 * A route authored with clear line of travel between waypoints never
+	 * exercises that case; proper pathfinding is a Phase 2 concern once the
+	 * game has more than one room.
+	 */
+	Vector3 SteerAround(Vector3 desired, const GameMap* map) const;
 
 	/**
 	 * Distance to a target on the plane the stalker actually steers on.

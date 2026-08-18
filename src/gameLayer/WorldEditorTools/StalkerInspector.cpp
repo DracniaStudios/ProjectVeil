@@ -81,6 +81,10 @@ void WorldEditor::ShowStalkerData()
 		ImGui::DragFloat("Search duration", &stalker->searchDuration, 0.1f, 0.0f, 60.0f);
 		ImGui::DragFloat("Search radius", &stalker->searchRadius, 0.1f, 0.0f, 50.0f);
 		ImGui::DragFloat("Base speed", &stalker->baseSpeed, 0.1f, 0.0f, 20.0f);
+		// How far ahead it looks for walls. Too short and it turns after it is
+		// already against one; too long and it swerves around geometry it was
+		// never going to touch.
+		ImGui::DragFloat("Avoid probe", &stalker->avoidProbeDistance, 0.1f, 0.0f, 20.0f);
 
 		ImGui::Spacing();
 		ImGui::TextColored(ImVec4(255, 255, 0, 255), "Patrol Route");
