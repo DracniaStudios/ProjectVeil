@@ -51,8 +51,8 @@ private:
 	float attackWaitTime = 3.0f;
 public:
 	Entity();
-	virtual std::unique_ptr<Entity> clone() const { return std::make_unique<Entity>(this); };
-	EntityKind kind;
+	virtual std::unique_ptr<Entity> clone() const { return std::make_unique<Entity>(*this); };
+	EntityKind kind = ENTITYKIND_NONE;
 
 	/** Status **/
 	float health = 1.0f;
