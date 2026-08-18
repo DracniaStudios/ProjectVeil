@@ -509,7 +509,11 @@ namespace SaveSystem
 			highestId + 1
 		});
 
-		std::cout << "[Save System] Loaded World: " << path << "\n";
+		std::cout << "[Save System] Loaded World: " << path
+			<< " (" << scene.gameMap.gameObjects.size() << " objects, "
+			<< scene.interactables.size() << " interactables, "
+			<< scene.entities.size() << " entities, next id "
+			<< scene.instanceHolder.idCounter << ")\n";
 		return true;
 	}
 
