@@ -99,6 +99,19 @@ private:
 	void TransitionTo(StalkerState next);
 	void MoveToward(Vector3 target, float speed, float deltaTime);
 
+	/**
+	 * Distance to a target on the plane the stalker actually steers on.
+	 *
+	 * MoveToward zeroes the vertical component and leaves gravity to own it, so
+	 * measuring arrival in 3D asked a question the movement could never answer:
+	 * a target whose height differs from the stalker's body centre by more than
+	 * arriveDistance stayed permanently "not arrived", and the stalker parked on
+	 * top of it forever without advancing. That is easy to hit, because
+	 * waypoints are authored from the player's position and the two bodies do
+	 * not share a centre height.
+	 */
+	float PlanarDistanceTo(Vector3 target) const;
+
 	// Effective threshold after the BUFF_HEARING modifier. The buff already
 	// existed in Entity's enum, unused, reserved for exactly this.
 	float EffectiveHearingThreshold();

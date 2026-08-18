@@ -66,6 +66,12 @@ void Stalker::PickNextSearchTarget()
 	};
 }
 
+float Stalker::PlanarDistanceTo(Vector3 target) const
+{
+	const Vector3 self = getPosition();
+	return Vector2Distance(Vector2{ self.x, self.z }, Vector2{ target.x, target.z });
+}
+
 void Stalker::MoveToward(Vector3 target, float speed, float deltaTime)
 {
 	Vector3 delta = Vector3Subtract(target, getPosition());
@@ -213,7 +219,7 @@ void Stalker::update(Scene* scene, float deltaTime)
 		const Vector3 target = waypoints[currentWaypoint];
 		MoveToward(target, currentSpeed, deltaTime);
 
-		if (Vector3Distance(getPosition(), target) <= arriveDistance)
+		if (PlanarDistanceTo(target) <= arriveDistance)
 		{
 			currentWaypoint = (currentWaypoint + 1) % static_cast<int>(waypoints.size());
 		}
@@ -239,7 +245,7 @@ void Stalker::update(Scene* scene, float deltaTime)
 		// reposition after a single noise.
 		MoveToward(lastKnownPosition, currentSpeed * 0.75f, deltaTime);
 
-		if (Vector3Distance(getPosition(), lastKnownPosition) <= arriveDistance)
+		if (PlanarDistanceTo(lastKnownPosition) <= arriveDistance)
 		{
 			// Arrived and found nothing: sweep the area before giving up.
 			TransitionTo(STALKER_SEARCH_LAST_KNOWN);
@@ -282,7 +288,7 @@ void Stalker::update(Scene* scene, float deltaTime)
 
 		MoveToward(searchTarget, currentSpeed, deltaTime);
 
-		if (Vector3Distance(getPosition(), searchTarget) <= arriveDistance)
+		if (PlanarDistanceTo(searchTarget) <= arriveDistance)
 		{
 			PickNextSearchTarget();
 		}
