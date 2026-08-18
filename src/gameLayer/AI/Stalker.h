@@ -70,8 +70,15 @@ struct Stalker : Entity
 	// Sweep target while searching, re-rolled as each one is reached.
 	Vector3 searchTarget = {};
 
+	// Draws the patrol route and the current target in world space. Authoring a
+	// route by typing coordinates is unusable; this is what makes the numbers in
+	// the inspector correspond to something visible. Follows the existing
+	// per-object debug display flags (displayCollider, displayDirection).
+	bool displayRoute = false;
+
 	/** Functions **/
 	void update(Scene* scene, float deltaTime) override;
+	void render3D() override;
 
 	// Applies a Director hint. The hint is a region worth patrolling, derived
 	// from world facts only; it biases patrol and search, and is ignored

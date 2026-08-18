@@ -398,6 +398,24 @@ namespace SaveSystem
 		}
 		j["Interactables"] = interactables;
 
+		// Entities. A world file carried none until now, while LoadWorld cleared
+		// scene.entities on the way in — so a stalker placed in the editor was
+		// silently destroyed by the next world load, taking its authored patrol
+		// route with it. Entities placed in a world are level content in exactly
+		// the way interactables are, so they are saved the same way.
+		//
+		// The player is skipped: it is constructed by Scene_new and restored from
+		// its own section in game saves, and a world file has no business
+		// carrying a second copy of it.
+		Json entities = Json::object();
+		for (auto& [id, entity] : scene->entities)
+		{
+			if (!entity || entity->type == OBJECT_PLAYER) { continue; }
+			if (entity->kind == ENTITYKIND_PLAYER) { continue; }
+			entities[std::to_string(id)] = entity->formatToJson();
+		}
+		j["Entities"] = entities;
+
 		if (!WriteJsonAtomic(path, j)) { return false; }
 
 		std::cout << "[Save System] Saved World: " << path << "\n";
@@ -522,6 +540,33 @@ namespace SaveSystem
 			}
 		}
 
+		// Load Entities. Built through createByKind so a saved Stalker comes back
+		// as a Stalker rather than a sliced base Entity — the kind is read before
+		// construction because loadFromJson cannot change an object's type.
+		if (j.contains("Entities"))
+		{
+			for (auto& [key, entData] : j["Entities"].items())
+			{
+				const auto kind = static_cast<EntityKind>(
+					entData.value("Kind", static_cast<int>(ENTITYKIND_NONE)));
+				auto entity = Entity::createByKind(kind);
+
+				if (!TryParseId(key, entity->id))
+				{
+					std::cerr << "[Save System] Skipping Entity with non-numeric key: " << key << "\n";
+					continue;
+				}
+
+				if (!entity->loadFromJson(entData))
+				{
+					std::cerr << "[Save System] Failed to load Entity with ID: " << key << "\n";
+					continue;
+				}
+
+				scene.entities[entity->id] = std::move(entity);
+			}
+		}
+
 		// Avoid id collisions with objects created after the load.
 		//
 		// The stored IdCounter alone is not enough: a world file hand-authored
@@ -535,6 +580,10 @@ namespace SaveSystem
 		std::uint64_t highestId = 0;
 		for (const auto& obj : scene.gameMap.gameObjects) { highestId = std::max(highestId, obj.id); }
 		for (const auto& [id, interactable] : scene.interactables) { highestId = std::max(highestId, id); }
+		// Entities count toward the floor now that a world file carries them;
+		// leaving them out would hand a freshly placed object an id a loaded
+		// entity already answers to.
+		for (const auto& [id, entity] : scene.entities) { highestId = std::max(highestId, id); }
 
 		scene.instanceHolder.idCounter = std::max({
 			scene.instanceHolder.idCounter,
