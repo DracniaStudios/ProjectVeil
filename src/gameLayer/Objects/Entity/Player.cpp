@@ -69,6 +69,7 @@ void UpdateActions(Player* player) {
 }
 
 void updateCollision(Player* player) {
+	player->rigidBody3D.canCollide = true;
 	/// Resolve Player Collision
 	for (auto& obj : SceneManager::getInstance().currentScene->gameMap.gameObjects)
 	{

@@ -236,11 +236,14 @@ void WorldEditor::ShowObjectBrowser()
 	ImGui::Begin("Object Browser");
 
 	/// List World Objects
-	ImGui::BeginChild("State Buttons", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.2f));
-	
+	ImGui::BeginChild("State Buttons", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.1f));
+#pragma region State Buttons
 	if (ImGui::Button("Make All Static")) {
 		for (auto &object : scene->gameMap.gameObjects) {
 			object.rigidBody3D.isStatic = true;
+		}
+		for (auto &[id, object] : scene->interactables) {
+			object->rigidBody3D.isStatic = true;
 		}
 	}
 	ImGui::SameLine();
@@ -248,9 +251,34 @@ void WorldEditor::ShowObjectBrowser()
 		for (auto &object : scene->gameMap.gameObjects) {
 			object.rigidBody3D.isStatic = false;
 		}
+		for (auto &[id, object] : scene->interactables) {
+			object->rigidBody3D.isStatic = false;
+		}
+
+	}
+
+	if (ImGui::Button("Make All Enabled")) {
+		for (auto &object : scene->gameMap.gameObjects) {
+			object.isEnabled = true;
+		}
+		for (auto &[id, object] : scene->interactables) {
+			object->isEnabled = true;
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Make All Not Enabled")) {
+		for (auto &object : scene->gameMap.gameObjects) {
+			object.isEnabled = false;
+		}
+		for (auto &[id, object] : scene->interactables) {
+			object->isEnabled = false;
+		}
+
 	}
 
 	ImGui::EndChild();
+	ImGui::Separator();
+#pragma endregion
 
 	ImGui::BeginChild("World Object List", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.4f));
 	ImGui::TextColored(ImVec4(0, 255, 0, 255), "World Objects");
