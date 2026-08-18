@@ -113,13 +113,14 @@ void WorldEditor::showGameObject(GameObject* object) {
 		object->rigidBody3D.rotation = rotation;
 		rotationEulerSource = rotation;
 	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Lock Rotation", &object->rigidBody3D.lockRotation);
+	
 	// Scale is applied through the model transform each frame — no mesh regen needed
 	if (ImGui::DragFloat3("Scale: ", &object->rigidBody3D.scale.x))
 	{
 		object->rigidBody3D.scale = { object->rigidBody3D.scale.x, object->rigidBody3D.scale.y, object->rigidBody3D.scale.z };
 	}
-	ImGui::SameLine();
-	ImGui::Checkbox("Lock Rotation", &object->rigidBody3D.lockRotation);
 	ImGui::Spacing();
 
 	// RigidBody
@@ -235,12 +236,26 @@ void WorldEditor::ShowObjectBrowser()
 	ImGui::Begin("Object Browser");
 
 	/// List World Objects
-	ImGui::BeginChild("World Object List", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.3f));
+	ImGui::BeginChild("State Buttons", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.2f));
+	
+	if (ImGui::Button("Make All Static")) {
+		for (auto &object : scene->gameMap.gameObjects) {
+			object.rigidBody3D.isStatic = true;
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Make All Not Static")) {
+		for (auto &object : scene->gameMap.gameObjects) {
+			object.rigidBody3D.isStatic = false;
+		}
+	}
+
+	ImGui::EndChild();
+
+	ImGui::BeginChild("World Object List", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.4f));
 	ImGui::TextColored(ImVec4(0, 255, 0, 255), "World Objects");
 	for (auto& object : scene->gameMap.gameObjects)
 	{
-		//if (getType(&object) != OBJECT_GENERIC) continue;
-
 		ImGui::PushID(&object);
 		std::string label = object.name + " (" + std::to_string(object.id) + ")";
 		if (ImGui::Selectable(label.c_str(), object.id == selectedObjectId))
