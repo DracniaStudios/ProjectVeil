@@ -233,10 +233,35 @@ void Scene_updateScene(float delta) {
 	// and RigidBody3D::Update() is the only thing that normally rebuilds them.
 	const bool editorFrozen = worldEditor->IsEnabled() && worldEditor->IsSimulationPaused();
 
-	auto clampObject = [](GameObject& object, bool limit) {
-		// Clamp Y Bounds
+	auto clampObject = [scene](GameObject& object, bool limit) {
+		// Anything that has fallen this far is through the floor and not coming
+		// back on its own, so it is recovered rather than left accelerating
+		// forever.
 		if (object.rigidBody3D.translation.y < -1000.0f) {
-			object.rigidBody3D.Teleport(Vector3{ 0, 5, 0 });
+			// Recover to the world's spawn point rather than a hardcoded origin.
+			// (0,5,0) is not neutral ground: in chunk_1 the origin is the middle
+			// of the artifact display, so the old behaviour dropped every
+			// recovered object into the plinth — the same spot the player spawn
+			// point exists to keep things out of.
+			const Vector3 recovery = scene->gameMap.hasSpawnPoint
+				? Vector3{ scene->gameMap.spawnPoint.x,
+				           scene->gameMap.spawnPoint.y + 2.0f,
+				           scene->gameMap.spawnPoint.z }
+				: Vector3{ 0, 5, 0 };
+
+			object.rigidBody3D.Teleport(recovery);
+
+			// Teleport moves the body without touching its motion, so a body
+			// that fell a thousand units arrives still carrying that speed and
+			// gets one physics step to punch through whatever it landed on.
+			// Measured in chunk_1 the floor does catch it, so this is hardening
+			// against thin geometry and faster falls rather than a fix for an
+			// observed failure — but arriving at rest is what "recovered" should
+			// mean either way.
+			object.rigidBody3D.SetVelocity(Vector3Zero());
+
+			std::cout << "[Scene] Recovered " << object.name
+				<< " after falling out of the world\n";
 		}
 
 		if (object.rigidBody3D.translation.y < 0 && limit) {
