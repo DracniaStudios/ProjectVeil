@@ -13,6 +13,10 @@ MiniGame* MiniGame_Crane(Player* player)
 
 	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
 	player->rigidBody2D.scale = Vector3(5, 5, 5);
+	// Crane drives the player itself; without this, update2D's own WASD
+	// handling also moves the player every frame, double-applying input and
+	// letting the crane fly straight through the obstacle course.
+	player->rigidBody2D.canMove = false;
 
 	auto screen = game->data->screen = getScreenScale({ 0.25f, 0.2f, 0.5f, 0.7f });
 	// Generate Obstacles

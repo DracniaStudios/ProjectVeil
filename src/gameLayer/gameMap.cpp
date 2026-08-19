@@ -94,6 +94,10 @@ InteractableObject* GameMap::saveInteractable(InteractableObject& object)
 // Unload Object From Scene GameMap
 void GameMap::removeObject(GameObject* object) {
     if (!object) return;
+	// ~GameObject() is trivial and never frees GPU resources — release a
+	// generated fallback model/mesh here or it leaks the moment this object
+	// is erased.
+	object->releaseGeneratedModel();
 	auto scene = SceneManager::getInstance().currentScene;
 	erase_if(scene->gameMap.gameObjects, [&](const GameObject& o) { return &o == object;});
 }
@@ -104,6 +108,9 @@ void GameMap::removeEntity(Entity* entity)
 	// Entities live only in Scene::entities, not in gameObjects (see saveEntity),
 	// so there is nothing to remove from gameObjects here.
 	if (entity == nullptr) return;
+	// See removeObject() — the unique_ptr erase below destroys the Entity
+	// without ever freeing its generated model.
+	entity->releaseGeneratedModel();
 	auto scene = SceneManager::getInstance().currentScene;
 	scene->entities.erase(entity->id);
 }
@@ -114,6 +121,9 @@ void GameMap::removeInteractable(InteractableObject* object)
 	// Interactables live only in Scene::interactables, not in gameObjects (see
 	// saveInteractable), so there is nothing to remove from gameObjects here.
 	if (object == nullptr) return;
+	// See removeObject() — the unique_ptr erase below destroys the object
+	// without ever freeing its generated model.
+	object->releaseGeneratedModel();
 	auto scene = SceneManager::getInstance().currentScene;
 	// Player::inventory holds non-owning pointers into this map — drop any
 	// reference before the unique_ptr below frees the object, or the next
