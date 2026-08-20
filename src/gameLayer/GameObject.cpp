@@ -3,15 +3,14 @@
 #include <LightingSystem.h>
 #include <SceneManager.h>
 
-static BoundingBox getBoundingBox(Model mdl, Vector3 pos)
-{
-	permaAssertComment(mdl.meshCount == 0, "No Meshes In Model");
-	
-	BoundingBox box = GetMeshBoundingBox(mdl.meshes[0]);
-	box.min = Vector3Add(pos, box.min);
-	box.max = Vector3Add(pos, box.max);
-	return box;
-}
+// A static getBoundingBox(Model, Vector3) used to live here. It had no callers
+// — every collision box is built by RigidBody3D::SyncCollisionBox from the
+// body's own translation/scale — and its guard was inverted:
+// permaAssertComment(mdl.meshCount == 0, "No Meshes In Model") asserts that the
+// model has NO meshes, so it would have fired on every valid model and stayed
+// quiet on exactly the null-mesh case the next line dereferences. Removed
+// rather than corrected: reviving it would reintroduce a second, divergent
+// source of truth for how a bounding box is built.
 
 #pragma region GameObject
 /** Initialization **/
@@ -167,7 +166,7 @@ void GameObject::onEnable()
 void GameObject::onDisable()
 {
 	isEnabled = false;
-
+	rigidBody3D.canCollide = false;
 	// Textures and named models belong to the AssetManager — only unload
 	// primitives this object generated for itself
 	releaseGeneratedModel();

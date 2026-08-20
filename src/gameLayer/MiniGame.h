@@ -8,16 +8,20 @@
 #include <helpers.h>
 #include <randomStuff.h>
 #include <Player.h>
+#include <gameMap.h>
 
 struct Scene;
 
 
 struct MiniGameData
 {
+	MiniGameData() {
+		score = 0;
+		scoreGoal = 1;
+	}
+
 	int score = 0;
 	int scoreGoal = 1;
-	bool isReset = false;
-	bool isComplete = false;
 
 	std::vector<Rectangle> obstacles = {};
 	Rectangle screen = {};
@@ -25,11 +29,20 @@ struct MiniGameData
 };
 
 // Update Game Method
-typedef void (*updateGameMethod)(MiniGameData* data, Player* player_ptr, float deltaTime);
-typedef void (*drawGameMethod)(MiniGameData* data, Player* player_ptr);
+typedef void (*updateGameMethod)(Scene* scene_ptr, float deltaTime);
+typedef void (*drawGameMethod)(Scene* scene_ptr);
 
 struct MiniGame
 {
+	MiniGame() {
+		name = "New MiniGame";
+		update = {};
+		draw = {};
+		data = new MiniGameData();
+		data->score = 0;
+		data->scoreGoal = 1;
+	}
+
 	const char* name = {};
 	updateGameMethod update = {};
 	drawGameMethod draw = {};
@@ -38,24 +51,31 @@ struct MiniGame
 	void SetGoal(const Rectangle rect) const { data->goal = rect; }
 };
 
-inline void CompleteMiniGame(MiniGameData* data, Player* player, Buff buff, bool forceComplete = false) {
+inline bool CompleteMiniGame(MiniGameData* data, Player* player, Buff buff, bool forceComplete = false) {
 	if (data->score >= data->scoreGoal || forceComplete) {
-		data->isComplete = true;
 		if (CooldownTimer* getBuff = player->getBuff(buff); getBuff != nullptr) { getBuff->use(); }
 		
-		// Check for Activator Object and Enable/Disable
-		if (player->interactObject != nullptr) {
-			if (player->interactObject->isEnabled) {
-				player->interactObject->onDisable();
-				// onDisable() doesn't touch physics state, so clear collision explicitly
-				player->interactObject->rigidBody3D.canCollide = false;
+		// Check for Activator Object By using ID instead of Pointer
+		GameObject* target = GameMap::FindWorldObjectByID(player->interactObjectId);
+
+		if (target != nullptr) {
+			if (target->isEnabled) {
+				target->onDisable();
+				
 			}
 			else {
-				// onEnable() already restores canCollide = true; don't clobber it back to false
-				player->interactObject->onEnable();
+				target->onEnable();
 			}
 		}
+		else if (player->interactObjectId != 0) {
+			// Check if GameObject Is Active
+			std::cout << "[MiniGame] Activator " << player->interactObjectId
+				<< " no longer exists — nothing to open\n";
+			return false;
+		}
+		return true;
 	}
+	return false;
 }
 
 /// Mini Game Constructors

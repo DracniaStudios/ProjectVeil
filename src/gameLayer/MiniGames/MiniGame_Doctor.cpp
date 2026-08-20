@@ -11,7 +11,6 @@ MiniGame* MiniGame_Doctor(Player* player)
 	game->name = "Doctor";
 	game->update = &Doctor::update;
 	game->draw = &Doctor::render;
-	game->data = new MiniGameData;
 
 	// Set Player Data
 	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
@@ -42,8 +41,10 @@ MiniGame* MiniGame_Doctor(Player* player)
 	return game;
 }
 
-void Doctor::render(MiniGameData* data, Player* player)
+void Doctor::render(Scene* scene_ptr)
 {
+	auto data = scene_ptr->miniGame->data;
+	auto player = scene_ptr->player;
 	auto screen = data->screen;
 
 
@@ -66,8 +67,10 @@ void Doctor::render(MiniGameData* data, Player* player)
 	}
 }
 
-void Doctor::update(MiniGameData* data, Player* player, float delta)
+void Doctor::update(Scene* scene_ptr, float delta)
 {
+	auto data = scene_ptr->miniGame->data;
+	auto player = scene_ptr->player;
 	auto screen = data->screen;
 	auto inputSystem = &InputSystem::getInstance();
 
@@ -95,7 +98,8 @@ void Doctor::update(MiniGameData* data, Player* player, float delta)
 	if (CheckCollisionRecs(data->goal, playerRect) && isMoving == false)
 	{
 		player->applyHealthValue(3, false);
-		CompleteMiniGame(data, player, BUFF_HEALTH, true);
+		CompleteMiniGame(data, scene_ptr->player, BUFF_HEALTH, true);
+		scene_ptr->ReleaseMiniGame();
 	}
 
 }

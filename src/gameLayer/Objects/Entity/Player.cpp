@@ -7,7 +7,7 @@
 
 /* Static Functions */
 #pragma region Static Functions
-void SetMoveDirection(Player* player) {
+void SetMoveDirection(Player* player, float deltaTime) {
 	auto inputSystem = &InputSystem::getInstance();
 
 	/// Player Movement
@@ -33,10 +33,18 @@ void SetMoveDirection(Player* player) {
 	player->moveDirection.y = inputSystem->IsActionDown(ACTION_MOVE_FORWARD) ? 1.0 :
 		inputSystem->IsActionDown(ACTION_MOVE_BACKWARD) ? -1.0f : 0;
 
-	if (player->moveDirection.y > 0) { player->rigidBody3D.translation += (player->rigidBody3D.forward * speed) * 0.1f; }
-	if (player->moveDirection.y < 0) { player->rigidBody3D.translation += (player->rigidBody3D.back * speed) * 0.1f; }
-	if (player->moveDirection.x < 0) { player->rigidBody3D.translation += (player->rigidBody3D.left * speed) * 0.1f; }
-	if (player->moveDirection.x > 0) { player->rigidBody3D.translation += (player->rigidBody3D.right * speed) * 0.1f; }
+	// Movement was applied as a flat `speed * 0.1f` per frame, so how fast the
+	// player walked was decided by the monitor: identical inputs covered 2.4x
+	// the distance at 144 FPS that they did at 60. Scaling by deltaTime and
+	// multiplying back up by 60 keeps the tuning that was authored against the
+	// 60 FPS SetTargetFPS default while making it frame-rate independent — the
+	// same correction Player::update2D already carries.
+	const float step = speed * 0.1f * 60.0f * deltaTime;
+
+	if (player->moveDirection.y > 0) { player->rigidBody3D.translation += player->rigidBody3D.forward * step; }
+	if (player->moveDirection.y < 0) { player->rigidBody3D.translation += player->rigidBody3D.back * step; }
+	if (player->moveDirection.x < 0) { player->rigidBody3D.translation += player->rigidBody3D.left * step; }
+	if (player->moveDirection.x > 0) { player->rigidBody3D.translation += player->rigidBody3D.right * step; }
 }
 
 void UpdateActions(Player* player) {
@@ -61,6 +69,7 @@ void UpdateActions(Player* player) {
 }
 
 void updateCollision(Player* player) {
+	player->rigidBody3D.canCollide = true;
 	/// Resolve Player Collision
 	for (auto& obj : SceneManager::getInstance().currentScene->gameMap.gameObjects)
 	{
@@ -94,7 +103,7 @@ void updateCollision(Player* player) {
 	}
 }
 
-void updateArtifact(Player* player) {
+void updateArtifact(Player* player, float deltaTime) {
 
 	auto inputSystem = &InputSystem::getInstance();
 	const auto scene = SceneManager::getInstance().currentScene;
@@ -104,17 +113,44 @@ void updateArtifact(Player* player) {
 		: inputSystem->IsActionPressed(ACTION_USE_ARTIFACT_LEFT) ? -1
 		: 0;
 	player->artifactMode = static_cast<int>(Clamp(static_cast<float>(player->artifactMode), -1, player->artifactUnlocked));
-	if (inputSystem->IsActionPressed(ACTION_USE_ARTIFACT)) { scene->SetMiniGame(player->artifactMode); };
+	// ACTION_USE_ARTIFACT and ACTION_MOVE_INTERACT are both bound to F (see
+	// InputSystem::SetDefaultActions), and UpdateActions runs Interact() earlier
+	// in this same frame — so one keypress reached SetMiniGame twice, and the
+	// game the player actually walked up to and interacted with was immediately
+	// torn down and replaced by whatever the artifact dial was pointing at.
+	// Whichever launch ran first wins; the second is dropped rather than
+	// silently overriding it.
+	if (scene->miniGame == nullptr && inputSystem->IsActionPressed(ACTION_USE_ARTIFACT))
+	{
+		scene->SetMiniGame(player->artifactMode);
+	}
 
 	// Artifact
 	const auto camera = player->camera;
 	const auto offset = Vector3Add(camera.forward, player->rigidBody3D.left);//camera->left / 2);
 
 	player->artifact->rigidBody3D.translation = Vector3Add(SceneManager::getInstance().camera3D.position, offset);
-	player->artifact->update(scene, GetFrameTime());
+	player->artifact->update(scene, deltaTime);
 }
 
 #pragma endregion
+
+void Player::onCollision(const GameObject* collider)
+{
+	Entity::onCollision(collider);
+
+	if (collider == nullptr || collider->type != OBJECT_ENTITY) { return; }
+
+	// Narrowed by `type` first, so the cast below only ever runs on something
+	// that really is an Entity — the same checked-cast discipline the physics
+	// solver uses before calling type-specific reactions.
+	const auto* entity = static_cast<const Entity*>(collider);
+	if (entity->kind != ENTITYKIND_STALKER) { return; }
+
+	// Caught. Contact damage rather than Entity::Attack(), which spawns a
+	// projectile — wrong shape for an enemy whose whole threat is reaching you.
+	applyHealthValue(entity->baseDamage, true);
+}
 
 void Player::onEnable()
 {
@@ -190,6 +226,43 @@ void Player::update2D(float deltaTime, bool canMove)
 	rigidBody2D.update(deltaTime);
 }
 
+// Footsteps, the player's loudest routine emission.
+//
+// Cadence and loudness both key off gait, which is what makes crouch-walking a
+// real tactic rather than a cosmetic one: it is quieter per step *and* emits
+// fewer steps. Loudness values match the plan's table (crouch .15 / walk .5 /
+// sprint 1.0).
+static void EmitFootsteps(Player* player, float deltaTime)
+{
+	auto scene = SceneManager::getInstance().currentScene;
+	if (scene == nullptr) { return; }
+
+	// Vertical motion is jumping and falling, not walking; only horizontal
+	// travel makes footfalls.
+	const Vector3 velocity = player->rigidBody3D.GetVelocity();
+	const float planarSpeed = Vector2Length(Vector2{ velocity.x, velocity.z });
+
+	constexpr float kMovingThreshold = 0.5f;
+	if (planarSpeed < kMovingThreshold)
+	{
+		// Land the next step immediately on moving off again, so starting to
+		// walk is audible rather than free for the first half-stride.
+		player->footstepTimer = 0.0f;
+		return;
+	}
+
+	float interval = 0.45f;
+	float loudness = 0.5f;
+	if (player->isCrouching)      { interval = 0.70f; loudness = 0.15f; }
+	else if (player->isSprinting) { interval = 0.28f; loudness = 1.0f; }
+
+	player->footstepTimer -= deltaTime;
+	if (player->footstepTimer > 0.0f) { return; }
+	player->footstepTimer = interval;
+
+	scene->soundField.Emit(player->getPosition(), loudness, SOUND_FOOTSTEP, player->id);
+}
+
 void Player::update3D(float deltaTime)
 {
 	if (!isEnabled) return;
@@ -199,15 +272,19 @@ void Player::update3D(float deltaTime)
 	rigidBody3D.scale = Vector3(1, 2, 1);
 
 	UpdateActions(this);
-	
-	SetMoveDirection(this);
+
+	SetMoveDirection(this, deltaTime);
 
 	/// Update RigidBody3D Physics
 	rigidBody3D.Update(deltaTime);
-	
+
 	updateCollision(this);
 
-	if (artifact) { updateArtifact(this); }
+	// After the physics step so the noise is stamped at the position the player
+	// actually reached this frame, not the one they started it at.
+	EmitFootsteps(this, deltaTime);
+
+	if (artifact) { updateArtifact(this, deltaTime); }
 
 	stamina = Clamp(stamina, 0, getMaxStamina());
 	health = Clamp(health, 0, getMaxHealth());

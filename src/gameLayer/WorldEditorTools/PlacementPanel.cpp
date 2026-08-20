@@ -105,6 +105,15 @@ void WorldEditor::ShowPlacementPanel()
 	if (placementKind == PLACE_ENTITY)
 	{
 		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Entity");
+		// Order matches the EntityKind enum. Player is offered because the enum
+		// carries it, but spawning one here is not meaningful — the scene owns
+		// exactly one player, constructed in Scene_new.
+		ImGui::Combo("Entity Kind", &stagingEntityKind, "Entity\0Player\0Stalker\0");
+		if (stagingEntityKind == ENTITYKIND_PLAYER)
+		{
+			ImGui::TextColored(ImVec4(255, 255, 0, 255),
+				"Scene::player is the only player; this spawns an inert duplicate.");
+		}
 		ImGui::InputFloat("Max Health", &stagingMaxHealth);
 		ImGui::InputFloat("Max Stamina", &stagingMaxStamina);
 		ImGui::InputFloat("Base Speed", &stagingBaseSpeed);
@@ -127,7 +136,8 @@ void WorldEditor::ShowPlacementPanel()
 			ImGui::TextDisabled("Object toggled when the mini game completes");
 		}
 		else if (stagingInteractType == INTERACT_UNLOCK) {
-			ImGui::InputInt("Item ID", &stagingInteractValue);
+			// Feeds player->artifactUnlocked, not an inventory item.
+			ImGui::InputInt("Artifact Tier", &stagingInteractValue);
 		}
 		else if (stagingInteractType == INTERACT_ITEM)
 		{
@@ -222,19 +232,41 @@ GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 	{
 	case PLACE_ENTITY:
 	{
-		Entity entity = {};
+		// Built through the factory so the spawned object really is the
+		// requested subclass rather than a base Entity wearing its name.
+		// saveEntity() stores it via the virtual clone(), so a Stalker survives
+		// the copy into Scene::entities intact.
+		auto entity = Entity::createByKind(static_cast<EntityKind>(stagingEntityKind));
+
+		// Defaults the subclass constructor set that live on GameObject, and so
+		// would be flattened by the base assignment below. baseDamage is the one
+		// that matters: the placement panel has no field for it, so without this
+		// a spawned Stalker inherits the staging object's damage and lands on
+		// the player for whatever a scenery cube happens to carry.
+		const float kindDamage = entity->baseDamage;
+		const std::string kindName = entity->name;
+
 		// The Entity constructor runs GameObject's, which generates a fallback
 		// cube. The assignment below overwrites that handle wholesale, so
 		// without this the mesh is orphaned — one leak per Entity spawned.
 		// Safe to free unconditionally: this object was constructed on the line
 		// above and nothing has copied it.
-		entity.releaseGeneratedModel();
-		static_cast<GameObject&>(entity) = object; // shared base fields
-		entity.type = OBJECT_ENTITY; // base copy overwrote the constructor's type
-		entity.maxHealth = stagingMaxHealth;
-		entity.maxStamina = stagingMaxStamina;
-		entity.baseSpeed = stagingBaseSpeed;
-		spawned = scene->gameMap.saveEntity(entity);
+		entity->releaseGeneratedModel();
+		static_cast<GameObject&>(*entity) = object; // shared base fields
+		entity->type = OBJECT_ENTITY; // base copy overwrote the constructor's type
+		entity->maxHealth = stagingMaxHealth;
+		entity->maxStamina = stagingMaxStamina;
+		entity->baseSpeed = stagingBaseSpeed;
+
+		if (stagingEntityKind != ENTITYKIND_NONE)
+		{
+			entity->baseDamage = kindDamage;
+			// Only reclaim the name when the staging object was never renamed,
+			// so an explicit name from the panel still wins.
+			if (entity->name == "GameObject") { entity->name = kindName; }
+		}
+
+		spawned = scene->gameMap.saveEntity(*entity);
 		break;
 	}
 	case PLACE_INTERACTABLE:

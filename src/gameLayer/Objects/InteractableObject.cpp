@@ -12,7 +12,12 @@ void ActivateMiniGame(InteractableObject* interactable, bool bypass = false)
 	if (!bypass && scene->player->artifactUnlocked < interactable->interactValue) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
 		
 	scene->SetMiniGame(interactable->interactValue);
-	scene->player->interactObject = interactable->activatorValue != 0 ? scene->gameMap.FindGameObjectByID(interactable->activatorValue) : interactable;
+	if (interactable->activatorValue != 0) {
+		scene->player->interactObjectId = interactable->activatorValue;
+	}
+	else {
+		scene->player->interactObjectId = interactable->id;
+	}
 	interactable->isRunningMiniGame = true;
 }
 
@@ -21,6 +26,7 @@ void Unlock(InteractableObject* interactable)
 	std::cout << "[InteractableObject] Unlocking MiniGame: " << interactable->interactValue << "\n";
 	auto player = SceneManager::getInstance().currentScene->player;
 	player->artifactUnlocked = std::max(player->artifactUnlocked, interactable->interactValue);
+	player->artifactUnlocked = Clamp(player->artifactUnlocked, MINI_GAME_FLAPPY_BIRD_ID, MINI_GAME_RO_SHAM_BOO_ID);
 
 	// Check If Player Has Artifact
 	if (player->artifact == nullptr) {
@@ -47,6 +53,7 @@ void Unlock(InteractableObject* interactable)
 	}
 
 	interactable->isInteractable = false;
+	interactable->Destroy();
 }
 
 void AddItemToInventory(InteractableObject* interactable)
@@ -116,7 +123,11 @@ bool InteractableObject::loadFromJson(Json& j)
 	if (!loadCommonFromJson(j)) { return false; }
 	interactType = static_cast<InteractionType>(j.value("InteractType", 0));
 	interactValue = j.value("InteractValue", 0);
-	activatorValue = j.value("ActivatorValue", -1);
+	// 0 is the "no activator" sentinel every other path uses — both constructors
+	// default to it and ActivateMiniGame tests against it. Defaulting to -1 made
+	// a save written before ActivatorValue existed load as a real-but-
+	// unresolvable id instead of "none".
+	activatorValue = j.value("ActivatorValue", 0);
 	isInteractable = j.value("IsInteractable", true);
 	return true;
 }

@@ -46,12 +46,7 @@ GameObject* GameMap::saveObject(GameObject& object)
 	gameObjects.push_back(object);
 
 	std::cout << "Added Object \n";
-	std::sort(gameObjects.begin(), gameObjects.end(), [](const GameObject& a, const GameObject& b) {
-		return a.id > b.id;
-	});
 
-	// The sort above reorders the vector, so the object we just added is no
-	// longer necessarily at back() — find it by the id we just assigned.
 	auto id = object.id;
 	auto it = std::find_if(gameObjects.begin(), gameObjects.end(), [id](const GameObject& o) { return o.id == id; });
 	return &(*it);
@@ -77,8 +72,14 @@ Entity* GameMap::saveEntity(Entity& entity)
 		entity.rigidBody3D.scale = Vector3One();
 	}
 	/// Add Entity To Scene Entity Data
-	auto entity_ptr = std::make_unique<Entity>(entity);
-	scene->entities[entity.id] = std::move(entity_ptr);
+	// clone() rather than make_unique<Entity>(entity): the latter slices, so a
+	// Stalker (or any other subclass) handed to this function was stored as a
+	// bare Entity and lost its overrides before it ever ticked.
+	//
+	// No std::move around the call: clone() already returns a prvalue, and
+	// wrapping it blocks the copy elision that would otherwise construct in
+	// place.
+	scene->entities[entity.id] = entity.clone();
 
 	std::cout << "Added Entity \n";
 	return scene->entities[entity.id].get();
@@ -152,4 +153,18 @@ InteractableObject* GameMap::FindInteractableByID(uint64_t id)
 	auto it = scene->interactables.find(id);
 	if (it == scene->interactables.end()) { return nullptr; }
 	return it->second.get();
+};
+
+GameObject* GameMap::FindWorldObjectByID(uint64_t id)
+{
+	// 0 is the "no object" sentinel — InstanceID hands out ids from 2, reserving
+	// 0 for "none" and 1 for the player.
+	if (id == 0) { return nullptr; }
+
+	// Interactables first: an id authored as an activator is an interactable in
+	// every world shipped so far. The map lookups are O(1); the gameObjects scan
+	// is linear, so it goes last.
+	if (auto* interactable = FindInteractableByID(id)) { return interactable; }
+	if (auto* entity = FindEntityByID(id)) { return entity; }
+	return FindGameObjectByID(id);
 };

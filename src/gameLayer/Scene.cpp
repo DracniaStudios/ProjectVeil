@@ -29,9 +29,14 @@ std::uint64_t InstanceID::getIdAndIncrement()
 	return id;
 }
 
-// Renumbers every object sequentially from 0.
+// Renumbers every object sequentially from the first assignable id.
 void Scene::ResetID() {
-	instanceHolder.idCounter = 0;
+	// InstanceID::idCounter starts at 2 because 0 is the "no object" sentinel
+	// (ActivateMiniGame reads an activatorValue of 0 as "none") and 1 is
+	// PLAYER_ID. Restarting at 0 handed those two ids straight back out: after
+	// one "New World" the second object in the map answered to PLAYER_ID, so
+	// FindGameObjectByID(PLAYER_ID) returned a wall instead of the player.
+	instanceHolder = InstanceID{};
 
 	// `id` is a monotonically increasing counter value, not an array position,
 	// so it has no relationship to gameObjects.size() — comparing the two used
@@ -166,7 +171,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		// Player Vs. Entities — the player lives outside both containers, so
 		// without this pass it walks straight through every entity (it already
 		// resolves against gameObjects in Player::update3D)
-		/*
+		
 		if (auto player = scene->player)
 		{
 			for (auto& [id, entity] : scene->entities)
@@ -192,7 +197,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 				}
 			}
 		}
-		*/
+		
 	}
 }
 
@@ -201,6 +206,7 @@ void Scene_updateScene(float delta) {
 
 	auto manager = &SceneManager::getInstance();
 	auto worldEditor = &WorldEditor::getInstance();
+	auto inputSystem = &InputSystem::getInstance();
 	auto scene = manager->currentScene;
 	scene->update(delta);
 
@@ -227,10 +233,35 @@ void Scene_updateScene(float delta) {
 	// and RigidBody3D::Update() is the only thing that normally rebuilds them.
 	const bool editorFrozen = worldEditor->IsEnabled() && worldEditor->IsSimulationPaused();
 
-	auto clampObject = [](GameObject& object, bool limit) {
-		// Clamp Y Bounds
+	auto clampObject = [scene](GameObject& object, bool limit) {
+		// Anything that has fallen this far is through the floor and not coming
+		// back on its own, so it is recovered rather than left accelerating
+		// forever.
 		if (object.rigidBody3D.translation.y < -1000.0f) {
-			object.rigidBody3D.Teleport(Vector3{ 0, 5, 0 });
+			// Recover to the world's spawn point rather than a hardcoded origin.
+			// (0,5,0) is not neutral ground: in chunk_1 the origin is the middle
+			// of the artifact display, so the old behaviour dropped every
+			// recovered object into the plinth — the same spot the player spawn
+			// point exists to keep things out of.
+			const Vector3 recovery = scene->gameMap.hasSpawnPoint
+				? Vector3{ scene->gameMap.spawnPoint.x,
+				           scene->gameMap.spawnPoint.y + 2.0f,
+				           scene->gameMap.spawnPoint.z }
+				: Vector3{ 0, 5, 0 };
+
+			object.rigidBody3D.Teleport(recovery);
+
+			// Teleport moves the body without touching its motion, so a body
+			// that fell a thousand units arrives still carrying that speed and
+			// gets one physics step to punch through whatever it landed on.
+			// Measured in chunk_1 the floor does catch it, so this is hardening
+			// against thin geometry and faster falls rather than a fix for an
+			// observed failure — but arriving at rest is what "recovered" should
+			// mean either way.
+			object.rigidBody3D.SetVelocity(Vector3Zero());
+
+			std::cout << "[Scene] Recovered " << object.name
+				<< " after falling out of the world\n";
 		}
 
 		if (object.rigidBody3D.translation.y < 0 && limit) {
@@ -238,6 +269,12 @@ void Scene_updateScene(float delta) {
 			std::cout << "Reset: " << object.name << "'s Position \n";
 		}
 	};
+
+	// Age out stale noise before anything emits this frame, so an event emitted
+	// now is heard by entities later in the same frame rather than next one.
+	// Frozen editor time must not expire events either, hence the delta passed
+	// through unchanged only when the sim is actually running.
+	if (!editorFrozen) { scene->soundField.Update(delta); }
 
 	/** Update Player **/
 	if (auto player = scene->player) {
@@ -247,7 +284,7 @@ void Scene_updateScene(float delta) {
 		}
 		else if (scene->is2DActive)
 		{
-			player->update2D(delta);
+			player->update2D(delta, player->rigidBody2D.canMove);
 		}
 		else
 		{
@@ -307,6 +344,10 @@ void Scene_updateScene(float delta) {
 		}
 	}
 
+	// After the entities have settled, so the Director advises on the state the
+	// stalker actually ended the frame in rather than the previous one.
+	if (!editorFrozen) { scene->director.Update(scene, delta); }
+
 
 	// Sweep objects flagged by Destroy() — removal must happen outside the
 	// update loop above, since erasing mid-iteration invalidates it
@@ -323,25 +364,10 @@ void Scene_updateScene(float delta) {
 	if (!editorFrozen) { solveCollision(scene, delta, 8); }
 
 	/** Update MiniGame **/
-	if (auto miniGame = scene->miniGame)
+	if (auto miniGame = scene->miniGame; miniGame != nullptr)
 	{
 		scene->isMiniActive = true;
-		miniGame->update(miniGame->data, scene->player, delta);
-		
-		if (miniGame->data->isComplete)
-		{
-			scene->is2DActive = false;
-			scene->isMiniActive = false;
-			scene->miniGame = nullptr;
-			delete miniGame->data;
-			delete miniGame;
-		}
-		else if (miniGame->data->isReset)
-		{
-			delete miniGame->data;
-			delete miniGame;
-			scene->SetMiniGame(scene->GetLastMiniGame());
-		}
+		miniGame->update(scene, delta);
 	}
 	else
 	{
@@ -349,7 +375,17 @@ void Scene_updateScene(float delta) {
 	}
 
 	// Pause To Inventory
-	if (IsKeyPressed(KEY_TAB)) { scene->is2DActive = !scene->is2DActive; }
+	// Gated on isMiniActive so TAB can't be used to regain 3D player control
+	// while a minigame is still running in the background.
+	if (inputSystem->IsActionPressed(ACTION_UI_PAUSE)) {
+		if (scene->isMiniActive) {
+			scene->is2DActive = false;
+			scene->ReleaseMiniGame();
+		}
+		else {
+			scene->is2DActive = !scene->is2DActive;
+		}
+	}
 
 	// World Editor (includes the developer tool windows)
 	WorldEditor::getInstance().update(scene->player);
@@ -372,7 +408,7 @@ void Scene_drawScene2D() {
 			/// Mini Games On Top
 			if (scene->isMiniActive && scene->miniGame != nullptr)
 			{
-				scene->miniGame->draw(scene->miniGame->data, scene->player);
+				scene->miniGame->draw(scene);
 			}
 			scene->player->render2D();
 		}
@@ -403,6 +439,41 @@ void Scene_drawScene3D() {
 	}
 }
 
+void Scene::ResetMiniGame() {
+	// Release BEFORE asking for the replay.
+			//
+			// This path used to delete both allocations and leave the freed
+			// pointer in scene->miniGame. That was survivable while SetMiniGame
+			// simply overwrote the pointer, but SetMiniGame now frees whatever it
+			// is replacing — so it saw the stale non-null pointer, dereferenced
+			// it for ->data and freed the same two allocations a second time.
+			// Every failed Flappy Bird or Crane attempt took that path.
+	const int replayId = GetLastMiniGame();
+	if (miniGame != nullptr) {
+		ReleaseMiniGame();
+	}
+	SetMiniGame(replayId);
+
+	// Nothing to replay: hand the player back to the 3D world rather
+	// than stranding them in an empty 2D overlay with no way out.
+	if (miniGame == nullptr) { is2DActive = false; }
+}
+
+void Scene::ReleaseMiniGame()
+{
+	if (miniGame != nullptr)
+	{
+		delete miniGame->data;
+		delete miniGame;
+	}
+
+	// Always null on return, whether or not there was anything to free. That is
+	// the property every caller depends on — it is what makes a second release,
+	// or a caller that bails out afterwards, harmless.
+	miniGame = nullptr;
+	isMiniActive = false;
+	is2DActive = false;
+}
 
 void Scene::SetMiniGame(int value)
 {
@@ -411,6 +482,10 @@ void Scene::SetMiniGame(int value)
 		std::cout << "[Scene.cpp] Ignoring SetMiniGame with unknown id: " << value << "\n";
 		return;
 	}
+
+	// Replacing an already-running minigame without freeing it would leak both
+	// the MiniGame and its MiniGameData.
+	ReleaseMiniGame();
 
 	player->rigidBody2D = {};
 	is2DActive = true;

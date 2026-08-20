@@ -9,7 +9,6 @@ MiniGame* MiniGame_Crane(Player* player)
 	game->name = "Crane";
 	game->update = &Crane::update;
 	game->draw = &Crane::render;
-	game->data = new MiniGameData;
 
 	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
 	player->rigidBody2D.scale = Vector3(5, 5, 5);
@@ -60,9 +59,12 @@ MiniGame* MiniGame_Crane(Player* player)
 	return game;
 }
 
-void Crane::render(MiniGameData* data, Player* player)
+void Crane::render(Scene* scene_ptr)
 {
-	std::ranlux24_base rng(std::random_device{}());
+	auto data = scene_ptr->miniGame->data;
+	// An unused std::random_device + generator used to be constructed here, once
+	// per frame. random_device can hit the OS entropy source on construction, so
+	// this was a syscall per frame in the draw path for a value nothing read.
 
 	/// Draw Background Screen
 	DrawRectangleRec(data->screen, BLACK);
@@ -75,9 +77,11 @@ void Crane::render(MiniGameData* data, Player* player)
 
 }
 
-void Crane::update(MiniGameData* data, Player* player, float deltaTime)
+void Crane::update(Scene* scene_ptr, float deltaTime)
 {
 	auto inputSystem = &InputSystem::getInstance();
+	auto data = scene_ptr->miniGame->data;
+	auto player = scene_ptr->player;
 
 	/// Player Logic
 	{
@@ -100,7 +104,7 @@ void Crane::update(MiniGameData* data, Player* player, float deltaTime)
 	{
 		if (CheckCollisionCircleRec(player->getPosition2D(), player->rigidBody2D.scale.x, obstacle))
 		{
-			data->isReset = true;
+			scene_ptr->ResetMiniGame();
 		}
 	}
 
@@ -109,6 +113,13 @@ void Crane::update(MiniGameData* data, Player* player, float deltaTime)
 		if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, data->goal))
 		{
 			CompleteMiniGame(data, player, BUFF_RANGE, true);
+			scene_ptr->ReleaseMiniGame();
+		}
+
+		auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
+
+		if (!CheckCollisionRecs(playerRect, data->screen)) {
+			scene_ptr->ResetMiniGame();
 		}
 	}
 

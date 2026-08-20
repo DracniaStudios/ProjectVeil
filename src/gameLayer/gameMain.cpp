@@ -60,7 +60,14 @@ void close_game()
 {
 	std::cout << "Close Game \n";
 	std::ofstream f(RESOURCES_PATH "debug.log");
-	SaveSystem::SaveGame("backup", SceneManager::getInstance().currentScene);
+
+
+	auto now = std::chrono::system_clock::now();
+	std::string date_str = "backup/" + std::format("{:%Y-%m-%d}", now) + "_backup";
+
+	SaveSystem::SaveGame(date_str.c_str(), SceneManager::getInstance().currentScene);
+	
+	
 	f << "\n CLOSED\n";
 	f.close();
 

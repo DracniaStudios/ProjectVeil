@@ -11,9 +11,16 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 		object->interactType = static_cast<InteractionType>(stageInteractType);
 	}
 	ImGui::InputInt("Interact Value", &object->interactValue);
-	ImGui::InputInt("Activator Value", &object->activatorValue);
+	
+	if (object->interactType == INTERACT_MINIGAME) {
+		ImGui::TextDisabled("%s", miniGameIdToString(object->interactValue));
+		ImGui::Checkbox("MiniGame Running", &object->isRunningMiniGame);
+	}
+
+	if (object->interactType == INTERACT_MINIGAME || object->interactType == INTERACT_ITEM) {
+		ImGui::InputInt("Activator Value", &object->activatorValue);
+	}
 	ImGui::Checkbox("Interactable", &object->isInteractable);
-	ImGui::Checkbox("MiniGame Running", &object->isRunningMiniGame);
 
 	ImGui::PopID();
 }
@@ -106,13 +113,14 @@ void WorldEditor::showGameObject(GameObject* object) {
 		object->rigidBody3D.rotation = rotation;
 		rotationEulerSource = rotation;
 	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Lock Rotation", &object->rigidBody3D.lockRotation);
+	
 	// Scale is applied through the model transform each frame — no mesh regen needed
 	if (ImGui::DragFloat3("Scale: ", &object->rigidBody3D.scale.x))
 	{
 		object->rigidBody3D.scale = { object->rigidBody3D.scale.x, object->rigidBody3D.scale.y, object->rigidBody3D.scale.z };
 	}
-	ImGui::SameLine();
-	ImGui::Checkbox("Lock Rotation", &object->rigidBody3D.lockRotation);
 	ImGui::Spacing();
 
 	// RigidBody
@@ -150,7 +158,8 @@ void WorldEditor::showGameObject(GameObject* object) {
 		object->defaultColor.g,
 		object->defaultColor.b,
 		object->defaultColor.a);
-	ImGui::TextColored(ImVec4(color.x, color.y, color.z, color.w), "Color");
+	// ImVec4 color channels are normalized 0-1, unlike the 0-255 Color/Vector4 above.
+	ImGui::TextColored(ImVec4(color.x / 255.0f, color.y / 255.0f, color.z / 255.0f, color.w / 255.0f), "Color");
 	if (ImGui::InputFloat4("Color", &color.x)) {
 		object->defaultColor = Color(
 			color.x,
@@ -219,6 +228,63 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::PopID();
 }
 
+void ShowStateButtons(Scene* scene) {
+#pragma region State Buttons
+	if (ImGui::Button("Make All Static")) {
+		std::cout << "[Object Browser] Set All Object/Interactables Static\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.rigidBody3D.isStatic = true;
+		}
+		for (auto& [id, object] : scene->interactables) {
+			object->rigidBody3D.isStatic = true;
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Make All Not Static")) {
+		std::cout << "[Object Browser] Set All Object/Interactables NonStatic\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.rigidBody3D.isStatic = false;
+		}
+		for (auto& [id, object] : scene->interactables) {
+			object->rigidBody3D.isStatic = false;
+		}
+
+	}
+	ImGui::Spacing();
+
+	if (ImGui::Button("Make All Enabled")) {
+		std::cout << "[Object Browser] Set All Object/Interactables Enabled\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.isEnabled = true;
+		}
+		for (auto& [id, object] : scene->interactables) {
+			object->isEnabled = true;
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Make All Not Enabled")) {
+		std::cout << "[Object Browser] Set All Object/Interactables Disabled\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.isEnabled = false;
+		}
+		for (auto& [id, object] : scene->interactables) {
+			object->isEnabled = false;
+		}
+
+	}
+	ImGui::Spacing();
+
+	if (ImGui::Button("Set Interactable To Self")) {
+		std::cout << "[Object Browser] Interactables To Self\n";
+		for (auto& [id, object] : scene->interactables) {
+			object->isInteractable = true;
+			object->activatorValue = 0; // Check for Self ID Also
+		}
+	}
+
+#pragma endregion
+}
+
 void WorldEditor::ShowObjectBrowser()
 {
 	auto scene = SceneManager::getInstance().currentScene;
@@ -227,12 +293,15 @@ void WorldEditor::ShowObjectBrowser()
 	ImGui::Begin("Object Browser");
 
 	/// List World Objects
-	ImGui::BeginChild("World Object List", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.3f));
+	ImGui::BeginChild("State Buttons", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.1f));
+	ShowStateButtons(scene);
+	ImGui::EndChild();
+	ImGui::Separator();
+
+	ImGui::BeginChild("World Object List", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.4f));
 	ImGui::TextColored(ImVec4(0, 255, 0, 255), "World Objects");
 	for (auto& object : scene->gameMap.gameObjects)
 	{
-		//if (getType(&object) != OBJECT_GENERIC) continue;
-
 		ImGui::PushID(&object);
 		std::string label = object.name + " (" + std::to_string(object.id) + ")";
 		if (ImGui::Selectable(label.c_str(), object.id == selectedObjectId))

@@ -18,9 +18,9 @@
 *.pdb
 
 # Compiled Dynamic libraries
-*.so
-*.dylib
-*.so.*
+#*.so
+#*.dylib
+#*.so.*
 
 # Fortran module files
 *.mod
@@ -41,6 +41,7 @@ resources/audio/
 resources/blocks/
 resources/icons/
 resources/models/
+resources/saves/backup
 
 
 # Build directories
@@ -54,8 +55,13 @@ out/
 .fmod/
 .claude/
 docs/
+tools/
+.veil-sync/
+
+# Additive Files
 saves/backup.json
 saves/settings.json
+veil-digest.py
 
 # CMake generated files
 CMakeFiles/
