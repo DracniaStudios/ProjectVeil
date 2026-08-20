@@ -470,6 +470,8 @@ struct RigidBody2D : Transform2D
 	void update(float deltaTime);
 
 	Vector2 getPosition() { return Vector2{ translation.x, translation.y }; }
+	Rectangle getRectCentered();
+	Rectangle getRectCornered();
 
 	void jump(float force)
 	{

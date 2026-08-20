@@ -6,8 +6,8 @@
 
 struct Doctor : MiniGame
 {
-	static void render(MiniGameData* data, Player* player_ptr);
-	static void update(MiniGameData* data, Player* player_ptr, float delta);
+	static void render(Scene* scene_ptr);
+	static void update(Scene* scene_ptr, float delta);
 };
 
 #endif

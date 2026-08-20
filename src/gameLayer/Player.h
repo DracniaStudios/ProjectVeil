@@ -37,14 +37,10 @@ struct Player : Entity
 	Vector2 moveDirection = {};
 	PlayerCamera camera = {};
 	GameObject* artifact = nullptr;
-	// The interactable itself is stable (stored via unique_ptr in Scene::interactables),
-	// so it's kept as a direct pointer. An activator-linked object lives in
-	// GameMap::gameObjects, a plain vector that GameMap::saveObject() re-sorts (and may
-	// reallocate) on every insert, so it's kept as an id and re-resolved on use instead
-	// of a pointer that could silently start referring to a different object.
-	GameObject* interactObject = nullptr;
+	
+	// Activator Object ID
 	std::uint64_t interactObjectId = 0;
-	std::vector<InteractableObject*> inventory;
+	std::vector<InteractableObject*> inventory;// Set TO Object IDs if doesn't work (just like ActivatorObject).
 
 	int artifactMode = 0;
 	int artifactUnlocked = -1;

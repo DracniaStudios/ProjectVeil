@@ -55,6 +55,7 @@ out/
 .claude/
 docs/
 tools/
+.veil-sync/
 
 # Additive Files
 saves/backup.json

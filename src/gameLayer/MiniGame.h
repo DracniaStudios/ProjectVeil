@@ -15,10 +15,13 @@ struct Scene;
 
 struct MiniGameData
 {
+	MiniGameData() {
+		score = 0;
+		scoreGoal = 1;
+	}
+
 	int score = 0;
 	int scoreGoal = 1;
-	bool isReset = false;
-	bool isComplete = false;
 
 	std::vector<Rectangle> obstacles = {};
 	Rectangle screen = {};
@@ -26,11 +29,20 @@ struct MiniGameData
 };
 
 // Update Game Method
-typedef void (*updateGameMethod)(MiniGameData* data, Player* player_ptr, float deltaTime);
-typedef void (*drawGameMethod)(MiniGameData* data, Player* player_ptr);
+typedef void (*updateGameMethod)(Scene* scene_ptr, float deltaTime);
+typedef void (*drawGameMethod)(Scene* scene_ptr);
 
 struct MiniGame
 {
+	MiniGame() {
+		name = "New MiniGame";
+		update = {};
+		draw = {};
+		data = new MiniGameData();
+		data->score = 0;
+		data->scoreGoal = 1;
+	}
+
 	const char* name = {};
 	updateGameMethod update = {};
 	drawGameMethod draw = {};
@@ -39,48 +51,31 @@ struct MiniGame
 	void SetGoal(const Rectangle rect) const { data->goal = rect; }
 };
 
-inline void CompleteMiniGame(MiniGameData* data, Player* player, Buff buff, bool forceComplete = false) {
+inline bool CompleteMiniGame(MiniGameData* data, Player* player, Buff buff, bool forceComplete = false) {
 	if (data->score >= data->scoreGoal || forceComplete) {
-		data->isComplete = true;
 		if (CooldownTimer* getBuff = player->getBuff(buff); getBuff != nullptr) { getBuff->use(); }
 		
-		// Check for Activator Object and Enable/Disable
-		// interactObjectId is re-resolved here rather than cached as a pointer:
-		// an activator in GameMap::gameObjects lives in a plain vector that
-		// GameMap::saveObject() re-sorts (and may reallocate) on every insert, so
-		// a stored pointer could silently start referring to a different object.
-		//
-		// The lookup goes through FindWorldObjectByID, not FindGameObjectByID.
-		// An activator can be authored against any world object, and the two
-		// searches are not interchangeable: FindGameObjectByID only walks
-		// gameMap.gameObjects, while interactables and entities live in their own
-		// maps and are never placed in gameObjects. Every activator authored in
-		// chunk_1.json points at an interactable, so this resolved to nullptr for
-		// all of them — winning a minigame silently opened nothing.
-		GameObject* target = player->interactObject != nullptr
-			? player->interactObject
-			: GameMap::FindWorldObjectByID(player->interactObjectId);
+		// Check for Activator Object By using ID instead of Pointer
+		GameObject* target = GameMap::FindWorldObjectByID(player->interactObjectId);
 
 		if (target != nullptr) {
 			if (target->isEnabled) {
 				target->onDisable();
-				// onDisable() doesn't touch physics state, so clear collision explicitly
-				target->rigidBody3D.canCollide = false;
+				
 			}
 			else {
-				// onEnable() already restores canCollide = true; don't clobber it back to false
 				target->onEnable();
 			}
 		}
 		else if (player->interactObjectId != 0) {
-			// An authored activator that no longer resolves. Worth saying out
-			// loud: this failure mode is invisible in game — the minigame
-			// completes normally and the thing it was meant to open just does
-			// not move — so it went unnoticed for a long time.
+			// Check if GameObject Is Active
 			std::cout << "[MiniGame] Activator " << player->interactObjectId
 				<< " no longer exists — nothing to open\n";
+			return false;
 		}
+		return true;
 	}
+	return false;
 }
 
 /// Mini Game Constructors

@@ -33,7 +33,6 @@ MiniGame* MiniGame_FlappyBird(Player* player)
 	game->name = "Flappy Bird";
 	game->update = &FlappyBird::update;
 	game->draw = &FlappyBird::render;
-	game->data = new MiniGameData;
 
 	game->data->scoreGoal = 3;
 
@@ -73,8 +72,9 @@ MiniGame* MiniGame_FlappyBird(Player* player)
 	return game;
 }
 
-void FlappyBird::render(MiniGameData* data, Player* player)
+void FlappyBird::render(Scene* scene_ptr)
 {
+	auto data = scene_ptr->miniGame->data;
 	using namespace FlappyBirdSpace;
 	/// Draw Background Screen
 	Rectangle screen = GetPlayScreen();
@@ -108,10 +108,11 @@ void FlappyBird::render(MiniGameData* data, Player* player)
 
 }
 
-void FlappyBird::update(MiniGameData* data, Player* player, float deltaTime)
+void FlappyBird::update(Scene* scene_ptr, float deltaTime)
 {
-	auto scene = SceneManager::getInstance().currentScene;
 	auto inputSystem = &InputSystem::getInstance();
+	auto data = scene_ptr->miniGame->data;
+	auto player = scene_ptr->player;
 	using namespace FlappyBirdSpace;
 
 	auto generateObstacle = [&](int count = 4)
@@ -166,26 +167,33 @@ void FlappyBird::update(MiniGameData* data, Player* player, float deltaTime)
 		generateObstacle(2 + data->score);
 	}
 
+	if (!CheckCollisionRecs(player->rigidBody2D.getRectCentered(), generateScaleRect(screen, Rectangle{ 1.05f, 1.05f,0.95f, 0.95f }))) {
+		scene_ptr->ResetMiniGame();
+	}
+	/*
 	if (player->rigidBody2D.getPosition().x < screen.x) scene->miniGame->data->isReset = true;
 	if (player->rigidBody2D.getPosition().y < screen.y) scene->miniGame->data->isReset = true;
 	if (player->rigidBody2D.getPosition().x > screen.x + screen.width) scene->miniGame->data->isReset = true;
 	if (player->rigidBody2D.getPosition().y > screen.y + screen.height) scene->miniGame->data->isReset = true;
+	*/
 
 	// Win Condition
-	CompleteMiniGame(data, player, BUFF_MOVEMENT);
+	if (CompleteMiniGame(data, player, BUFF_MOVEMENT)) {
+		scene_ptr->ReleaseMiniGame();
+	}
 
 	// Lose Condition
 	 auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
 
 	if (!CheckCollisionRecs(playerRect, screen)) {
-		scene->ReleaseMiniGame();
+		scene_ptr->ReleaseMiniGame();
 		std::cout << "[MiniGame/FlappyBird] Play Fail Sound\n";
 	}
 
 	// Player Logic
 	{
 		static int speed = 100;
-		
+		player->rigidBody2D.applyGravity(Vector2(0, 200));
 		player->rigidBody2D.applyGravity();
 		if (inputSystem->IsActionPressed(ACTION_MOVE_JUMP)) { player->rigidBody2D.jump(200); }
 
@@ -207,7 +215,7 @@ void FlappyBird::update(MiniGameData* data, Player* player, float deltaTime)
 
 			Rectangle obstacle = generateScaleRect(screen, newSize);
 
-			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obstacle)) scene->miniGame->data->isReset = true;
+			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obstacle)) scene_ptr->ResetMiniGame();
 		}
 	}
 }

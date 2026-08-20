@@ -87,12 +87,8 @@ public:
 
 	void SetMiniGame(int miniGame);
 	int GetLastMiniGame() const { return lastMiniGamePlayed; }
-
-	// Frees the active minigame and clears the 2D-mode flag, leaving `miniGame`
-	// null whether or not there was anything to free. The single owner of
-	// MiniGame/MiniGameData teardown: the callers that each open-coded it were
-	// what allowed the same allocation to be freed twice.
-	void ReleaseMiniGame();
+	void ReleaseMiniGame(); // Frees MiniGame Memory Data
+	void ResetMiniGame();
 
 	void ResetID();
 private:

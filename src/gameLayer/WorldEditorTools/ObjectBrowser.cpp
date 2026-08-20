@@ -228,6 +228,63 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::PopID();
 }
 
+void ShowStateButtons(Scene* scene) {
+#pragma region State Buttons
+	if (ImGui::Button("Make All Static")) {
+		std::cout << "[Object Browser] Set All Object/Interactables Static\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.rigidBody3D.isStatic = true;
+		}
+		for (auto& [id, object] : scene->interactables) {
+			object->rigidBody3D.isStatic = true;
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Make All Not Static")) {
+		std::cout << "[Object Browser] Set All Object/Interactables NonStatic\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.rigidBody3D.isStatic = false;
+		}
+		for (auto& [id, object] : scene->interactables) {
+			object->rigidBody3D.isStatic = false;
+		}
+
+	}
+	ImGui::Spacing();
+
+	if (ImGui::Button("Make All Enabled")) {
+		std::cout << "[Object Browser] Set All Object/Interactables Enabled\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.isEnabled = true;
+		}
+		for (auto& [id, object] : scene->interactables) {
+			object->isEnabled = true;
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Make All Not Enabled")) {
+		std::cout << "[Object Browser] Set All Object/Interactables Disabled\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.isEnabled = false;
+		}
+		for (auto& [id, object] : scene->interactables) {
+			object->isEnabled = false;
+		}
+
+	}
+	ImGui::Spacing();
+
+	if (ImGui::Button("Set Interactable To Self")) {
+		std::cout << "[Object Browser] Interactables To Self\n";
+		for (auto& [id, object] : scene->interactables) {
+			object->isInteractable = true;
+			object->activatorValue = 0; // Check for Self ID Also
+		}
+	}
+
+#pragma endregion
+}
+
 void WorldEditor::ShowObjectBrowser()
 {
 	auto scene = SceneManager::getInstance().currentScene;
@@ -237,48 +294,9 @@ void WorldEditor::ShowObjectBrowser()
 
 	/// List World Objects
 	ImGui::BeginChild("State Buttons", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.1f));
-#pragma region State Buttons
-	if (ImGui::Button("Make All Static")) {
-		for (auto &object : scene->gameMap.gameObjects) {
-			object.rigidBody3D.isStatic = true;
-		}
-		for (auto &[id, object] : scene->interactables) {
-			object->rigidBody3D.isStatic = true;
-		}
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Make All Not Static")) {
-		for (auto &object : scene->gameMap.gameObjects) {
-			object.rigidBody3D.isStatic = false;
-		}
-		for (auto &[id, object] : scene->interactables) {
-			object->rigidBody3D.isStatic = false;
-		}
-
-	}
-
-	if (ImGui::Button("Make All Enabled")) {
-		for (auto &object : scene->gameMap.gameObjects) {
-			object.isEnabled = true;
-		}
-		for (auto &[id, object] : scene->interactables) {
-			object->isEnabled = true;
-		}
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Make All Not Enabled")) {
-		for (auto &object : scene->gameMap.gameObjects) {
-			object.isEnabled = false;
-		}
-		for (auto &[id, object] : scene->interactables) {
-			object->isEnabled = false;
-		}
-
-	}
-
+	ShowStateButtons(scene);
 	ImGui::EndChild();
 	ImGui::Separator();
-#pragma endregion
 
 	ImGui::BeginChild("World Object List", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.4f));
 	ImGui::TextColored(ImVec4(0, 255, 0, 255), "World Objects");

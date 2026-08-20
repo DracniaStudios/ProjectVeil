@@ -13,12 +13,10 @@ void ActivateMiniGame(InteractableObject* interactable, bool bypass = false)
 		
 	scene->SetMiniGame(interactable->interactValue);
 	if (interactable->activatorValue != 0) {
-		scene->player->interactObject = nullptr;
 		scene->player->interactObjectId = interactable->activatorValue;
 	}
 	else {
-		scene->player->interactObject = interactable;
-		scene->player->interactObjectId = 0;
+		scene->player->interactObjectId = interactable->id;
 	}
 	interactable->isRunningMiniGame = true;
 }
@@ -55,6 +53,7 @@ void Unlock(InteractableObject* interactable)
 	}
 
 	interactable->isInteractable = false;
+	interactable->Destroy();
 }
 
 void AddItemToInventory(InteractableObject* interactable)

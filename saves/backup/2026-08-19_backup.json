@@ -1,82 +1,6 @@
 {
-  "Entities": {
-    "298": {
-      "ArriveDistance": 1.0,
-      "BaseDamage": 25.0,
-      "BaseSpeed": 5.0,
-      "CanBeSelected": true,
-      "CastsShadow": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "CurrentWaypoint": 1,
-      "Health": 10.0,
-      "HearingThreshold": 1.0,
-      "HuntPatience": 4.0,
-      "HuntThreshold": 0.3499999940395355,
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Kind": 2,
-      "MaxHealth": 10.0,
-      "MaxStamina": 100.0,
-      "Name": "Stalker",
-      "ObjectType": 2,
-      "RigidBody3D": {
-        "CanCollide": true,
-        "IsEnabled": true,
-        "IsStatic": false,
-        "LockAcceleration": false,
-        "LockAngularVelocity": false,
-        "LockRotation": true,
-        "LockScale": false,
-        "LockTranslation": false,
-        "LockVelocity": false,
-        "PosX": 76.4481430053711,
-        "PosY": 1.9896601438522339,
-        "PosZ": -18.082204818725586,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 1.0,
-        "ScaleY": 3.0,
-        "ScaleZ": 1.0,
-        "VelocityX": 4.863739013671875e-05,
-        "VelocityY": 0.0,
-        "VelocityZ": -5.078315734863281e-05
-      },
-      "SearchDuration": 8.0,
-      "SearchRadius": 6.0,
-      "Stamina": 100.0,
-      "State": 0,
-      "Waypoints": [
-        {
-          "x": 75.52469635009766,
-          "y": 1.9896601438522339,
-          "z": -17.13292694091797
-        },
-        {
-          "x": 90.6237564086914,
-          "y": 1.569185733795166,
-          "z": -4.393401145935059
-        },
-        {
-          "x": 73.04143524169922,
-          "y": 1.569185733795166,
-          "z": 24.908483505249023
-        },
-        {
-          "x": 70.91619110107422,
-          "y": 1.569185733795166,
-          "z": 47.05292510986328
-        }
-      ]
-    }
-  },
-  "IdCounter": 299,
+  "Entities": {},
+  "IdCounter": 298,
   "Interactables": {
     "114": {
       "ActivatorValue": 0,
@@ -478,13 +402,13 @@
       "InteractType": 1,
       "InteractValue": 0,
       "IsDestructible": false,
-      "IsEnabled": true,
+      "IsEnabled": false,
       "IsInteractable": true,
       "Name": "FlappyBird",
       "ObjectType": 3,
       "RigidBody3D": {
-        "CanCollide": true,
-        "IsEnabled": true,
+        "CanCollide": false,
+        "IsEnabled": false,
         "IsStatic": true,
         "LockAcceleration": false,
         "LockAngularVelocity": false,
@@ -509,7 +433,7 @@
       "Texture": "Chip001"
     },
     "72": {
-      "ActivatorValue": 72,
+      "ActivatorValue": 0,
       "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
@@ -9410,7 +9334,7 @@
       255,
       255
     ],
-    "Health": 0.0,
+    "Health": 100.0,
     "IsDestructible": true,
     "IsEnabled": true,
     "Kind": 1,
@@ -9418,30 +9342,30 @@
     "MaxStamina": 100.0,
     "Name": "GameObject",
     "ObjectType": 1,
-    "Pos2X": 1096.42724609375,
-    "Pos2Y": 414.3157043457031,
+    "Pos2X": 1095.3277587890625,
+    "Pos2Y": 467.35650634765625,
     "RigidBody3D": {
       "CanCollide": true,
       "IsEnabled": true,
-      "IsStatic": true,
+      "IsStatic": false,
       "LockAcceleration": false,
       "LockAngularVelocity": false,
       "LockRotation": false,
       "LockScale": false,
       "LockTranslation": false,
       "LockVelocity": false,
-      "PosX": 72.84922790527344,
-      "PosY": 1.569185733795166,
-      "PosZ": -23.546289443969727,
-      "RotW": -0.10562364012002945,
-      "RotX": -0.9903526306152344,
-      "RotY": -0.0183696448802948,
-      "RotZ": 0.08779489248991013,
+      "PosX": 68.09849548339844,
+      "PosY": 1.5675911903381348,
+      "PosZ": -22.108169555664063,
+      "RotW": 1.0,
+      "RotX": 0.0,
+      "RotY": 0.0,
+      "RotZ": 0.0,
       "ScaleX": 1.0,
       "ScaleY": 2.0,
       "ScaleZ": 1.0,
       "VelocityX": 0.0,
-      "VelocityY": 0.0,
+      "VelocityY": -3.097194194793701,
       "VelocityZ": 0.0
     },
     "Stamina": 100.0

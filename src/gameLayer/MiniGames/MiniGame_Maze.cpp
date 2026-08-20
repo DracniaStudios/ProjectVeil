@@ -64,14 +64,13 @@ MiniGame* MiniGame_Maze(Player* player)
 	game->name = "Maze";
 	game->update = &Maze::update;
 	game->draw = &Maze::render;
-	game->data = new MiniGameData;
 
 	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.1f, GetScreenHeight() * 0.1f));
 
 	return game;
 }
 
-void Maze::render(MiniGameData* data, Player* player)
+void Maze::render(Scene* scene_ptr)
 {
 	using namespace MazeSpace;
 	DrawRectangleRec(GetScreen(), DARKBLUE);
@@ -79,9 +78,11 @@ void Maze::render(MiniGameData* data, Player* player)
 
 }
 
-void Maze::update(MiniGameData* data, Player* player, float delta)
+void Maze::update(Scene* scene_ptr, float delta)
 {
 	auto inputSystem = &InputSystem::getInstance();
+	auto player = scene_ptr->player;
+	auto data = scene_ptr->miniGame->data;
 	using namespace MazeSpace;
 
 	auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
@@ -89,5 +90,7 @@ void Maze::update(MiniGameData* data, Player* player, float delta)
 	if (!CheckCollisionRecs(playerRect, GetScreen())) {
 
 	}
-	CompleteMiniGame(data, player, BUFF_SEARCH);
+	if (CompleteMiniGame(data, player, BUFF_SEARCH)) {
+		scene_ptr->ReleaseMiniGame();
+	}
 }

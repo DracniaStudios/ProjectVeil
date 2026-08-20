@@ -367,31 +367,7 @@ void Scene_updateScene(float delta) {
 	if (auto miniGame = scene->miniGame; miniGame != nullptr)
 	{
 		scene->isMiniActive = true;
-		miniGame->update(miniGame->data, scene->player, delta);
-		
-		if (miniGame->data->isComplete)
-		{
-			scene->is2DActive = false;
-			scene->ReleaseMiniGame();
-		}
-		else if (miniGame->data->isReset)
-		{
-			// Release BEFORE asking for the replay.
-			//
-			// This path used to delete both allocations and leave the freed
-			// pointer in scene->miniGame. That was survivable while SetMiniGame
-			// simply overwrote the pointer, but SetMiniGame now frees whatever it
-			// is replacing — so it saw the stale non-null pointer, dereferenced
-			// it for ->data and freed the same two allocations a second time.
-			// Every failed Flappy Bird or Crane attempt took that path.
-			const int replayId = scene->GetLastMiniGame();
-			scene->ReleaseMiniGame();
-			scene->SetMiniGame(replayId);
-
-			// Nothing to replay: hand the player back to the 3D world rather
-			// than stranding them in an empty 2D overlay with no way out.
-			if (scene->miniGame == nullptr) { scene->is2DActive = false; }
-		}
+		miniGame->update(scene, delta);
 	}
 	else
 	{
@@ -432,7 +408,7 @@ void Scene_drawScene2D() {
 			/// Mini Games On Top
 			if (scene->isMiniActive && scene->miniGame != nullptr)
 			{
-				scene->miniGame->draw(scene->miniGame->data, scene->player);
+				scene->miniGame->draw(scene);
 			}
 			scene->player->render2D();
 		}
@@ -463,6 +439,25 @@ void Scene_drawScene3D() {
 	}
 }
 
+void Scene::ResetMiniGame() {
+	// Release BEFORE asking for the replay.
+			//
+			// This path used to delete both allocations and leave the freed
+			// pointer in scene->miniGame. That was survivable while SetMiniGame
+			// simply overwrote the pointer, but SetMiniGame now frees whatever it
+			// is replacing — so it saw the stale non-null pointer, dereferenced
+			// it for ->data and freed the same two allocations a second time.
+			// Every failed Flappy Bird or Crane attempt took that path.
+	const int replayId = GetLastMiniGame();
+	if (miniGame != nullptr) {
+		ReleaseMiniGame();
+	}
+	SetMiniGame(replayId);
+
+	// Nothing to replay: hand the player back to the 3D world rather
+	// than stranding them in an empty 2D overlay with no way out.
+	if (miniGame == nullptr) { is2DActive = false; }
+}
 
 void Scene::ReleaseMiniGame()
 {
@@ -477,6 +472,7 @@ void Scene::ReleaseMiniGame()
 	// or a caller that bails out afterwards, harmless.
 	miniGame = nullptr;
 	isMiniActive = false;
+	is2DActive = false;
 }
 
 void Scene::SetMiniGame(int value)
