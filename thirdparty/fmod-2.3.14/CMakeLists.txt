@@ -40,8 +40,8 @@ else()
 	message(FATAL_ERROR "FMOD: no vendored libraries for this platform.")
 endif()
 
-set (FMOD_CORE_LIB_DIR "${CORE_ROOT_DIR}/lib/${FMOD_ARCH_DIR}")
-set (FMOD_STUDIO_LIB_DIR "${STUDIO_ROOT_DIR}/lib/${FMOD_ARCH_DIR}")
+set (FMOD_CORE_LIB_DIR "${CORE_ROOT_DIR}/lib/${FMOD_LIB_SUBDIR}")
+set (FMOD_STUDIO_LIB_DIR "${STUDIO_ROOT_DIR}/lib/${FMOD_LIB_SUBDIR}")
 
 if(NOT EXISTS "${FMOD_CORE_LIB_DIR}")
 	message(FATAL_ERROR
@@ -134,6 +134,20 @@ else()
 		IMPORTED_LOCATION_DEBUG "${FMOD_STUDIO_DEBUG}"
 		IMPORTED_LOCATION_RELEASE "${FMOD_STUDIO_RELEASE}"
 	)
+endif()
+
+if(WIN32)
+    # DLLs need a separate .lib import library; ELF/Mach-O shared objects link directly.
+    set_target_properties(FMOD::Core PROPERTIES
+        IMPORTED_IMPLIB "${FMOD_CORE_LIB_DIR}/fmod.lib"
+        IMPORTED_IMPLIB_DEBUG "${FMOD_CORE_LIB_DIR}/fmodL.lib"
+        IMPORTED_IMPLIB_RELEASE "${FMOD_CORE_LIB_DIR}/fmod.lib"
+    )
+    set_target_properties(FMOD::Studio PROPERTIES
+        IMPORTED_IMPLIB "${FMOD_STUDIO_LIB_DIR}/fmodstudio.lib"
+        IMPORTED_IMPLIB_DEBUG "${FMOD_STUDIO_LIB_DIR}/fmodstudioL.lib"
+        IMPORTED_IMPLIB_RELEASE "${FMOD_STUDIO_LIB_DIR}/fmodstudio.lib"
+    )
 endif()
 
 # Umbrella for collecting different APIs

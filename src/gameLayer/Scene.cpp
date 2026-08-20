@@ -475,6 +475,21 @@ void Scene::ReleaseMiniGame()
 	is2DActive = false;
 }
 
+void Scene::ReleaseMiniGame()
+{
+	if (miniGame != nullptr)
+	{
+		delete miniGame->data;
+		delete miniGame;
+	}
+
+	// Always null on return, whether or not there was anything to free. That is
+	// the property every caller depends on — it is what makes a second release,
+	// or a caller that bails out afterwards, harmless.
+	miniGame = nullptr;
+	isMiniActive = false;
+}
+
 void Scene::SetMiniGame(int value)
 {
 	if (value < MINI_GAME_FLAPPY_BIRD_ID || value > MINI_GAME_RO_SHAM_BOO_ID)

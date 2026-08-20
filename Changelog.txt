@@ -21,6 +21,7 @@ Create The AI for the Entity, this will create the challenge for the character a
      three are in; see [ Added ] below. Plan: docs/StalkerEntityPlan.md.
 
 
+
 [ Issues ]
 
 - Maze's out-of-bounds check now evaluates correctly (see Fixed below) but its

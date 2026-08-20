@@ -17,6 +17,11 @@ MiniGame* MiniGame_Doctor(Player* player)
 	player->rigidBody2D.isEnabled = false;
 	player->rigidBody2D.maxSpeed = 20;
 	player->rigidBody2D.scale = Vector3(10, 10, 10);
+	// Doctor's "hold a direction to stop drifting" mechanic depends on the
+	// player not otherwise moving; without this, update2D's own WASD handling
+	// still applies that same held direction as movement, so the freeze never
+	// happens.
+	player->rigidBody2D.canMove = false;
 
 	// Set Screen
 	game->data->screen = getScreenScale({ 0.25f, 0.3f, 0.5f, 0.5f });

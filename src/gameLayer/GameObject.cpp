@@ -265,6 +265,11 @@ void GameObject::onDestroy(Scene* scene)
 	// Removal happens in the scene's pendingDestroy sweep (Scene_updateScene);
 	// erasing here would invalidate the update loop's iterators
 	std::cout << "Destroy Object: " << name << "\n";
+
+	// The destructor is trivial and never frees GPU resources, so a generated
+	// primitive's Model/Mesh would otherwise leak the moment this object is
+	// erased. onDisable() already does exactly this release, idempotently.
+	onDisable();
 }
 
 void GameObject::onCollision(const GameObject* collider)

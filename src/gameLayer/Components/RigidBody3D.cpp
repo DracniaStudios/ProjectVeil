@@ -407,7 +407,9 @@ void RigidBody3D::UpdateForce(float deltaTime)
 	}
 
 	// Apply acceleration to velocity
-	velocity += acceleration * deltaTime;
+	if (!lockAcceleration) {
+		velocity += acceleration * deltaTime;
+	}
 
 	// Limit velocity to max speed (squared compare avoids the sqrt)
 	if (Vector3LengthSqr(velocity) > 999.0f * 999.0f)

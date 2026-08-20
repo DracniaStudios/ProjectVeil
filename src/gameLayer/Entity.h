@@ -138,4 +138,25 @@ public:
 
 };
 
+inline Entity createByKind(EntityKind kind) {
+	auto entity = Entity{};
+	entity.kind = kind;
+
+	if (kind == ENTITYKIND_PLAYER) {
+		entity.name = "Player";
+		std::cout << "[Entity.cpp] Create Player \n";
+	}
+	else if (kind == ENTITYKIND_STALKER) {
+		entity.name = "Stalker";
+		entity.baseDamage = 10;
+		std::cout << "[Entity.cpp] Create Stalker \n";
+	}
+	else {
+		entity.name = "New Entity";
+		std::cout << "[Entity.cpp] Create Entity Blank \n";
+	}
+
+	return entity;
+}
+
 #endif
