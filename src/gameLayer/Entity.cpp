@@ -84,7 +84,12 @@ void Entity::update(Scene* scene, float deltaTime)
 	health = Clamp(health, 0, getMaxHealth());
 
 #pragma endregion
-	if (forceFire) { Attack(); }
+	// isFiring reflects the fire key each frame (see Player.cpp UpdateActions);
+	// forceFire is a debug-only override exposed in the World Editor inspectors.
+	// Neither used to reach Attack() with a cooldown, so normal play could never
+	// fire at all, and forceFire spawned a projectile every single frame.
+	canAttack = attackCooldown.is_ready();
+	if ((isFiring || forceFire) && canAttack) { Attack(); }
 
 }
 
@@ -111,7 +116,7 @@ void Entity::onHit(const Entity* collider)
 
 void Entity::Attack()
 {
-	canAttack = false;
+	attackCooldown.use();
 	Entity projectile = {};
 	projectile.name = "Projectile";
 	projectile.type = OBJECT_PROJECTILE;

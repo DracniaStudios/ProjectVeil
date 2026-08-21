@@ -47,8 +47,10 @@ inline const char* buffTypeToString(int type) {
 struct Entity : GameObject
 {
 private:
-	float attackStartTime = 1.0f;
-	float attackWaitTime = 3.0f;
+	// Gates Attack() so holding the fire key doesn't spawn a projectile every
+	// frame. Replaces attackStartTime/attackWaitTime, which were declared for
+	// this but never actually wired into update().
+	CooldownTimer attackCooldown = CooldownTimer(3.0);
 public:
 	Entity();
 	virtual std::unique_ptr<Entity> clone() const { return std::make_unique<Entity>(*this); };

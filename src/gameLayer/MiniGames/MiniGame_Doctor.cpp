@@ -76,14 +76,21 @@ void Doctor::update(MiniGameData* data, Player* player, float delta)
 	auto screen = data->screen;
 	auto inputSystem = &InputSystem::getInstance();
 
+	// doctor_playerSpeed is a per-frame drift amount (its sign flips at the
+	// screen edges below), so applying it directly made the "hold a direction
+	// to stop drifting" difficulty scale with monitor refresh rate instead of
+	// wall-clock time. Scaled by deltaTime and multiplied back up by 60 the
+	// same way Player::update2D/SetMoveDirection already are.
+	const float driftScale = 60.0f * delta;
+
 	// Stop Movement When Key is Pressed
 	if (!inputSystem->IsActionDown(ACTION_MOVE_LEFT))
 	{
-		player->rigidBody2D.translation.x += doctor_playerSpeed.x;
+		player->rigidBody2D.translation.x += doctor_playerSpeed.x * driftScale;
 	}
 	if (!inputSystem->IsActionDown(ACTION_MOVE_FORWARD))
 	{
-		player->rigidBody2D.translation.y += doctor_playerSpeed.y;
+		player->rigidBody2D.translation.y += doctor_playerSpeed.y * driftScale;
 	}
 
 	// Clamp Player Inside Screen

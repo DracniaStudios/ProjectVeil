@@ -92,9 +92,15 @@ void Crane::update(MiniGameData* data, Player* player, float deltaTime)
 
 		static int speed = 2;
 
+		// speed is a per-frame offset, so applying it directly (as this used to)
+		// made the crane's horizontal drift run 2.4x faster at 144 FPS than at
+		// the tuned 60 FPS baseline. Scaled by deltaTime and multiplied back up
+		// by 60 the same way Player::update2D/SetMoveDirection already are.
+		const float step = speed * 60.0f * deltaTime;
+
 		if (inputSystem->IsActionDown(ACTION_MOVE_JUMP)) { player->rigidBody2D.jump(-200); }
-		if (inputSystem->IsActionDown(ACTION_MOVE_LEFT)) { player->rigidBody2D.translation += Vector3(-speed, 0); }
-		if (inputSystem->IsActionDown(ACTION_MOVE_RIGHT)) { player->rigidBody2D.translation += Vector3(speed, 0); }
+		if (inputSystem->IsActionDown(ACTION_MOVE_LEFT)) { player->rigidBody2D.translation += Vector3(-step, 0); }
+		if (inputSystem->IsActionDown(ACTION_MOVE_RIGHT)) { player->rigidBody2D.translation += Vector3(step, 0); }
 
 		if (player->rigidBody2D.getPosition().y < data->screen.y)
 		{
