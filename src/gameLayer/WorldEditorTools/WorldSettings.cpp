@@ -4,9 +4,27 @@
 
 void NewWorld(Scene& scene) {
 
+	// ~Entity()/~InteractableObject() never free GPU resources (see
+	// GameMap::removeObject()); release each object's generated fallback model
+	// before the clears below erase it, or it leaks.
+	for (auto& [id, entity] : scene.entities) { entity->releaseGeneratedModel(); }
+	for (auto& [id, interactable] : scene.interactables) { interactable->releaseGeneratedModel(); }
+
 	scene.gameMap.create(Vector3(10.0f, 1.0f, 10.0f));
 	scene.entities.clear();
 	scene.interactables.clear();
+
+	// Player::inventory and Player::interactObject are non-owning references
+	// into the interactables map just cleared above (see
+	// GameMap::removeInteractable for the same hazard) — left alone here they
+	// dangle the moment any minigame completes or the Player Inspector reads
+	// the inventory.
+	if (scene.player) {
+		scene.player->inventory.clear();
+		scene.player->interactObject = nullptr;
+		scene.player->interactObjectId = 0;
+	}
+
 	scene.ResetID();
 }
 
@@ -58,7 +76,13 @@ void WorldEditor::ShowWorldSettings()
 		std::snprintf(nameBuffer, sizeof(nameBuffer), "%s", worldName.c_str());
 		if (ImGui::InputText("World Name", nameBuffer, sizeof(nameBuffer))) { worldName = nameBuffer; }
 
-		if (ImGui::Button("New World")) { NewWorld(*scene); }
+		if (ImGui::Button("New World")) {
+			NewWorld(*scene);
+			// NewWorld() renumbers every remaining object via ResetID(), exactly
+			// like Load Game/Load World — stale selection/undo state would
+			// otherwise reference ids that now belong to different objects.
+			ResetSelectionState();
+		}
 		if (ImGui::Button("Save World"))
 		{
 		statusMessage = SaveSystem::SaveWorld(worldName, scene) ? "Saved " + worldName + ".json" : "Failed to save " + worldName;
