@@ -165,13 +165,24 @@ namespace SaveSystem
 		}
 
 		// Reset Scene Data
+		// gameObjects/entities are already empty here — LoadGame() released and
+		// cleared them before calling in. interactables is the one container
+		// that still holds the previous scene's live objects at this point.
+		for (auto& [id, interactable] : scene.interactables) { interactable->releaseGeneratedModel(); }
 		scene.gameMap.gameObjects.clear();
 		scene.entities.clear();
 		scene.interactables.clear();
 		// Player::inventory is a list of non-owning pointers into the map just
 		// cleared above; the player object itself survives the load, so those
 		// pointers would otherwise dangle (inventory contents aren't persisted yet).
-		if (scene.player) { scene.player->inventory.clear(); }
+		// Player::interactObject is the same hazard — ActivateMiniGame() caches a
+		// raw pointer into this same map for any interactable with the default
+		// (0) activator, and nothing else clears it once the map is wiped.
+		if (scene.player) {
+			scene.player->inventory.clear();
+			scene.player->interactObject = nullptr;
+			scene.player->interactObjectId = 0;
+		}
 		scene.instanceHolder.idCounter = j.value("IdCounter", scene.instanceHolder.idCounter);
 
 		// Scene Flags
@@ -330,7 +341,12 @@ namespace SaveSystem
 
 		// Check For File
 		if (!ReadJsonFromFile(path.string().c_str(), j)) { return false; }
-		
+
+		// ~GameObject()/~Entity() never free GPU resources (see
+		// GameMap::removeObject()); release each object's generated fallback
+		// model before these clears erase it, or it leaks.
+		for (auto& object : scene.gameMap.gameObjects) { object.releaseGeneratedModel(); }
+		for (auto& [id, entity] : scene.entities) { entity->releaseGeneratedModel(); }
 		scene.gameMap.gameObjects.clear();
 		scene.entities.clear();
 		scene.instanceHolder.idCounter = 0;
@@ -405,13 +421,26 @@ namespace SaveSystem
 
 		// Reset world geometry only — entities and player are untouched
 		// (entities live in scene.entities, not gameMap.gameObjects; live projectiles are discarded)
+		// ~GameObject()/~Entity()/~InteractableObject() never free GPU resources
+		// (see GameMap::removeObject()); release each object's generated
+		// fallback model before these clears erase it, or it leaks.
+		for (auto& object : scene.gameMap.gameObjects) { object.releaseGeneratedModel(); }
+		for (auto& [id, interactable] : scene.interactables) { interactable->releaseGeneratedModel(); }
+		for (auto& [id, entity] : scene.entities) { entity->releaseGeneratedModel(); }
 		scene.gameMap.gameObjects.clear();
 		scene.interactables.clear();
 		scene.entities.clear();
 		// Player::inventory is a list of non-owning pointers into the map just
 		// cleared above; the player object itself survives the load, so those
 		// pointers would otherwise dangle (inventory contents aren't persisted yet).
-		if (scene.player) { scene.player->inventory.clear(); }
+		// Player::interactObject is the same hazard — ActivateMiniGame() caches a
+		// raw pointer into this same map for any interactable with the default
+		// (0) activator, and nothing else clears it once the map is wiped.
+		if (scene.player) {
+			scene.player->inventory.clear();
+			scene.player->interactObject = nullptr;
+			scene.player->interactObjectId = 0;
+		}
 		scene.instanceHolder.idCounter = 0;
 
 		// Map Data

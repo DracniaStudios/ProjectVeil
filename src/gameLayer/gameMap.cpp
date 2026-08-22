@@ -9,6 +9,11 @@
 // Create GameMap and Floor Space
 void GameMap::create(Vector3 size)
 {
+	// NewWorld() reuses this on a populated map. ~GameObject() is trivial and
+	// never frees GPU resources (see removeObject()), so every object still on
+	// its generated fallback cube would otherwise leak its Model the moment
+	// this clear erases it.
+	for (auto& object : gameObjects) { object.releaseGeneratedModel(); }
 	gameObjects.clear();
 	this->size = size;
 	auto rng = std::ranlux24_base(std::random_device{}());
@@ -128,7 +133,17 @@ void GameMap::removeInteractable(InteractableObject* object)
 	// Player::inventory holds non-owning pointers into this map — drop any
 	// reference before the unique_ptr below frees the object, or the next
 	// inventory read (e.g. WorldEditor's Player Inspector) is a use-after-free.
-	if (scene->player) { std::erase(scene->player->inventory, object); }
+	// Player::interactObject is the same hazard: ActivateMiniGame() caches a
+	// raw pointer here for any interactable with the default (0) activator, and
+	// nothing else clears it once this object goes away — CompleteMiniGame()
+	// would dereference it the next time any minigame finishes.
+	if (scene->player) {
+		std::erase(scene->player->inventory, object);
+		if (scene->player->interactObject == object) {
+			scene->player->interactObject = nullptr;
+			scene->player->interactObjectId = 0;
+		}
+	}
 	scene->interactables.erase(object->id);
 }
 

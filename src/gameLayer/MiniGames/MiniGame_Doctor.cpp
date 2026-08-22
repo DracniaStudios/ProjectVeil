@@ -3,7 +3,13 @@
 #include <SceneManager.h>
 
 
-Vector2 doctor_playerSpeed = Vector2{ 10, 10 };
+// File-scope, not part of MiniGameData, and mutated (sign-flipped) every time
+// the player drifts to a screen edge — see the clamp in Doctor::update(). A
+// retry/reset reconstructs the MiniGame via this function, so it must be
+// reset here too or the new attempt inherits whatever direction the previous
+// one ended on. `static` keeps this from being a global symbol other
+// translation units could collide with at link time.
+static Vector2 doctor_playerSpeed = Vector2{ 10, 10 };
 
 MiniGame* MiniGame_Doctor(Player* player)
 {
@@ -12,6 +18,8 @@ MiniGame* MiniGame_Doctor(Player* player)
 	game->update = &Doctor::update;
 	game->draw = &Doctor::render;
 	game->data = new MiniGameData;
+
+	doctor_playerSpeed = Vector2{ 10, 10 };
 
 	// Set Player Data
 	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
