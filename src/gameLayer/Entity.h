@@ -81,6 +81,11 @@ public:
 	virtual void update(Scene* scene, float deltaTime) override;
 	virtual void onCollision(const GameObject* collider) override;
 
+	// Stamina drain/regen and the Attack() cooldown gate — shared by update()
+	// and by Player::update3D(), which never calls update() (see the comment
+	// at that call site) and would otherwise never run either.
+	void updateStatusAndCombat(float deltaTime);
+
 	/** Status **/
 	std::vector<CooldownTimer> buffTimers = {};
 	

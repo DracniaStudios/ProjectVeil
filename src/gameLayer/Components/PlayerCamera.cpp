@@ -15,27 +15,33 @@ void PlayerCamera::UpdateCameraFPS(Camera3D* camera)
 	if (InputSystem::getInstance().IsActionDown(ACTION_MOVE_CROUCH)) { offset.y /= 2; }
 
 	camera->position = Vector3Add(player->rigidBody3D.translation, offset);
-	lookRotation.x -= GetMouseDelta().x * sensitivity.x;
-	lookRotation.y += GetMouseDelta().y * sensitivity.y;
-
 
 	UpdateCamera(camera, CAMERA_CUSTOM);
 
-	// FPS-style camera look
-	static float yaw = 0.0f; // X
-	static float pitch = 0.0f; // Y
-	const float sensitivity = -0.003f;
+	// FPS-style camera look. lookRotation (x=yaw, y=pitch) is a PlayerCamera
+	// member rather than a function-local static so a second FPS-style camera
+	// instance sharing this function (e.g. a spectator/cutscene camera) would
+	// track its own look state instead of corrupting this one's — only one
+	// camera calls this today, so that was latent rather than observed.
+	//
+	// This used to also write lookRotation.x/.y from the member `sensitivity`
+	// a few lines above, but nothing ever read that write back — the actual
+	// yaw/pitch below were driven by separate function-static locals and a
+	// shadowing local `sensitivity` constant. `sensitivity` is a still-unwired
+	// member meant for a future configurable look-speed setting; the constant
+	// below preserves today's tuned feel until that's connected.
+	constexpr float kLookSensitivity = -0.003f;
 
 	Vector2 mouseDelta = GetMouseDelta();
-	yaw += mouseDelta.x * sensitivity;
-	pitch += mouseDelta.y * sensitivity;
-	if (pitch > 1.5f) pitch = 1.5f;
-	if (pitch < -1.5f) pitch = -1.5f;
+	lookRotation.x += mouseDelta.x * kLookSensitivity;
+	lookRotation.y += mouseDelta.y * kLookSensitivity;
+	if (lookRotation.y > 1.5f) lookRotation.y = 1.5f;
+	if (lookRotation.y < -1.5f) lookRotation.y = -1.5f;
 
 	Vector3 camForward = {
-		cosf(pitch) * sinf(yaw),
-		sinf(pitch),
-		cosf(pitch) * cosf(yaw)
+		cosf(lookRotation.y) * sinf(lookRotation.x),
+		sinf(lookRotation.y),
+		cosf(lookRotation.y) * cosf(lookRotation.x)
 	};
 
 	// Camera Look Direction

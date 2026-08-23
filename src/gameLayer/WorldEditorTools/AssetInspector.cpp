@@ -25,6 +25,12 @@ void WorldEditor::ShowAssetData()
 				const float thumbSize = 64.0f;
 				const int columns = std::max(1, static_cast<int>(ImGui::GetContentRegionAvail().x / (thumbSize + 12.0f)));
 
+				// Wrapping on `i`, the index into the mixed asset list, only lined
+				// up with the number of buttons actually drawn in this tab when
+				// textures and models happened to be grouped together; with them
+				// interleaved the grid misaligned and thumbnails ran off the edge
+				// instead of wrapping. Counting only what this loop draws fixes it.
+				int drawnCount = 0;
 				for (int i = 0; i < static_cast<int>(assets.size()); i++)
 				{
 					if (assets[i].type != ASSET_TEXTURE) continue;
@@ -43,7 +49,8 @@ void WorldEditor::ShowAssetData()
 					if (isSelected) { ImGui::PopStyleColor(); }
 					if (ImGui::IsItemHovered()) { ImGui::SetTooltip("%s", assets[i].name.c_str()); }
 
-					if ((i + 1) % columns != 0) { ImGui::SameLine(); }
+					drawnCount++;
+					if (drawnCount % columns != 0) { ImGui::SameLine(); }
 
 					ImGui::PopID();
 				}
@@ -61,6 +68,9 @@ void WorldEditor::ShowAssetData()
 				const float thumbSize = 64.0f;
 				const int columns = std::max(1, static_cast<int>(ImGui::GetContentRegionAvail().x / (thumbSize + 12.0f)));
 
+				// See the Textures tab above — wrap on the count of buttons this
+				// loop actually draws, not on `i`'s position in the mixed list.
+				int drawnCount = 0;
 				for (int i = 0; i < static_cast<int>(assets.size()); i++)
 				{
 					if (assets[i].type != ASSET_MODEL) continue;
@@ -80,7 +90,8 @@ void WorldEditor::ShowAssetData()
 					if (isSelected) { ImGui::PopStyleColor(); }
 					if (ImGui::IsItemHovered()) { ImGui::SetTooltip("%s", assets[i].name.c_str()); }
 
-					if ((i + 1) % columns != 0) { ImGui::SameLine(); }
+					drawnCount++;
+					if (drawnCount % columns != 0) { ImGui::SameLine(); }
 
 					ImGui::PopID();
 				}

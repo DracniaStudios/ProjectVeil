@@ -13,7 +13,13 @@ void assertFuncInternal(
 	unsigned const line_number,
 	const char *comment = "---");
 
-#if DEVELOPLEMT_BUILD == 1
+// PRODUCTION_BUILD is defined by CMakeLists.txt as 0 or 1 for every target;
+// this used to check an undefined DEVELOPLEMT_BUILD macro (typo of
+// DEVELOPMENT_BUILD), which always evaluated to 0, so every configuration —
+// including development builds — silently took the production assert path
+// below and permaAssertDevelopement/permaAssertCommentDevelopement always
+// compiled away to nothing.
+#if PRODUCTION_BUILD == 0
 
 #define permaAssert(expression) (void)(											\
 					(!!(expression)) ||												\
@@ -39,7 +45,7 @@ void assertFuncInternal(
 
 #endif
 
-#if DEVELOPLEMT_BUILD == 1
+#if PRODUCTION_BUILD == 0
 #define permaAssertDevelopement permaAssert
 #define permaAssertCommentDevelopement permaAssertComment
 

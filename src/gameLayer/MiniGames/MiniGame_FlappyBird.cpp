@@ -178,7 +178,14 @@ void FlappyBird::update(MiniGameData* data, Player* player, float deltaTime)
 	 auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
 
 	if (!CheckCollisionRecs(playerRect, screen)) {
-		scene->ReleaseMiniGame();
+		// Releasing here (instead of setting isReset) freed `data` — the same
+		// allocation as this function's `data` parameter — out from under the
+		// rest of this function: the obstacle loop below then iterated a freed
+		// vector, and any collision hit inside it dereferenced scene->miniGame
+		// after ReleaseMiniGame() had already set it to nullptr. isReset routes
+		// through Scene.cpp's release-before-replay path instead, which is the
+		// only place a minigame is safely freed (see the comment there).
+		data->isReset = true;
 		std::cout << "[MiniGame/FlappyBird] Play Fail Sound\n";
 	}
 

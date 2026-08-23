@@ -223,6 +223,14 @@ void Player::update3D(float deltaTime)
 	/// Update RigidBody3D Physics
 	rigidBody3D.Update(deltaTime);
 
+	// Player overrides update2D()/update3D() instead of the virtual update(),
+	// so Entity::update() — and the stamina drain/regen and Attack() cooldown
+	// gate it runs — never executed for the player: isFiring was set every
+	// frame but never reached Attack(), and stamina never moved regardless of
+	// sprinting. Generic entities (which do go through Entity::update() via
+	// Scene_updateScene) were unaffected.
+	updateStatusAndCombat(deltaTime);
+
 	updateCollision(this);
 
 	if (artifact) { updateArtifact(this, deltaTime); }

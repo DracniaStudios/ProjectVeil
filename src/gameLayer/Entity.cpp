@@ -55,7 +55,11 @@ void Entity::render3D()
 void Entity::update(Scene* scene, float deltaTime)
 {
 	GameObject::update(scene, deltaTime);
+	updateStatusAndCombat(deltaTime);
+}
 
+void Entity::updateStatusAndCombat(float deltaTime)
+{
 #pragma region Status Effects
 	// Check Stamina
 	currentSpeed = isSprinting && stamina >= 1 ? baseSpeed * 2 :
@@ -65,7 +69,7 @@ void Entity::update(Scene* scene, float deltaTime)
 		movementBuff && movementBuff->remaining_time() > 0) {
 		currentSpeed *= 2;
 	}
-	
+
 	// Per-second rates. These were applied per FRAME, which made the whole
 	// stamina economy a function of the player's refresh rate: sprinting drained
 	// a full bar in 3.3s at 60 FPS and in 1.4s at 144. The constants below are

@@ -432,6 +432,13 @@ void WorldEditor::ResetSelectionState()
 	selectedObjectId = 0;
 	gizmo.Cancel();
 
+	// LightingSystem::loadFromJson() rebuilds `lights` from scratch on every
+	// load, so a stale index here can pass LightingInspector's bounds check
+	// against the new (possibly longer) vector and silently edit/delete
+	// whatever light now occupies that slot instead of the one the user last
+	// selected.
+	selectedLightIndex = -1;
+
 	// Ids are reassigned by a world load, so every stored id becomes a reference
 	// to a different object — or to nothing. Keeping the history would let one
 	// Ctrl+Z move an unrelated object.

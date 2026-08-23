@@ -82,9 +82,16 @@ void InputSystem::SetDefaultActions() {
 	CreateAction(ACTION_MOVE_JUMP, "Jump", KEY_SPACE, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
 
 	// Artifact Actions
-	CreateAction(ACTION_USE_ARTIFACT, "Artifact_Interact", KEY_E, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
-	CreateAction(ACTION_USE_ARTIFACT_RIGHT, "Artifact_Right", KEY_R, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
-	CreateAction(ACTION_USE_ARTIFACT_LEFT, "Artifact_Left", KEY_Q, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
+	// Gamepad buttons here used to duplicate Interact/Move_Left/Move_Right's
+	// bindings above (all landed on the D-pad/face buttons already claimed by
+	// movement and interact), so a single gamepad press could both interact
+	// with an object and launch/cycle the artifact minigame in the same frame,
+	// or move the player while also cycling artifactMode. Moved to the
+	// previously-unused thumbstick-click/menu buttons, matching the keyboard
+	// side (E/Q/R), which have never overlapped WASD or F.
+	CreateAction(ACTION_USE_ARTIFACT, "Artifact_Interact", KEY_E, GAMEPAD_BUTTON_RIGHT_THUMB);
+	CreateAction(ACTION_USE_ARTIFACT_RIGHT, "Artifact_Right", KEY_R, GAMEPAD_BUTTON_MIDDLE_RIGHT);
+	CreateAction(ACTION_USE_ARTIFACT_LEFT, "Artifact_Left", KEY_Q, GAMEPAD_BUTTON_MIDDLE_LEFT);
 
 	// Item Actions
 	CreateAction(ACTION_USE_ITEM, "Item_Left", KEY_T, GAMEPAD_BUTTON_LEFT_TRIGGER_2);

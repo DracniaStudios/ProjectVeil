@@ -24,7 +24,7 @@ Rectangle placeRectangleCenterBottom(Rectangle r, float w, float h);
 
 Rectangle placeRectangleCenterLeft(Rectangle r, float h);
 
-Rectangle plateRectangleCenterRight(Rectangle r, float w, float h);
+Rectangle placeRectangleCenterRight(Rectangle r, float w, float h);
 
 Rectangle enlargeRectanglePixels(Rectangle r, float pixelX, float pixelY);
 

@@ -84,7 +84,6 @@ void Crane::render(MiniGameData* data, Player* player)
 void Crane::update(MiniGameData* data, Player* player, float deltaTime)
 {
 	auto inputSystem = &InputSystem::getInstance();
-	auto scene = SceneManager::getInstance().currentScene;
 
 	/// Player Logic
 	{
@@ -127,7 +126,13 @@ void Crane::update(MiniGameData* data, Player* player, float deltaTime)
 		auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
 
 		if (!CheckCollisionRecs(playerRect, data->screen)) {
-			scene->ReleaseMiniGame();
+			// Releasing directly from inside update() frees this MiniGame/data
+			// while Scene.cpp's caller still holds the pointer it took before
+			// calling update() and reads miniGame->data->isComplete right after
+			// this returns — a use-after-free. isReset defers the free to
+			// Scene.cpp's release-before-replay path, the only place this is
+			// done safely (see the comment there).
+			data->isReset = true;
 		}
 	}
 
