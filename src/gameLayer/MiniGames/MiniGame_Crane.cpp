@@ -44,7 +44,8 @@ MiniGame* MiniGame_Crane(Player* player)
 			};
 
 			// Gen Bottom Size
-			x = screen.x + (screen.x * getRandomFloat(rng, 0.5f, 0.8f));
+			// The right obstacle is anchored flush to the right wall below, so the
+			// random x this used to compute was overwritten before it was ever read.
 			width = screen.width * width;
 			Rectangle right = {
 				(screen.x + screen.width) - width,

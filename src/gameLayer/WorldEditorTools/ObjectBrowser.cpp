@@ -116,7 +116,11 @@ void WorldEditor::showGameObject(GameObject* object) {
 	// Scale is applied through the model transform each frame — no mesh regen needed
 	if (ImGui::DragFloat3("Scale: ", &object->rigidBody3D.scale.x))
 	{
-		object->rigidBody3D.scale = { object->rigidBody3D.scale.x, object->rigidBody3D.scale.y, object->rigidBody3D.scale.z };
+		// Every other scale path clamps (the gizmo, ApplyTransform, SpawnStagedObject).
+		// Dragging this field negative inverts the collision box, and per
+		// EditorPicking.h an inverted box is neither pickable nor collidable — the
+		// object would become impossible to re-select in the viewport to undo it.
+		object->rigidBody3D.scale = SanitizeScale(object->rigidBody3D.scale);
 	}
 	ImGui::SameLine();
 	ImGui::Checkbox("Lock Rotation", &object->rigidBody3D.lockRotation);
@@ -292,10 +296,14 @@ void WorldEditor::ShowObjectBrowser()
 	
 	// Push ID in GameObject
 	showGameObject(object);
-	if (object->type == OBJECT_ENTITY) {
+	// ObjectType comes straight out of the save file and does not imply map
+	// membership — the selected object was found in gameMap.gameObjects. operator[]
+	// on a miss would both return a null unique_ptr to dereference here and leave a
+	// null entry behind for Scene_updateScene to trip over every frame after.
+	if (object->type == OBJECT_ENTITY && scene->entities.contains(object->id)) {
 		showEntity(scene->entities[object->id].get());
 	}
-	else if (object->type == OBJECT_INTERACTABLE) {
+	else if (object->type == OBJECT_INTERACTABLE && scene->interactables.contains(object->id)) {
 		showInteractableObject(scene->interactables[object->id].get());
 	}
 
