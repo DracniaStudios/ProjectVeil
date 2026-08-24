@@ -333,8 +333,21 @@ void Scene_updateScene(float delta) {
 	{
 		scene->isMiniActive = true;
 		miniGame->update(miniGame->data, scene->player, delta);
-		
-		if (miniGame->data->isComplete)
+
+		// Crane and Flappy Bird call scene->ReleaseMiniGame() from inside their
+		// own update() on a lose, which deletes both the MiniGame and its data.
+		// The pointer captured by the init-statement above is dangling from that
+		// moment on, so re-read it before touching ->data again.
+		miniGame = scene->miniGame;
+
+		if (miniGame == nullptr)
+		{
+			// The minigame ended itself. Hand the player back to the 3D world
+			// rather than leaving them in an empty 2D overlay.
+			scene->is2DActive = false;
+			scene->isMiniActive = false;
+		}
+		else if (miniGame->data->isComplete)
 		{
 			scene->is2DActive = false;
 			scene->ReleaseMiniGame();

@@ -129,9 +129,10 @@ void WorldEditor::UpdateViewportInput()
 		}
 	}
 
-	// Step 5.
-	//canGrab
-	if (gizmo.mode == GIZMO_SELECT && !gizmoOwnsMouse && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+	// Step 5. canGrab is what makes step 1 real for selection: without it a click
+	// on "Delete Object" in the Object Browser also picks through the panel and
+	// clears the selection the button was about to act on.
+	if (canGrab && gizmo.mode == GIZMO_SELECT && !gizmoOwnsMouse && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 	{
 		SelectUnderMouse(scene, camera);
 	}

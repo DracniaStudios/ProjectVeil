@@ -223,7 +223,15 @@ void GameObject::render3D()
 void GameObject::update(Scene* scene, float deltaTime)
 {
 	rigidBody3D.isEnabled = isEnabled;
-	if (!isEnabled) { return; }
+	if (!isEnabled)
+	{
+		// RigidBody3D::Update() is what clears canCollide for a disabled body,
+		// but returning here means it never runs — and solveCollision() filters
+		// on canCollide alone, so a disabled object stayed a solid invisible
+		// wall. onEnable() already restores the flag on the way back.
+		rigidBody3D.canCollide = false;
+		return;
+	}
 
 	// Rigidbody Data (Update() refreshes collisionBox from translation/scale)
 	{

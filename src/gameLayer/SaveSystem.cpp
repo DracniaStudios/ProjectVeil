@@ -342,6 +342,16 @@ namespace SaveSystem
 		// Check For File
 		if (!ReadJsonFromFile(path.string().c_str(), j)) { return false; }
 
+		// Validate before destroying the live scene. ApplyJsonToScene runs this
+		// same check, but by then the clears below have already emptied the world
+		// — a rejected save left the player staring at nothing. LoadWorld() has
+		// always checked in this order.
+		if (j.value("Version", 0) > VERSION)
+		{
+			std::cerr << "[Save System] Save version is newer than the game supports.\n";
+			return false;
+		}
+
 		// ~GameObject()/~Entity() never free GPU resources (see
 		// GameMap::removeObject()); release each object's generated fallback
 		// model before these clears erase it, or it leaks.

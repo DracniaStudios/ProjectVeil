@@ -166,10 +166,12 @@ void FlappyBird::update(MiniGameData* data, Player* player, float deltaTime)
 		generateObstacle(2 + data->score);
 	}
 
-	if (player->rigidBody2D.getPosition().x < screen.x) scene->miniGame->data->isReset = true;
-	if (player->rigidBody2D.getPosition().y < screen.y) scene->miniGame->data->isReset = true;
-	if (player->rigidBody2D.getPosition().x > screen.x + screen.width) scene->miniGame->data->isReset = true;
-	if (player->rigidBody2D.getPosition().y > screen.y + screen.height) scene->miniGame->data->isReset = true;
+	// `data` is the same object as scene->miniGame->data, and it stays valid for
+	// the rest of this function only as long as nothing releases the minigame.
+	if (player->rigidBody2D.getPosition().x < screen.x) data->isReset = true;
+	if (player->rigidBody2D.getPosition().y < screen.y) data->isReset = true;
+	if (player->rigidBody2D.getPosition().x > screen.x + screen.width) data->isReset = true;
+	if (player->rigidBody2D.getPosition().y > screen.y + screen.height) data->isReset = true;
 
 	// Win Condition
 	CompleteMiniGame(data, player, BUFF_MOVEMENT);
@@ -180,6 +182,10 @@ void FlappyBird::update(MiniGameData* data, Player* player, float deltaTime)
 	if (!CheckCollisionRecs(playerRect, screen)) {
 		scene->ReleaseMiniGame();
 		std::cout << "[MiniGame/FlappyBird] Play Fail Sound\n";
+		// ReleaseMiniGame() deleted `data` and nulled scene->miniGame. Everything
+		// below reads one or the other, so returning here is what keeps the loss
+		// path from iterating a destroyed vector and dereferencing null.
+		return;
 	}
 
 	// Player Logic
@@ -207,7 +213,7 @@ void FlappyBird::update(MiniGameData* data, Player* player, float deltaTime)
 
 			Rectangle obstacle = generateScaleRect(screen, newSize);
 
-			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obstacle)) scene->miniGame->data->isReset = true;
+			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obstacle)) data->isReset = true;
 		}
 	}
 }
