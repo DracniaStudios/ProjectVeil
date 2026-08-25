@@ -430,16 +430,19 @@ namespace SaveSystem
 		}
 
 		// Reset world geometry only — entities and player are untouched
-		// (entities live in scene.entities, not gameMap.gameObjects; live projectiles are discarded)
-		// ~GameObject()/~Entity()/~InteractableObject() never free GPU resources
+		// (entities live in scene.entities, not gameMap.gameObjects; live projectiles are discarded).
+		// SaveWorld() never writes an "Entities" section, so clearing this map
+		// here (as this used to) permanently deleted every Entity in the scene
+		// the moment a world file was loaded, with nothing to load them back
+		// from — the comment above describes the intended behavior; the code
+		// below now matches it.
+		// ~GameObject()/~InteractableObject() never free GPU resources
 		// (see GameMap::removeObject()); release each object's generated
 		// fallback model before these clears erase it, or it leaks.
 		for (auto& object : scene.gameMap.gameObjects) { object.releaseGeneratedModel(); }
 		for (auto& [id, interactable] : scene.interactables) { interactable->releaseGeneratedModel(); }
-		for (auto& [id, entity] : scene.entities) { entity->releaseGeneratedModel(); }
 		scene.gameMap.gameObjects.clear();
 		scene.interactables.clear();
-		scene.entities.clear();
 		// Player::inventory is a list of non-owning pointers into the map just
 		// cleared above; the player object itself survives the load, so those
 		// pointers would otherwise dangle (inventory contents aren't persisted yet).

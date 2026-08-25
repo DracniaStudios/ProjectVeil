@@ -1,5 +1,7 @@
 #include "SceneManager.h"
 
+#include <algorithm>
+
 #include <LightingSystem.h>
 #include <WorldEditor.h>
 
@@ -27,13 +29,20 @@ void SceneManager_update(SceneManager* manager, float delta) {
 
 	// Update Transition
 	if (manager->transition->direction != NONE) {
+		// Tuned at 60 FPS (5 per call); scaled by delta and multiplied back up
+		// by 60 the same way Player::update2D/SetMoveDirection already are, so
+		// the fade takes the same wall-clock time regardless of frame rate
+		// instead of finishing in a fixed number of frames.
+		// Clamped to at least 1 so a very high refresh rate (small delta) can't
+		// round the step down to 0 and stall the transition forever.
+		int step = std::max(1, static_cast<int>(5.0f * 60.0f * delta));
 		if (manager->transition->direction == OUT) {
-			manager->transition->opacity += 5;
+			manager->transition->opacity += step;
 			if (manager->transition->opacity >= 255) SceneManager_transition(manager, IN);
 
 		}
 		else {
-			manager->transition->opacity -= 5;
+			manager->transition->opacity -= step;
 			if (manager->transition->opacity <= 0) SceneManager_transition(manager, NONE);
 		}
 	}
