@@ -2,6 +2,9 @@
 #ifndef PHYSICS_H
 #define PHYSICS_H
 
+#include <algorithm>
+#include <vector>
+
 #include <raylib.h>
 #include <raymath.h>
 #include <nlohmann/json.hpp>
@@ -248,8 +251,15 @@ struct Transform3D : public Transform
 struct RigidBody3D : Transform3D
 {
 private:
-	// pointer to owning GameObject
-	GameObject* collidingWith = nullptr;
+	// Owning GameObjects this body overlapped, one entry per partner. A single
+	// slot could not represent simultaneous contacts: with the solver running 8
+	// iterations over every overlapping pair, a body touching both the floor and
+	// a projectile overwrote the slot on each pass, so `!= other` was true again
+	// on the next one and onCollision (i.e. damage) fired up to 8 times a frame
+	// instead of once. Compared only, never dereferenced; both lists are rebuilt
+	// from scratch each frame in Update(), so a destroyed partner cannot linger.
+	std::vector<GameObject*> contactsThisFrame;
+	std::vector<GameObject*> contactsLastFrame;
 
 	Vector3 lastPosition = {};
 	Vector3 appliedGravity = Vector3{0, 20, 0};
@@ -293,7 +303,7 @@ public:
 	void SetVelocity(float x, float y, float z) { SetVelocity(Vector3(x, y, z)); }
 
 	/// Get Values
-	GameObject* GetCollider() const { return collidingWith; }
+	GameObject* GetCollider() const { return contactsThisFrame.empty() ? nullptr : contactsThisFrame.front(); }
 	BoundingBox* GetColliderBox() { return &collisionBox; }
 	Vector3 GetVelocity() const { return velocity; }
 	Vector3 GetAcceleration() const { return acceleration; }

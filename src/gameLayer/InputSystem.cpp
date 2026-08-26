@@ -92,7 +92,11 @@ void InputSystem::SetDefaultActions() {
 	CreateAction(ACTION_USE_FLASHLIGHT, "Flashlight", KEY_L, GAMEPAD_BUTTON_RIGHT_FACE_UP);
 	
 	// Editor Actions
-	CreateAction(ACTION_EDITOR_UP, "Editor_Up", KEY_LEFT_CONTROL, GAMEPAD_BUTTON_RIGHT_TRIGGER_1);
+	// KEY_LEFT_CONTROL is also the modifier every Ctrl+ editor hotkey reads
+	// directly via IsKeyDown (panel toggles, undo, duplicate — see
+	// WorldEditor::UpdateHotkeys); binding it here too meant holding Ctrl for
+	// any of those also flew the camera upward for as long as it was held.
+	CreateAction(ACTION_EDITOR_UP, "Editor_Up", KEY_SPACE, GAMEPAD_BUTTON_RIGHT_TRIGGER_1);
 	CreateAction(ACTION_EDITOR_DOWN, "Editor_Down", KEY_LEFT_ALT, GAMEPAD_BUTTON_LEFT_TRIGGER_1);
 	
 	// UI Action

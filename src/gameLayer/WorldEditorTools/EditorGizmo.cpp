@@ -178,7 +178,14 @@ bool EditorGizmo::Update(const Camera3D& camera, GizmoTransform& transform, bool
 	if (IsKeyPressed(KEY_ESCAPE))
 	{
 		transform = startTransform;
-		Cancel();
+		activeHandle = GIZMO_HANDLE_NONE;
+		hoveredHandle = GIZMO_HANDLE_NONE;
+		// Not Cancel(): that clears dragEnded too, and the caller only writes
+		// `transform` back while IsDragging() || DragEnded(). With both false the
+		// restored value was discarded and the object stayed where it was dragged.
+		// Raising dragEnded commits the restore; the caller's no-change test then
+		// drops the undo entry, which is what an abort should leave behind.
+		dragEnded = true;
 		return true;
 	}
 

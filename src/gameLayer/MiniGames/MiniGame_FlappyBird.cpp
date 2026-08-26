@@ -196,6 +196,10 @@ void FlappyBird::update(Scene* scene_ptr, float deltaTime)
 	if (!CheckCollisionRecs(playerRect, screen)) {
 		scene->ReleaseMiniGame();
 		std::cout << "[MiniGame/FlappyBird] Play Fail Sound\n";
+		// ReleaseMiniGame() deleted `data` and nulled scene->miniGame. Everything
+		// below reads one or the other, so returning here is what keeps the loss
+		// path from iterating a destroyed vector and dereferencing null.
+		return;
 	}
 
 	// Player Logic

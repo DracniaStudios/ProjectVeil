@@ -263,7 +263,11 @@ bool AudioManager::PlayEvent(const std::string& eventPath, AudioType type, float
 	}
 
 	FMOD::Studio::EventInstance* instance = nullptr;
-	description->createInstance(&instance);
+	result = description->createInstance(&instance);
+	if (result != FMOD_OK || instance == nullptr) {
+		std::cout << "[Audio Manager] Failed to create instance for \"" << eventPath << "\": " << FMOD_ErrorString(result) << "\n";
+		return false;
+	}
 	updateVolume(volume, type);
 	instance->setVolume(volume);
 	instance->start();

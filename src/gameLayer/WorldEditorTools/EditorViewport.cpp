@@ -129,9 +129,10 @@ void WorldEditor::UpdateViewportInput()
 		}
 	}
 
-	// Step 5.
-	//canGrab
-	if (gizmo.mode == GIZMO_SELECT && !gizmoOwnsMouse && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+	// Step 5. canGrab is what makes step 1 real for selection: without it a click
+	// on "Delete Object" in the Object Browser also picks through the panel and
+	// clears the selection the button was about to act on.
+	if (canGrab && gizmo.mode == GIZMO_SELECT && !gizmoOwnsMouse && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 	{
 		SelectUnderMouse(scene, camera);
 	}
@@ -448,11 +449,17 @@ void WorldEditor::ApplyTransform(GameObject* object, const GizmoTransform& trans
 	if (object == nullptr) { return; }
 	auto& body = object->rigidBody3D;
 
+	// RigidBody3D::Update() honors lockTranslation/lockRotation/lockScale, but
+	// that only runs while the simulation is live — the editor freezes it while
+	// the gizmo/undo path is what's actually writing to the body, so without
+	// these checks "Lock Position"/"Lock Rotation" in the Object Browser had no
+	// effect while editing: a locked object still moved under a gizmo drag or
+	// an Undo.
 	// Teleport rather than assigning translation, so lastPosition follows the
 	// move instead of pointing at where the object used to be.
-	body.Teleport(transform.position);
-	body.rotation = SafeRotation(transform.rotation);
-	body.scale = SanitizeScale(transform.scale);
+	if (!body.lockTranslation) { body.Teleport(transform.position); }
+	if (!body.lockRotation) { body.rotation = SafeRotation(transform.rotation); }
+	if (!body.lockScale) { body.scale = SanitizeScale(transform.scale); }
 
 	// Any momentum from before the edit would fling the object the instant the
 	// simulation resumes, so it would not stay where it was just put.

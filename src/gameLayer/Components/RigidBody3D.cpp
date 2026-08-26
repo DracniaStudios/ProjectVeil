@@ -256,19 +256,25 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 		// the solver runs several iterations per frame and damage/events must
 		// not fire on every pass. Type-specific reactions (e.g. projectile
 		// damage) live in onCollision overrides so no unchecked casts happen here.
-		if (collidingWith != other)
+		// "First contact" means absent from last frame's contacts, not merely
+		// different from the previous pair the solver happened to visit.
+		const auto isKnown = [other](const std::vector<GameObject*>& contacts) {
+			return std::find(contacts.begin(), contacts.end(), other) != contacts.end();
+		};
+
+		if (!isKnown(contactsThisFrame))
 		{
-			self->onCollision(other);
+			if (!isKnown(contactsLastFrame)) { self->onCollision(other); }
+			contactsThisFrame.push_back(other);
 		}
 
-		// Set colliding with to other object's owner
-		collidingWith = other;
 		isColliding = true;
 	}
 	else
 	{
-		collidingWith = nullptr;
-		isColliding = false;
+		// Only this pair stopped overlapping; other contacts this frame stand.
+		std::erase(contactsThisFrame, other);
+		isColliding = !contactsThisFrame.empty();
 		return; // nothing overlapping, nothing to separate
 	}
 
@@ -395,8 +401,6 @@ void RigidBody3D::resolveCollision(RigidBody3D& other, const ContactInfo& contac
 #pragma region Forces
 void RigidBody3D::UpdateForce(float deltaTime)
 {
-	auto gameMap = &SceneManager::getInstance().currentScene->gameMap;
-
 	// Control Air Time
 	if (downTouch) { airTime = 0; }
 	else { 
@@ -439,7 +443,12 @@ void RigidBody3D::UpdateForce(float deltaTime)
 		{ translation.x + nearHalf.x + touchMargin, translation.y + nearHalf.y + touchMargin, translation.z + nearHalf.z + touchMargin }
 	};
 
-	for (auto& obj : gameMap->gameObjects)
+	// currentScene is null between the OUT and IN halves of a scene transition,
+	// and Player::update() reaches this without Scene_updateScene's null guard.
+	Scene* scene = SceneManager::getInstance().currentScene;
+	if (scene == nullptr) { return; }
+
+	for (auto& obj : scene->gameMap.gameObjects)
 	{
 		if (&obj.rigidBody3D == this) { continue; } // rays from our own faces always hit our own box
 		if (!CheckCollisionBoxes(nearBox, obj.rigidBody3D.collisionBox)) { continue; }
@@ -449,6 +458,13 @@ void RigidBody3D::UpdateForce(float deltaTime)
 
 void RigidBody3D::Update(float deltaTime)
 {
+	// Runs once per body per frame, before solveCollision's iterations. Rolling
+	// the lists here is what makes onCollision fire on entering a contact rather
+	// than every frame it persists, and it drops any partner that was destroyed
+	// since — nothing carries over except through this frame's overlap tests.
+	contactsLastFrame.swap(contactsThisFrame);
+	contactsThisFrame.clear();
+
 	if (!isEnabled) {
 		canCollide = false;
 		return;
