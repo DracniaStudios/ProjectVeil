@@ -70,6 +70,12 @@ void UpdateActions(Player* player) {
 
 void updateCollision(Player* player) {
 	/// Resolve Player Collision
+	// Only world geometry (gameMap.gameObjects) is resolved here. Entities and
+	// interactables used to be resolved here too, but solveCollision() in
+	// Scene.cpp already runs a "Player Vs. Entities"/"Player Vs. Interactables"
+	// pass every frame (across solverIterations, unlike this single pass) —
+	// resolving them a second time here just redid the same correction with a
+	// weaker, non-iterative solve and didn't change the outcome.
 	for (auto& obj : SceneManager::getInstance().currentScene->gameMap.gameObjects)
 	{
 		if (&obj != player)
@@ -78,26 +84,6 @@ void updateCollision(Player* player) {
 			{
 				player->rigidBody3D.resolveConstrains(player, &obj);
 			}
-		}
-	}
-
-	for (auto& obj : SceneManager::getInstance().currentScene->entities)
-	{
-		auto ent = obj.second.get();
-		if (ent != player)
-		{
-			if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, ent->rigidBody3D.collisionBox))
-			{
-				player->rigidBody3D.resolveConstrains(player, ent);
-			}
-		}
-	}
-	for (auto& obj : SceneManager::getInstance().currentScene->interactables)
-	{
-		auto ent = obj.second.get();
-		if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, ent->rigidBody3D.collisionBox))
-		{
-			player->rigidBody3D.resolveConstrains(player, ent);
 		}
 	}
 }
@@ -224,6 +210,13 @@ void Player::update3D(float deltaTime)
 	rigidBody3D.Update(deltaTime);
 
 	updateCollision(this);
+
+	// Player never goes through Entity::update() (it has its own update2D/
+	// update3D instead), so the cooldown-gated fire check added there for
+	// Entity never ran for the player — pressing/holding the fire key set
+	// isFiring every frame (see UpdateActions above) but nothing ever read it.
+	canAttack = attackCooldown.is_ready();
+	if ((isFiring || forceFire) && canAttack) { Attack(); }
 
 	if (artifact) { updateArtifact(this, deltaTime); }
 

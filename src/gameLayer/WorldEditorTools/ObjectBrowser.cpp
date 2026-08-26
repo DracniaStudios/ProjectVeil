@@ -113,6 +113,8 @@ void WorldEditor::showGameObject(GameObject* object) {
 		object->rigidBody3D.rotation = rotation;
 		rotationEulerSource = rotation;
 	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Lock Rotation", &object->rigidBody3D.lockRotation);
 	// Scale is applied through the model transform each frame — no mesh regen needed
 	if (ImGui::DragFloat3("Scale: ", &object->rigidBody3D.scale.x))
 	{
@@ -123,7 +125,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 		object->rigidBody3D.scale = SanitizeScale(object->rigidBody3D.scale);
 	}
 	ImGui::SameLine();
-	ImGui::Checkbox("Lock Rotation", &object->rigidBody3D.lockRotation);
+	ImGui::Checkbox("Lock Scale", &object->rigidBody3D.lockScale);
 	ImGui::Spacing();
 
 	// RigidBody

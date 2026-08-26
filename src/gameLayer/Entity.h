@@ -46,10 +46,12 @@ inline const char* buffTypeToString(int type) {
 
 struct Entity : GameObject
 {
-private:
+protected:
 	// Gates Attack() so holding the fire key doesn't spawn a projectile every
 	// frame. Replaces attackStartTime/attackWaitTime, which were declared for
-	// this but never actually wired into update().
+	// this but never actually wired into update(). Protected rather than
+	// private: Player has its own update3D() instead of overriding
+	// Entity::update(), so it needs to run the same cooldown gate itself.
 	CooldownTimer attackCooldown = CooldownTimer(3.0);
 public:
 	Entity();
