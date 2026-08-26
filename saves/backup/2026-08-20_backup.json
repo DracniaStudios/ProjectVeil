@@ -35,9 +35,9 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 20.0,
-        "PosY": 2.0,
-        "PosZ": 130.0,
+        "PosX": 22.803943634033203,
+        "PosY": 1.9896551370620728,
+        "PosZ": 129.66006469726563,
         "RotW": 1.0,
         "RotX": 0.0,
         "RotY": 0.0,
@@ -45,9 +45,9 @@
         "ScaleX": 1.0,
         "ScaleY": 3.0,
         "ScaleZ": 1.0,
-        "VelocityX": 0.3060871958732605,
-        "VelocityY": -0.30000534653663635,
-        "VelocityZ": 0.9520033597946167
+        "VelocityX": 0.892866313457489,
+        "VelocityY": 0.0,
+        "VelocityZ": -0.11309121549129486
       },
       "SearchDuration": 8.0,
       "SearchRadius": 6.0,
@@ -441,9 +441,9 @@
         "ScaleX": 1.0,
         "ScaleY": 1.0,
         "ScaleZ": 1.0,
-        "VelocityX": -0.17717620730400085,
+        "VelocityX": 0.0,
         "VelocityY": 0.0,
-        "VelocityZ": 1.3402894865066628e-06
+        "VelocityZ": 0.0
       }
     },
     "299": {
@@ -761,10 +761,7 @@
   "Map": {
     "SizeX": 100.0,
     "SizeY": 100.0,
-    "SizeZ": 100.0,
-    "SpawnX": 20.0,
-    "SpawnY": 2.0,
-    "SpawnZ": 0.0
+    "SizeZ": 100.0
   },
   "Objects": {
     "1": {
@@ -9305,6 +9302,57 @@
       "Texture": "Ground088"
     }
   },
-  "Version": 3,
-  "WorldOnly": true
+  "Player": {
+    "BaseDamage": 1.0,
+    "BaseSpeed": 1.0,
+    "CanBeSelected": true,
+    "CastsShadow": true,
+    "Color": [
+      255,
+      255,
+      255,
+      255
+    ],
+    "Health": 100.0,
+    "IsDestructible": true,
+    "IsEnabled": true,
+    "Kind": 1,
+    "MaxHealth": 100.0,
+    "MaxStamina": 100.0,
+    "Name": "GameObject",
+    "ObjectType": 1,
+    "Pos2X": 801.6834106445313,
+    "Pos2Y": 453.66741943359375,
+    "RigidBody3D": {
+      "CanCollide": true,
+      "IsEnabled": true,
+      "IsStatic": true,
+      "LockAcceleration": false,
+      "LockAngularVelocity": false,
+      "LockRotation": false,
+      "LockScale": false,
+      "LockTranslation": false,
+      "LockVelocity": false,
+      "PosX": 10.43400764465332,
+      "PosY": 1.4768316745758057,
+      "PosZ": 76.50611114501953,
+      "RotW": 1.0,
+      "RotX": 0.0,
+      "RotY": 0.0,
+      "RotZ": 0.0,
+      "ScaleX": 1.0,
+      "ScaleY": 2.0,
+      "ScaleZ": 1.0,
+      "VelocityX": 0.0,
+      "VelocityY": 0.0,
+      "VelocityZ": 0.0
+    },
+    "Stamina": 100.0
+  },
+  "Scene": {
+    "Is2DActive": false,
+    "IsMiniActive": false,
+    "LimitYBounds": false
+  },
+  "Version": 3
 }

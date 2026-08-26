@@ -4,6 +4,8 @@
 
 #include <GameObject.h>
 
+#include <memory>
+
 struct Scene;
 
 enum Buff {
@@ -17,12 +19,31 @@ enum Buff {
 	MAX_BUFF
 };
 
-enum EntityKind : uint8_t 
+/**
+ * Concrete Entity type, persisted so a subclass survives a save/load round trip.
+ *
+ * `GameObject::type` answers "what container does this belong to" (entity vs.
+ * projectile vs. interactable) and several subclasses deliberately share a
+ * value, so it cannot pick a constructor. `kind` is the narrower question —
+ * "which class is this exactly" — and is what createByKind() switches on.
+ */
+enum EntityKind : std::uint8_t
 {
 	ENTITYKIND_NONE,
 	ENTITYKIND_PLAYER,
-	ENTITYKIND_STALKER
+	ENTITYKIND_STALKER,
+	ENTITYKIND_COUNT
 };
+
+inline const char* entityKindToString(int kind)
+{
+	switch (kind)
+	{
+	case ENTITYKIND_PLAYER:  return "Player";
+	case ENTITYKIND_STALKER: return "Stalker";
+	default:                 return "Entity";
+	}
+}
 
 /*
 struct Buff {
@@ -53,8 +74,6 @@ private:
 	CooldownTimer attackCooldown = CooldownTimer(3.0);
 public:
 	Entity();
-	virtual std::unique_ptr<Entity> clone() const { return std::make_unique<Entity>(*this); };
-	EntityKind kind = ENTITYKIND_NONE;
 
 	/** Status **/
 	float health = 1.0f;
@@ -73,6 +92,27 @@ public:
 	bool isFiring = false;
 	bool forceFire = false;
 	bool canAttack = true;
+
+	/** Identity **/
+	// Which concrete class this is. Set by each subclass's constructor and
+	// round-tripped through JSON so the loader can rebuild the right type.
+	EntityKind kind = ENTITYKIND_NONE;
+
+	/**
+	 * Polymorphic copy.
+	 *
+	 * Scene::entities stores unique_ptr<Entity>, and Scene.cpp dispatches
+	 * update() through it virtually, so a subclass ticks correctly once it is
+	 * in the map. Getting it in was the problem: GameMap::saveEntity() built
+	 * the owned copy with make_unique<Entity>(entity), which slices anything
+	 * derived down to a bare Entity before it is ever stored. Every subclass
+	 * must override this, or it will be silently flattened on spawn.
+	 */
+	virtual std::unique_ptr<Entity> clone() const { return std::make_unique<Entity>(*this); }
+
+	// Builds an empty instance of the requested kind for the save loader, which
+	// has to construct the object before it can call loadFromJson() on it.
+	static std::unique_ptr<Entity> createByKind(EntityKind kind);
 
 	/** Functions **/
 	virtual void onEnable() override;

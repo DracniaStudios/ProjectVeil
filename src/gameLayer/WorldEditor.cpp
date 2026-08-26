@@ -34,6 +34,7 @@ void WorldEditor::update(Player* player)
 	if (isMiniGameActive) ShowMiniGameData(player);
 	if (isAssetActive) ShowAssetData();
 	if (isLightingActive) ShowLightingData();
+	if (isStalkerActive) ShowStalkerData();
 }
 
 void WorldEditor::ShowEditorHub()
@@ -51,6 +52,7 @@ void WorldEditor::ShowEditorHub()
 	ImGui::Checkbox("Mini Game Data (Ctrl+6)", &isMiniGameActive);
 	ImGui::Checkbox("Asset Data (Ctrl+7)", &isAssetActive);
 	ImGui::Checkbox("Lighting (Ctrl+8)", &isLightingActive);
+	ImGui::Checkbox("Stalker AI", &isStalkerActive);
 	ImGui::Separator();
 
 	// Mini Console

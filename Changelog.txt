@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
 // Version: 0.3.0
 // Due: 2026-08-21 (Month 3)
-// Date: 2026-08-17 (Current Development Date)
+// Date: 2026-08-19 (Current Development Date)
 
 [Notice] World Editor doesn't use new InputSystem.
 [Notice] Create Maze Minigame
@@ -17,6 +17,9 @@
 8. Check game sorting for each object ( Should only activate on enabling Object Inspector or sort with object inspector.
 
 Create The AI for the Entity, this will create the challenge for the character and begin the vertical slice.
+  -> Done. Perception, Stalker FSM, Director and the editor tooling for all
+     three are in; see [ Added ] below. Plan: docs/StalkerEntityPlan.md.
+
 
 
 [ Issues ]
@@ -25,12 +28,80 @@ Create The AI for the Entity, this will create the challenge for the character a
   body is still empty, so leaving the play area has no consequence. Needs a
   design decision, same as the existing "Maze is an empty stub" note.
 
+- Stalker obstacle avoidance is local and stateless. It handles walls and
+  pillars but can still stall in a deep concave corner where every probed
+  heading is blocked. Real pathfinding is a Phase 2 concern once there is more
+  than one room.
+- Avoidance only probes GameMap::gameObjects. Entities and interactables live in
+  their own containers, so the stalker routes around the level but will still
+  walk into another entity and let the collision solver separate them.
+- CI never runs on this branch. .github/workflows/cmake-multi-platform.yml
+  triggers only on push/pull_request targeting "main", and PR #34 targets
+  "claude-created", so it reports zero checks — not a failure, just nothing.
+- CMakePresets.json defines no buildPresets, so the README's documented
+  "cmake --build --preset linux-debug" fails with "No such build preset".
+  Build by directory instead: cmake --build out/build/linux-debug
+- "Artifact Display Floor" in chunk_1.json has id 1, which is PLAYER_ID, so
+  FindGameObjectByID(PLAYER_ID) returns that floor instead of the player. The
+  Scene::ResetID comment already warns about this class of bug; the data file
+  predates the fix.
+- SaveWorld writes a "WorldOnly" flag that nothing ever reads. A world file
+  loaded through Load Game is treated as a full save, and a full save loaded
+  through Load World silently drops its Entities and Player.
+- WorldSettings' per-file save/load buttons use ImGui::PushID(file.length()),
+  keying widget identity on filename LENGTH. Harmless while chunk_1 and mainMenu
+  differ in length; a real bug the moment two save names match.
+- The out-of-world backstop only fires below y=-1000, so a stalker that walks
+  off an edge falls a long way before recovering. Whether that threshold should
+  be closer to the play space is a design call.
+
 [ Added ]
+
+- Sound-only perception (src/gameLayer/Perception/). SoundEvent carries where a
+  noise WAS, its loudness at the source, its cause and the emitting object id.
+  SoundField is a scene-owned ring of recent events with a 5s TTL, inverse-square
+  falloff (half loudness at 8 units) and per-body occlusion by raycast. Kept
+  separate from FMOD on purpose: AudioManager decides what the player hears,
+  SoundField decides what the AI hears, so the stalker is not deaf when audio
+  fails to init.
+- Player footsteps emit into the SoundField. Cadence AND loudness both key off
+  gait, so crouching is quieter per step and emits fewer steps.
+- Stalker entity (src/gameLayer/AI/) running the locked 4-state FSM:
+  patrol -> investigate -> hunt -> search-last-known-position. It never holds a
+  pointer to the player; every stimulus is flattened into lastKnownPosition, a
+  stale point rather than a track. Reuses BUFF_HEARING and BUFF_SEARCH, which
+  were already in Entity's enum and unused until now.
+- Director (src/gameLayer/AI/Director). Ships the pre-agreed fixed heuristic:
+  hints toward the farthest UNATTENDED task station when the stalker is idle and
+  has heard nothing for 6s. Every hint is logged with the world fact behind it.
+- Stalker AI inspector panel: live sound field, the stalker's whole belief state,
+  live tuning, patrol route authoring, and the Director hint log.
+- Patrol route authoring: "Add Waypoint At Player" / "Add At Stalker", per-point
+  edit and delete, plus a world-space route draw (closed loop, current target,
+  last-known belief).
+- Obstacle avoidance for stalker steering: raycast whisker scan that fans out to
+  120 degrees either side and takes the first clear heading. Tunable as
+  "Avoid probe" in the inspector.
+- EntityKind + a virtual clone() and createByKind() factory, so an Entity
+  subclass survives both spawning and a save/load round trip.
+- Placement Panel can spawn a Stalker (Entity Kind selector).
+- World spawn point (Map.SpawnX/Y/Z), authored in World Settings via
+  "Set Spawn To Player". LoadWorld places the player on it.
+- Entities are saved in world files and rebuilt through createByKind on load.
+- Test suites under tests/: 21 SoundField checks and 25 Stalker FSM checks.
+  Run with tests/run_tests.sh (Linux). The FSM suite links the game's own object
+  files rather than restructuring CMake, so the MSVC build is untouched.
+- FMOD builds on Linux and macOS. thirdparty/fmod-2.3.14/CMakeLists.txt now
+  selects libraries per platform and copies them under their SONAME.
+- docs/StalkerEntityPlan.md, and .veil-sync/ + .gitmessage for tracker syncing.
 
 [ Updated ]
 
 - Updated Scene to Release MiniGame when UI is Unpaused.
 - Updated GameObjects to be sorted on Enabling Object Browser with KeyBind.
+- LoadWorld now reports what it produced — object, interactable and entity counts,
+  next id, and where the player was spawned. "The world loaded wrong" could not
+  previously be told apart from "something else added objects" without a debugger.
 
 [ Fixed ]
 
@@ -58,6 +129,35 @@ Create The AI for the Entity, this will create the challenge for the character a
   Says can lock the player in place) was never read — Player::update2D's
   canMove parameter kept defaulting to true, so the lock had no effect and the
   player could still walk around during those minigames.
+- Entity subclasses were destroyed twice over. GameMap::saveEntity built its
+  owned copy with make_unique<Entity>(entity), slicing anything derived before
+  it was ever stored, and SaveSystem hardcoded make_unique<Entity>() on load so
+  a saved subclass always came back as the base type. Either one alone makes a
+  Stalker impossible.
+- The stalker could park on a waypoint forever. Steering is planar but all three
+  arrival checks measured in 3D, so once a target's height differed from the
+  body's centre by more than arriveDistance the distance never dropped below the
+  threshold. Easy to hit, because waypoints are authored from the player's
+  position and the two bodies do not share a centre height. Patrol never
+  advanced, investigate never decayed to search, and search stopped sweeping.
+- World files never carried entities: SaveWorld wrote Objects and Interactables
+  only, and LoadWorld cleared scene.entities without repopulating them, so a
+  stalker placed in the editor was silently destroyed by the next world load,
+  taking its authored patrol route with it.
+- The player spawned inside the level geometry. Nothing positioned the player on
+  a world load, so a fresh launch left them at the RigidBody3D default of
+  (0,0,0) — which in chunk_1 is the middle of the artifact display, between the
+  Artifact Display Floor, Pedastool and Pillar. It read as the level loading
+  extra objects on top of the player; the loader was exact all along.
+- Out-of-world recovery dropped objects into the artifact plinth: clampObject
+  teleported anything below y=-1000 to a hardcoded (0,5,0). It now recovers to
+  the world's spawn point and clears velocity, so a body that fell a thousand
+  units does not arrive still carrying that speed.
+- FMOD's CMake was Windows-only. It picked an arch directory from
+  CMAKE_SIZEOF_VOID_P alone and named every artifact .dll/.lib, so on Linux it
+  resolved into the Windows directories and the project could not link at all.
+  Note the vendored .so symlinks are committed as ZERO-BYTE files, so the config
+  resolves the real versioned library rather than the short name.
 
 [ Removed ]
 

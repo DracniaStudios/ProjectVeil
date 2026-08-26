@@ -3,6 +3,8 @@
 #include <complex>
 #include <SceneManager.h>
 #include <helpers.h>
+#include <Player.h>
+#include <AI/Stalker.h>
 // Length in milliseconds
 
 // One timer per Buff, keyed by cooldownID — what getBuff() looks up.
@@ -15,6 +17,23 @@ static void InstallDefaultBuffs(std::vector<CooldownTimer>& buffTimers)
 		auto buff = CooldownTimer(5); // Default Buff Time
 		buff.cooldownID = i;
 		buffTimers.push_back(buff);
+	}
+}
+
+std::unique_ptr<Entity> Entity::createByKind(EntityKind kind)
+{
+	switch (kind)
+	{
+	case ENTITYKIND_PLAYER:  return std::make_unique<Player>();
+	case ENTITYKIND_STALKER: return std::make_unique<Stalker>();
+	case ENTITYKIND_NONE:    return std::make_unique<Entity>();
+	default:
+		// An unknown kind means a save written by a newer build. Fall back to a
+		// plain Entity rather than dropping the row: position and health still
+		// load, and the object stays visible instead of vanishing from the world.
+		std::cerr << "[Entity] Unknown EntityKind " << static_cast<int>(kind)
+		          << ", loading as base Entity\n";
+		return std::make_unique<Entity>();
 	}
 }
 
@@ -149,6 +168,7 @@ Json Entity::formatToJson()
 {
 	Json j = GameObject::formatToJson();
 
+	j["Kind"] = static_cast<int>(kind);
 	j["Health"] = health;
 	j["MaxHealth"] = maxHealth;
 	j["Stamina"] = stamina;
@@ -162,6 +182,11 @@ Json Entity::formatToJson()
 bool Entity::loadFromJson(Json& j)
 {
 	if (!GameObject::loadFromJson(j)) { return false; }
+
+	// "Kind" is deliberately not read back here. Each constructor sets `kind` to
+	// match the class it actually built, so loading the field could only ever
+	// make `kind` disagree with the real type — the loader already consumed it
+	// through createByKind() to decide which constructor to run.
 
 	maxHealth = j.value("MaxHealth", maxHealth);
 	maxStamina = j.value("MaxStamina", maxStamina);

@@ -28,20 +28,19 @@ struct PlayerCamera : Camera3D
 
 struct Player : Entity
 {
+	Player() { kind = ENTITYKIND_PLAYER; }
+
+	std::unique_ptr<Entity> clone() const override { return std::make_unique<Player>(*this); }
 
 	// Game Mechanics
 	RigidBody2D rigidBody2D = {};
 	Vector2 moveDirection = {};
 	PlayerCamera camera = {};
 	GameObject* artifact = nullptr;
-	// The interactable itself is stable (stored via unique_ptr in Scene::interactables),
-	// so it's kept as a direct pointer. An activator-linked object lives in
-	// GameMap::gameObjects, a plain vector that GameMap::saveObject() re-sorts (and may
-	// reallocate) on every insert, so it's kept as an id and re-resolved on use instead
-	// of a pointer that could silently start referring to a different object.
-	GameObject* interactObject = nullptr;
+	
+	// Activator Object ID
 	std::uint64_t interactObjectId = 0;
-	std::vector<InteractableObject*> inventory;
+	std::vector<InteractableObject*> inventory;// Set TO Object IDs if doesn't work (just like ActivatorObject).
 
 	int artifactMode = 0;
 	int artifactUnlocked = -1;
@@ -50,7 +49,17 @@ struct Player : Entity
 	int baseJumpPower = 20;
 	float currentJumpPower = 20;
 
+	// Time until the next footstep noise. Footsteps are the player's main
+	// emission into the SoundField, so gait is the primary stealth control.
+	float footstepTimer = 0.0f;
+
 	// Flags
+
+	// Being caught is detected here rather than on the stalker. Scene resolves
+	// player-vs-entity contacts with the player as `self`, so the stalker's own
+	// collision callback never fires for this pair. Keeping it on this side
+	// also keeps the stalker free of any reference to the player.
+	void onCollision(const GameObject* collider) override;
 
 	// Render And Update
 	void render2D() override;

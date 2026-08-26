@@ -9,7 +9,6 @@ MiniGame* MiniGame_RoShamBoo(Player* player)
 	game->update = &RoShamBoo::update;
 	game->draw = &RoShamBoo::render;
 	
-	game->data = new MiniGameData;
 	game->data->scoreGoal = 5;
 
 	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.4f, GetScreenHeight() * 0.4f));
@@ -22,7 +21,7 @@ MiniGame* MiniGame_RoShamBoo(Player* player)
 	return game;
 }
 
-void RoShamBoo::render(MiniGameData* data, Player* player)
+void RoShamBoo::render(Scene* scene_ptr)
 {
 	auto inputSystem = &InputSystem::getInstance();
 
@@ -41,9 +40,10 @@ void RoShamBoo::render(MiniGameData* data, Player* player)
 
 }
 
-void RoShamBoo::update(MiniGameData* data, Player* player, float delta)
+void RoShamBoo::update(Scene* scene_ptr, float delta)
 {
 	auto inputSystem = &InputSystem::getInstance();
+	auto data = scene_ptr->miniGame->data;
 
 	// Select Left
 	if (inputSystem->IsActionPressed(ACTION_MOVE_LEFT)) { data->score = 1; }
@@ -52,7 +52,10 @@ void RoShamBoo::update(MiniGameData* data, Player* player, float delta)
 	// Select Right
 	if (inputSystem->IsActionPressed(ACTION_MOVE_RIGHT)) { data->score = 3; }
 	
-	if (data->score == data->scoreGoal) { CompleteMiniGame(data, player, BUFF_RANDOM, true); };
+	if (data->score == data->scoreGoal) { 
+		CompleteMiniGame(data, scene_ptr->player, BUFF_RANDOM, true);
+		scene_ptr->ReleaseMiniGame();
+	};
 	
 	
 }

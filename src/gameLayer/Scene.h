@@ -11,6 +11,8 @@
 #include <gameMap.h>
 #include <InputSystem.h>
 #include <Player.h>
+#include <Perception/SoundField.h>
+#include <AI/Director.h>
 #include <AssetManager.h>
 #include <MiniGame.h>
 #include <asserts.h>
@@ -69,6 +71,13 @@ public:
 	// Map Data
 	GameMap gameMap = {}; // The GameMap of the Scene
 	MiniGame* miniGame = {}; // Current Mini Game Loaded
+
+	// Perception — the only channel through which AI learns about the player.
+	// Owned by the Scene because emitters and listeners are both scene objects.
+	SoundField soundField = {};
+
+	// Applies pressure from world facts only. Never reads player position.
+	Director director = {};
 	
 	// Entity Data
 	Player* player = {};
@@ -78,12 +87,8 @@ public:
 
 	void SetMiniGame(int miniGame);
 	int GetLastMiniGame() const { return lastMiniGamePlayed; }
-
-	// Frees the active minigame and clears the 2D-mode flag, leaving `miniGame`
-	// null whether or not there was anything to free. The single owner of
-	// MiniGame/MiniGameData teardown: the callers that each open-coded it were
-	// what allowed the same allocation to be freed twice.
-	void ReleaseMiniGame();
+	void ReleaseMiniGame(); // Frees MiniGame Memory Data
+	void ResetMiniGame();
 
 	void ResetID();
 private:

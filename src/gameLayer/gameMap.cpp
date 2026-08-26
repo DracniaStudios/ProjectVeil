@@ -77,7 +77,14 @@ Entity* GameMap::saveEntity(Entity& entity)
 		entity.rigidBody3D.scale = Vector3One();
 	}
 	/// Add Entity To Scene Entity Data
-	scene->entities[entity.id] = std::move(entity.clone());
+	// clone() rather than make_unique<Entity>(entity): the latter slices, so a
+	// Stalker (or any other subclass) handed to this function was stored as a
+	// bare Entity and lost its overrides before it ever ticked.
+	//
+	// No std::move around the call: clone() already returns a prvalue, and
+	// wrapping it blocks the copy elision that would otherwise construct in
+	// place.
+	scene->entities[entity.id] = entity.clone();
 
 	std::cout << "Added Entity \n";
 	return scene->entities[entity.id].get();

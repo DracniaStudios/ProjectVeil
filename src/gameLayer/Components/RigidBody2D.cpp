@@ -72,3 +72,21 @@ void RigidBody2D::update(float deltaTime)
 	lastPosition = Vector2(translation.x, translation.y);
 
 }
+
+Rectangle RigidBody2D::getRectCentered() {
+	// Calculates As Center Position
+	auto halfScale = Vector2(scale.x / 2, scale.y / 2);
+	return Rectangle(translation.x - halfScale.x,
+		translation.y - halfScale.y,
+		translation.x + halfScale.x,
+		translation.y + halfScale.y
+	);
+}
+Rectangle RigidBody2D::getRectCornered() {
+	// Calculates As Top Left Corner Position
+	return Rectangle(translation.x,
+		translation.y,
+		translation.x + scale.x,
+		translation.y + scale.y
+	);
+}

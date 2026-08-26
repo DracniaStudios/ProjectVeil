@@ -166,7 +166,7 @@ void GameObject::onEnable()
 void GameObject::onDisable()
 {
 	isEnabled = false;
-
+	rigidBody3D.canCollide = false;
 	// Textures and named models belong to the AssetManager — only unload
 	// primitives this object generated for itself
 	releaseGeneratedModel();

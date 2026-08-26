@@ -75,6 +75,7 @@ class WorldEditor
 	bool isMiniGameActive = false;
 	bool isAssetActive = false;
 	bool isLightingActive = false;
+	bool isStalkerActive = false;
 
 	/** World Settings **/
 	std::string worldName = "world";
@@ -120,6 +121,9 @@ class WorldEditor
 	Vector4 colorHolder = Vector4(255, 255, 255, 255);
 
 	// Entity extras, applied on spawn when placing an Entity
+	// Which concrete Entity subclass the Placement Panel spawns. Indexes
+	// EntityKind directly, so the combo order below must match that enum.
+	int stagingEntityKind = ENTITYKIND_NONE;
 	float stagingMaxHealth = 10.0f;
 	float stagingMaxStamina = 100.0f;
 	float stagingBaseSpeed = 1.0f;
@@ -162,6 +166,10 @@ class WorldEditor
 	void ShowMiniGameData(Player* player);
 	void ShowAssetData();
 	void ShowLightingData();
+	// Stalker AI: FSM state, what it last heard, and the Director's hint log.
+	// The hint log is the artifact the slice's acceptance criteria are checked
+	// against — "verify by logging what the Director passes".
+	void ShowStalkerData();
 
 	/** Viewport Interaction (EditorViewport.cpp) **/
 	// Arbitrates the mouse between ImGui, the camera, the gizmo, placement and

@@ -239,7 +239,12 @@ namespace SaveSystem
 		{
 			for (auto& [key, entData] : j["Entities"].items())
 			{
-				auto entity = std::make_unique<Entity>(createByKind(ENTITYKIND_NONE));
+				// The concrete type has to be chosen before loadFromJson() runs,
+				// so read the persisted kind first. Saves written before "Kind"
+				// existed default to ENTITYKIND_NONE, which is what they were.
+				const auto kind = static_cast<EntityKind>(
+					entData.value("Kind", static_cast<int>(ENTITYKIND_NONE)));
+				auto entity = Entity::createByKind(kind);
 				if (!TryParseId(key, entity->id))
 				{
 					std::cerr << "[Save System] Skipping Entity with non-numeric key: " << key << "\n";
@@ -252,7 +257,7 @@ namespace SaveSystem
 					continue;
 				}
 
-				scene.entities[entity->id] = std::move(entity);
+				scene.entities[entity->id] = std::move(entity->clone());
 			}
 		}
 
@@ -388,6 +393,16 @@ namespace SaveSystem
 		j["Map"]["SizeY"] = scene->gameMap.size.y;
 		j["Map"]["SizeZ"] = scene->gameMap.size.z;
 
+		// Spawn point is authored level data. Only written once it has actually
+		// been set, so loading an older world stays a no-op rather than
+		// teleporting the player to an origin nobody chose.
+		if (scene->gameMap.hasSpawnPoint)
+		{
+			j["Map"]["SpawnX"] = scene->gameMap.spawnPoint.x;
+			j["Map"]["SpawnY"] = scene->gameMap.spawnPoint.y;
+			j["Map"]["SpawnZ"] = scene->gameMap.spawnPoint.z;
+		}
+
 		// Lighting is authored level data, so it belongs in the world file too
 		j["Lighting"] = LightingSystem::getInstance().formatToJson();
 
@@ -408,6 +423,24 @@ namespace SaveSystem
 			interactables[std::to_string(id)] = interactable->formatToJson();
 		}
 		j["Interactables"] = interactables;
+
+		// Entities. A world file carried none until now, while LoadWorld cleared
+		// scene.entities on the way in — so a stalker placed in the editor was
+		// silently destroyed by the next world load, taking its authored patrol
+		// route with it. Entities placed in a world are level content in exactly
+		// the way interactables are, so they are saved the same way.
+		//
+		// The player is skipped: it is constructed by Scene_new and restored from
+		// its own section in game saves, and a world file has no business
+		// carrying a second copy of it.
+		Json entities = Json::object();
+		for (auto& [id, entity] : scene->entities)
+		{
+			if (!entity || entity->type == OBJECT_PLAYER) { continue; }
+			if (entity->kind == ENTITYKIND_PLAYER) { continue; }
+			entities[std::to_string(id)] = entity->formatToJson();
+		}
+		j["Entities"] = entities;
 
 		if (!WriteJsonAtomic(path, j)) { return false; }
 
@@ -459,6 +492,29 @@ namespace SaveSystem
 			scene.gameMap.size.x = j["Map"].value("SizeX", scene.gameMap.size.x);
 			scene.gameMap.size.y = j["Map"].value("SizeY", scene.gameMap.size.y);
 			scene.gameMap.size.z = j["Map"].value("SizeZ", scene.gameMap.size.z);
+
+			// Place the player, which nothing else in this function does. Without
+			// it the player keeps whatever position it had — on a fresh launch
+			// the RigidBody3D default of (0,0,0), which in chunk_1 is inside the
+			// artifact display plinth.
+			scene.gameMap.hasSpawnPoint = j["Map"].contains("SpawnX");
+			if (scene.gameMap.hasSpawnPoint)
+			{
+				scene.gameMap.spawnPoint = Vector3{
+					j["Map"].value("SpawnX", 0.0f),
+					j["Map"].value("SpawnY", 0.0f),
+					j["Map"].value("SpawnZ", 0.0f)
+				};
+
+				if (scene.player)
+				{
+					scene.player->rigidBody3D.Teleport(scene.gameMap.spawnPoint);
+					// Teleporting without clearing velocity carries any fall speed
+					// from the previous world into the new one, so the player
+					// arrives already accelerating downward.
+					scene.player->rigidBody3D.SetVelocity(Vector3Zero());
+				}
+			}
 		}
 
 		// Lighting — pre-lighting world files have no section, so install the
@@ -523,6 +579,33 @@ namespace SaveSystem
 			}
 		}
 
+		// Load Entities. Built through createByKind so a saved Stalker comes back
+		// as a Stalker rather than a sliced base Entity — the kind is read before
+		// construction because loadFromJson cannot change an object's type.
+		if (j.contains("Entities"))
+		{
+			for (auto& [key, entData] : j["Entities"].items())
+			{
+				const auto kind = static_cast<EntityKind>(
+					entData.value("Kind", static_cast<int>(ENTITYKIND_NONE)));
+				auto entity = Entity::createByKind(kind);
+
+				if (!TryParseId(key, entity->id))
+				{
+					std::cerr << "[Save System] Skipping Entity with non-numeric key: " << key << "\n";
+					continue;
+				}
+
+				if (!entity->loadFromJson(entData))
+				{
+					std::cerr << "[Save System] Failed to load Entity with ID: " << key << "\n";
+					continue;
+				}
+
+				scene.entities[entity->id] = std::move(entity);
+			}
+		}
+
 		// Avoid id collisions with objects created after the load.
 		//
 		// The stored IdCounter alone is not enough: a world file hand-authored
@@ -536,6 +619,10 @@ namespace SaveSystem
 		std::uint64_t highestId = 0;
 		for (const auto& obj : scene.gameMap.gameObjects) { highestId = std::max(highestId, obj.id); }
 		for (const auto& [id, interactable] : scene.interactables) { highestId = std::max(highestId, id); }
+		// Entities count toward the floor now that a world file carries them;
+		// leaving them out would hand a freshly placed object an id a loaded
+		// entity already answers to.
+		for (const auto& [id, entity] : scene.entities) { highestId = std::max(highestId, id); }
 
 		scene.instanceHolder.idCounter = std::max({
 			scene.instanceHolder.idCounter,
@@ -543,7 +630,22 @@ namespace SaveSystem
 			highestId + 1
 		});
 
-		std::cout << "[Save System] Loaded World: " << path << "\n";
+		std::cout << "[Save System] Loaded World: " << path
+			<< " (" << scene.gameMap.gameObjects.size() << " objects, "
+			<< scene.interactables.size() << " interactables, "
+			<< scene.entities.size() << " entities, next id "
+			<< scene.instanceHolder.idCounter << ")\n";
+
+		if (scene.gameMap.hasSpawnPoint)
+		{
+			std::cout << "[Save System]   spawned player at ("
+				<< scene.gameMap.spawnPoint.x << ", " << scene.gameMap.spawnPoint.y
+				<< ", " << scene.gameMap.spawnPoint.z << ")\n";
+		}
+		else
+		{
+			std::cout << "[Save System]   no spawn point in world; player left at its current position\n";
+		}
 		return true;
 	}
 
