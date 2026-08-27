@@ -78,15 +78,15 @@ Rectangle RigidBody2D::getRectCentered() {
 	auto halfScale = Vector2(scale.x / 2, scale.y / 2);
 	return Rectangle(translation.x - halfScale.x,
 		translation.y - halfScale.y,
-		translation.x + halfScale.x,
-		translation.y + halfScale.y
+		scale.x,
+		scale.y
 	);
 }
 Rectangle RigidBody2D::getRectCornered() {
 	// Calculates As Top Left Corner Position
 	return Rectangle(translation.x,
 		translation.y,
-		translation.x + scale.x,
-		translation.y + scale.y
+		scale.x,
+		scale.y
 	);
 }

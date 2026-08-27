@@ -125,18 +125,15 @@ void Crane::update(Scene* scene_ptr, float deltaTime)
 		{
 			CompleteMiniGame(data, player, BUFF_RANGE, true);
 			scene_ptr->ReleaseMiniGame();
+			// ReleaseMiniGame() deleted `data` and nulled scene_ptr->miniGame,
+			// so nothing below may touch either.
+			return;
 		}
 
 		auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
 
 		if (!CheckCollisionRecs(playerRect, data->screen)) {
 			scene_ptr->ResetMiniGame();
-		}
-
-		auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
-
-		if (!CheckCollisionRecs(playerRect, data->screen)) {
-			scene->ReleaseMiniGame();
 		}
 	}
 

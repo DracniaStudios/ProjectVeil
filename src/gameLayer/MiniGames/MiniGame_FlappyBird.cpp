@@ -180,32 +180,29 @@ void FlappyBird::update(Scene* scene_ptr, float deltaTime)
 	// Win Condition
 	if (CompleteMiniGame(data, player, BUFF_MOVEMENT)) {
 		scene_ptr->ReleaseMiniGame();
+		// ReleaseMiniGame() deleted `data` and nulled scene_ptr->miniGame.
+		// Everything below reads one or the other, so returning here is what
+		// keeps the win path from iterating a destroyed vector and
+		// dereferencing null.
+		return;
 	}
 
 	// Lose Condition
-	 auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
+	auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
 
 	if (!CheckCollisionRecs(playerRect, screen)) {
 		scene_ptr->ReleaseMiniGame();
 		std::cout << "[MiniGame/FlappyBird] Play Fail Sound\n";
-	}
-
-	// Lose Condition
-	 auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
-
-	if (!CheckCollisionRecs(playerRect, screen)) {
-		scene->ReleaseMiniGame();
-		std::cout << "[MiniGame/FlappyBird] Play Fail Sound\n";
-		// ReleaseMiniGame() deleted `data` and nulled scene->miniGame. Everything
-		// below reads one or the other, so returning here is what keeps the loss
-		// path from iterating a destroyed vector and dereferencing null.
+		// ReleaseMiniGame() deleted `data` and nulled scene_ptr->miniGame.
+		// Everything below reads one or the other, so returning here is what
+		// keeps the loss path from iterating a destroyed vector and
+		// dereferencing null.
 		return;
 	}
 
 	// Player Logic
 	{
 		static int speed = 100;
-		player->rigidBody2D.applyGravity(Vector2(0, 200));
 		player->rigidBody2D.applyGravity();
 		if (inputSystem->IsActionPressed(ACTION_MOVE_JUMP)) { player->rigidBody2D.jump(200); }
 

@@ -140,14 +140,13 @@ void GameMap::removeInteractable(InteractableObject* object)
 	// Player::inventory holds non-owning pointers into this map — drop any
 	// reference before the unique_ptr below frees the object, or the next
 	// inventory read (e.g. WorldEditor's Player Inspector) is a use-after-free.
-	// Player::interactObject is the same hazard: ActivateMiniGame() caches a
-	// raw pointer here for any interactable with the default (0) activator, and
+	// Player::interactObjectId is the same hazard: ActivateMiniGame() caches
+	// this object's id for any interactable with the default (0) activator, and
 	// nothing else clears it once this object goes away — CompleteMiniGame()
-	// would dereference it the next time any minigame finishes.
+	// would look up a stale id the next time any minigame finishes.
 	if (scene->player) {
 		std::erase(scene->player->inventory, object);
-		if (scene->player->interactObject == object) {
-			scene->player->interactObject = nullptr;
+		if (scene->player->interactObjectId == object->id) {
 			scene->player->interactObjectId = 0;
 		}
 	}

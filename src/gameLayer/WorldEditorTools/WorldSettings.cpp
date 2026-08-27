@@ -14,14 +14,13 @@ void NewWorld(Scene& scene) {
 	scene.entities.clear();
 	scene.interactables.clear();
 
-	// Player::inventory and Player::interactObject are non-owning references
-	// into the interactables map just cleared above (see
-	// GameMap::removeInteractable for the same hazard) — left alone here they
-	// dangle the moment any minigame completes or the Player Inspector reads
-	// the inventory.
+	// Player::inventory holds non-owning references into the interactables map
+	// just cleared above (see GameMap::removeInteractable for the same hazard)
+	// — left alone here it dangles the moment the Player Inspector reads it.
+	// Player::interactObjectId is an id into the same map and goes stale the
+	// same way, so it is reset alongside it.
 	if (scene.player) {
 		scene.player->inventory.clear();
-		scene.player->interactObject = nullptr;
 		scene.player->interactObjectId = 0;
 	}
 

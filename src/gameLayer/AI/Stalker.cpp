@@ -459,5 +459,14 @@ bool Stalker::loadFromJson(Json& j)
 	timeInState = 0.0f;
 	lastStimulusTime = 0.0f;
 
+	// STALKER_INVESTIGATE and STALKER_HUNT self-correct on the next update()
+	// because both check hasLastKnown before doing anything else. Search has
+	// no such guard — it steers straight at `searchTarget`, which is not
+	// persisted and would otherwise reload as the default (0,0,0), sending a
+	// stalker loaded mid-search sprinting toward the world origin for up to
+	// searchDuration seconds. Nothing about "searching" survives a save, so
+	// land it on patrol like the other belief-dependent states effectively do.
+	if (state == STALKER_SEARCH_LAST_KNOWN) { state = STALKER_PATROL; }
+
 	return true;
 }

@@ -10,15 +10,24 @@ void SoundField::Update(float deltaTime)
 {
 	clock += deltaTime;
 
-	// Expiry is a compaction rather than an erase-per-element: events are
-	// emitted in clock order, so the survivors keep their ordering and the
-	// write cursor can simply resume at the end.
+	// Expiry is a compaction rather than an erase-per-element: while the ring
+	// has never wrapped, events stay in emission order and the survivors keep
+	// that ordering, so the write cursor can simply resume at the end.
+	//
+	// This always scans rather than gating on events.front() being stale:
+	// once the buffer is full, Emit() overwrites slots round-robin, so slot 0
+	// holds whichever event last landed there — not necessarily the oldest
+	// one in the buffer. Gating on it let long-expired events linger well
+	// past kEventTTL until the write cursor happened to revisit index 0,
+	// which defeated "going quiet" as a tactic. kCapacity is small enough
+	// that scanning it every call is cheap.
 	const float cutoff = clock - kEventTTL;
-	if (!events.empty() && events.front().timestamp <= cutoff)
+	const auto newEnd = std::remove_if(events.begin(), events.end(),
+		[cutoff](const SoundEvent& e) { return e.timestamp <= cutoff; });
+
+	if (newEnd != events.end())
 	{
-		events.erase(std::remove_if(events.begin(), events.end(),
-			[cutoff](const SoundEvent& e) { return e.timestamp <= cutoff; }),
-			events.end());
+		events.erase(newEnd, events.end());
 		nextSlot = events.size() < kCapacity ? events.size() : 0;
 	}
 }
