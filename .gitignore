@@ -60,6 +60,7 @@ tools/
 
 # Additive Files
 saves/backup.json
+saves/backup/
 saves/settings.json
 veil-digest.py
 
