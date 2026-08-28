@@ -10,11 +10,14 @@ void SoundField::Update(float deltaTime)
 {
 	clock += deltaTime;
 
-	// Expiry is a compaction rather than an erase-per-element: events are
-	// emitted in clock order, so the survivors keep their ordering and the
-	// write cursor can simply resume at the end.
+	// Once the ring has wrapped (see Emit()), slots are overwritten in place
+	// rather than appended, so events.front() is no longer guaranteed to be
+	// the oldest entry — gating this compaction on it let already-expired
+	// events sit in the buffer, and therefore be returned by LoudestAudible,
+	// well past kEventTTL. Run the sweep unconditionally instead; at
+	// kCapacity elements it's cheap regardless.
 	const float cutoff = clock - kEventTTL;
-	if (!events.empty() && events.front().timestamp <= cutoff)
+	if (!events.empty())
 	{
 		events.erase(std::remove_if(events.begin(), events.end(),
 			[cutoff](const SoundEvent& e) { return e.timestamp <= cutoff; }),

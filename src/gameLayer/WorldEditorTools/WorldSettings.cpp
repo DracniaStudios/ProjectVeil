@@ -14,6 +14,12 @@ void NewWorld(Scene& scene) {
 	scene.entities.clear();
 	scene.interactables.clear();
 
+	// SoundField/Director are scene-level and survive the entity clear above —
+	// left alone here, a freshly loaded Stalker's first update would react to
+	// leftover events/hunt state from the world just discarded.
+	scene.soundField.Clear();
+	scene.director.Clear();
+
 	// Player::inventory and Player::interactObjectId are non-owning references
 	// into the interactables map just cleared above (see
 	// GameMap::removeInteractable for the same hazard) — left alone here they

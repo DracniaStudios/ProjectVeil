@@ -172,6 +172,14 @@ namespace SaveSystem
 		scene.gameMap.gameObjects.clear();
 		scene.entities.clear();
 		scene.interactables.clear();
+		// The Stalker (in scene.entities, just cleared) is reloaded with a
+		// clean perception state of its own, but SoundField/Director are
+		// scene-level and survive the entity clear — left alone here they
+		// still hold events and a hunt log from the previous world, which can
+		// be within kEventTTL and drive an unearned INVESTIGATE/HUNT
+		// transition on the new Stalker's very first update.
+		scene.soundField.Clear();
+		scene.director.Clear();
 		// Player::inventory is a list of non-owning pointers into the map just
 		// cleared above; the player object itself survives the load, so those
 		// pointers would otherwise dangle (inventory contents aren't persisted yet).
@@ -472,6 +480,14 @@ namespace SaveSystem
 		scene.gameMap.gameObjects.clear();
 		scene.interactables.clear();
 		scene.entities.clear();
+		// The Stalker (in scene.entities, just cleared) is reloaded with a
+		// clean perception state of its own, but SoundField/Director are
+		// scene-level and survive the entity clear — left alone here they
+		// still hold events and a hunt log from the previous world, which can
+		// be within kEventTTL and drive an unearned INVESTIGATE/HUNT
+		// transition on the new Stalker's very first update.
+		scene.soundField.Clear();
+		scene.director.Clear();
 		// Player::inventory is a list of non-owning pointers into the map just
 		// cleared above; the player object itself survives the load, so those
 		// pointers would otherwise dangle (inventory contents aren't persisted yet).
