@@ -116,6 +116,10 @@ void Crane::update(Scene* scene_ptr, float deltaTime)
 		if (CheckCollisionCircleRec(player->getPosition2D(), player->rigidBody2D.scale.x, obstacle))
 		{
 			scene_ptr->ResetMiniGame();
+			// ResetMiniGame() releases this MiniGame (freeing `data` and its
+			// obstacles vector) before building a replacement, so continuing to
+			// iterate `data->obstacles` or read `data` below is a use-after-free.
+			return;
 		}
 	}
 
@@ -134,6 +138,9 @@ void Crane::update(Scene* scene_ptr, float deltaTime)
 
 		if (!CheckCollisionRecs(playerRect, data->screen)) {
 			scene_ptr->ResetMiniGame();
+			// ResetMiniGame() releases this MiniGame (freeing `data`) before
+			// building a replacement, so nothing below may read `data`.
+			return;
 		}
 	}
 

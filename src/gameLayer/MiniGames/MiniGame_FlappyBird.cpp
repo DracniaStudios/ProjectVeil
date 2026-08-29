@@ -169,6 +169,9 @@ void FlappyBird::update(Scene* scene_ptr, float deltaTime)
 
 	if (!CheckCollisionRecs(player->rigidBody2D.getRectCentered(), generateScaleRect(screen, Rectangle{ 1.05f, 1.05f,0.95f, 0.95f }))) {
 		scene_ptr->ResetMiniGame();
+		// ResetMiniGame() releases this MiniGame (freeing `data`) before
+		// building a replacement, so nothing below may read `data`.
+		return;
 	}
 	/*
 	if (player->rigidBody2D.getPosition().x < screen.x) scene->miniGame->data->isReset = true;
@@ -223,7 +226,13 @@ void FlappyBird::update(Scene* scene_ptr, float deltaTime)
 
 			Rectangle obstacle = generateScaleRect(screen, newSize);
 
-			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obstacle)) scene_ptr->ResetMiniGame();
+			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obstacle)) {
+				scene_ptr->ResetMiniGame();
+				// ResetMiniGame() releases this MiniGame (freeing `data` and its
+				// obstacles vector) before building a replacement, so continuing
+				// to iterate `data->obstacles` is a use-after-free.
+				return;
+			}
 		}
 	}
 }
