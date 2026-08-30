@@ -40,8 +40,8 @@ else()
 	message(FATAL_ERROR "FMOD: no vendored libraries for this platform.")
 endif()
 
-set (FMOD_CORE_LIB_DIR "${CORE_ROOT_DIR}/lib/${FMOD_LIB_SUBDIR}")
-set (FMOD_STUDIO_LIB_DIR "${STUDIO_ROOT_DIR}/lib/${FMOD_LIB_SUBDIR}")
+set (FMOD_CORE_LIB_DIR "${CORE_ROOT_DIR}/lib/${FMOD_ARCH_DIR}")
+set (FMOD_STUDIO_LIB_DIR "${STUDIO_ROOT_DIR}/lib/${FMOD_ARCH_DIR}")
 
 if(NOT EXISTS "${FMOD_CORE_LIB_DIR}")
 	message(FATAL_ERROR
