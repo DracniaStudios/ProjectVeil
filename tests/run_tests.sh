@@ -45,6 +45,7 @@ BIN="$OUT_DIR/soundfield_tests"
 echo "building $BIN"
 g++ -std=c++23 -Wall \
 	-I src/gameLayer \
+	-I src/engineLayer \
 	-I thirdparty/raylib-6.0/src \
 	-I "$JSON_INC" \
 	-I "$FMOD_STUDIO_INC" \
@@ -116,6 +117,7 @@ echo
 echo "building $FSM_BIN"
 g++ -std=c++23 \
 	-I src/gameLayer \
+	-I src/engineLayer \
 	-I src/platform \
 	-I thirdparty/raylib-6.0/src \
 	-I "$JSON_INC" \

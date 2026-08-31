@@ -23,7 +23,16 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 		ImGui::InputInt("Activator Value", &object->activator);
 
 		if (object->interactType == INTERACT_MINIGAME) {
-			ImGui::TextDisabled(FindWorldObjectByID(SceneManager::getInstance().currentScene->gameMap, object->activator)->name.c_str());
+			// activator == 0 (or an id nothing resolves to) means "no explicit
+			// target" — FindWorldObjectByID returns nullptr for that, and
+			// dereferencing it here crashed the editor on the common
+			// self-activating case (see PlacementPanel's "Activator ID" field).
+			if (GameObject* activatorObject = FindWorldObjectByID(SceneManager::getInstance().currentScene->gameMap, object->activator)) {
+				ImGui::TextDisabled("%s", activatorObject->name.c_str());
+			}
+			else {
+				ImGui::TextDisabled("None (self)");
+			}
 		}
 		if (ImGui::Button("Self Activator")) { object->activator = object->id; }
 	}
