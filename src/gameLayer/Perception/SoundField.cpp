@@ -10,15 +10,20 @@ void SoundField::Update(float deltaTime)
 {
 	clock += deltaTime;
 
-	// Expiry is a compaction rather than an erase-per-element: events are
-	// emitted in clock order, so the survivors keep their ordering and the
-	// write cursor can simply resume at the end.
+	// Once the ring has overwritten a slot in place (Emit's full-buffer path),
+	// index 0 is no longer guaranteed to hold the oldest event — a front()
+	// check as a "has anything expired" guard silently stopped compacting for
+	// long stretches after the first wrap, letting events outlive kEventTTL by
+	// up to a full lap of the buffer. kCapacity is small, so scanning it every
+	// frame is cheap; just always compact rather than trying to detect the
+	// wrapped case first.
 	const float cutoff = clock - kEventTTL;
-	if (!events.empty() && events.front().timestamp <= cutoff)
+	const std::size_t before = events.size();
+	events.erase(std::remove_if(events.begin(), events.end(),
+		[cutoff](const SoundEvent& e) { return e.timestamp <= cutoff; }),
+		events.end());
+	if (events.size() != before)
 	{
-		events.erase(std::remove_if(events.begin(), events.end(),
-			[cutoff](const SoundEvent& e) { return e.timestamp <= cutoff; }),
-			events.end());
 		nextSlot = events.size() < kCapacity ? events.size() : 0;
 	}
 }

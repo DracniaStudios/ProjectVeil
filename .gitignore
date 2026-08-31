@@ -42,6 +42,7 @@ resources/blocks/
 resources/icons/
 resources/models/
 resources/saves/backup
+saves/backup/
 
 
 # Build directories

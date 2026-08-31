@@ -132,12 +132,6 @@ void Crane::update(Scene* scene_ptr, float deltaTime)
 		if (!CheckCollisionRecs(playerRect, data->screen)) {
 			scene_ptr->ResetMiniGame();
 		}
-
-		auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
-
-		if (!CheckCollisionRecs(playerRect, data->screen)) {
-			scene->ReleaseMiniGame();
-		}
 	}
 
 }

@@ -175,12 +175,11 @@ namespace SaveSystem
 		// Player::inventory is a list of non-owning pointers into the map just
 		// cleared above; the player object itself survives the load, so those
 		// pointers would otherwise dangle (inventory contents aren't persisted yet).
-		// Player::interactObject is the same hazard — ActivateMiniGame() caches a
-		// raw pointer into this same map for any interactable with the default
+		// Player::interactObjectId is the same hazard — ActivateMiniGame() caches
+		// an id into this same map for any interactable with the default
 		// (0) activator, and nothing else clears it once the map is wiped.
 		if (scene.player) {
 			scene.player->inventory.clear();
-			scene.player->interactObject = nullptr;
 			scene.player->interactObjectId = 0;
 		}
 		scene.instanceHolder.idCounter = j.value("IdCounter", scene.instanceHolder.idCounter);
@@ -476,12 +475,11 @@ namespace SaveSystem
 		// Player::inventory is a list of non-owning pointers into the map just
 		// cleared above; the player object itself survives the load, so those
 		// pointers would otherwise dangle (inventory contents aren't persisted yet).
-		// Player::interactObject is the same hazard — ActivateMiniGame() caches a
-		// raw pointer into this same map for any interactable with the default
+		// Player::interactObjectId is the same hazard — ActivateMiniGame() caches
+		// an id into this same map for any interactable with the default
 		// (0) activator, and nothing else clears it once the map is wiped.
 		if (scene.player) {
 			scene.player->inventory.clear();
-			scene.player->interactObject = nullptr;
 			scene.player->interactObjectId = 0;
 		}
 		scene.instanceHolder.idCounter = 0;
