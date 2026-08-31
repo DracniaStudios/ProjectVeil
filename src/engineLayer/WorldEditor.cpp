@@ -133,32 +133,6 @@ void WorldEditor::showTransformTools()
 	ImGui::Separator();
 }
 
-GameObject* FindGameObjectByID(uint64_t id)
-{
-	const auto scene = SceneManager::getInstance().currentScene;
-	for (size_t i = 0; i < scene->gameMap.gameObjects.size(); ++i) {
-		auto obj = &scene->gameMap.gameObjects[i];
-		if (obj->id == id) { return obj; }
-	}
-	return nullptr;
-};
-
-Entity* FindEntityByID(uint64_t id)
-{
-	const auto scene = SceneManager::getInstance().currentScene;
-	auto it = scene->entities.find(id);
-	if (it == scene->entities.end()) { return nullptr; }
-	return it->second.get();
-};
-
-InteractableObject* FindInteractableByID(uint64_t id)
-{
-	const auto scene = SceneManager::getInstance().currentScene;
-	auto it = scene->interactables.find(id);
-	if (it == scene->interactables.end()) { return nullptr; }
-	return it->second.get();
-};
-
 GameObject* WorldEditor::getSelectedObject()
 {
 	// The three lookups below all dereference currentScene without checking it.
@@ -168,9 +142,9 @@ GameObject* WorldEditor::getSelectedObject()
 	if (SceneManager::getInstance().currentScene == nullptr) { return nullptr; }
 	if (selectedObjectId == 0) { return nullptr; }
 
-	if (InteractableObject* interactable = FindInteractableByID(selectedObjectId)) { return interactable; }
-	if (Entity* entity = FindEntityByID(selectedObjectId)) { return entity; }
-	return FindGameObjectByID(selectedObjectId);
+	if (InteractableObject* interactable = FindInteractableByID(SceneManager::getInstance().currentScene->gameMap, selectedObjectId)) { return interactable; }
+	if (Entity* entity = FindEntityByID(SceneManager::getInstance().currentScene->gameMap, selectedObjectId)) { return entity; }
+	return FindGameObjectByID(SceneManager::getInstance().currentScene->gameMap, selectedObjectId);
 }
 
 Asset* WorldEditor::getActiveTexture()

@@ -7,12 +7,12 @@ void NewWorld(Scene& scene) {
 	// ~Entity()/~InteractableObject() never free GPU resources (see
 	// GameMap::removeObject()); release each object's generated fallback model
 	// before the clears below erase it, or it leaks.
-	for (auto& [id, entity] : scene.entities) { entity->releaseGeneratedModel(); }
-	for (auto& [id, interactable] : scene.interactables) { interactable->releaseGeneratedModel(); }
+	for (auto& [id, entity] : scene.gameMap.entities) { entity->releaseGeneratedModel(); }
+	for (auto& [id, interactable] : scene.gameMap.interactables) { interactable->releaseGeneratedModel(); }
 
 	scene.gameMap.create(Vector3(10.0f, 1.0f, 10.0f));
-	scene.entities.clear();
-	scene.interactables.clear();
+	scene.gameMap.entities.clear();
+	scene.gameMap.interactables.clear();
 
 	// Player::inventory and Player::interactObjectId are non-owning references
 	// into the interactables map just cleared above (see
@@ -66,9 +66,9 @@ void WorldEditor::ShowWorldSettings()
 			"No spawn point: player starts wherever it already was.");
 	}
 	ImGui::Text("Game Objects: %d", static_cast<int>(scene->gameMap.gameObjects.size()));
-	ImGui::Text("Entities: %d", static_cast<int>(scene->entities.size()));
-	ImGui::Text("Interactables: %d", static_cast<int>(scene->interactables.size()));
-	ImGui::Text("Next ID: %llu", static_cast<unsigned long long>(scene->instanceHolder.idCounter));
+	ImGui::Text("Entities: %d", static_cast<int>(scene->gameMap.entities.size()));
+	ImGui::Text("Interactables: %d", static_cast<int>(scene->gameMap.interactables.size()));
+	ImGui::Text("Next ID: %llu", static_cast<unsigned long long>(scene->gameMap.instanceHolder.idCounter));
 	ImGui::Separator();
 
 	if (ImGui::Button("Save Game")) { 

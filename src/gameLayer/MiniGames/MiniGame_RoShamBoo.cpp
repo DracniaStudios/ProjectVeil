@@ -53,7 +53,7 @@ void RoShamBoo::update(Scene* scene_ptr, float delta)
 	if (inputSystem->IsActionPressed(ACTION_MOVE_RIGHT)) { data->score = 3; }
 	
 	if (data->score == data->scoreGoal) { 
-		CompleteMiniGame(data, scene_ptr->player, BUFF_RANDOM, true);
+		CompleteMiniGame(*data, *scene_ptr->player, scene_ptr->gameMap, BUFF_RANDOM, true);
 		scene_ptr->ReleaseMiniGame();
 	};
 	

@@ -34,11 +34,19 @@ void GameMap::create(Vector3 size)
 
 }
 
+/** Unique Id Instancing **/
+std::uint64_t InstanceID::getIdAndIncrement()
+{
+	std::uint64_t id = idCounter;
+	idCounter++;
+	permaAssertComment(id < UINT64_MAX - 1, "We ran out of ids somehow...");
+	return id;
+}
+
 // Load Object into Scene (Vector3)
 GameObject* GameMap::saveObject(GameObject& object)
 {
-	auto scene = SceneManager::getInstance().currentScene;
-	object.id = scene->instanceHolder.getIdAndIncrement();
+	object.id = instanceHolder.getIdAndIncrement();
 
 	/// Set RigidBody3D Data
 	if (object.rigidBody3D.scale == Vector3Zero())
@@ -60,8 +68,7 @@ GameObject* GameMap::saveObject(GameObject& object)
 
 Entity* GameMap::saveEntity(Entity& entity)
 {
-	auto scene = SceneManager::getInstance().currentScene;
-	entity.id = scene->instanceHolder.getIdAndIncrement();
+	entity.id = instanceHolder.getIdAndIncrement();
 	// Sets Object ID and Adds To Scene
 	if (entity.type != OBJECT_PLAYER) {
 		
@@ -84,34 +91,34 @@ Entity* GameMap::saveEntity(Entity& entity)
 	// No std::move around the call: clone() already returns a prvalue, and
 	// wrapping it blocks the copy elision that would otherwise construct in
 	// place.
-	scene->entities[entity.id] = entity.clone();
+	entities[entity.id] = entity.clone();
 
 	std::cout << "Added Entity \n";
-	return scene->entities[entity.id].get();
+	return entities[entity.id].get();
 }
 
 InteractableObject* GameMap::saveInteractable(InteractableObject& object)
 {
-	auto scene = SceneManager::getInstance().currentScene;
-	object.id = scene->instanceHolder.getIdAndIncrement();
+	object.id = instanceHolder.getIdAndIncrement();
 	object.onEnable();
 
 	auto interact_ptr = std::make_unique<InteractableObject>(object);
-	scene->interactables[object.id] = std::move(interact_ptr);
+	interactables[object.id] = std::move(interact_ptr);
 
 	std::cout << "Add Interactable \n";
-	return scene->interactables[object.id].get();
+	return interactables[object.id].get();
 }
 
 // Unload Object From Scene GameMap
 void GameMap::removeObject(GameObject* object) {
     if (!object) return;
+
 	// ~GameObject() is trivial and never frees GPU resources — release a
 	// generated fallback model/mesh here or it leaks the moment this object
 	// is erased.
 	object->releaseGeneratedModel();
-	auto scene = SceneManager::getInstance().currentScene;
-	erase_if(scene->gameMap.gameObjects, [&](const GameObject& o) { return &o == object;});
+	
+	erase_if(gameObjects, [&](const GameObject& o) { return &o == object;});
 }
 
 // Remove Entity From Entity List
@@ -123,72 +130,25 @@ void GameMap::removeEntity(Entity* entity)
 	// See removeObject() — the unique_ptr erase below destroys the Entity
 	// without ever freeing its generated model.
 	entity->releaseGeneratedModel();
-	auto scene = SceneManager::getInstance().currentScene;
-	scene->entities.erase(entity->id);
+	entities.erase(entity->id);
 }
 
 // Remove Interactable From InteractableList
 void GameMap::removeInteractable(InteractableObject* object)
 {
-	// Interactables live only in Scene::interactables, not in gameObjects (see
-	// saveInteractable), so there is nothing to remove from gameObjects here.
 	if (object == nullptr) return;
-	// See removeObject() — the unique_ptr erase below destroys the object
-	// without ever freeing its generated model.
+	
+	// Frees Memory Correctly
 	object->releaseGeneratedModel();
 	auto scene = SceneManager::getInstance().currentScene;
-	// Player::inventory holds non-owning pointers into this map — drop any
-	// reference before the unique_ptr below frees the object, or the next
-	// inventory read (e.g. WorldEditor's Player Inspector) is a use-after-free.
-	// Player::interactObjectId is the same hazard: ActivateMiniGame() caches an
-	// id here for any interactable with the default (0) activator, and nothing
-	// else clears it once this object goes away — CompleteMiniGame() would
-	// resolve it to a reused id the next time any minigame finishes.
+	
+	// Player Inventory can hold references to InteractableObjects
 	if (scene->player) {
 		std::erase(scene->player->inventory, object);
 		if (scene->player->interactObjectId == object->id) {
 			scene->player->interactObjectId = 0;
 		}
 	}
-	scene->interactables.erase(object->id);
+	interactables.erase(object->id);
 }
 
-GameObject* GameMap::FindGameObjectByID(uint64_t id)
-{
-	const auto scene = SceneManager::getInstance().currentScene;
-	for (size_t i = 0; i < scene->gameMap.gameObjects.size(); ++i) {
-		auto obj = &scene->gameMap.gameObjects[i];
-		if (obj->id == id) { return obj; }
-	}
-	return nullptr;
-};
-
-Entity* GameMap::FindEntityByID(uint64_t id)
-{
-	const auto scene = SceneManager::getInstance().currentScene;
-	auto it = scene->entities.find(id);
-	if (it == scene->entities.end()) { return nullptr; }
-	return it->second.get();
-};
-
-InteractableObject* GameMap::FindInteractableByID(uint64_t id)
-{
-	const auto scene = SceneManager::getInstance().currentScene;
-	auto it = scene->interactables.find(id);
-	if (it == scene->interactables.end()) { return nullptr; }
-	return it->second.get();
-};
-
-GameObject* GameMap::FindWorldObjectByID(uint64_t id)
-{
-	// 0 is the "no object" sentinel — InstanceID hands out ids from 2, reserving
-	// 0 for "none" and 1 for the player.
-	if (id == 0) { return nullptr; }
-
-	// Interactables first: an id authored as an activator is an interactable in
-	// every world shipped so far. The map lookups are O(1); the gameObjects scan
-	// is linear, so it goes last.
-	if (auto* interactable = FindInteractableByID(id)) { return interactable; }
-	if (auto* entity = FindEntityByID(id)) { return entity; }
-	return FindGameObjectByID(id);
-};

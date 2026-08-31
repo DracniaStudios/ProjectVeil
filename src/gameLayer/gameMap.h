@@ -8,27 +8,22 @@
 
 inline constexpr int OBJECT_LIMIT = 10000;
 
+struct InstanceID
+{
+	std::uint64_t idCounter = 2;
+	std::uint64_t getIdAndIncrement();
+};
+
 struct GameMap {
 
 	std::vector<GameObject> gameObjects = {};
+	std::unordered_map<std::uint64_t, std::unique_ptr<Entity>> entities{}; // Entities
+	std::unordered_map<std::uint64_t, std::unique_ptr<InteractableObject>> interactables{}; // Interactables
+	InstanceID instanceHolder = {}; // All IDs Stored
 
 	Vector3 size = {10, 10, 10};
-
-	/**
-	 * Where the player is placed when this world loads.
-	 *
-	 * Nothing positioned the player on a world load before this: LoadWorld
-	 * rebuilt the geometry and left the player wherever it already was, which
-	 * on a fresh launch is the RigidBody3D default of (0,0,0). In chunk_1 that
-	 * is the middle of the artifact display — Artifact Display Floor sits at
-	 * the origin, Pedastool at (0,1,0) and Pillar at (0,-10,0) — so every
-	 * session began with the player embedded in the plinth, which read as the
-	 * level having loaded extra geometry on top of them.
-	 *
-	 * hasSpawnPoint distinguishes "authored to be the origin" from "the file
-	 * predates spawn points", so an older world is left alone rather than being
-	 * teleported to a origin that was never chosen.
-	 */
+	
+	// PLayer Spawn Point on Load Scene
 	Vector3 spawnPoint = {0, 0, 0};
 	bool hasSpawnPoint = false;
 
@@ -44,29 +39,44 @@ struct GameMap {
 	void removeEntity(Entity* entity);
 	void removeInteractable(InteractableObject* object);
 
-	// Find Data
-	static GameObject* FindGameObjectByID(std::uint64_t id);
-	static Entity* FindEntityByID(std::uint64_t id);
-	static InteractableObject* FindInteractableByID(std::uint64_t id);
-
-	/**
-	 * Resolve an id against every world container, not just gameObjects.
-	 *
-	 * The three Find*ByID above each search one container, and objects are
-	 * distributed across all three: plain objects live in gameMap.gameObjects,
-	 * entities in Scene::entities and interactables in Scene::interactables —
-	 * an interactable is deliberately never pushed into gameObjects (see
-	 * saveInteractable/removeInteractable and the SaveSystem loaders).
-	 *
-	 * Callers holding an id authored in the editor cannot know which container
-	 * the target ended up in, so asking only one of them is a silent miss.
-	 * Ids are unique across all three, so the search order is arbitrary.
-	 */
-	static GameObject* FindWorldObjectByID(std::uint64_t id);
-
 	// Return Data
 	Vector3 getMapSize() const { return Vector3(size.x, size.y, size.z);}
 };
 
 // Find GameObjects
+inline GameObject* FindGameObjectByID(GameMap& gameMap, uint64_t id)
+{
+	
+	for (size_t i = 0; i < gameMap.gameObjects.size(); ++i) {
+		auto obj = gameMap.gameObjects[i];
+		if (obj.id == id) { return &obj; }
+	}
+	return nullptr;
+};
+
+inline Entity* FindEntityByID(GameMap& gameMap, uint64_t id)
+{
+	
+	auto it = gameMap.entities.find(id);
+	if (it == gameMap.entities.end()) { return nullptr; }
+	return it->second.get();
+};
+
+inline InteractableObject* FindInteractableByID(GameMap& gameMap, uint64_t id)
+{
+	
+	auto it = gameMap.interactables.find(id);
+	if (it == gameMap.interactables.end()) { return nullptr; }
+	return it->second.get();
+};
+
+inline GameObject* FindWorldObjectByID(GameMap& gameMap, uint64_t id)
+{
+
+	// Interactables Hold Pointers to Activator Objects, making them the first ones required.
+	if (auto* interactable = FindInteractableByID(gameMap, id)) { return interactable; }
+	if (auto* entity = FindEntityByID(gameMap, id)) { return entity; }
+	return FindGameObjectByID(gameMap, id);
+};
+
 #endif

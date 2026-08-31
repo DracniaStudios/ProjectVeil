@@ -123,7 +123,7 @@ void Crane::update(Scene* scene_ptr, float deltaTime)
 	{
 		if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, data->goal))
 		{
-			CompleteMiniGame(data, player, BUFF_RANGE, true);
+			CompleteMiniGame(*data, *player, scene_ptr->gameMap, BUFF_RANGE, true);
 			scene_ptr->ReleaseMiniGame();
 		}
 

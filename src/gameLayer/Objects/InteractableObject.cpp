@@ -6,26 +6,21 @@
 
 void ActivateMiniGame(InteractableObject* interactable, bool bypass = false)
 {
-	std::cout << "[InteractableObject] Activating MiniGame: " << interactable->interactValue << "\n";
+	std::cout << "[InteractableObject] Activating MiniGame: " << interactable->variation << "\n";
 	auto scene = SceneManager::getInstance().currentScene;
 
-	if (!bypass && scene->player->artifactUnlocked < interactable->interactValue) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
+	if (!bypass && scene->player->artifactUnlocked < interactable->variation) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
 		
-	scene->SetMiniGame(interactable->interactValue);
-	if (interactable->activatorValue != 0) {
-		scene->player->interactObjectId = interactable->activatorValue;
-	}
-	else {
-		scene->player->interactObjectId = interactable->id;
-	}
+	scene->SetMiniGame(interactable->variation);
+	scene->player->interactObjectId = interactable->activator;
 	interactable->isRunningMiniGame = true;
 }
 
 void Unlock(InteractableObject* interactable)
 {
-	std::cout << "[InteractableObject] Unlocking MiniGame: " << interactable->interactValue << "\n";
+	std::cout << "[InteractableObject] Unlocking MiniGame: " << interactable->variation << "\n";
 	auto player = SceneManager::getInstance().currentScene->player;
-	player->artifactUnlocked = std::max(player->artifactUnlocked, interactable->interactValue);
+	player->artifactUnlocked = std::max(player->artifactUnlocked, interactable->variation);
 	player->artifactUnlocked = Clamp(player->artifactUnlocked, MINI_GAME_FLAPPY_BIRD_ID, MINI_GAME_RO_SHAM_BOO_ID);
 
 	// Check If Player Has Artifact
@@ -58,7 +53,7 @@ void Unlock(InteractableObject* interactable)
 
 void AddItemToInventory(InteractableObject* interactable)
 {
-	std::cout << "[InteractableObject] Adding Item to Inventory: " << interactable->interactValue << "\n";
+	std::cout << "[InteractableObject] Adding Item to Inventory: " << interactable->activator << "\n";
 	auto scene = SceneManager::getInstance().currentScene;
 
 	// Search in vector
@@ -79,14 +74,14 @@ InteractableObject::InteractableObject(const InteractionType interact, int value
 {
 	type = OBJECT_INTERACTABLE;
 	interactType = interact; // Type Of Interaction
-	interactValue = value; // Item
+	activator = value; // Item
 }
-InteractableObject::InteractableObject(const InteractionType interact, int value, int activator )
+InteractableObject::InteractableObject(const InteractionType interact, int variant, int activate )
 {
 	type = OBJECT_INTERACTABLE;
 	interactType = interact; // Type of interaction
-	interactValue = value; // Minigame
-	activatorValue = activator; // Object
+	variation = variant; // Minigame
+	activator = activate; // Object
 }
 
 void InteractableObject::onInteract()
@@ -111,8 +106,8 @@ Json InteractableObject::formatToJson()
 	Json j;
 	addCommonToJson(j);
 	j["InteractType"] = interactType;
-	j["InteractValue"] = interactValue;
-	j["ActivatorValue"] = activatorValue;
+	j["Variation"] = variation;
+	j["Activator"] = activator;
 	j["IsInteractable"] = isInteractable;
 	// Maybe Is Completed
 	return j;
@@ -122,12 +117,12 @@ bool InteractableObject::loadFromJson(Json& j)
 {
 	if (!loadCommonFromJson(j)) { return false; }
 	interactType = static_cast<InteractionType>(j.value("InteractType", 0));
-	interactValue = j.value("InteractValue", 0);
+	variation = j.value("Vartiation", 0);
 	// 0 is the "no activator" sentinel every other path uses — both constructors
 	// default to it and ActivateMiniGame tests against it. Defaulting to -1 made
 	// a save written before ActivatorValue existed load as a real-but-
 	// unresolvable id instead of "none".
-	activatorValue = j.value("ActivatorValue", 0);
+	activator = j.value("Activator", 0);
 	isInteractable = j.value("IsInteractable", true);
 	return true;
 }

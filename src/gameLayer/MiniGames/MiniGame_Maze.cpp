@@ -90,7 +90,7 @@ void Maze::update(Scene* scene_ptr, float delta)
 	if (!CheckCollisionRecs(playerRect, GetScreen())) {
 
 	}
-	if (CompleteMiniGame(data, player, BUFF_SEARCH)) {
+	if (CompleteMiniGame(*data, *player, scene_ptr->gameMap, BUFF_SEARCH)) {
 		scene_ptr->ReleaseMiniGame();
 	}
 }

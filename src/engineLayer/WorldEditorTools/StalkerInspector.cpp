@@ -42,7 +42,7 @@ void WorldEditor::ShowStalkerData()
 
 	// --- Stalkers ---------------------------------------------------------
 	int found = 0;
-	for (auto& [id, entity] : scene->entities)
+	for (auto& [id, entity] : scene->gameMap.entities)
 	{
 		if (!entity || entity->kind != ENTITYKIND_STALKER) { continue; }
 		auto* stalker = static_cast<Stalker*>(entity.get());

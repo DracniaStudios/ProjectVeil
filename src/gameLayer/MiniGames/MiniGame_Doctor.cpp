@@ -118,7 +118,7 @@ void Doctor::update(Scene* scene_ptr, float delta)
 	if (CheckCollisionRecs(data->goal, playerRect) && isMoving == false)
 	{
 		player->applyHealthValue(3, false);
-		CompleteMiniGame(data, scene_ptr->player, BUFF_HEALTH, true);
+		CompleteMiniGame(*data, *scene_ptr->player, scene_ptr->gameMap, BUFF_HEALTH, true);
 		scene_ptr->ReleaseMiniGame();
 	}
 

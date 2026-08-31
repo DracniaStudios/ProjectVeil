@@ -88,11 +88,7 @@ class WorldEditor
 	/** Viewport Manipulation **/
 	EditorGizmo gizmo = {};
 
-	// Physics keeps running while the editor is open, which means a freshly
-	// placed object falls under gravity the instant it exists and a dragged
-	// object fights the solver for its position. Editing therefore freezes the
-	// simulation by default; the toggle is exposed so gameplay can still be
-	// observed live. See Scene_updateScene for what the freeze actually skips.
+	// Physics is running when the editor is open, so pausing will allow testing/adjusting objects correctly without gravity.
 	bool simulationPaused = true;
 
 	// Bounded so a long session cannot grow the history without limit
@@ -116,6 +112,12 @@ class WorldEditor
 	Vector3 placementPreviewPosition = {};
 	Vector3 placementPreviewNormal = { 0.0f, 1.0f, 0.0f };
 
+	// Object Browser Viewability
+	bool showGameObjects = false;
+	bool showEntities = false;
+	bool showInteractables = false;
+
+	// Staging Object Tools
 	GameObject stagingObject = {};
 	char inputName[128] = "New Block";
 	Vector4 colorHolder = Vector4(255, 255, 255, 255);

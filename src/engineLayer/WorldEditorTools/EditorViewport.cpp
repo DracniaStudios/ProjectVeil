@@ -23,9 +23,9 @@ namespace
 	GameObject* FindAnyById(Scene* scene, std::uint64_t id)
 	{
 		if (scene == nullptr || id == 0) { return nullptr; }
-		if (GameObject* interactable = scene->gameMap.FindInteractableByID(id)) { return interactable; }
-		if (GameObject* entity = scene->gameMap.FindEntityByID(id)) { return entity; }
-		return scene->gameMap.FindGameObjectByID(id);
+		if (GameObject* interactable = FindInteractableByID(SceneManager::getInstance().currentScene->gameMap, id)) { return interactable; }
+		if (GameObject* entity = FindEntityByID(SceneManager::getInstance().currentScene->gameMap, id)) { return entity; }
+		return FindGameObjectByID(SceneManager::getInstance().currentScene->gameMap, id);
 	}
 
 	/** Removes by id from whichever container actually owns the object. */
@@ -33,17 +33,17 @@ namespace
 	{
 		if (scene == nullptr || id == 0) { return false; }
 
-		if (scene->interactables.contains(id))
+		if (scene->gameMap.interactables.contains(id))
 		{
-			scene->gameMap.removeInteractable(scene->interactables[id].get());
+			scene->gameMap.removeInteractable(scene->gameMap.interactables[id].get());
 			return true;
 		}
-		if (scene->entities.contains(id))
+		if (scene->gameMap.entities.contains(id))
 		{
-			scene->gameMap.removeEntity(scene->entities[id].get());
+			scene->gameMap.removeEntity(scene->gameMap.entities[id].get());
 			return true;
 		}
-		if (GameObject* object = scene->gameMap.FindGameObjectByID(id))
+		if (GameObject* object = FindGameObjectByID(SceneManager::getInstance().currentScene->gameMap, id))
 		{
 			scene->gameMap.removeObject(object);
 			return true;

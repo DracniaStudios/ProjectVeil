@@ -60,7 +60,7 @@ void SimonSays::update(Scene* scene_ptr, float delta)
 		else if (inputSystem->IsActionPressed(ACTION_MOVE_RIGHT) && data->obstacles[data->score].y == 3) { data->score++; }
 	}
 
-	if (CompleteMiniGame(data, scene_ptr->player, BUFF_HEARING)) {
+	if (CompleteMiniGame(*data, *scene_ptr->player, scene_ptr->gameMap, BUFF_HEARING)) {
 		scene_ptr->ReleaseMiniGame();
 	}
 

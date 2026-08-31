@@ -35,9 +35,9 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 20.0,
-        "PosY": 2.0,
-        "PosZ": 130.0,
+        "PosX": 23.52819061279297,
+        "PosY": 1.9896601438522339,
+        "PosZ": 2.3529086112976074,
         "RotW": 1.0,
         "RotX": 0.0,
         "RotY": 0.0,
@@ -45,9 +45,9 @@
         "ScaleX": 1.0,
         "ScaleY": 3.0,
         "ScaleZ": 1.0,
-        "VelocityX": 0.3060871958732605,
-        "VelocityY": -0.30000534653663635,
-        "VelocityZ": 0.9520033597946167
+        "VelocityX": -0.015502801164984703,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
       },
       "SearchDuration": 8.0,
       "SearchRadius": 6.0,
@@ -57,10 +57,10 @@
       "Waypoints": []
     }
   },
-  "IdCounter": 301,
+  "IdCounter": 303,
   "Interactables": {
     "114": {
-      "ActivatorValue": 0,
+      "Activator": 0,
       "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
@@ -70,7 +70,6 @@
         255
       ],
       "InteractType": 1,
-      "InteractValue": 1,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -100,10 +99,11 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Chip001"
+      "Texture": "Chip001",
+      "Variation": 0
     },
     "283": {
-      "ActivatorValue": 283,
+      "Activator": 0,
       "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
@@ -113,7 +113,6 @@
         255
       ],
       "InteractType": 1,
-      "InteractValue": 0,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -143,10 +142,11 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Chip001"
+      "Texture": "Chip001",
+      "Variation": 0
     },
     "284": {
-      "ActivatorValue": 0,
+      "Activator": 0,
       "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
@@ -156,7 +156,6 @@
         255
       ],
       "InteractType": 1,
-      "InteractValue": 1,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -186,10 +185,11 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Chip001"
+      "Texture": "Chip001",
+      "Variation": 0
     },
     "285": {
-      "ActivatorValue": 285,
+      "Activator": 0,
       "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
@@ -199,7 +199,6 @@
         255
       ],
       "InteractType": 1,
-      "InteractValue": 1,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -229,10 +228,11 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Chip001"
+      "Texture": "Chip001",
+      "Variation": 0
     },
     "286": {
-      "ActivatorValue": 286,
+      "Activator": 0,
       "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
@@ -242,7 +242,6 @@
         255
       ],
       "InteractType": 1,
-      "InteractValue": 1,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -272,10 +271,11 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Chip001"
+      "Texture": "Chip001",
+      "Variation": 0
     },
     "287": {
-      "ActivatorValue": 287,
+      "Activator": 0,
       "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
@@ -285,7 +285,6 @@
         255
       ],
       "InteractType": 1,
-      "InteractValue": 1,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -315,10 +314,11 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Chip001"
+      "Texture": "Chip001",
+      "Variation": 0
     },
     "288": {
-      "ActivatorValue": 288,
+      "Activator": 0,
       "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
@@ -328,7 +328,6 @@
         255
       ],
       "InteractType": 1,
-      "InteractValue": 5,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -358,10 +357,11 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Chip001"
+      "Texture": "Chip001",
+      "Variation": 0
     },
     "289": {
-      "ActivatorValue": 289,
+      "Activator": 0,
       "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
@@ -371,7 +371,6 @@
         255
       ],
       "InteractType": 1,
-      "InteractValue": 2,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -401,10 +400,11 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Chip001"
+      "Texture": "Chip001",
+      "Variation": 0
     },
     "295": {
-      "ActivatorValue": 0,
+      "Activator": 0,
       "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
@@ -414,7 +414,6 @@
         255
       ],
       "InteractType": 2,
-      "InteractValue": 0,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -441,13 +440,14 @@
         "ScaleX": 1.0,
         "ScaleY": 1.0,
         "ScaleZ": 1.0,
-        "VelocityX": -0.17717620730400085,
+        "VelocityX": 0.0,
         "VelocityY": 0.0,
-        "VelocityZ": 1.3402894865066628e-06
-      }
+        "VelocityZ": 0.0
+      },
+      "Variation": 0
     },
     "299": {
-      "ActivatorValue": 0,
+      "Activator": 0,
       "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
@@ -457,7 +457,6 @@
         255
       ],
       "InteractType": 1,
-      "InteractValue": 0,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -487,10 +486,11 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Chip001"
+      "Texture": "Chip001",
+      "Variation": 0
     },
-    "33": {
-      "ActivatorValue": 33,
+    "302": {
+      "Activator": 301,
       "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
@@ -500,7 +500,49 @@
         255
       ],
       "InteractType": 1,
-      "InteractValue": 0,
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "IsInteractable": true,
+      "Model": "Terminal",
+      "Name": "Terminal 1",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "CanCollide": true,
+        "IsEnabled": true,
+        "IsStatic": true,
+        "LockAcceleration": false,
+        "LockAngularVelocity": false,
+        "LockRotation": false,
+        "LockScale": false,
+        "LockTranslation": false,
+        "LockVelocity": false,
+        "PosX": 23.0,
+        "PosY": 1.0,
+        "PosZ": 3.0,
+        "RotW": -4.371138828673793e-08,
+        "RotX": -0.0,
+        "RotY": 1.0,
+        "RotZ": -0.0,
+        "ScaleX": 0.30000001192092896,
+        "ScaleY": 0.30000001192092896,
+        "ScaleZ": 0.30000001192092896,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Variation": 0
+    },
+    "33": {
+      "Activator": 0,
+      "CanBeSelected": true,
+      "CastsShadow": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "InteractType": 1,
       "IsDestructible": false,
       "IsEnabled": false,
       "IsInteractable": true,
@@ -530,10 +572,11 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Chip001"
+      "Texture": "Chip001",
+      "Variation": 0
     },
     "73": {
-      "ActivatorValue": 73,
+      "Activator": 0,
       "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
@@ -543,7 +586,6 @@
         255
       ],
       "InteractType": 1,
-      "InteractValue": 1,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -573,7 +615,8 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Chip001"
+      "Texture": "Chip001",
+      "Variation": 0
     }
   },
   "Lighting": {
@@ -8133,6 +8176,45 @@
         "VelocityZ": 0.0
       },
       "Texture": "Ground088"
+    },
+    "301": {
+      "CanBeSelected": true,
+      "CastsShadow": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "Name": "Guard Door",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "CanCollide": true,
+        "IsEnabled": true,
+        "IsStatic": true,
+        "LockAcceleration": false,
+        "LockAngularVelocity": false,
+        "LockRotation": false,
+        "LockScale": false,
+        "LockTranslation": false,
+        "LockVelocity": false,
+        "PosX": 25.0,
+        "PosY": 5.0,
+        "PosZ": -0.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 10.0,
+        "ScaleZ": 15.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Bricks058"
     },
     "31": {
       "CanBeSelected": false,

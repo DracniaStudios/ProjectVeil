@@ -27,7 +27,7 @@ void Player::Interact()
 	InteractableObject* closest = nullptr;
 	float closestDistance = 0.0f;
 
-	for (auto& [id, owned] : scene->interactables)
+	for (auto& [id, owned] : scene->gameMap.interactables)
 	{
 		const auto obj = owned.get();
 

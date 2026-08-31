@@ -55,9 +55,9 @@ out/
 # Additive Directories
 .fmod/
 .claude/
+.veil-sync/
 docs/
 tools/
-.veil-sync/
 
 # Additive Files
 saves/backup.json

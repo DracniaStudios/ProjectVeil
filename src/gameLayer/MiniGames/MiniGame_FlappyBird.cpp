@@ -178,7 +178,7 @@ void FlappyBird::update(Scene* scene_ptr, float deltaTime)
 	*/
 
 	// Win Condition
-	if (CompleteMiniGame(data, player, BUFF_MOVEMENT)) {
+	if (CompleteMiniGame(*data, *player, scene_ptr->gameMap, BUFF_MOVEMENT)) {
 		scene_ptr->ReleaseMiniGame();
 	}
 

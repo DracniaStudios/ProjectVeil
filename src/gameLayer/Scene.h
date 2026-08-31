@@ -46,12 +46,6 @@ typedef void (*drawSceneMethod3D)();
  // Force Player ID
 constexpr static std::uint64_t PLAYER_ID = 1;
 
-struct InstanceID
-{
-	std::uint64_t idCounter = 2;
-	std::uint64_t getIdAndIncrement();
-};
-
 typedef struct Scene {
 	
 public:
@@ -81,9 +75,6 @@ public:
 	
 	// Entity Data
 	Player* player = {};
-	std::unordered_map<std::uint64_t, std::unique_ptr<Entity>> entities{}; // Entities
-	std::unordered_map<std::uint64_t, std::unique_ptr<InteractableObject>> interactables{}; // Interactables
-	InstanceID instanceHolder = {}; // All IDs Stored
 
 	void SetMiniGame(int miniGame);
 	int GetLastMiniGame() const { return lastMiniGamePlayed; }

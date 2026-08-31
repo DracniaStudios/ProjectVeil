@@ -29,7 +29,7 @@ void Director::Update(Scene* scene, float deltaTime)
 	// Find a stalker to advise. The slice has exactly one; the loop is here so
 	// that stops being an assumption baked into the Director.
 	Stalker* stalker = nullptr;
-	for (auto& [id, entity] : scene->entities)
+	for (auto& [id, entity] : scene->gameMap.entities)
 	{
 		if (entity && entity->kind == ENTITYKIND_STALKER)
 		{
@@ -60,7 +60,7 @@ void Director::Update(Scene* scene, float deltaTime)
 	// knowledge.
 	const InteractableObject* target = nullptr;
 	float bestDistance = 0.0f;
-	for (auto& [id, interactable] : scene->interactables)
+	for (auto& [id, interactable] : scene->gameMap.interactables)
 	{
 		if (!interactable) { continue; }
 		if (interactable->interactType != INTERACT_MINIGAME) { continue; }

@@ -20,34 +20,14 @@ Scene* Scene_new() {
 	return scene;
 }
 
-/** Unique Id Instancing **/
-std::uint64_t InstanceID::getIdAndIncrement()
-{
-	std::uint64_t id = idCounter;
-	idCounter++;
-	permaAssertComment(id < UINT64_MAX - 1, "We ran out of ids somehow...");
-	return id;
-}
-
 // Renumbers every object sequentially from the first assignable id.
 void Scene::ResetID() {
-	// InstanceID::idCounter starts at 2 because 0 is the "no object" sentinel
-	// (ActivateMiniGame reads an activatorValue of 0 as "none") and 1 is
-	// PLAYER_ID. Restarting at 0 handed those two ids straight back out: after
-	// one "New World" the second object in the map answered to PLAYER_ID, so
-	// FindGameObjectByID(PLAYER_ID) returned a wall instead of the player.
-	instanceHolder = InstanceID{};
+	
+	// Start at 2 to avoid Object 0 and Player;
+	gameMap.instanceHolder = InstanceID{};
 
-	// `id` is a monotonically increasing counter value, not an array position,
-	// so it has no relationship to gameObjects.size() — comparing the two used
-	// to delete any object whose id happened to be >= the current object
-	// count. NewWorld() is this function's only caller, and it runs after
-	// gameMap.create() has already assigned the fresh floor object whatever
-	// idCounter was left at by the previous world, so `id >= size()` (1) was
-	// true for that floor in any session where idCounter wasn't already 0 —
-	// silently deleting it and leaving "New World" with an empty scene.
 	for (auto& object : gameMap.gameObjects) {
-		object.id = instanceHolder.getIdAndIncrement();
+		object.id = gameMap.instanceHolder.getIdAndIncrement();
 	}
 }
 
@@ -73,6 +53,8 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 	solverIterations = static_cast<int>(Clamp(static_cast<float>(solverIterations), 4, 8));
 
 	auto& objects = scene->gameMap.gameObjects;
+	auto& entities = scene->gameMap.entities;
+	auto& interactables = scene->gameMap.interactables;
 
 	for (int iter = 0; iter < solverIterations; iter++)
 	{
@@ -99,7 +81,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		}
 
 		// Entities Vs. Game Objects
-		for (auto& [id, entity] : scene->entities)
+		for (auto& [id, entity] : entities)
 		{
 			for (auto& bodyB : objects)
 			{
@@ -113,9 +95,9 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		}
 
 		// Entities Vs. Entities — each unordered pair once
-		for (auto bodyA = scene->entities.begin(); bodyA != scene->entities.end(); ++bodyA)
+		for (auto bodyA = entities.begin(); bodyA !=entities.end(); ++bodyA)
 		{
-			for (auto bodyB = std::next(bodyA); bodyB != scene->entities.end(); ++bodyB)
+			for (auto bodyB = std::next(bodyA); bodyB !=entities.end(); ++bodyB)
 			{
 				if (CheckCollisionBoxes(bodyA->second->rigidBody3D.collisionBox, bodyB->second->rigidBody3D.collisionBox))
 				{
@@ -127,7 +109,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		}
 		
 		// Interactable Vs. Game Objects
-		for (auto& [id, entity] : scene->interactables)
+		for (auto& [id, entity] :interactables)
 		{
 			for (auto& bodyB : objects)
 			{
@@ -141,9 +123,9 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		}
 
 		// Interactable Vs. Entities — each unordered pair once
-		for (auto bodyA = scene->interactables.begin(); bodyA != scene->interactables.end(); ++bodyA)
+		for (auto bodyA = interactables.begin(); bodyA != interactables.end(); ++bodyA)
 		{
-			for (auto bodyB = scene->entities.begin(); bodyB != scene->entities.end(); ++bodyB)
+			for (auto bodyB = entities.begin(); bodyB != entities.end(); ++bodyB)
 			{
 				if (CheckCollisionBoxes(bodyA->second->rigidBody3D.collisionBox, bodyB->second->rigidBody3D.collisionBox))
 				{
@@ -155,9 +137,9 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		}
 		
 		// Interactable Vs. Interactable — each unordered pair once
-		for (auto bodyA = scene->interactables.begin(); bodyA != scene->interactables.end(); ++bodyA)
+		for (auto bodyA = interactables.begin(); bodyA != interactables.end(); ++bodyA)
 		{
-			for (auto bodyB = std::next(bodyA); bodyB != scene->interactables.end(); ++bodyB)
+			for (auto bodyB = std::next(bodyA); bodyB != interactables.end(); ++bodyB)
 			{
 				if (CheckCollisionBoxes(bodyA->second->rigidBody3D.collisionBox, bodyB->second->rigidBody3D.collisionBox))
 				{
@@ -174,7 +156,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		
 		if (auto player = scene->player)
 		{
-			for (auto& [id, entity] : scene->entities)
+			for (auto& [id, entity] : entities)
 			{
 				if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, entity->rigidBody3D.collisionBox))
 				{
@@ -187,7 +169,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 
 		if (auto player = scene->player)
 		{
-			for (auto& [id, entity] : scene->interactables)
+			for (auto& [id, entity] : interactables)
 			{
 				if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, entity->rigidBody3D.collisionBox))
 				{
@@ -223,26 +205,14 @@ void Scene_updateScene(float delta) {
 		}
 	}
 
-	// While the editor holds the simulation, nothing may integrate. Physics used
-	// to keep running underneath the editor, which meant a freshly placed object
-	// fell under gravity the instant it existed, a dragged object fought the
-	// solver for its own position, and lifeSpan/deathSpan ticked objects out
-	// from under the person editing them.
-	//
-	// Collision boxes are still refreshed each frame: mouse picking reads them,
-	// and RigidBody3D::Update() is the only thing that normally rebuilds them.
 	const bool editorFrozen = worldEditor->IsEnabled() && worldEditor->IsSimulationPaused();
 
 	auto clampObject = [scene](GameObject& object, bool limit) {
-		// Anything that has fallen this far is through the floor and not coming
-		// back on its own, so it is recovered rather than left accelerating
-		// forever.
+		
+		// Revcover any object that falls through the floor;
 		if (object.rigidBody3D.translation.y < -1000.0f) {
-			// Recover to the world's spawn point rather than a hardcoded origin.
-			// (0,5,0) is not neutral ground: in chunk_1 the origin is the middle
-			// of the artifact display, so the old behaviour dropped every
-			// recovered object into the plinth — the same spot the player spawn
-			// point exists to keep things out of.
+			
+			std::cout << "[Scene.cpp] Consider deleting fallen objects to prevent bugs \n";
 			const Vector3 recovery = scene->gameMap.hasSpawnPoint
 				? Vector3{ scene->gameMap.spawnPoint.x,
 				           scene->gameMap.spawnPoint.y + 2.0f,
@@ -251,13 +221,7 @@ void Scene_updateScene(float delta) {
 
 			object.rigidBody3D.Teleport(recovery);
 
-			// Teleport moves the body without touching its motion, so a body
-			// that fell a thousand units arrives still carrying that speed and
-			// gets one physics step to punch through whatever it landed on.
-			// Measured in chunk_1 the floor does catch it, so this is hardening
-			// against thin geometry and faster falls rather than a fix for an
-			// observed failure — but arriving at rest is what "recovered" should
-			// mean either way.
+			// Reset Velocity on Teleport
 			object.rigidBody3D.SetVelocity(Vector3Zero());
 
 			std::cout << "[Scene] Recovered " << object.name
@@ -302,7 +266,7 @@ void Scene_updateScene(float delta) {
 	}
 
 	/* Update Interactables */
-	for (auto interactable = scene->interactables.begin(); interactable != scene->interactables.end();) {
+	for (auto interactable = scene->gameMap.interactables.begin(); interactable != scene->gameMap.interactables.end();) {
 		interactable->second->id = interactable->first;
 		if (editorFrozen) { interactable->second->rigidBody3D.SyncCollisionBox(); ++interactable; continue; }
 		interactable->second->update(scene, delta);
@@ -311,7 +275,7 @@ void Scene_updateScene(float delta) {
 	}
 
 	/** Update Entities **/
-	for (auto entity = scene->entities.begin(); entity != scene->entities.end();)
+	for (auto entity = scene->gameMap.entities.begin(); entity != scene->gameMap.entities.end();)
 	{
 		// Update Data
 		entity->second->id = entity->first;
@@ -427,11 +391,11 @@ void Scene_drawScene3D() {
 			object.render3D();
 		}
 
-		for (auto& entity : scene->entities) {
+		for (auto& entity : scene->gameMap.entities) {
 			entity.second->render3D();
 		}
 
-		for (auto& interact : scene->interactables) {
+		for (auto& interact : scene->gameMap.interactables) {
 			interact.second->render3D();
 		}
 

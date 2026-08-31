@@ -82,7 +82,7 @@ void updateCollision(Player* player) {
 		}
 	}
 
-	for (auto& obj : SceneManager::getInstance().currentScene->entities)
+	for (auto& obj : SceneManager::getInstance().currentScene->gameMap.entities)
 	{
 		auto ent = obj.second.get();
 		if (ent != player)
@@ -93,7 +93,7 @@ void updateCollision(Player* player) {
 			}
 		}
 	}
-	for (auto& obj : SceneManager::getInstance().currentScene->interactables)
+	for (auto& obj : SceneManager::getInstance().currentScene->gameMap.interactables)
 	{
 		auto ent = obj.second.get();
 		if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, ent->rigidBody3D.collisionBox))

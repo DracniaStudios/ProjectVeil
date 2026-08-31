@@ -153,9 +153,9 @@ public:
 	InteractableObject(InteractionType type, int value);
 	InteractableObject(InteractionType type, int value, int activator);
 
-	InteractionType interactType = INTERACT_NONE;
-	int interactValue = 0;
-	int activatorValue = 0;
+	InteractionType interactType = INTERACT_NONE; // The Type of Interaction
+	int variation = 0; // The Variation of the interaction (most likely unused)
+	int activator = 0; // The Value Returned on the interaction
 	bool isInteractable = true;
 	bool isRunningMiniGame = false;
 

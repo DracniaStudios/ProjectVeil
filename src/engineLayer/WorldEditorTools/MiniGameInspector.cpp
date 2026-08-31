@@ -43,7 +43,7 @@ void WorldEditor::ShowMiniGameData(Player* player)
 		ImGui::Text("Score Goal: %d", scene->miniGame->data->scoreGoal);
 		ImGui::InputFloat4("Screen Size: %d", &scene->miniGame->data->screen.x);
 		ImGui::InputFloat4("Goal Size: %d", &scene->miniGame->data->goal.x);
-		if (ImGui::Button("Complete")) { CompleteMiniGame(scene->miniGame->data, scene->player, BUFF_RANGE, true); }
+		if (ImGui::Button("Complete")) { CompleteMiniGame(*scene->miniGame->data, *scene->player, scene->gameMap, BUFF_RANGE, true); }
 		if (ImGui::Button("Reset")) { scene->ResetMiniGame(); }
 		if (ImGui::Button("Release")) { scene->ReleaseMiniGame(); }
 		ImGui::Separator();

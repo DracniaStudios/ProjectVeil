@@ -53,13 +53,12 @@ int main()
 	while (!WindowShouldClose())
 	{
 #pragma region ImGui
-		ImGui_ImplRaylib_ProcessEvents();
-		ImGui_ImplRaylib_NewFrame();
 		rlImGuiBegin();
 
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, {});
 		ImGui::PushStyleColor(ImGuiCol_DockingEmptyBg, {});
-		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID);
+		// Applies Mouse Data to ImGui Window
+		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID, nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
 		ImGui::PopStyleColor(2);
 #pragma endregion
 		BeginDrawing();

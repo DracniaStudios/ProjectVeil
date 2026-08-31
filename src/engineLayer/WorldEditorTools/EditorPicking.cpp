@@ -185,12 +185,12 @@ PickResult PickSceneObject(Scene* scene, const Ray& ray, PickFilter filter, std:
 		TestObject(&scene->gameMap.gameObjects[i], ray, filter, ignoreId, best);
 	}
 
-	for (auto& [id, entity] : scene->entities)
+	for (auto& [id, entity] : scene->gameMap.entities)
 	{
 		TestObject(entity.get(), ray, filter, ignoreId, best);
 	}
 
-	for (auto& [id, interactable] : scene->interactables)
+	for (auto& [id, interactable] : scene->gameMap.interactables)
 	{
 		TestObject(interactable.get(), ray, filter, ignoreId, best);
 	}

@@ -10,9 +10,6 @@
 #include <Player.h>
 #include <gameMap.h>
 
-struct Scene;
-
-
 struct MiniGameData
 {
 	MiniGameData() {
@@ -51,12 +48,13 @@ struct MiniGame
 	void SetGoal(const Rectangle rect) const { data->goal = rect; }
 };
 
-inline bool CompleteMiniGame(MiniGameData* data, Player* player, Buff buff, bool forceComplete = false) {
-	if (data->score >= data->scoreGoal || forceComplete) {
-		if (CooldownTimer* getBuff = player->getBuff(buff); getBuff != nullptr) { getBuff->use(); }
+inline bool CompleteMiniGame(MiniGameData& data, Player& player, GameMap& gameMap, Buff buff, bool forceComplete = false) {
+	
+	if (data.score >= data.scoreGoal || forceComplete) {
+		if (CooldownTimer* getBuff = player.getBuff(buff); getBuff != nullptr) { getBuff->use(); }
 		
 		// Check for Activator Object By using ID instead of Pointer
-		GameObject* target = GameMap::FindWorldObjectByID(player->interactObjectId);
+		GameObject* target = FindWorldObjectByID(gameMap, player.interactObjectId);
 
 		if (target != nullptr) {
 			if (target->isEnabled) {
@@ -67,9 +65,9 @@ inline bool CompleteMiniGame(MiniGameData* data, Player* player, Buff buff, bool
 				target->onEnable();
 			}
 		}
-		else if (player->interactObjectId != 0) {
+		else if (player.interactObjectId != 0) {
 			// Check if GameObject Is Active
-			std::cout << "[MiniGame] Activator " << player->interactObjectId
+			std::cout << "[MiniGame] Activator " << player.interactObjectId
 				<< " no longer exists — nothing to open\n";
 			return false;
 		}
@@ -185,8 +183,6 @@ inline void generateObstacleVertical(MiniGameData* data, Rectangle range, int co
 		data->obstacles.push_back(bottom);
 
 	}
-
-
 }
 
 #endif
