@@ -74,7 +74,7 @@ static Stalker* AddStalker(Scene* scene, Vector3 at, std::uint64_t id = 500)
 	// steers and measures on the XZ plane regardless of height.
 	owned->rigidBody3D.isStatic = true;
 	Stalker* stalker = owned.get();
-	scene->entities[id] = std::move(owned);
+	scene->gameMap.entities[id] = std::move(owned);
 	return stalker;
 }
 

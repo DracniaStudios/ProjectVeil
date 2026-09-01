@@ -12,7 +12,11 @@ void ActivateMiniGame(InteractableObject* interactable, bool bypass = false)
 	if (!bypass && scene->player->artifactUnlocked < interactable->variation) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
 		
 	scene->SetMiniGame(interactable->variation);
-	scene->player->interactObjectId = interactable->activator;
+	// activator == 0 means "no explicit target" — the minigame should toggle
+	// the interactable that launched it rather than nothing at all.
+	scene->player->interactObjectId = interactable->activator != 0
+		? interactable->activator
+		: interactable->id;
 	interactable->isRunningMiniGame = true;
 }
 
@@ -117,7 +121,7 @@ bool InteractableObject::loadFromJson(Json& j)
 {
 	if (!loadCommonFromJson(j)) { return false; }
 	interactType = static_cast<InteractionType>(j.value("InteractType", 0));
-	variation = j.value("Vartiation", 0);
+	variation = j.value("Variation", 0);
 	// 0 is the "no activator" sentinel every other path uses — both constructors
 	// default to it and ActivateMiniGame tests against it. Defaulting to -1 made
 	// a save written before ActivatorValue existed load as a real-but-

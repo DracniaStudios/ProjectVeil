@@ -46,9 +46,12 @@ struct GameMap {
 // Find GameObjects
 inline GameObject* FindGameObjectByID(GameMap& gameMap, uint64_t id)
 {
-	
+
 	for (size_t i = 0; i < gameMap.gameObjects.size(); ++i) {
-		auto obj = gameMap.gameObjects[i];
+		// Must bind by reference — copying the element and returning its
+		// address hands the caller a pointer to a stack temporary that is
+		// gone the instant this function returns.
+		auto& obj = gameMap.gameObjects[i];
 		if (obj.id == id) { return &obj; }
 	}
 	return nullptr;
