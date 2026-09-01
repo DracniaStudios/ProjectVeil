@@ -16,6 +16,7 @@ struct Asset {
 	unsigned int assetID = 0;
 	std::string name = "";
 	std::string path = "";
+	std::string folder = "";
 	AssetType type = ASSET_NONE;
 
 	Texture2D texture = {};
@@ -41,10 +42,11 @@ public:
 
 	// Possible Bug Pronned
 	std::vector<Asset> assets;
+	std::vector<std::string> folders;
 	void loadAll();
 
 	// Loads every supported texture/model file found under RESOURCES_PATH/folder
-	void loadFolder(const char* folder, bool recursive);
+	void loadFolder(const char* folder);
 };
 
 // Pointer is valid until the asset list is modified — only look up after loadAll()

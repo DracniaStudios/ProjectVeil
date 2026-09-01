@@ -3,8 +3,6 @@
 
 #include <SceneManager.h>
 
-Scene& loadScene(Scene& scene);
-
 struct MainMenu : Scene
 {
 	

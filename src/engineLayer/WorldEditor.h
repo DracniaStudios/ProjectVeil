@@ -84,6 +84,7 @@ class WorldEditor
 	std::uint64_t selectedObjectId = 0; // Id instead of pointer — survives gameObjects reallocation
 	int activeTextureIndex = -1; // Index into AssetManager::assets
 	int activeModelIndex = -1; // Index into AssetManager::assets
+	int activeAssetIndex = -1; // Index into AssetManager::assets
 
 	/** Viewport Manipulation **/
 	EditorGizmo gizmo = {};
@@ -203,6 +204,7 @@ class WorldEditor
 	GameObject* getSelectedObject();
 	Asset* getActiveTexture();
 	Asset* getActiveModel();
+	Asset* getActiveAsset();
 	GizmoTransform getSelectedTransform(const GameObject* object) const;
 	// Spawns a copy of stagingObject at a world position, honouring placementKind.
 	// Shared by the Placement Panel's buttons and by point-and-place.
