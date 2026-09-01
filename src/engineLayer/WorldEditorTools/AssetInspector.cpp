@@ -97,7 +97,10 @@ void WorldEditor::ShowAssetData()
 			/// Create A Tab for each folder in the asset manager
 			for (auto& folder : assetManager.folders)
 			{
-				ImGui::BeginTabItem(folder.c_str(), nullptr, ImGuiTabItemFlags_None);
+				// EndTabItem() must only be called when BeginTabItem() returns true —
+				// calling it unconditionally corrupts ImGui's tab bar state for
+				// non-visible tabs.
+				if (!ImGui::BeginTabItem(folder.c_str(), nullptr, ImGuiTabItemFlags_None)) { continue; }
 
 				Asset* activeAsset = getActiveAsset();
 				ImGui::TextColored(ImVec4(0, 255, 0, 255), "Active: %s", activeAsset != nullptr ? activeAsset->name.c_str() : "None");
@@ -115,7 +118,7 @@ void WorldEditor::ShowAssetData()
 					ImGui::PushID(i);
 					ImGui::Text("%s (%s)", asset.name.c_str(), asset.type == ASSET_MODEL ? "Model" : "Texture");
 					
-					bool isSelected = (i == activeAssetIndex); /// Disabled for now, as we don't have a way to select assets in this view yet
+					bool isSelected = (static_cast<int>(i) == activeAssetIndex); /// Disabled for now, as we don't have a way to select assets in this view yet
 					if (isSelected) { ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f)); }
 
 					// Models have no thumbnail texture — show a labeled button instead

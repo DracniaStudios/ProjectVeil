@@ -104,8 +104,18 @@ void AssetManager::loadFolder(const char* folder)
 	std::vector<fs::path> files;
 	for (const auto& entry : fs::directory_iterator(root, errorCode))
 	{
-		// If the entry is a directory, recursively load its contents
-		if (entry.is_directory()) { loadFolder(entry.path().string().c_str()); }
+		// If the entry is a directory, recursively load its contents. The subfolder is
+		// built relative to RESOURCES_PATH (not from entry.path(), which is already
+		// rooted at RESOURCES_PATH) — recursing with entry.path() double-prepends
+		// RESOURCES_PATH on the next call. That only self-corrects when RESOURCES_PATH
+		// is absolute (fs::path::operator/ discards the LHS for an absolute RHS), which
+		// is true for dev builds but not for PRODUCTION_BUILD's relative "./resources/",
+		// where every folder past the first level would silently fail to load.
+		if (entry.is_directory())
+		{
+			const std::string subFolder = (fs::path(folder) / entry.path().filename()).string();
+			loadFolder(subFolder.c_str());
+		}
 
 		// If the entry is a regular file, add it to the list of files
 		if (entry.is_regular_file()) { files.push_back(entry.path()); }
