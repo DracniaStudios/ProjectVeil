@@ -3,6 +3,7 @@
 #define PHYSICS_H
 
 #include <algorithm>
+#include <cstdint>
 #include <vector>
 
 #include <raylib.h>
@@ -249,6 +250,15 @@ private:
 	std::vector<GameObject*> contactsThisFrame;
 	std::vector<GameObject*> contactsLastFrame;
 
+	// Trigger overlaps are tracked separately, and by ID rather than by pointer.
+	// onTriggerExit cannot be known until a whole frame has passed without the
+	// pair touching, and by then the partner may have been destroyed — so unlike
+	// the lists above, which are only ever compared, these are dereferenced. An
+	// ID is looked up through the map at dispatch time and a missing partner is
+	// simply skipped, which a raw pointer could not do safely.
+	std::vector<std::uint64_t> triggerContactsThisFrame;
+	std::vector<std::uint64_t> triggerContactsLastFrame;
+
 	Vector3 lastPosition = {};
 	Vector3 appliedGravity = Vector3{0, 20, 0};
 
@@ -365,6 +375,17 @@ public:
 	void Jump(float force);
 	void UpdateForce(float deltaTime);
 	void Update(float deltaTime);
+
+	/**
+	 * Fires onTriggerExit for anything that left this body's trigger volumes, then
+	 * rolls the trigger contact lists ready for this frame's solver.
+	 *
+	 * Called once per body per frame from the two places that tick a body —
+	 * GameObject::update and Player::update3D — rather than from Update(), because
+	 * it needs the owning object and the map to resolve IDs, and because a
+	 * disabled body must still report the contacts it just lost.
+	 */
+	void DispatchTriggerEvents(GameObject* self, GameMap* map);
 
 	/// Collision Detection
 	/**

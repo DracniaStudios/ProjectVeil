@@ -99,6 +99,9 @@ float Stalker::DistanceToObstruction(Vector3 direction, float maxDistance, const
 		// Anything the solver will not stop the stalker against should not stop
 		// it here either, or the AI flinches away from things it can walk through.
 		if (!object.rigidBody3D.canCollide) { continue; }
+		// A trigger volume is not geometry. Letting one block line of sight would
+		// blind the stalker to anything behind a damage zone or an objective area.
+		if (object.rigidBody3D.collider.isTrigger()) { continue; }
 
 		const RayCollision hit = GetRayCollisionBox(ray, object.rigidBody3D.collisionBox);
 		if (hit.hit && hit.distance >= 0.0f && hit.distance < nearest)

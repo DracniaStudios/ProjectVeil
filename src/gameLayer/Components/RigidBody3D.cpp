@@ -133,8 +133,15 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 	if (&other->rigidBody3D == this) return;
 	if (other->rigidBody3D.canCollide == false || self->rigidBody3D.canCollide == false) return;
 
+	// A trigger reports contacts and applies no physics. That has to include the
+	// touch flags: a trigger volume that set downTouch would be a floor the
+	// player could stand and jump on, which is exactly what a damage zone or an
+	// objective volume must not be. Either side being a trigger is enough — a
+	// solid body must not be stopped by one any more than the reverse.
+	const bool isTriggerPair = collider.isTrigger() || other->rigidBody3D.collider.isTrigger();
+
 	// Update Collision Flags
-	checkRayCollision(other->rigidBody3D);
+	if (!isTriggerPair) { checkRayCollision(other->rigidBody3D); }
 
 	// One separating-axis test drives both the event and the resolution. The
 	// narrow phase walks 15 axes and the solver runs 8 iterations over every
@@ -156,8 +163,24 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 
 		if (!isKnown(contactsThisFrame))
 		{
-			if (!isKnown(contactsLastFrame)) { self->onCollision(other); }
+			if (!isKnown(contactsLastFrame))
+			{
+				// onCollision fires for triggers too, so switching an object to a
+				// trigger does not silently stop whatever already listened to it.
+				// onTriggerEnter is the additional signal, not a replacement.
+				self->onCollision(other);
+				if (isTriggerPair) { self->onTriggerEnter(other); }
+			}
 			contactsThisFrame.push_back(other);
+		}
+
+		// Recorded by ID: the matching exit fires a frame later, by which time this
+		// partner may no longer exist.
+		if (isTriggerPair
+			&& std::find(triggerContactsThisFrame.begin(), triggerContactsThisFrame.end(), other->id)
+				== triggerContactsThisFrame.end())
+		{
+			triggerContactsThisFrame.push_back(other->id);
 		}
 
 		isColliding = true;
@@ -169,6 +192,10 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 		isColliding = !contactsThisFrame.empty();
 		return; // nothing overlapping, nothing to separate
 	}
+
+	// A trigger has now done everything it does: it detected the overlap and
+	// reported it. Nothing is pushed, no velocity changes, no friction.
+	if (isTriggerPair) { return; }
 
 	// Reset Position to prevent tunneling
 	resolveCollision(other->rigidBody3D, contact);
@@ -400,6 +427,34 @@ void RigidBody3D::Update(float deltaTime)
 
 	// Update collision box to match current position and scale
 	SyncCollisionBox();
+}
+
+void RigidBody3D::DispatchTriggerEvents(GameObject* self, GameMap* map)
+{
+	if (self == nullptr || map == nullptr) { return; }
+
+	// At this point triggerContactsThisFrame still holds what the PREVIOUS
+	// frame's solver accumulated, and triggerContactsLastFrame the frame before
+	// that. Anything in the older set that is absent from the newer one stopped
+	// overlapping during the previous frame — which is the earliest a departure
+	// can possibly be known, since a single solver pass visits pairs in no
+	// particular order.
+	for (const std::uint64_t id : triggerContactsLastFrame)
+	{
+		const bool stillTouching = std::find(triggerContactsThisFrame.begin(),
+			triggerContactsThisFrame.end(), id) != triggerContactsThisFrame.end();
+		if (stillTouching) { continue; }
+
+		// A destroyed partner resolves to nullptr and is simply dropped. This is
+		// the whole reason these lists hold IDs rather than pointers.
+		if (GameObject* other = FindWorldObjectByID(*map, id))
+		{
+			self->onTriggerExit(other);
+		}
+	}
+
+	triggerContactsLastFrame.swap(triggerContactsThisFrame);
+	triggerContactsThisFrame.clear();
 }
 
 void RigidBody3D::SyncCollisionBox()

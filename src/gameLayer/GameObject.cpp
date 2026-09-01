@@ -222,6 +222,11 @@ void GameObject::render3D()
 
 void GameObject::update(Scene* scene, float deltaTime)
 {
+	// Before the enabled check on purpose: an object that has just been disabled
+	// stops colliding, and anything sitting in its trigger volumes has therefore
+	// left them. Skipping this would leave those overlaps latched open forever.
+	if (scene != nullptr) { rigidBody3D.DispatchTriggerEvents(this, &scene->gameMap); }
+
 	rigidBody3D.isEnabled = isEnabled;
 	if (!isEnabled)
 	{
@@ -283,6 +288,16 @@ void GameObject::onDestroy(Scene* scene)
 void GameObject::onCollision(const GameObject* collider)
 {
 	// Collision Data Checks
+}
+
+void GameObject::onTriggerEnter(GameObject* other)
+{
+	// Something entered a trigger volume. Overridden by objects that care.
+}
+
+void GameObject::onTriggerExit(GameObject* other)
+{
+	// Something left a trigger volume, one frame after it actually did.
 }
 
 // FMOD requires forward and up to be normalized and perpendicular

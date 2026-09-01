@@ -88,6 +88,9 @@ float SoundField::AudibleLoudnessAt(Vector3 listener, const SoundEvent& event, c
 	{
 		if (!object.isEnabled) { continue; }
 		if (object.id == event.sourceId) { continue; }
+		// A trigger volume is not geometry and must not muffle anything. A damage
+		// zone across a corridor should not make the footsteps beyond it quieter.
+		if (object.rigidBody3D.collider.isTrigger()) { continue; }
 
 		const RayCollision hit = GetRayCollisionBox(ray, object.rigidBody3D.collisionBox);
 		// Only bodies strictly between the two points occlude; a box behind the

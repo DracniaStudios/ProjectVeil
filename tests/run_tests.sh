@@ -174,4 +174,45 @@ else
 fi
 FSM_STATUS=$?
 
-if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $FSM_STATUS -ne 0 ]]; then exit 1; fi
+# ---------------------------------------------------------------------------
+# Collider mode tests
+#
+# The shape maths is covered by collider_tests above, which needs nothing but
+# raylib. What lives in RigidBody3D::resolveConstrains -- collision pushes,
+# trigger does not -- needs real game objects, so this one links the engine on
+# the same terms as the FSM tests and reuses everything they discovered.
+# ---------------------------------------------------------------------------
+TRIGGER_BIN="$OUT_DIR/trigger_tests"
+echo
+echo "building $TRIGGER_BIN"
+g++ -std=c++23 \
+	-I src/gameLayer \
+	-I src/engineLayer \
+	-I src/platform \
+	-I thirdparty/raylib-6.0/src \
+	-I "$JSON_INC" \
+	-I "$FMOD_STUDIO_INC" \
+	-I "$FMOD_CORE_INC" \
+	-I thirdparty/imgui-docking/imgui \
+	-I thirdparty/rlImgui \
+	-I thirdparty/FastNoise2-1.1.1/include \
+	-I thirdparty/steam-1.64/public \
+	-DRESOURCES_PATH=\"$ROOT/resources/\" \
+	tests/TriggerTests.cpp \
+	"${GAME_OBJECTS[@]}" \
+	"${IMGUI_LIBS[@]}" \
+	"$RAYLIB_LIB" \
+	"$FMOD_CORE_LIB" "$FMOD_STUDIO_LIB" \
+	-o "$TRIGGER_BIN" \
+	-Wl,-rpath,"$ROOT/$BUILD_DIR/game" \
+	-lX11 -lGL -lpthread -ldl -lrt -lm
+
+echo
+if [[ -z "${DISPLAY:-}" ]] && command -v xvfb-run >/dev/null 2>&1; then
+	xvfb-run -a --server-args="-screen 0 640x480x24" "$TRIGGER_BIN"
+else
+	"$TRIGGER_BIN"
+fi
+TRIGGER_STATUS=$?
+
+if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $FSM_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
