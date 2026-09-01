@@ -99,6 +99,28 @@ void WorldEditor::ShowPlacementPanel()
 	ImGui::Checkbox("isVisible", &stagingObject.display3DModel);
 	ImGui::Checkbox("isDestructible", &stagingObject.isDestructible);
 	ImGui::Checkbox("Show Collider", &stagingObject.displayCollider);
+	ImGui::Spacing();
+
+	// Collider — staged here so a trigger volume can be dropped in directly
+	// rather than placed solid and then converted in the Object Browser.
+	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Collider");
+	const char* shapeLabels[COLLIDER_SHAPE_COUNT] = {};
+	for (int i = 0; i < COLLIDER_SHAPE_COUNT; ++i) { shapeLabels[i] = colliderShapeToString(i); }
+	const char* modeLabels[COLLIDER_MODE_COUNT] = {};
+	for (int i = 0; i < COLLIDER_MODE_COUNT; ++i) { modeLabels[i] = colliderModeToString(i); }
+
+	int stagingShape = static_cast<int>(stagingObject.rigidBody3D.collider.shape);
+	if (ImGui::Combo("Collider Shape", &stagingShape, shapeLabels, COLLIDER_SHAPE_COUNT))
+	{
+		stagingObject.rigidBody3D.collider.shape = static_cast<ColliderShape>(stagingShape);
+	}
+	int stagingMode = static_cast<int>(stagingObject.rigidBody3D.collider.mode);
+	if (ImGui::Combo("Collider Mode", &stagingMode, modeLabels, COLLIDER_MODE_COUNT))
+	{
+		stagingObject.rigidBody3D.collider.mode = static_cast<ColliderMode>(stagingMode);
+	}
+	// Size and offset are left to the Object Browser: they are almost always
+	// tuned against the placed object with Show Collider on, not guessed up front.
 	ImGui::Separator();
 
 	/** Kind Specific Data **/

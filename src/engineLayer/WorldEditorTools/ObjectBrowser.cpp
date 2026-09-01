@@ -172,6 +172,81 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::Text("Air Time: %f", object->rigidBody3D.GetAirTime());
 	ImGui::Spacing();
 
+	// Collider — the collision volume, which is deliberately not the render scale
+	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Collider");
+	Collider3D& collider = object->rigidBody3D.collider;
+
+	// Label arrays sized by the enum's own _COUNT, following LightingInspector,
+	// so adding a shape later cannot silently desync the labels from the values.
+	const char* shapeLabels[COLLIDER_SHAPE_COUNT] = {};
+	for (int i = 0; i < COLLIDER_SHAPE_COUNT; ++i) { shapeLabels[i] = colliderShapeToString(i); }
+	const char* modeLabels[COLLIDER_MODE_COUNT] = {};
+	for (int i = 0; i < COLLIDER_MODE_COUNT; ++i) { modeLabels[i] = colliderModeToString(i); }
+
+	int shapeIndex = static_cast<int>(collider.shape);
+	if (ImGui::Combo("Shape", &shapeIndex, shapeLabels, COLLIDER_SHAPE_COUNT))
+	{
+		collider.shape = static_cast<ColliderShape>(shapeIndex);
+		// Switching to Mesh should show the fitted volume straight away rather than
+		// leaving the last hand-authored size sitting on screen looking authoritative
+		if (collider.shape == COLLIDER_MESH) { collider.FitToModel(object->model); }
+	}
+
+	int modeIndex = static_cast<int>(collider.mode);
+	if (ImGui::Combo("Mode", &modeIndex, modeLabels, COLLIDER_MODE_COUNT))
+	{
+		collider.mode = static_cast<ColliderMode>(modeIndex);
+	}
+	ImGui::TextDisabled("%s", collider.isTrigger()
+		? "Reports overlaps, applies no physics."
+		: "Resolves overlaps through the rigid body.");
+
+	if (collider.shape == COLLIDER_SPHERE)
+	{
+		if (ImGui::DragFloat("Radius", &collider.radius, 0.01f))
+		{
+			collider.radius = fmaxf(collider.radius, MINIMUM_COLLIDER_EXTENT);
+		}
+	}
+	else if (collider.shape == COLLIDER_MESH)
+	{
+		// Derived from the model's own bounds, so presenting it as editable would
+		// be a lie — the next loadVisuals() would overwrite anything typed here
+		ImGui::BeginDisabled();
+		ImGui::DragFloat3("Size (fitted)", &collider.size.x);
+		ImGui::EndDisabled();
+	}
+	else
+	{
+		if (ImGui::DragFloat3("Size", &collider.size.x, 0.01f))
+		{
+			// A zero or negative extent inverts the volume, and per EditorPicking.h
+			// an inverted box is neither collidable nor clickable — the object goes
+			// silently inert with nothing on screen to explain why.
+			collider.size = SanitizeColliderSize(collider.size);
+		}
+	}
+
+	ImGui::DragFloat3("Offset", &collider.offset.x, 0.01f);
+
+	if (ImGui::Button("Fit To Model")) { collider.FitToModel(object->model); }
+	ImGui::SameLine();
+	if (ImGui::Button("Reset Collider"))
+	{
+		// Back to the volume the body had before colliders existed, keeping the
+		// mode — resetting the shape is the common need, changing solid to trigger
+		// by accident is not.
+		const ColliderMode keptMode = collider.mode;
+		collider = {};
+		collider.mode = keptMode;
+	}
+
+	// The World Editor freezes the simulation, so nothing else is refreshing the
+	// broad-phase box while these fields are being dragged — and mouse picking
+	// and the debug draw both read it.
+	object->rigidBody3D.SyncCollisionBox();
+	ImGui::Spacing();
+
 	Vector4 color = Vector4(
 		object->defaultColor.r,
 		object->defaultColor.g,
