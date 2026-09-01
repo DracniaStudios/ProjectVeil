@@ -9,6 +9,8 @@
 #include <raymath.h>
 #include <nlohmann/json.hpp>
 
+#include <Collider.h>
+
 using Json = nlohmann::json;
 
 #if defined(RAYMATH_DISABLE_CPP_OPERATORS)
@@ -201,20 +203,6 @@ inline Vector3& operator/=(Vector3& a, const Vector3& b)
 struct GameMap;
 struct GameObject;
 
-/**
- * Result of a narrow-phase contact test.
- *
- * Produced by RigidBody3D::getContact() and consumed by the resolution code, so
- * a single separating-axis test answers "do they touch", "which way do I push"
- * and "how far" at once rather than being recomputed for each question.
- */
-struct ContactInfo
-{
-	bool hit = false;
-	Vector3 normal = {};  // Unit length, pointing from the first body toward the second
-	float depth = 0.0f;   // Overlap along `normal` — how far they must separate
-};
-
 struct Transform3D : public Transform
 {
 	// translation
@@ -278,7 +266,17 @@ public:
 	bool canCollide = true;
 
 	BoundingBox collisionBox = {};
-	Vector3 collisionBoxScale = Vector3(1.0f, 1.0f, 1.0f);
+
+	/**
+	 * The collision volume, authored independently of the render scale.
+	 *
+	 * This replaces `collisionBoxScale`, which was declared for exactly this and
+	 * never read by anything. Its defaults — size {1,1,1}, offset {0,0,0},
+	 * COLLIDER_BOX, COLLIDER_COLLISION — make every accessor below return what it
+	 * returned when the collision shape was simply `scale`, so an object that has
+	 * never had its collider touched behaves exactly as it always did.
+	 */
+	Collider3D collider = {};
 	Vector3 angularVelocity = {}; // radians/sec, axis = spin axis
 	Vector3 velocity = {};
 	Vector3 acceleration = {};
@@ -327,14 +325,27 @@ public:
 	Vector3 GetWorldHalfExtents() const;
 
 	/**
-	 * The oriented box, as the narrow phase sees it.
+	 * The collider resolved into world space — shape, centre, axes and extents.
 	 *
-	 * `translation` is its centre, GetLocalHalfExtents() its extents along its
-	 * own axes, and GetWorldAxes() those axes expressed in world space. Together
-	 * they are the OBB that getContact() tests.
+	 * This is what the narrow phase actually tests, and every geometry query on
+	 * this body is a thin read off it, so the solver, the broad-phase box, the
+	 * touch rays and the debug draw cannot disagree about where a body is or how
+	 * big it is.
 	 */
-	void GetWorldAxes(Vector3 axes[3]) const;
-	Vector3 GetLocalHalfExtents() const { return Vector3Scale(scale, 0.5f); }
+	ColliderVolume GetColliderVolume() const;
+
+	/**
+	 * World-space centre of the collision volume.
+	 *
+	 * Deliberately not the same thing as getCenter(), which is the transform's
+	 * own position: a collider may be offset from the body it rides on, and the
+	 * collision path wants the volume while the render and audio paths want the
+	 * object.
+	 */
+	Vector3 GetColliderCenter() const;
+
+	/** Half-extents along the collider's own axes. `scale * 0.5f` by default. */
+	Vector3 GetLocalHalfExtents() const { return collider.GetLocalHalfExtents(scale); }
 
 	/// Editor Support
 	// Rebuilds the AABB from the current translation/scale without stepping the

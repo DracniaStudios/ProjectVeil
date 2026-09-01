@@ -60,6 +60,32 @@ echo
 SOUNDFIELD_STATUS=$?
 
 # ---------------------------------------------------------------------------
+# Collider tests
+#
+# Same cheap tier as the SoundField suite: Collider3D.cpp deliberately has no
+# engine dependency, so it links against raylib alone and needs no window. If
+# this block ever starts wanting game objects to link, something has included an
+# engine header in the collider.
+# ---------------------------------------------------------------------------
+COLLIDER_BIN="$OUT_DIR/collider_tests"
+
+echo
+echo "building $COLLIDER_BIN"
+g++ -std=c++23 -Wall \
+	-I src/gameLayer \
+	-I src/engineLayer \
+	-I thirdparty/raylib-6.0/src \
+	-I "$JSON_INC" \
+	tests/ColliderTests.cpp \
+	src/gameLayer/Components/Collider3D.cpp \
+	-o "$COLLIDER_BIN" \
+	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
+
+echo
+"$COLLIDER_BIN"
+COLLIDER_STATUS=$?
+
+# ---------------------------------------------------------------------------
 # Stalker FSM tests
 #
 # These need the engine: Stalker::update runs Entity::update ->
@@ -76,7 +102,8 @@ if [[ ! -d "$OBJ_ROOT" ]]; then
 	echo
 	echo "skipping Stalker FSM tests: no compiled objects under '$OBJ_ROOT'." >&2
 	echo "                            build the game first: cmake --build $BUILD_DIR" >&2
-	exit $SOUNDFIELD_STATUS
+	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 ]]; then exit 1; fi
+	exit 0
 fi
 
 # Every object except the one defining main. Detected rather than hardcoded, so
@@ -147,4 +174,4 @@ else
 fi
 FSM_STATUS=$?
 
-if [[ $SOUNDFIELD_STATUS -ne 0 || $FSM_STATUS -ne 0 ]]; then exit 1; fi
+if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $FSM_STATUS -ne 0 ]]; then exit 1; fi

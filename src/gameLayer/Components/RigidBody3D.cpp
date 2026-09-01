@@ -8,49 +8,23 @@
 #include <cmath>
 
 
-namespace
+#pragma region Extents
+ColliderVolume RigidBody3D::GetColliderVolume() const
 {
-	// A zeroed quaternion normalises to zero and would collapse a body to a
-	// point, making it pass through everything. SyncCollisionBox repairs the
-	// stored value, but a body can be read before it has ever ticked.
-	Quaternion SafeOrientation(Quaternion rotation)
-	{
-		const float lengthSquared = rotation.x * rotation.x + rotation.y * rotation.y
-			+ rotation.z * rotation.z + rotation.w * rotation.w;
-		if (lengthSquared < 1.0e-8f) { return QuaternionIdentity(); }
-		return QuaternionNormalize(rotation);
-	}
+	// MakeColliderVolume is the single definition of how a collider composes with
+	// a transform. Everything below reads this rather than rebuilding the maths,
+	// which is what stops the solver and the debug draw from drifting apart.
+	return MakeColliderVolume(collider, translation, rotation, scale);
 }
 
-#pragma region Extents
-void RigidBody3D::GetWorldAxes(Vector3 axes[3]) const
+Vector3 RigidBody3D::GetColliderCenter() const
 {
-	const Quaternion orientation = SafeOrientation(rotation);
-
-	// Rotation preserves length, so these come out unit length — which the
-	// projection maths below relies on.
-	axes[0] = Vector3RotateByQuaternion(Vector3{ 1.0f, 0.0f, 0.0f }, orientation);
-	axes[1] = Vector3RotateByQuaternion(Vector3{ 0.0f, 1.0f, 0.0f }, orientation);
-	axes[2] = Vector3RotateByQuaternion(Vector3{ 0.0f, 0.0f, 1.0f }, orientation);
+	return GetColliderVolume().center;
 }
 
 Vector3 RigidBody3D::GetWorldHalfExtents() const
 {
-	const Vector3 half = GetLocalHalfExtents();
-
-	Vector3 axes[3];
-	GetWorldAxes(axes);
-
-	// Sum the absolute contribution of each rotated local axis to each world
-	// axis. This is the standard |R| * halfExtents construction, written through
-	// Vector3RotateByQuaternion so it cannot disagree with the QuaternionToMatrix
-	// path render3D draws through, and so it does not depend on raylib's matrix
-	// storage order.
-	return {
-		fabsf(axes[0].x) * half.x + fabsf(axes[1].x) * half.y + fabsf(axes[2].x) * half.z,
-		fabsf(axes[0].y) * half.x + fabsf(axes[1].y) * half.y + fabsf(axes[2].y) * half.z,
-		fabsf(axes[0].z) * half.x + fabsf(axes[1].z) * half.y + fabsf(axes[2].z) * half.z
-	};
+	return ColliderWorldHalfExtents(GetColliderVolume());
 }
 
 void DrawOrientedBoxWires(Vector3 center, Vector3 size, Quaternion rotation, Color color)
@@ -106,9 +80,10 @@ void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 			return collision.hit && collision.distance <= Vector3Length(translation - ray.position) + touchDistance;
 		};
 
-	// Face Translation — rotation-aware, so the rays leave from the faces of the
-	// volume the solver actually tests rather than from an unrotated one
-	Vector3 c = translation;
+	// Face Translation — rotation- and collider-aware, so the rays leave from the
+	// faces of the volume the solver actually tests rather than from an unrotated
+	// one, or from the object's origin when its collider is offset from it
+	const Vector3 c = GetColliderCenter();
 	const Vector3 half = GetWorldHalfExtents();
 	float hx = half.x;
 	float hy = half.y;
@@ -125,98 +100,15 @@ void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 	leftTouch |= hitWithinRange(generateRay({ c.x - hx, c.y, c.z }, left));
 }
 
-namespace
-{
-	// Below this, a cross product of two box edges is degenerate: the edges are
-	// parallel, so the axis carries nothing the face axes have not already
-	// covered. Normalising it would divide by ~0 and manufacture a random normal.
-	constexpr float kAxisEpsilon = 1.0e-6f;
-
-	// Cross-product axes must beat the best face axis by this margin to be
-	// chosen as the contact normal. A box resting flat produces several axes
-	// within floating-point noise of each other, and picking an edge normal
-	// there shoves the box sideways instead of up — visible as resting jitter.
-	constexpr float kFaceAxisPreference = 1.05f;
-
-	// Half-width of an oriented box's shadow on a unit axis: the sum of each
-	// local axis's extent projected onto it.
-	float ProjectedRadius(const Vector3 axes[3], Vector3 half, Vector3 axis)
-	{
-		return fabsf(Vector3DotProduct(axis, axes[0])) * half.x
-			+ fabsf(Vector3DotProduct(axis, axes[1])) * half.y
-			+ fabsf(Vector3DotProduct(axis, axes[2])) * half.z;
-	}
-}
-
 ContactInfo RigidBody3D::getContact(const RigidBody3D& other) const
 {
-	ContactInfo contact = {};
-
-	Vector3 axesA[3];
-	Vector3 axesB[3];
-	GetWorldAxes(axesA);
-	other.GetWorldAxes(axesB);
-
-	const Vector3 halfA = GetLocalHalfExtents();
-	const Vector3 halfB = other.GetLocalHalfExtents();
-	const Vector3 delta = Vector3Subtract(other.getCenter(), getCenter());
-
-	// The 15 candidates: 3 face normals from each box, then the 9 edge-edge
-	// cross products. Face axes come first so that ties resolve to them.
-	Vector3 candidates[15];
-	int count = 0;
-	for (int i = 0; i < 3; ++i) { candidates[count++] = axesA[i]; }
-	for (int i = 0; i < 3; ++i) { candidates[count++] = axesB[i]; }
-	for (int i = 0; i < 3; ++i)
-	{
-		for (int j = 0; j < 3; ++j)
-		{
-			candidates[count++] = Vector3CrossProduct(axesA[i], axesB[j]);
-		}
-	}
-
-	float bestScore = FLT_MAX; // biased, decides which axis wins
-	float bestDepth = 0.0f;    // true overlap on that axis, used to separate
-	Vector3 bestAxis = {};
-
-	for (int i = 0; i < count; ++i)
-	{
-		Vector3 axis = candidates[i];
-
-		const float lengthSquared = Vector3LengthSqr(axis);
-		if (lengthSquared < kAxisEpsilon) { continue; } // parallel edges
-
-		axis = Vector3Scale(axis, 1.0f / sqrtf(lengthSquared));
-
-		const float distance = fabsf(Vector3DotProduct(delta, axis));
-		const float overlap = ProjectedRadius(axesA, halfA, axis)
-			+ ProjectedRadius(axesB, halfB, axis)
-			- distance;
-
-		// A gap on any single axis proves the boxes are apart. That is the whole
-		// theorem, and it lets the common non-touching case leave early.
-		if (overlap <= 0.0f) { return contact; }
-
-		const float score = (i >= 6) ? overlap * kFaceAxisPreference : overlap;
-		if (score < bestScore)
-		{
-			bestScore = score;
-			bestDepth = overlap;
-			bestAxis = axis;
-		}
-	}
-
-	// Every candidate degenerate — only reachable with a collapsed body
-	if (bestScore == FLT_MAX) { return contact; }
-
-	// The resolution code pushes `this` backwards along the normal, so it has to
-	// point from this body toward the other.
-	if (Vector3DotProduct(delta, bestAxis) < 0.0f) { bestAxis = Vector3Negate(bestAxis); }
-
-	contact.hit = true;
-	contact.normal = bestAxis;
-	contact.depth = bestDepth;
-	return contact;
+	// The test itself lives in Collider3D.cpp, which has no engine dependency and
+	// so can be unit tested against raylib alone. This is the adaptor: resolve
+	// both bodies into world volumes and hand them over. The contract callers
+	// rely on is unchanged — the normal comes back unit length, pointing from
+	// this body toward `other`, which is the direction resolveCollision pushes
+	// this body backwards along.
+	return ColliderContact(GetColliderVolume(), other.GetColliderVolume());
 }
 
 bool RigidBody3D::isCollidingWith(const RigidBody3D& other) const
@@ -379,18 +271,25 @@ void RigidBody3D::resolveCollision(RigidBody3D& other, const ContactInfo& contac
 		// Friction acts at the contact face, not the center of mass, so it
 		// applies a torque that makes bodies tumble (visual only — the
 		// collision box stays axis-aligned)
+		// Sized from the collision volume rather than the render scale: friction
+		// acts at the contact face, which belongs to the collider, not the model.
+		// These are the same value for a default collider, so nothing changes for a
+		// body whose collider has never been touched.
+		const Vector3 contactSize = Vector3Scale(GetLocalHalfExtents(), 2.0f);
+		const Vector3 otherContactSize = Vector3Scale(other.GetLocalHalfExtents(), 2.0f);
+
 		Vector3 frictionVec = tangentDir * -frictionImpulse;
-		Vector3 lever = normal * (std::abs(Vector3DotProduct(scale, normal)) * 0.5f);
+		Vector3 lever = normal * (std::abs(Vector3DotProduct(contactSize, normal)) * 0.5f);
 		Vector3 angularImpulse = Vector3CrossProduct(lever, frictionVec);
 
 		if (!isStatic)
 		{
-			float inertia = Vector3LengthSqr(scale) / 6.0f; // box inertia, unit mass
+			float inertia = Vector3LengthSqr(contactSize) / 6.0f; // box inertia, unit mass
 			if (inertia > 0.0001f) angularVelocity += angularImpulse / inertia;
 		}
 		if (!other.isStatic)
 		{
-			float inertia = Vector3LengthSqr(other.scale) / 6.0f;
+			float inertia = Vector3LengthSqr(otherContactSize) / 6.0f;
 			if (inertia > 0.0001f) other.angularVelocity -= angularImpulse / inertia;
 		}
 	}
@@ -437,10 +336,11 @@ void RigidBody3D::UpdateForce(float deltaTime)
 	upTouch = downTouch = frontTouch = backTouch = leftTouch = rightTouch = false;
 
 	const float touchMargin = 0.15f;
+	const Vector3 nearCenter = GetColliderCenter();
 	const Vector3 nearHalf = GetWorldHalfExtents();
 	BoundingBox nearBox = {
-		{ translation.x - nearHalf.x - touchMargin, translation.y - nearHalf.y - touchMargin, translation.z - nearHalf.z - touchMargin },
-		{ translation.x + nearHalf.x + touchMargin, translation.y + nearHalf.y + touchMargin, translation.z + nearHalf.z + touchMargin }
+		{ nearCenter.x - nearHalf.x - touchMargin, nearCenter.y - nearHalf.y - touchMargin, nearCenter.z - nearHalf.z - touchMargin },
+		{ nearCenter.x + nearHalf.x + touchMargin, nearCenter.y + nearHalf.y + touchMargin, nearCenter.z + nearHalf.z + touchMargin }
 	};
 
 	// currentScene is null between the OUT and IN halves of a scene transition,
@@ -512,14 +412,18 @@ void RigidBody3D::SyncCollisionBox()
 	if (scale == Vector3Zero()) { scale = Vector3One(); }
 	if (rotation == Quaternion{ 0, 0, 0, 0 }) { rotation = QuaternionIdentity(); }
 
-	// Rotation-aware: the box is the smallest axis-aligned volume that contains
-	// the rotated body. It used to be built from `scale` alone, so rotating an
-	// object left its collision box pointing the old way — a 45-degree wall was
-	// solid where it was not and passable where it was.
-	const Vector3 extent = GetWorldHalfExtents();
+	// Rotation- and collider-aware: the box is the smallest axis-aligned volume
+	// that contains the body's collision volume. It used to be built from `scale`
+	// alone, so rotating an object left its collision box pointing the old way — a
+	// 45-degree wall was solid where it was not and passable where it was. It now
+	// also follows a resized or offset collider, and a sphere collider contributes
+	// its radius on all three axes.
+	const ColliderVolume volume = GetColliderVolume();
+	const Vector3 center = volume.center;
+	const Vector3 extent = ColliderWorldHalfExtents(volume);
 
-	collisionBox.min = { translation.x - extent.x, translation.y - extent.y, translation.z - extent.z };
-	collisionBox.max = { translation.x + extent.x, translation.y + extent.y, translation.z + extent.z };
+	collisionBox.min = { center.x - extent.x, center.y - extent.y, center.z - extent.z };
+	collisionBox.max = { center.x + extent.x, center.y + extent.y, center.z + extent.z };
 }
 
 void RigidBody3D::ApplyGravity()
@@ -584,6 +488,8 @@ Json RigidBody3D::formatToJson()
 	j["LockRotation"] = lockRotation;
 	j["LockScale"] = lockScale;
 
+	j["Collider"] = collider.formatToJson();
+
 	return j;
 }
 
@@ -626,6 +532,12 @@ bool RigidBody3D::loadFromJson(const Json& j)
 	lockTranslation = j.value("LockTranslation", false);
 	lockRotation = j.value("LockRotation", false);
 	lockScale = j.value("LockScale", false);
+
+	// A world saved before colliders existed has no "Collider" key at all. The
+	// `*this = {}` above has already installed the default box, which reproduces
+	// the old `scale`-derived volume exactly, so those saves load unchanged and
+	// no save version bump is needed.
+	if (j.contains("Collider")) { collider.loadFromJson(j["Collider"]); }
 
 	lastPosition = translation;
 
