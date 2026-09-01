@@ -24,12 +24,35 @@
 
 [ Added ]
 
-
+- Added Collider3D, a collision volume authored independently of the render scale.
+  Shapes: Box, Sphere, and Mesh (auto-fitted to the loaded model's own bounds).
+- Added Collider modes. Collision resolves through the Rigidbody as before;
+  Trigger reports the overlap and applies no physics at all - no push, no
+  impulse, no friction, and no touch flags, so a trigger cannot be stood on.
+- Added GameObject::onTriggerEnter / onTriggerExit. onCollision still fires for
+  triggers as well, so existing listeners are unaffected.
+- Added a Collider section to the Object Browser (shape, mode, size/radius,
+  offset, Fit To Model, Reset Collider) and staged shape/mode in the Placement
+  Panel, so a trigger volume can be dropped in directly.
+- Added tests/ColliderTests.cpp (77 checks, links raylib alone) and
+  tests/TriggerTests.cpp (11 checks, links the engine).
 
 [ Updated ]
 
 - Moved all Engine specific files to "engineLayer" folder.
 - Updated GameMap to hold all Entity and Interactables data.
+- Updated RigidBody3D so the narrow phase, the broad-phase box, the touch rays
+  and the debug draw all read one resolved collider volume instead of `scale`.
+  Defaults reproduce the old numbers exactly, so worlds saved before this load
+  and behave identically and no save version bump was needed.
+- Updated the 15-axis separating-axis test to live in Collider3D.cpp, which has
+  no engine dependency and so can be unit tested against raylib alone.
+- Updated Show Collider to draw the actual collider, coloured by mode, rather
+  than the render scale. Spheres draw as spheres.
+- Updated sound occlusion and stalker line of sight to see through triggers. A
+  damage zone across a corridor no longer muffles footsteps or blinds the AI.
+- Updated mesh bounds to finally reach collision, via Collider3D::FitToModel in
+  loadVisuals(). They were previously computed and discarded every frame.
 
 [ Fixed ]
 
@@ -38,3 +61,9 @@
 [ Removed ]
 
 - Removed Entity and Interactable data from Scene.
+- Removed RigidBody3D::collisionBoxScale, declared for a collider offset and
+  never read by anything. Collider3D::size and ::offset replace it.
+- Removed RigidBody3D::GetWorldAxes, which had no callers left once the resolved
+  collider volume carried the axes.
+- Removed the two GetMeshBoundingBox assignments in GameObject, which wrote a
+  model-local box into a world-space field that SyncCollisionBox overwrote.
