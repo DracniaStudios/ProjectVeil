@@ -104,8 +104,15 @@ void AssetManager::loadFolder(const char* folder)
 	std::vector<fs::path> files;
 	for (const auto& entry : fs::directory_iterator(root, errorCode))
 	{
-		// If the entry is a directory, recursively load its contents
-		if (entry.is_directory()) { loadFolder(entry.path().string().c_str()); }
+		// If the entry is a directory, recursively load its contents.
+		// Recurse with a path relative to RESOURCES_PATH (not the absolute
+		// filesystem path) so `folder`/`asset.folder` stay stable across
+		// machines and don't leak the local build path into the editor UI.
+		if (entry.is_directory())
+		{
+			const std::string subFolder = entry.path().lexically_relative(fs::path(RESOURCES_PATH)).string();
+			loadFolder(subFolder.c_str());
+		}
 
 		// If the entry is a regular file, add it to the list of files
 		if (entry.is_regular_file()) { files.push_back(entry.path()); }
