@@ -1,9 +1,5 @@
 #include <WorldEditor.h>
 
-void loadAsset() {
-
-}
-
 void WorldEditor::ShowAssetData()
 {
 	auto& assetManager = AssetManager::getInstance();
@@ -97,7 +93,10 @@ void WorldEditor::ShowAssetData()
 			/// Create A Tab for each folder in the asset manager
 			for (auto& folder : assetManager.folders)
 			{
-				ImGui::BeginTabItem(folder.c_str(), nullptr, ImGuiTabItemFlags_None);
+				// EndTabItem() must only be called when BeginTabItem() returns true —
+				// calling it unconditionally pops an ID that was never pushed for
+				// inactive tabs, corrupting ImGui's ID stack for the rest of the frame.
+				if (ImGui::BeginTabItem(folder.c_str(), nullptr, ImGuiTabItemFlags_None)) {
 
 				Asset* activeAsset = getActiveAsset();
 				ImGui::TextColored(ImVec4(0, 255, 0, 255), "Active: %s", activeAsset != nullptr ? activeAsset->name.c_str() : "None");
@@ -108,13 +107,13 @@ void WorldEditor::ShowAssetData()
 				const int columns = std::max(1, static_cast<int>(ImGui::GetContentRegionAvail().x / (thumbSize + 12.0f)));
 
 				// Check Asset Lists for the folder and display them
-				for (size_t i = 0; i < assets.size(); i++)
+				for (int i = 0; i < static_cast<int>(assets.size()); i++)
 				{
 					const auto& asset = assets[i];
 					if (asset.folder != folder) { continue; }
 					ImGui::PushID(i);
 					ImGui::Text("%s (%s)", asset.name.c_str(), asset.type == ASSET_MODEL ? "Model" : "Texture");
-					
+
 					bool isSelected = (i == activeAssetIndex); /// Disabled for now, as we don't have a way to select assets in this view yet
 					if (isSelected) { ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f)); }
 
@@ -135,6 +134,7 @@ void WorldEditor::ShowAssetData()
 				}
 
 				ImGui::EndTabItem();
+				}
 			}
 
 		ImGui::EndTabBar();
