@@ -81,10 +81,21 @@ public:
 	void ReleaseMiniGame(); // Frees MiniGame Memory Data
 	void ResetMiniGame();
 
+	// The task station whose minigame is running, or nullptr for none.
+	InteractableObject* GetRunningStation();
+
+	// Emits the running station's periodic noise into the sound field. Called
+	// once per frame from Scene_updateScene, ahead of the entity updates.
+	void EmitStationNoise(float deltaTime);
+
 	void ResetID();
 private:
 	int lastMiniGamePlayed = 0;
 
+	// Countdown to the running station's next noise. Lives on the Scene rather
+	// than on the station because the station is a plain world object that never
+	// ticks — the minigame it launched is what is actually running.
+	float stationNoiseTimer = 0.0f;
 } Scene;
 
 /**

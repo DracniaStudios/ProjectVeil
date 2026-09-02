@@ -20,6 +20,52 @@ Scene* Scene_new() {
 	return scene;
 }
 
+/** Perception Emitters **/
+
+// The station whose minigame is currently running, or nullptr.
+//
+// Scanned rather than cached on the Scene: isRunningMiniGame is the flag the
+// Director and the editor panel already read, and a second copy of the same
+// fact would be one more thing to keep in step across activate/release/replay.
+InteractableObject* Scene::GetRunningStation()
+{
+	for (auto& [id, interactable] : gameMap.interactables)
+	{
+		if (interactable && interactable->isRunningMiniGame) { return interactable.get(); }
+	}
+	return nullptr;
+}
+
+// A running task station is a periodic noise source (plan's emitter table:
+// ~0.6, periodic while active).
+//
+// It emits at the *station*, not at the player. The minigame is a 2D overlay
+// with no world position of its own, and using the player's would hand the
+// stalker a live position feed wearing a station's clothes — the exact leak the
+// sound-only decision exists to prevent. That the two happen to coincide while
+// the player is working the station is the player's problem, not a fact
+// perception was told.
+void Scene::EmitStationNoise(float deltaTime)
+{
+	constexpr float kStationInterval = 0.9f;
+	constexpr float kStationLoudness = 0.6f;
+
+	InteractableObject* station = GetRunningStation();
+	if (station == nullptr || !station->isEnabled)
+	{
+		// Reset rather than freeze, so the next station the player starts is
+		// audible immediately instead of inheriting a part-spent countdown.
+		stationNoiseTimer = 0.0f;
+		return;
+	}
+
+	stationNoiseTimer -= deltaTime;
+	if (stationNoiseTimer > 0.0f) { return; }
+	stationNoiseTimer = kStationInterval;
+
+	soundField.Emit(station->getPosition(), kStationLoudness, SOUND_STATION, station->id);
+}
+
 // Renumbers every object sequentially from the first assignable id.
 void Scene::ResetID() {
 	
@@ -238,7 +284,16 @@ void Scene_updateScene(float delta) {
 	// now is heard by entities later in the same frame rather than next one.
 	// Frozen editor time must not expire events either, hence the delta passed
 	// through unchanged only when the sim is actually running.
-	if (!editorFrozen) { scene->soundField.Update(delta); }
+	if (!editorFrozen)
+	{
+		scene->soundField.Update(delta);
+
+		// Ahead of the player and entity updates for the same reason: the hum a
+		// running station makes this frame should reach the stalker this frame,
+		// not next. The minigame's own update runs much later in this function
+		// and is about the overlay, not about the noise the machine makes.
+		scene->EmitStationNoise(delta);
+	}
 
 	/** Update Player **/
 	if (auto player = scene->player) {
@@ -413,6 +468,15 @@ void Scene::ResetMiniGame() {
 			// it for ->data and freed the same two allocations a second time.
 			// Every failed Flappy Bird or Crane attempt took that path.
 	const int replayId = GetLastMiniGame();
+
+	// Captured before the release, which clears it. A replay is the same player
+	// still standing at the same station, so the station has to come back
+	// occupied — otherwise it would fall silent for every attempt after the
+	// first, and the Director would start hinting toward a machine the player is
+	// currently using.
+	const InteractableObject* station = GetRunningStation();
+	const std::uint64_t stationId = station != nullptr ? station->id : 0;
+
 	if (miniGame != nullptr) {
 		ReleaseMiniGame();
 	}
@@ -420,7 +484,15 @@ void Scene::ResetMiniGame() {
 
 	// Nothing to replay: hand the player back to the 3D world rather
 	// than stranding them in an empty 2D overlay with no way out.
-	if (miniGame == nullptr) { is2DActive = false; }
+	if (miniGame == nullptr) { is2DActive = false; return; }
+
+	if (stationId != 0)
+	{
+		if (auto* resumed = FindInteractableByID(gameMap, stationId))
+		{
+			resumed->isRunningMiniGame = true;
+		}
+	}
 }
 
 void Scene::ReleaseMiniGame()
@@ -430,6 +502,21 @@ void Scene::ReleaseMiniGame()
 		delete miniGame->data;
 		delete miniGame;
 	}
+
+	// isRunningMiniGame was a one-way latch: ActivateMiniGame set it and nothing
+	// ever cleared it, so a station counted as occupied for the rest of the
+	// session. That was invisible until something depended on the flag; now two
+	// things do. The station emitter would hum forever at a machine the player
+	// walked away from, and the Director already skips occupied stations, so
+	// every station the player ever touched was permanently excluded from
+	// hinting. Releasing the minigame is the one point that knows the station is
+	// free again. Clearing every flag rather than one remembered id also repairs
+	// a save written while the latch was stuck.
+	for (auto& [id, interactable] : gameMap.interactables)
+	{
+		if (interactable) { interactable->isRunningMiniGame = false; }
+	}
+	stationNoiseTimer = 0.0f;
 
 	// Always null on return, whether or not there was anything to free. That is
 	// the property every caller depends on — it is what makes a second release,
