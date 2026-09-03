@@ -3,14 +3,6 @@
 #include <LightingSystem.h>
 #include <SceneManager.h>
 
-// A static getBoundingBox(Model, Vector3) used to live here. It had no callers
-// — every collision box is built by RigidBody3D::SyncCollisionBox — and its
-// guard was inverted: permaAssertComment(mdl.meshCount == 0, "No Meshes In
-// Model") asserts that the model has NO meshes, so it would have fired on every
-// valid model and stayed quiet on exactly the null-mesh case the next line
-// dereferences. Removed rather than corrected: reviving it would reintroduce a
-// second, divergent source of truth for how a bounding box is built.
-//
 // Mesh geometry does reach collision now, but not that way. A COLLIDER_MESH
 // collider is fitted from the model's own bounds in loadVisuals() below, and
 // SyncCollisionBox still builds the box from the collider alone — so there is
