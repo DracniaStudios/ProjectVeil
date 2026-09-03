@@ -320,7 +320,7 @@ GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 	// collision box afterwards — and with the simulation frozen nothing else
 	// will. A freshly placed object would be invisible to the very mouse ray
 	// that placed it until physics was resumed.
-	spawned->rigidBody3D.SyncCollisionBox();
+	spawned->rigidBody3D.SyncBroadPhaseBox();
 
 	selectedObjectId = spawned->id;
 	statusMessage = "Spawned: " + spawned->name;

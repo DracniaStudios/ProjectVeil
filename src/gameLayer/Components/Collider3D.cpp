@@ -2,6 +2,7 @@
 
 #include <raymath.h>
 
+#include <algorithm>
 #include <cfloat>
 #include <cmath>
 
@@ -44,6 +45,93 @@ namespace
 		return fabsf(Vector3DotProduct(axis, volume.axes[0])) * volume.halfExtents.x
 			+ fabsf(Vector3DotProduct(axis, volume.axes[1])) * volume.halfExtents.y
 			+ fabsf(Vector3DotProduct(axis, volume.axes[2])) * volume.halfExtents.z;
+	}
+
+	// Below this, a direction component counts as parallel to the slab it is
+	// being tested against and the reciprocal is not worth trusting.
+	constexpr float kParallelEpsilon = 1.0e-6f;
+
+	// A collider can legitimately be tiny, but a zero half-extent makes the slab
+	// infinitely thin and the test meaningless.
+	constexpr float kMinimumHalfExtent = 0.0001f;
+
+	/**
+	 * Slab test against a box centred on the origin.
+	 *
+	 * Returns the entry distance normally, and the *exit* distance when the ray
+	 * starts inside the box. That second case matters in practice: an editor
+	 * camera flown inside a room's collision volume would otherwise have every
+	 * click swallowed at distance 0 by the walls around it, making the contents
+	 * of the room unselectable.
+	 *
+	 * Moved here from EditorPicking.cpp so the editor's ray test and the game's
+	 * share one implementation rather than two that can drift.
+	 */
+	bool SlabTest(Vector3 origin, Vector3 direction, Vector3 halfExtents,
+		float& outDistance, Vector3& outNormal)
+	{
+		const float o[3] = { origin.x, origin.y, origin.z };
+		const float d[3] = { direction.x, direction.y, direction.z };
+		const float h[3] = { halfExtents.x, halfExtents.y, halfExtents.z };
+
+		float nearT = -FLT_MAX;
+		float farT = FLT_MAX;
+		int nearAxis = 0;
+		int farAxis = 0;
+		float nearSign = -1.0f;
+		float farSign = 1.0f;
+		bool solved = false;
+
+		for (int axis = 0; axis < 3; ++axis)
+		{
+			const float half = fmaxf(h[axis], kMinimumHalfExtent);
+
+			if (fabsf(d[axis]) < kParallelEpsilon)
+			{
+				// Running parallel to this pair of planes: the ray can only hit
+				// the box if it already lies between them.
+				if (o[axis] < -half || o[axis] > half) { return false; }
+				continue;
+			}
+
+			const float inverse = 1.0f / d[axis];
+			float entry = (-half - o[axis]) * inverse; // plane at -half, outward normal -1
+			float exit = (half - o[axis]) * inverse;   // plane at +half, outward normal +1
+			float entrySign = -1.0f;
+
+			if (entry > exit)
+			{
+				std::swap(entry, exit);
+				entrySign = 1.0f; // the ray runs backwards, so it enters through +half
+			}
+
+			if (entry > nearT) { nearT = entry; nearAxis = axis; nearSign = entrySign; }
+			if (exit < farT) { farT = exit; farAxis = axis; farSign = -entrySign; }
+			if (nearT > farT) { return false; }
+
+			solved = true;
+		}
+
+		// Every axis was parallel, which only happens for a zero-length
+		// direction. Nothing meaningful to report.
+		if (!solved) { return false; }
+
+		if (farT < 0.0f) { return false; } // the whole box is behind the ray
+
+		const bool inside = nearT < 0.0f;
+		const int axis = inside ? farAxis : nearAxis;
+
+		// Face the ray either way: the entry face's outward normal when hit from
+		// outside, the exit face's inward normal when starting inside.
+		const float sign = inside ? -farSign : nearSign;
+
+		outDistance = inside ? farT : nearT;
+		outNormal = {
+			axis == 0 ? sign : 0.0f,
+			axis == 1 ? sign : 0.0f,
+			axis == 2 ? sign : 0.0f
+		};
+		return true;
 	}
 
 	ContactInfo BoxBoxContact(const ColliderVolume& a, const ColliderVolume& b)
@@ -274,6 +362,79 @@ ContactInfo ColliderContact(const ColliderVolume& a, const ColliderVolume& b)
 
 	// COLLIDER_MESH is an ordinary box once FitToModel has sized it
 	return BoxBoxContact(a, b);
+}
+#pragma endregion
+
+#pragma region Raycast
+bool ColliderRaycast(const ColliderVolume& volume, Ray ray, float& outDistance, Vector3& outNormal)
+{
+	if (Vector3LengthSqr(ray.direction) < kParallelEpsilon) { return false; }
+	const Vector3 direction = Vector3Normalize(ray.direction);
+
+	if (volume.shape == COLLIDER_SPHERE)
+	{
+		// Ray/sphere with a unit direction, so the quadratic's leading coefficient
+		// is 1 and it reduces to a projection and a chord half-length.
+		const Vector3 toCenter = Vector3Subtract(volume.center, ray.position);
+		const float alongRay = Vector3DotProduct(toCenter, direction);
+		const float radiusSquared = volume.radius * volume.radius;
+
+		// Squared distance from the sphere's centre to the ray's infinite line
+		const float missDistanceSquared = Vector3LengthSqr(toCenter) - alongRay * alongRay;
+		if (missDistanceSquared > radiusSquared) { return false; }
+
+		const float halfChord = sqrtf(fmaxf(radiusSquared - missDistanceSquared, 0.0f));
+		const float entry = alongRay - halfChord;
+		const float exit = alongRay + halfChord;
+
+		if (exit < 0.0f) { return false; } // the whole sphere is behind the ray
+
+		// Starting inside returns the exit, matching the box path above so a
+		// listener or camera inside a volume behaves the same for either shape.
+		const bool inside = entry < 0.0f;
+		outDistance = inside ? exit : entry;
+
+		const Vector3 surface = Vector3Add(ray.position, Vector3Scale(direction, outDistance));
+		const Vector3 outward = Vector3Subtract(surface, volume.center);
+		const float length = Vector3Length(outward);
+
+		// A collapsed sphere has no surface to take a normal from; face the ray.
+		Vector3 normal = (length > kParallelEpsilon)
+			? Vector3Scale(outward, 1.0f / length)
+			: Vector3Negate(direction);
+
+		// Same convention as the slab test: face the ray from either side.
+		outNormal = inside ? Vector3Negate(normal) : normal;
+		return true;
+	}
+
+	// Box and mesh. Push the ray into the volume's own frame and slab-test there.
+	// ColliderVolume already carries unit axes, so this is three dot products
+	// rather than a quaternion inverse.
+	const Vector3 delta = Vector3Subtract(ray.position, volume.center);
+	const Vector3 localOrigin = {
+		Vector3DotProduct(delta, volume.axes[0]),
+		Vector3DotProduct(delta, volume.axes[1]),
+		Vector3DotProduct(delta, volume.axes[2])
+	};
+	const Vector3 localDirection = {
+		Vector3DotProduct(direction, volume.axes[0]),
+		Vector3DotProduct(direction, volume.axes[1]),
+		Vector3DotProduct(direction, volume.axes[2])
+	};
+
+	Vector3 localNormal = {};
+	if (!SlabTest(localOrigin, localDirection, volume.halfExtents, outDistance, localNormal))
+	{
+		return false;
+	}
+
+	// Back out to world space along the same axes
+	outNormal = Vector3Add(Vector3Add(
+		Vector3Scale(volume.axes[0], localNormal.x),
+		Vector3Scale(volume.axes[1], localNormal.y)),
+		Vector3Scale(volume.axes[2], localNormal.z));
+	return true;
 }
 #pragma endregion
 

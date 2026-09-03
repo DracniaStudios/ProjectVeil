@@ -244,7 +244,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 	// The World Editor freezes the simulation, so nothing else is refreshing the
 	// broad-phase box while these fields are being dragged — and mouse picking
 	// and the debug draw both read it.
-	object->rigidBody3D.SyncCollisionBox();
+	object->rigidBody3D.SyncBroadPhaseBox();
 	ImGui::Spacing();
 
 	Vector4 color = Vector4(

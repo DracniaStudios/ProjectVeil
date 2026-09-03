@@ -103,10 +103,14 @@ float Stalker::DistanceToObstruction(Vector3 direction, float maxDistance, const
 		// blind the stalker to anything behind a damage zone or an objective area.
 		if (object.rigidBody3D.collider.isTrigger()) { continue; }
 
-		const RayCollision hit = GetRayCollisionBox(ray, object.rigidBody3D.collisionBox);
-		if (hit.hit && hit.distance >= 0.0f && hit.distance < nearest)
+		// The collider, not the box around it: sight lines that thread past a
+		// rotated wall are exactly the ones the stalker should be able to see down.
+		float distance = 0.0f;
+		Vector3 normal = {};
+		if (object.rigidBody3D.Raycast(ray, distance, normal)
+			&& distance >= 0.0f && distance < nearest)
 		{
-			nearest = hit.distance;
+			nearest = distance;
 		}
 	}
 

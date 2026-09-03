@@ -92,10 +92,13 @@ float SoundField::AudibleLoudnessAt(Vector3 listener, const SoundEvent& event, c
 		// zone across a corridor should not make the footsteps beyond it quieter.
 		if (object.rigidBody3D.collider.isTrigger()) { continue; }
 
-		const RayCollision hit = GetRayCollisionBox(ray, object.rigidBody3D.collisionBox);
-		// Only bodies strictly between the two points occlude; a box behind the
+		// The collider, not the box around it, so a rotated pillar muffles sound
+		// across its actual width rather than across its bounding box.
+		float distance = 0.0f;
+		Vector3 normal = {};
+		// Only bodies strictly between the two points occlude; a body behind the
 		// listener still reports a hit on an infinite ray.
-		if (hit.hit && hit.distance > 0.0f && hit.distance < span)
+		if (object.rigidBody3D.Raycast(ray, distance, normal) && distance > 0.0f && distance < span)
 		{
 			if (++occluders >= kMaxOccluders) { break; }
 		}

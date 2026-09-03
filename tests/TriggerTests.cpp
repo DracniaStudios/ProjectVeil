@@ -87,7 +87,7 @@ static ProbeEntity* AddProbe(Scene* scene, Vector3 at, std::uint64_t id = 700)
 	owned->id = id;
 	owned->rigidBody3D.Teleport(at);
 	owned->rigidBody3D.scale = Vector3{ 1, 1, 1 };
-	owned->rigidBody3D.SyncCollisionBox();
+	owned->rigidBody3D.SyncBroadPhaseBox();
 	ProbeEntity* probe = owned.get();
 	scene->gameMap.entities[id] = std::move(owned);
 	return probe;
@@ -109,7 +109,7 @@ static GameObject* AddFloor(Scene* scene, Vector3 centre, Vector3 size, Collider
 	floor.rigidBody3D.translation = centre;
 	floor.rigidBody3D.scale = size;
 	floor.rigidBody3D.collider.mode = mode;
-	floor.rigidBody3D.SyncCollisionBox();
+	floor.rigidBody3D.SyncBroadPhaseBox();
 	scene->gameMap.gameObjects.push_back(floor);
 	return &scene->gameMap.gameObjects.back();
 }
@@ -128,11 +128,11 @@ static void Step(Scene* scene, float dt, int solverIterations = 8)
 		{
 			for (auto& body : scene->gameMap.gameObjects)
 			{
-				if (CheckCollisionBoxes(entity->rigidBody3D.collisionBox, body.rigidBody3D.collisionBox))
+				if (entity->rigidBody3D.OverlapsBroadPhase(body.rigidBody3D))
 				{
 					entity->rigidBody3D.resolveConstrains(entity.get(), &body);
-					entity->rigidBody3D.SyncCollisionBox();
-					body.rigidBody3D.SyncCollisionBox();
+					entity->rigidBody3D.SyncBroadPhaseBox();
+					body.rigidBody3D.SyncBroadPhaseBox();
 				}
 			}
 		}
@@ -241,7 +241,7 @@ static void TestColliderSizeChangesWhatCollides()
 	GameObject* floor = AddFloor(narrow, Vector3{ 0, -1, 0 }, Vector3{ 4, 1, 4 }, COLLIDER_COLLISION);
 	// The model still spans 4 units; only its collider shrinks.
 	floor->rigidBody3D.collider.size = Vector3{ 0.2f, 1.0f, 0.2f };
-	floor->rigidBody3D.SyncCollisionBox();
+	floor->rigidBody3D.SyncBroadPhaseBox();
 	ProbeEntity* misses = AddProbe(narrow, Vector3{ 2.4f, 2, 0 });
 	for (int frame = 0; frame < 120; ++frame) { Step(narrow, 1.0f / 60.0f); }
 	Check(misses->rigidBody3D.translation.y < -2.0f,

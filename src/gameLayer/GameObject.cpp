@@ -4,7 +4,7 @@
 #include <SceneManager.h>
 
 // A static getBoundingBox(Model, Vector3) used to live here. It had no callers
-// — every collision box is built by RigidBody3D::SyncCollisionBox — and its
+// — every collision box is built by RigidBody3D::SyncBroadPhaseBox — and its
 // guard was inverted: permaAssertComment(mdl.meshCount == 0, "No Meshes In
 // Model") asserts that the model has NO meshes, so it would have fired on every
 // valid model and stayed quiet on exactly the null-mesh case the next line
@@ -13,7 +13,7 @@
 //
 // Mesh geometry does reach collision now, but not that way. A COLLIDER_MESH
 // collider is fitted from the model's own bounds in loadVisuals() below, and
-// SyncCollisionBox still builds the box from the collider alone — so there is
+// SyncBroadPhaseBox still builds the box from the collider alone — so there is
 // one source of truth, and the mesh feeds into it rather than around it.
 
 #pragma region GameObject
@@ -45,7 +45,7 @@ GameObject::GameObject()
 
 	// The collision box is not seeded here. It used to be assigned
 	// GetMeshBoundingBox(model.meshes[0]) — a MODEL-LOCAL box written into a
-	// WORLD-space field, which the first SyncCollisionBox() overwrote anyway. The
+	// WORLD-space field, which the first SyncBroadPhaseBox() overwrote anyway. The
 	// body builds its own box from its collider, and does so before anything can
 	// read it.
 	lifeSpan = 0;
@@ -169,7 +169,7 @@ void GameObject::onEnable()
 
 	// Fits a mesh collider to whatever model this binds, and refreshes the box
 	loadVisuals();
-	rigidBody3D.SyncCollisionBox();
+	rigidBody3D.SyncBroadPhaseBox();
 
 	lifeSpan = 0;
 	deathSpan = 1;
@@ -207,7 +207,7 @@ void GameObject::render3D()
 		// unrotated and its collider is the default, and every gap between them —
 		// from rotation, from a resized collider, from an offset one — is real slack
 		// worth being able to see.
-		DrawBoundingBox(rigidBody3D.collisionBox, WHITE);
+		DrawBoundingBox(rigidBody3D.broadPhaseBox, WHITE);
 
 		// Colour carries the mode. A trigger and a solid are indistinguishable on
 		// screen otherwise and behave completely differently, which is a miserable
@@ -268,7 +268,7 @@ void GameObject::update(Scene* scene, float deltaTime)
 		return;
 	}
 
-	// Rigidbody Data (Update() refreshes collisionBox from translation/scale)
+	// Rigidbody Data (Update() refreshes broadPhaseBox from the collider)
 	{
 		rigidBody3D.Update(deltaTime);
 	}

@@ -34,8 +34,10 @@
 - Added a Collider section to the Object Browser (shape, mode, size/radius,
   offset, Fit To Model, Reset Collider) and staged shape/mode in the Placement
   Panel, so a trigger volume can be dropped in directly.
-- Added tests/ColliderTests.cpp (77 checks, links raylib alone) and
+- Added tests/ColliderTests.cpp (99 checks, links raylib alone) and
   tests/TriggerTests.cpp (11 checks, links the engine).
+- Added ColliderRaycast, an exact ray test for every collider shape, and
+  RigidBody3D::Raycast / OverlapsBroadPhase in front of it.
 
 [ Updated ]
 
@@ -53,6 +55,19 @@
   damage zone across a corridor no longer muffles footsteps or blinds the AI.
 - Updated mesh bounds to finally reach collision, via Collider3D::FitToModel in
   loadVisuals(). They were previously computed and discarded every frame.
+- Updated every ray test that decides something - grounding and the touch flags,
+  stalker line of sight, sound occlusion, and the interaction crosshair - to run
+  against the collider instead of the box around it. A rotated ramp, an offset
+  collider or a sphere all sit inside their own bounds, and a ray through that
+  gap was a miss being reported as a hit.
+- Updated RigidBody3D::collisionBox to broadPhaseBox, and SyncCollisionBox to
+  SyncBroadPhaseBox. It is not the collision shape, it is a conservative bound
+  around it, and the old name invited exactly the misuse above. Broad-phase
+  gates now read a.OverlapsBroadPhase(b) so a gate looks like a gate.
+- Updated the editor's ray/box slab test to live with the collider maths, so the
+  editor and the game share one implementation. Picking still tests the visual
+  box rather than the collider, so shrinking a collider cannot make an object
+  unclickable.
 
 [ Fixed ]
 
@@ -66,4 +81,6 @@
 - Removed RigidBody3D::GetWorldAxes, which had no callers left once the resolved
   collider volume carried the axes.
 - Removed the two GetMeshBoundingBox assignments in GameObject, which wrote a
-  model-local box into a world-space field that SyncCollisionBox overwrote.
+  model-local box into a world-space field that SyncBroadPhaseBox overwrote.
+- Removed RigidBody3D::GetColliderBox, which had no callers and named the
+  collider while returning the broad-phase box.

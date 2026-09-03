@@ -9,24 +9,6 @@
 
 
 #pragma region Extents
-ColliderVolume RigidBody3D::GetColliderVolume() const
-{
-	// MakeColliderVolume is the single definition of how a collider composes with
-	// a transform. Everything below reads this rather than rebuilding the maths,
-	// which is what stops the solver and the debug draw from drifting apart.
-	return MakeColliderVolume(collider, translation, rotation, scale);
-}
-
-Vector3 RigidBody3D::GetColliderCenter() const
-{
-	return GetColliderVolume().center;
-}
-
-Vector3 RigidBody3D::GetWorldHalfExtents() const
-{
-	return ColliderWorldHalfExtents(GetColliderVolume());
-}
-
 void DrawOrientedBoxWires(Vector3 center, Vector3 size, Quaternion rotation, Color color)
 {
 	const Quaternion orientation = SafeOrientation(rotation);
@@ -73,18 +55,30 @@ void RigidBody3D::checkRayCollision(const RigidBody3D& other)
 	/// Distance threshold for ray collision detection
 	constexpr float touchDistance = 0.1f; // Adjust this value based on how close the ray needs to be to count as a touch
 
-	// Auto function to check if a ray hits the other object within the touch distance
-	auto hitWithinRange = [&](Ray ray)
-		{
-			RayCollision collision = GetRayCollisionBox(ray, other.collisionBox);
-			return collision.hit && collision.distance <= Vector3Length(translation - ray.position) + touchDistance;
-		};
-
 	// Face Translation — rotation- and collider-aware, so the rays leave from the
 	// faces of the volume the solver actually tests rather than from an unrotated
 	// one, or from the object's origin when its collider is offset from it
 	const Vector3 c = GetColliderCenter();
 	const Vector3 half = GetWorldHalfExtents();
+
+	// Auto function to check if a ray hits the other object within the touch distance
+	auto hitWithinRange = [&](Ray ray)
+		{
+			// Against the other body's actual collider, not the box around it. The
+			// box test reported a touch anywhere in the slack a rotated or spherical
+			// body leaves inside its own bounds — which is how downTouch, and so
+			// standing and jumping, came true beside a 45-degree wall rather than on
+			// it.
+			float distance = 0.0f;
+			Vector3 normal = {};
+			if (!other.Raycast(ray, distance, normal)) { return false; }
+
+			// The reach is measured from the collider centre the ray left from. It
+			// used to be measured from `translation`, which is the same point only
+			// while the collider has no offset — with one, the allowance was wrong by
+			// exactly that offset.
+			return distance <= Vector3Length(c - ray.position) + touchDistance;
+		};
 	float hx = half.x;
 	float hy = half.y;
 	float hz = half.z;
@@ -378,7 +372,9 @@ void RigidBody3D::UpdateForce(float deltaTime)
 	for (auto& obj : scene->gameMap.gameObjects)
 	{
 		if (&obj.rigidBody3D == this) { continue; } // rays from our own faces always hit our own box
-		if (!CheckCollisionBoxes(nearBox, obj.rigidBody3D.collisionBox)) { continue; }
+		// Not OverlapsBroadPhase: nearBox is this body's box inflated by the touch
+		// margin, not the box itself, so the pair test does not apply.
+		if (!CheckCollisionBoxes(nearBox, obj.rigidBody3D.broadPhaseBox)) { continue; }
 		checkRayCollision(obj.rigidBody3D);
 	}
 }
@@ -426,7 +422,7 @@ void RigidBody3D::Update(float deltaTime)
 	lastPosition = translation;
 
 	// Update collision box to match current position and scale
-	SyncCollisionBox();
+	SyncBroadPhaseBox();
 }
 
 void RigidBody3D::DispatchTriggerEvents(GameObject* self, GameMap* map)
@@ -457,7 +453,7 @@ void RigidBody3D::DispatchTriggerEvents(GameObject* self, GameMap* map)
 	triggerContactsThisFrame.clear();
 }
 
-void RigidBody3D::SyncCollisionBox()
+void RigidBody3D::SyncBroadPhaseBox()
 {
 	// The same degenerate-value repairs Update() performs before integrating.
 	// They are repeated here because the editor's frozen path never reaches
@@ -477,8 +473,8 @@ void RigidBody3D::SyncCollisionBox()
 	const Vector3 center = volume.center;
 	const Vector3 extent = ColliderWorldHalfExtents(volume);
 
-	collisionBox.min = { center.x - extent.x, center.y - extent.y, center.z - extent.z };
-	collisionBox.max = { center.x + extent.x, center.y + extent.y, center.z + extent.z };
+	broadPhaseBox.min = { center.x - extent.x, center.y - extent.y, center.z - extent.z };
+	broadPhaseBox.max = { center.x + extent.x, center.y + extent.y, center.z + extent.z };
 }
 
 void RigidBody3D::ApplyGravity()

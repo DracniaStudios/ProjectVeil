@@ -37,13 +37,17 @@ void Player::Interact()
 		// without this the player could still interact with thin air.
 		if (!obj->isInteractable || !obj->isEnabled) { continue; }
 
-		const RayCollision hit = GetRayCollisionBox(cameraRay, obj->rigidBody3D.collisionBox);
-		if (!hit.hit || hit.distance > static_cast<float>(interactRange)) { continue; }
+		// The collider, not the box around it, so the crosshair has to actually be
+		// on the object rather than merely within its bounds.
+		float distance = 0.0f;
+		Vector3 normal = {};
+		if (!obj->rigidBody3D.Raycast(cameraRay, distance, normal)) { continue; }
+		if (distance > static_cast<float>(interactRange)) { continue; }
 
-		if (closest == nullptr || hit.distance < closestDistance)
+		if (closest == nullptr || distance < closestDistance)
 		{
 			closest = obj;
-			closestDistance = hit.distance;
+			closestDistance = distance;
 		}
 	}
 

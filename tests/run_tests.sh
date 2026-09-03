@@ -52,6 +52,7 @@ g++ -std=c++23 -Wall \
 	-I "$FMOD_CORE_INC" \
 	tests/SoundFieldTests.cpp \
 	src/gameLayer/Perception/SoundField.cpp \
+	src/gameLayer/Components/Collider3D.cpp \
 	-o "$BIN" \
 	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
 

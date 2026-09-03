@@ -146,6 +146,28 @@ struct ColliderVolume
  */
 ContactInfo ColliderContact(const ColliderVolume& a, const ColliderVolume& b);
 
+/**
+ * Ray against a collider volume — exact for every shape, unlike testing the
+ * axis-aligned box that encloses it.
+ *
+ * That difference is the whole point of using this rather than raylib's
+ * GetRayCollisionBox on a body's broad-phase box: a rotated ramp, an offset
+ * collider or a sphere all sit some way inside their own bounds, and a ray
+ * through that gap is a miss being reported as a hit. Grounding, line of sight
+ * and sound occlusion all read this, so the gap is the difference between being
+ * grounded on thin air beside a wall and not.
+ *
+ * Returns the entry distance normally, and the EXIT distance when the ray starts
+ * inside the volume — so a camera or a listener standing inside a room is not
+ * swallowed at distance 0 by the walls around it. `outNormal` always faces the
+ * ray: the entry face's outward normal from outside, the exit face's inward
+ * normal from within.
+ *
+ * A zero-length direction is rejected rather than normalised.
+ */
+bool ColliderRaycast(const ColliderVolume& volume, Ray ray,
+	float& outDistance, Vector3& outNormal);
+
 /** Clamps every component to at least MINIMUM_COLLIDER_EXTENT. */
 Vector3 SanitizeColliderSize(Vector3 size);
 
@@ -196,7 +218,7 @@ struct Collider3D
 	 *
 	 * This does not reintroduce the second source of truth the tombstone comment
 	 * in GameObject.cpp warns about: mesh bounds feed *into* the collider, and
-	 * the collider remains the one thing SyncCollisionBox() reads.
+	 * the collider remains the one thing SyncBroadPhaseBox() reads.
 	 *
 	 * A model with no meshes leaves the collider untouched rather than collapsing
 	 * it to nothing.

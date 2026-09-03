@@ -423,6 +423,159 @@ static void TestMeshFitting()
 }
 
 /**
+ * The reason ColliderRaycast exists at all.
+ *
+ * Every ray test in the game used to run against the axis-aligned box enclosing
+ * a body. A rotated box sits some way inside its own bounds, and a ray through
+ * that gap was a miss reported as a hit — which is how a player ends up grounded
+ * on thin air beside a 45-degree wall.
+ */
+static void TestRayMissesRotatedBoxInsideItsBounds()
+{
+	std::printf("a ray through a rotated box's bounds but not the box\n");
+
+	// A unit box turned 45 degrees about Y. Its enclosing AABB grows to
+	// sqrt(2)/2 ~ 0.707 on X and Z, and the gap between the two is at the AABB's
+	// CORNERS — the rotated square still reaches the full 0.707 along each axis
+	// on its own, just at a single corner each. So the ray has to go up the
+	// diagonal: (0.6, 0.6) is comfortably inside the bounding box and comfortably
+	// outside the box it encloses.
+	const Quaternion turned = QuaternionFromAxisAngle(Vector3{ 0, 1, 0 }, PI * 0.25f);
+	const ColliderVolume rotated = BoxAt(Vector3{ 0, 0, 0 }, Vector3{ 1, 1, 1 }, turned);
+
+	const Vector3 aabbHalf = ColliderWorldHalfExtents(rotated);
+	Check(aabbHalf.x > 0.6f && aabbHalf.z > 0.6f,
+		"the fixture's bounding box really does contain the ray");
+
+	Ray through = {};
+	through.position = Vector3{ 0.6f, -5.0f, 0.6f };
+	through.direction = Vector3{ 0, 1, 0 };
+
+	float distance = 0.0f;
+	Vector3 normal = {};
+	Check(!ColliderRaycast(rotated, through, distance, normal),
+		"the ray misses the rotated box it passes beside");
+
+	// And the same ray does hit once the box is not rotated, so the fixture is
+	// measuring rotation rather than simply being aimed at nothing.
+	const ColliderVolume square = BoxAt(Vector3{ 0, 0, 0 }, Vector3{ 1.4f, 1, 1.4f });
+	Check(ColliderRaycast(square, through, distance, normal),
+		"the same ray hits a box that actually fills those bounds");
+}
+
+static void TestRayAgainstBox()
+{
+	std::printf("ray against box\n");
+
+	const ColliderVolume box = BoxAt(Vector3{ 0, 0, 0 });
+
+	float distance = 0.0f;
+	Vector3 normal = {};
+
+	Ray ray = {};
+	ray.position = Vector3{ -3.0f, 0.0f, 0.0f };
+	ray.direction = Vector3{ 1, 0, 0 };
+	Check(ColliderRaycast(box, ray, distance, normal), "a ray aimed at the box hits it");
+	CheckNear(distance, 2.5f, 0.0001f, "distance is to the near face, not the centre");
+	CheckVector(normal, Vector3{ -1, 0, 0 }, 0.0001f, "the normal is the entry face, facing the ray");
+
+	// Behind the ray
+	ray.direction = Vector3{ -1, 0, 0 };
+	Check(!ColliderRaycast(box, ray, distance, normal), "a box behind the ray is not hit");
+
+	// Aimed past it
+	ray.position = Vector3{ -3.0f, 2.0f, 0.0f };
+	ray.direction = Vector3{ 1, 0, 0 };
+	Check(!ColliderRaycast(box, ray, distance, normal), "a ray passing above the box misses");
+
+	// A zero-length direction must be rejected rather than normalised
+	ray.position = Vector3{ 0, 0, 0 };
+	ray.direction = Vector3{ 0, 0, 0 };
+	Check(!ColliderRaycast(box, ray, distance, normal), "a zero-length direction is rejected");
+}
+
+/**
+ * Starting inside must report the exit, not zero. An editor camera flown inside
+ * a room would otherwise have every click swallowed by the walls around it, and
+ * a sound emitted inside a volume would occlude itself.
+ */
+static void TestRayStartingInsideReportsTheExit()
+{
+	std::printf("a ray starting inside a volume reports its exit\n");
+
+	Ray outward = {};
+	outward.position = Vector3{ 0, 0, 0 };
+	outward.direction = Vector3{ 1, 0, 0 };
+
+	float distance = 0.0f;
+	Vector3 normal = {};
+
+	const ColliderVolume box = BoxAt(Vector3{ 0, 0, 0 }, Vector3{ 4, 4, 4 });
+	Check(ColliderRaycast(box, outward, distance, normal), "a ray inside a box still reports a hit");
+	CheckNear(distance, 2.0f, 0.0001f, "the distance is to the far face");
+	CheckVector(normal, Vector3{ -1, 0, 0 }, 0.0001f, "the exit normal faces back down the ray");
+
+	const ColliderVolume sphere = SphereAt(Vector3{ 0, 0, 0 }, 2.0f);
+	Check(ColliderRaycast(sphere, outward, distance, normal), "a ray inside a sphere still reports a hit");
+	CheckNear(distance, 2.0f, 0.0001f, "the distance is to the far surface");
+	CheckVector(normal, Vector3{ -1, 0, 0 }, 0.0001f, "the sphere agrees with the box on inside normals");
+}
+
+static void TestRayAgainstSphere()
+{
+	std::printf("ray against sphere\n");
+
+	const ColliderVolume sphere = SphereAt(Vector3{ 0, 0, 0 }, 0.5f);
+
+	Ray ray = {};
+	ray.position = Vector3{ -3.0f, 0.0f, 0.0f };
+	ray.direction = Vector3{ 1, 0, 0 };
+
+	float distance = 0.0f;
+	Vector3 normal = {};
+	Check(ColliderRaycast(sphere, ray, distance, normal), "a ray through the centre hits");
+	CheckNear(distance, 2.5f, 0.0001f, "distance is to the near surface");
+	CheckVector(normal, Vector3{ -1, 0, 0 }, 0.0001f, "the normal faces the ray");
+
+	// The discriminating case: a ray that clips the sphere's bounding box but
+	// misses the sphere. Testing the enclosing box would call this a hit.
+	ray.position = Vector3{ -3.0f, 0.45f, 0.45f };
+	Check(!ColliderRaycast(sphere, ray, distance, normal),
+		"a ray through the bounding box's corner misses the sphere inside it");
+
+	ray.position = Vector3{ -3.0f, 2.0f, 0.0f };
+	Check(!ColliderRaycast(sphere, ray, distance, normal), "a ray passing well clear misses");
+}
+
+/**
+ * A ray has to be tested where the collider is, not where the object's origin
+ * is. This is what makes an offset collider usable at all.
+ */
+static void TestRayFollowsColliderOffset()
+{
+	std::printf("a ray hits an offset collider where the collider is\n");
+
+	Collider3D offset = {};
+	offset.offset = Vector3{ 0.0f, 5.0f, 0.0f };
+	const ColliderVolume volume = MakeColliderVolume(offset, Vector3{ 0, 0, 0 },
+		Quaternion{ 0, 0, 0, 1 }, Vector3{ 1, 1, 1 });
+
+	Ray atTheOrigin = {};
+	atTheOrigin.position = Vector3{ -3.0f, 0.0f, 0.0f };
+	atTheOrigin.direction = Vector3{ 1, 0, 0 };
+
+	Ray atTheCollider = atTheOrigin;
+	atTheCollider.position.y = 5.0f;
+
+	float distance = 0.0f;
+	Vector3 normal = {};
+	Check(!ColliderRaycast(volume, atTheOrigin, distance, normal),
+		"nothing is hit where the transform sits");
+	Check(ColliderRaycast(volume, atTheCollider, distance, normal),
+		"the collider is hit where the offset put it");
+}
+
+/**
  * Mode must gate the RESPONSE, never the DETECTION. If a trigger ever stopped
  * reporting contacts here, every trigger volume in the game would go silent.
  */
@@ -500,6 +653,11 @@ int main()
 	TestSizeShrinksTheVolume();
 	TestOffsetMovesTheVolume();
 	TestMeshFitting();
+	TestRayAgainstBox();
+	TestRayMissesRotatedBoxInsideItsBounds();
+	TestRayStartingInsideReportsTheExit();
+	TestRayAgainstSphere();
+	TestRayFollowsColliderOffset();
 	TestTriggerStillDetects();
 	TestJsonRoundTrip();
 

@@ -56,7 +56,7 @@ PickResult PickSceneObject(Scene* scene, const Ray& ray, PickFilter filter, std:
 /**
  * Ray against an oriented box. GameObject::render3D bakes scale and rotation
  * into model.transform, so the drawn volume is an OBB — testing the axis-aligned
- * rigidBody3D.collisionBox would make a rotated object pick from a box that
+ * rigidBody3D.broadPhaseBox would make a rotated object pick from a box that
  * visibly does not match it.
  */
 bool RayOrientedBox(const Ray& ray, Vector3 center, Vector3 size, Quaternion rotation,

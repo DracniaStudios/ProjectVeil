@@ -75,7 +75,7 @@ void updateCollision(Player* player) {
 	{
 		if (&obj != player)
 		{
-			if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, obj.rigidBody3D.collisionBox))
+			if (player->rigidBody3D.OverlapsBroadPhase(obj.rigidBody3D))
 			{
 				player->rigidBody3D.resolveConstrains(player, &obj);
 			}
@@ -87,7 +87,7 @@ void updateCollision(Player* player) {
 		auto ent = obj.second.get();
 		if (ent != player)
 		{
-			if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, ent->rigidBody3D.collisionBox))
+			if (player->rigidBody3D.OverlapsBroadPhase(ent->rigidBody3D))
 			{
 				player->rigidBody3D.resolveConstrains(player, ent);
 			}
@@ -96,7 +96,7 @@ void updateCollision(Player* player) {
 	for (auto& obj : SceneManager::getInstance().currentScene->gameMap.interactables)
 	{
 		auto ent = obj.second.get();
-		if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, ent->rigidBody3D.collisionBox))
+		if (player->rigidBody3D.OverlapsBroadPhase(ent->rigidBody3D))
 		{
 			player->rigidBody3D.resolveConstrains(player, ent);
 		}
