@@ -20,20 +20,21 @@ Scene* Scene_new() {
 	return scene;
 }
 
-/** Perception Emitters **/
+/** Task Stations **/
 
-// The station whose minigame is currently running, or nullptr.
-//
-// Scanned rather than cached on the Scene: isRunningMiniGame is the flag the
-// Director and the editor panel already read, and a second copy of the same
-// fact would be one more thing to keep in step across activate/release/replay.
+// Convenience wrapper over the GameMap-level scan, which lives there so
+// MiniGame.h can reach it without a Scene. See FindRunningStation in gameMap.h.
 InteractableObject* Scene::GetRunningStation()
 {
-	for (auto& [id, interactable] : gameMap.interactables)
-	{
-		if (interactable && interactable->isRunningMiniGame) { return interactable.get(); }
-	}
-	return nullptr;
+	return FindRunningStation(gameMap);
+}
+
+void Scene::SnapshotMiniGameData()
+{
+	if (miniGame == nullptr || miniGame->data == nullptr) { return; }
+
+	currentMiniGameData = *miniGame->data;
+	hasCurrentMiniGameData = true;
 }
 
 // A running task station is a periodic noise source (plan's emitter table:
@@ -497,6 +498,12 @@ void Scene::ResetMiniGame() {
 
 void Scene::ReleaseMiniGame()
 {
+	// Before the delete, not after: this is the last moment the score the player
+	// reached still exists anywhere. Every way out of a minigame — completing it,
+	// failing it, pausing out of it — funnels through here, so capturing at this
+	// one point covers all of them.
+	SnapshotMiniGameData();
+
 	if (miniGame != nullptr)
 	{
 		delete miniGame->data;
@@ -534,6 +541,14 @@ void Scene::SetMiniGame(int value)
 		return;
 	}
 
+	// Roll the history back one slot before the incoming game takes the current
+	// one. Snapshot first: the live data is about to be freed, and what it holds
+	// right now — the score the player actually reached — is the whole point of
+	// keeping it. Ordered ahead of ReleaseMiniGame for that reason.
+	SnapshotMiniGameData();
+	previousMiniGameData = currentMiniGameData;
+	hasPreviousMiniGameData = hasCurrentMiniGameData;
+
 	// Replacing an already-running minigame without freeing it would leak both
 	// the MiniGame and its MiniGameData.
 	ReleaseMiniGame();
@@ -568,5 +583,19 @@ void Scene::SetMiniGame(int value)
 
 	if (miniGame) {
 		lastMiniGamePlayed = value;
+	}
+
+	// The incoming game's opening state. A constructor that failed to produce a
+	// game leaves the slot empty rather than carrying the outgoing game's score
+	// forward under the new game's name.
+	if (miniGame != nullptr && miniGame->data != nullptr)
+	{
+		currentMiniGameData = *miniGame->data;
+		hasCurrentMiniGameData = true;
+	}
+	else
+	{
+		currentMiniGameData = {};
+		hasCurrentMiniGameData = false;
 	}
 }

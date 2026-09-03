@@ -66,6 +66,26 @@ public:
 	GameMap gameMap = {}; // The GameMap of the Scene
 	MiniGame* miniGame = {}; // Current Mini Game Loaded
 
+	// Two-deep history of minigame progress, kept by value.
+	//
+	// MiniGameData is heap-allocated by the MiniGame constructor and deleted by
+	// ReleaseMiniGame, so a score lives exactly as long as the overlay showing
+	// it: walking away from a half-finished station threw the progress away with
+	// no record it ever existed. These snapshots outlive the allocation, which is
+	// what makes an interruptible station possible to build on top.
+	//
+	// `current` tracks the live minigame's last known state; `previous` is the
+	// one it displaced. Both are refreshed when SetMiniGame swaps games, and
+	// `current` is captured once more on release so it holds the final state
+	// rather than a stale mid-run reading.
+	MiniGameData currentMiniGameData = {};
+	MiniGameData previousMiniGameData = {};
+
+	// A default MiniGameData is indistinguishable from a genuine score of zero,
+	// so "played and scored nothing" needs to be tellable from "never played".
+	bool hasCurrentMiniGameData = false;
+	bool hasPreviousMiniGameData = false;
+
 	// Perception — the only channel through which AI learns about the player.
 	// Owned by the Scene because emitters and listeners are both scene objects.
 	SoundField soundField = {};
@@ -80,6 +100,11 @@ public:
 	int GetLastMiniGame() const { return lastMiniGamePlayed; }
 	void ReleaseMiniGame(); // Frees MiniGame Memory Data
 	void ResetMiniGame();
+
+	// Copies the live minigame's data into currentMiniGameData. Called wherever
+	// the allocation is about to go away or be replaced; a no-op when nothing is
+	// running, so the last captured state stands rather than being erased.
+	void SnapshotMiniGameData();
 
 	// The task station whose minigame is running, or nullptr for none.
 	InteractableObject* GetRunningStation();

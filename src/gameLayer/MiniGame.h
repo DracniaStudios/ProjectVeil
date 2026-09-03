@@ -52,7 +52,17 @@ inline bool CompleteMiniGame(MiniGameData& data, Player& player, GameMap& gameMa
 	
 	if (data.score >= data.scoreGoal || forceComplete) {
 		if (CooldownTimer* getBuff = player.getBuff(buff); getBuff != nullptr) { getBuff->use(); }
-		
+
+		// Marked here rather than beside the `return true` below, because this is
+		// the point at which the task is objectively finished. The activator
+		// lookup that follows can fail on a world where the target was deleted,
+		// and that returns false — but the player did complete the station, and
+		// letting a missing door un-complete a finished task would leave the
+		// Director hinting at it forever.
+		if (InteractableObject* station = FindRunningStation(gameMap)) {
+			station->isCompleted = true;
+		}
+
 		// Check for Activator Object By using ID instead of Pointer
 		GameObject* target = FindWorldObjectByID(gameMap, player.interactObjectId);
 

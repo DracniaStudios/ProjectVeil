@@ -73,6 +73,23 @@ inline InteractableObject* FindInteractableByID(GameMap& gameMap, uint64_t id)
 	return it->second.get();
 };
 
+// The task station whose minigame is currently running, or nullptr for none.
+//
+// Scanned rather than cached: isRunningMiniGame is the flag the Director, the
+// station noise emitter and the editor panel already read, and a second copy of
+// the same fact would be one more thing to keep in step across
+// activate/release/replay. It lives here rather than on Scene so that
+// MiniGame.h's CompleteMiniGame — which is handed a GameMap and never a Scene —
+// can reach it to mark the station done.
+inline InteractableObject* FindRunningStation(GameMap& gameMap)
+{
+	for (auto& [id, interactable] : gameMap.interactables)
+	{
+		if (interactable && interactable->isRunningMiniGame) { return interactable.get(); }
+	}
+	return nullptr;
+};
+
 inline GameObject* FindWorldObjectByID(GameMap& gameMap, uint64_t id)
 {
 

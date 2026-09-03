@@ -129,7 +129,9 @@ Json InteractableObject::formatToJson()
 	j["Variation"] = variation;
 	j["Activator"] = activator;
 	j["IsInteractable"] = isInteractable;
-	// Maybe Is Completed
+	j["IsCompleted"] = isCompleted;
+	// isRunningMiniGame is deliberately not persisted: it means "occupied right
+	// now", and a save reloaded later has nobody standing at the station.
 	return j;
 }
 
@@ -144,5 +146,9 @@ bool InteractableObject::loadFromJson(Json& j)
 	// unresolvable id instead of "none".
 	activator = j.value("Activator", 0);
 	isInteractable = j.value("IsInteractable", true);
+	isCompleted = j.value("IsCompleted", false);
+	// A station is never occupied on load, whatever was happening when the save
+	// was written — the same reason the Stalker drops its lastKnownPosition.
+	isRunningMiniGame = false;
 	return true;
 }
