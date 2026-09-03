@@ -160,3 +160,10 @@ Asset* WorldEditor::getActiveModel()
 	if (activeModelIndex < 0 || activeModelIndex >= static_cast<int>(assets.size())) { return nullptr; }
 	return &assets[activeModelIndex];
 }
+
+Asset* WorldEditor::getActiveAsset()
+{
+	auto& assets = AssetManager::getInstance().assets;
+	if (activeAssetIndex < 0 || activeAssetIndex >= static_cast<int>(assets.size())) { return nullptr; }
+	return &assets[activeAssetIndex];
+}
