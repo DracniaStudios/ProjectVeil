@@ -79,7 +79,11 @@ static std::string assetNameFor(const fs::path& path)
 	return stem;
 }
 
-void AssetManager::loadFolder(const char* folder, bool recursive)
+
+// Load All Folders in "recursive" mode and repead Load Folders for each direcyort
+
+// Load all supported texture/model files found under RESOURCES_PATH/folder
+void AssetManager::loadFolder(const char* folder)
 {
 	const fs::path root = fs::path(RESOURCES_PATH) / folder;
 
@@ -90,21 +94,28 @@ void AssetManager::loadFolder(const char* folder, bool recursive)
 		return;
 	}
 
+	// Check if Folder Exists in the list of folders, if not add it
+	if (std::find(folders.begin(), folders.end(), folder) == folders.end())
+	{
+		folders.push_back(folder);
+	}
+	
 	// Collect first and sort so load order (and asset indices) don't depend on the OS
 	std::vector<fs::path> files;
-	if (recursive)
+	for (const auto& entry : fs::directory_iterator(root, errorCode))
 	{
-		for (const auto& entry : fs::recursive_directory_iterator(root, errorCode))
+		// If the entry is a directory, recursively load its contents.
+		// Recurse with a path relative to RESOURCES_PATH (not the absolute
+		// filesystem path) so `folder`/`asset.folder` stay stable across
+		// machines and don't leak the local build path into the editor UI.
+		if (entry.is_directory())
 		{
-			if (entry.is_regular_file()) { files.push_back(entry.path()); }
+			const std::string subFolder = entry.path().lexically_relative(fs::path(RESOURCES_PATH)).string();
+			loadFolder(subFolder.c_str());
 		}
-	}
-	else
-	{
-		for (const auto& entry : fs::directory_iterator(root, errorCode))
-		{
-			if (entry.is_regular_file()) { files.push_back(entry.path()); }
-		}
+
+		// If the entry is a regular file, add it to the list of files
+		if (entry.is_regular_file()) { files.push_back(entry.path()); }
 	}
 	std::sort(files.begin(), files.end());
 
@@ -121,6 +132,7 @@ void AssetManager::loadFolder(const char* folder, bool recursive)
 		Asset asset;
 		asset.name = assetNameFor(file);
 		asset.path = file.string();
+		asset.folder = folder;
 		asset.type = type;
 
 		if (GetAssetPtrByName(asset.name, asset.type) != nullptr)
@@ -163,16 +175,5 @@ void AssetManager::loadFolder(const char* folder, bool recursive)
 
 void AssetManager::loadAll()
 {
-	loadFolder("", true);
-
-	/*
-	// UI Decals (non-recursive: icons/MagicSphere tilesets stay unloaded)
-	loadFolder("icons", false);
-
-	/// Blocks
-	loadFolder("blocks", true);
-
-	// Models
-	loadFolder("models", true);
-	*/
+	loadFolder("");
 }

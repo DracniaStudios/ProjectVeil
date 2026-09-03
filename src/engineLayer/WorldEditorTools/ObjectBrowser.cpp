@@ -312,7 +312,6 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::Separator();
 	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Debug");
 	ImGui::Checkbox("Show Collider", &object->displayCollider);
-	ImGui::Checkbox("Show Model", &object->display3DModel);
 	ImGui::Checkbox("Show Direction", &object->displayDirection);
 
 	// Status

@@ -240,22 +240,12 @@ struct Transform3D : public Transform
 struct RigidBody3D : Transform3D
 {
 private:
-	// Owning GameObjects this body overlapped, one entry per partner. A single
-	// slot could not represent simultaneous contacts: with the solver running 8
-	// iterations over every overlapping pair, a body touching both the floor and
-	// a projectile overwrote the slot on each pass, so `!= other` was true again
-	// on the next one and onCollision (i.e. damage) fired up to 8 times a frame
-	// instead of once. Compared only, never dereferenced; both lists are rebuilt
-	// from scratch each frame in Update(), so a destroyed partner cannot linger.
+	// GameObjects that had multiple contacts on a single frame no longer linger together
+	// This could cause the OnCollision functions to run multiple times.
 	std::vector<GameObject*> contactsThisFrame;
 	std::vector<GameObject*> contactsLastFrame;
 
-	// Trigger overlaps are tracked separately, and by ID rather than by pointer.
-	// onTriggerExit cannot be known until a whole frame has passed without the
-	// pair touching, and by then the partner may have been destroyed — so unlike
-	// the lists above, which are only ever compared, these are dereferenced. An
-	// ID is looked up through the map at dispatch time and a missing partner is
-	// simply skipped, which a raw pointer could not do safely.
+	// GameObjects that are looked up by ID.
 	std::vector<std::uint64_t> triggerContactsThisFrame;
 	std::vector<std::uint64_t> triggerContactsLastFrame;
 
