@@ -75,7 +75,7 @@ void updateCollision(Player* player) {
 	{
 		if (&obj != player)
 		{
-			if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, obj.rigidBody3D.collisionBox))
+			if (player->rigidBody3D.OverlapsBroadPhase(obj.rigidBody3D))
 			{
 				player->rigidBody3D.resolveConstrains(player, &obj);
 			}
@@ -87,7 +87,7 @@ void updateCollision(Player* player) {
 		auto ent = obj.second.get();
 		if (ent != player)
 		{
-			if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, ent->rigidBody3D.collisionBox))
+			if (player->rigidBody3D.OverlapsBroadPhase(ent->rigidBody3D))
 			{
 				player->rigidBody3D.resolveConstrains(player, ent);
 			}
@@ -96,7 +96,7 @@ void updateCollision(Player* player) {
 	for (auto& obj : SceneManager::getInstance().currentScene->gameMap.interactables)
 	{
 		auto ent = obj.second.get();
-		if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, ent->rigidBody3D.collisionBox))
+		if (player->rigidBody3D.OverlapsBroadPhase(ent->rigidBody3D))
 		{
 			player->rigidBody3D.resolveConstrains(player, ent);
 		}
@@ -274,6 +274,14 @@ void Player::update3D(float deltaTime)
 	UpdateActions(this);
 
 	SetMoveDirection(this, deltaTime);
+
+	// The player ticks its own body rather than going through GameObject::update,
+	// so it needs its own trigger dispatch or it would never report leaving one.
+	// currentScene is null between the two halves of a scene transition.
+	if (Scene* scene = SceneManager::getInstance().currentScene)
+	{
+		rigidBody3D.DispatchTriggerEvents(this, &scene->gameMap);
+	}
 
 	/// Update RigidBody3D Physics
 	rigidBody3D.Update(deltaTime);

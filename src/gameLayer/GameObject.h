@@ -129,6 +129,22 @@ struct GameObject
 	virtual void Destroy();
 	virtual void onDestroy(Scene* scene);
 	virtual void onCollision(const GameObject* collider);
+
+	/**
+	 * Overlap with a body whose collider is in Trigger mode.
+	 *
+	 * onCollision still fires for these as well, so existing listeners are
+	 * unaffected by an object being switched to a trigger. These two are the
+	 * extra signal a trigger volume carries: something came in, and later,
+	 * something left.
+	 *
+	 * onTriggerExit lands one frame after the overlap actually ends — it cannot
+	 * be known until a whole solver pass has gone by without the pair touching.
+	 * `other` has been looked up by id and is alive; a partner destroyed while
+	 * inside the volume is simply not reported.
+	 */
+	virtual void onTriggerEnter(GameObject* other);
+	virtual void onTriggerExit(GameObject* other);
 	
 	// Save Data
 	virtual Json formatToJson();

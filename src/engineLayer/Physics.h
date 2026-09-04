@@ -3,11 +3,14 @@
 #define PHYSICS_H
 
 #include <algorithm>
+#include <cstdint>
 #include <vector>
 
 #include <raylib.h>
 #include <raymath.h>
 #include <nlohmann/json.hpp>
+
+#include <Collider.h>
 
 using Json = nlohmann::json;
 
@@ -201,20 +204,6 @@ inline Vector3& operator/=(Vector3& a, const Vector3& b)
 struct GameMap;
 struct GameObject;
 
-/**
- * Result of a narrow-phase contact test.
- *
- * Produced by RigidBody3D::getContact() and consumed by the resolution code, so
- * a single separating-axis test answers "do they touch", "which way do I push"
- * and "how far" at once rather than being recomputed for each question.
- */
-struct ContactInfo
-{
-	bool hit = false;
-	Vector3 normal = {};  // Unit length, pointing from the first body toward the second
-	float depth = 0.0f;   // Overlap along `normal` — how far they must separate
-};
-
 struct Transform3D : public Transform
 {
 	// translation
@@ -251,15 +240,14 @@ struct Transform3D : public Transform
 struct RigidBody3D : Transform3D
 {
 private:
-	// Owning GameObjects this body overlapped, one entry per partner. A single
-	// slot could not represent simultaneous contacts: with the solver running 8
-	// iterations over every overlapping pair, a body touching both the floor and
-	// a projectile overwrote the slot on each pass, so `!= other` was true again
-	// on the next one and onCollision (i.e. damage) fired up to 8 times a frame
-	// instead of once. Compared only, never dereferenced; both lists are rebuilt
-	// from scratch each frame in Update(), so a destroyed partner cannot linger.
+	// GameObjects that had multiple contacts on a single frame no longer linger together
+	// This could cause the OnCollision functions to run multiple times.
 	std::vector<GameObject*> contactsThisFrame;
 	std::vector<GameObject*> contactsLastFrame;
+
+	// GameObjects that are looked up by ID.
+	std::vector<std::uint64_t> triggerContactsThisFrame;
+	std::vector<std::uint64_t> triggerContactsLastFrame;
 
 	Vector3 lastPosition = {};
 	Vector3 appliedGravity = Vector3{0, 20, 0};
@@ -277,8 +265,28 @@ public:
 	bool isStatic = false;
 	bool canCollide = true;
 
-	BoundingBox collisionBox = {};
-	Vector3 collisionBoxScale = Vector3(1.0f, 1.0f, 1.0f);
+	/**
+	 * Axis-aligned box enclosing the collider — the BROAD phase, and nothing else.
+	 *
+	 * Deliberately not called `broadPhaseBox`: it is not the collision shape, it is
+	 * a conservative bound around it. Because it can only ever be larger than the
+	 * collider, a miss here is a guaranteed miss, which is exactly what makes it a
+	 * sound gate in front of the exact test — and exactly why nothing should use
+	 * it to answer a question. Anything asking "is something solid here" wants
+	 * Raycast() or getContact() instead.
+	 */
+	BoundingBox broadPhaseBox = {};
+
+	/**
+	 * The collision volume, authored independently of the render scale.
+	 *
+	 * This replaces `broadPhaseBoxScale`, which was declared for exactly this and
+	 * never read by anything. Its defaults — size {1,1,1}, offset {0,0,0},
+	 * COLLIDER_BOX, COLLIDER_COLLISION — make every accessor below return what it
+	 * returned when the collision shape was simply `scale`, so an object that has
+	 * never had its collider touched behaves exactly as it always did.
+	 */
+	Collider3D collider = {};
 	Vector3 angularVelocity = {}; // radians/sec, axis = spin axis
 	Vector3 velocity = {};
 	Vector3 acceleration = {};
@@ -304,7 +312,6 @@ public:
 
 	/// Get Values
 	GameObject* GetCollider() const { return contactsThisFrame.empty() ? nullptr : contactsThisFrame.front(); }
-	BoundingBox* GetColliderBox() { return &collisionBox; }
 	Vector3 GetVelocity() const { return velocity; }
 	Vector3 GetAcceleration() const { return acceleration; }
 	float GetAirTime() const { return airTime; }
@@ -324,27 +331,50 @@ public:
 	 * This is the BROAD-phase volume. The narrow phase (getContact) uses the
 	 * true oriented box and does not inherit this slack.
 	 */
-	Vector3 GetWorldHalfExtents() const;
+	Vector3 GetWorldHalfExtents() const { return ColliderWorldHalfExtents(GetColliderVolume()); }
 
 	/**
-	 * The oriented box, as the narrow phase sees it.
+	 * The collider resolved into world space — shape, centre, axes and extents.
 	 *
-	 * `translation` is its centre, GetLocalHalfExtents() its extents along its
-	 * own axes, and GetWorldAxes() those axes expressed in world space. Together
-	 * they are the OBB that getContact() tests.
+	 * This is what the narrow phase actually tests, and every geometry query on
+	 * this body is a thin read off it, so the solver, the broad-phase box, the
+	 * touch rays and the debug draw cannot disagree about where a body is or how
+	 * big it is.
 	 */
-	void GetWorldAxes(Vector3 axes[3]) const;
-	Vector3 GetLocalHalfExtents() const { return Vector3Scale(scale, 0.5f); }
+	//
+	// Defined here rather than in RigidBody3D.cpp on purpose. These are one-line
+	// compositions of the collider with the transform and need nothing from the
+	// engine, whereas RigidBody3D.cpp reaches SceneManager inside UpdateForce and
+	// so cannot be linked on its own. Keeping them inline lets a translation unit
+	// that only asks geometry questions — SoundField's occlusion pass, say — link
+	// against Collider3D.cpp alone.
+	ColliderVolume GetColliderVolume() const
+	{
+		return MakeColliderVolume(collider, translation, rotation, scale);
+	}
+
+	/**
+	 * World-space centre of the collision volume.
+	 *
+	 * Deliberately not the same thing as getCenter(), which is the transform's
+	 * own position: a collider may be offset from the body it rides on, and the
+	 * collision path wants the volume while the render and audio paths want the
+	 * object.
+	 */
+	Vector3 GetColliderCenter() const { return GetColliderVolume().center; }
+
+	/** Half-extents along the collider's own axes. `scale * 0.5f` by default. */
+	Vector3 GetLocalHalfExtents() const { return collider.GetLocalHalfExtents(scale); }
 
 	/// Editor Support
 	// Rebuilds the AABB from the current translation/scale without stepping the
 	// simulation, and repairs a degenerate scale/rotation on the way through.
 	//
 	// Update() normally does both, but the World Editor freezes the simulation
-	// while objects are being manipulated — and mouse picking reads collisionBox.
+	// while objects are being manipulated — and mouse picking reads broadPhaseBox.
 	// Without this the editor would only be able to re-click an object where it
 	// used to be, and a zeroed quaternion would never be repaired.
-	void SyncCollisionBox();
+	void SyncBroadPhaseBox();
 
 	/// Force Application
 	void ApplyGravity();
@@ -354,6 +384,17 @@ public:
 	void Jump(float force);
 	void UpdateForce(float deltaTime);
 	void Update(float deltaTime);
+
+	/**
+	 * Fires onTriggerExit for anything that left this body's trigger volumes, then
+	 * rolls the trigger contact lists ready for this frame's solver.
+	 *
+	 * Called once per body per frame from the two places that tick a body —
+	 * GameObject::update and Player::update3D — rather than from Update(), because
+	 * it needs the owning object and the map to resolve IDs, and because a
+	 * disabled body must still report the contacts it just lost.
+	 */
+	void DispatchTriggerEvents(GameObject* self, GameMap* map);
 
 	/// Collision Detection
 	/**
@@ -370,6 +411,32 @@ public:
 	 * axis-aligned test cannot see.
 	 */
 	ContactInfo getContact(const RigidBody3D& other) const;
+
+	/**
+	 * Ray against this body's collider — exact, unlike testing broadPhaseBox.
+	 *
+	 * Anything asking "is there something solid here" wants this rather than the
+	 * broad-phase box: that box is a conservative enclosure, so a rotated ramp, an
+	 * offset collider or a sphere all report hits through the empty space between
+	 * the two. Returns the exit distance when the ray starts inside; see
+	 * ColliderRaycast for the full contract.
+	 */
+	bool Raycast(Ray ray, float& outDistance, Vector3& outNormal) const
+	{
+		return ColliderRaycast(GetColliderVolume(), ray, outDistance, outNormal);
+	}
+
+	/**
+	 * Cheap conservative overlap test between two bodies' broad-phase boxes.
+	 *
+	 * The gate in front of getContact(): the box encloses the collider, so a miss
+	 * here means the colliders cannot be touching and the 15-axis test can be
+	 * skipped outright. A hit means only "worth testing properly".
+	 */
+	bool OverlapsBroadPhase(const RigidBody3D& other) const
+	{
+		return CheckCollisionBoxes(broadPhaseBox, other.broadPhaseBox);
+	}
 
 	// Convenience wrappers over getContact(). Prefer getContact() when more than
 	// one of these is needed — each of these runs a full separating-axis test.

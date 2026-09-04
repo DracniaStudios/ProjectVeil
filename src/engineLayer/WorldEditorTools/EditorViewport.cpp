@@ -387,7 +387,7 @@ void WorldEditor::DuplicateSelection()
 
 	if (spawned == nullptr) { statusMessage = "Duplicate failed"; return; }
 
-	spawned->rigidBody3D.SyncCollisionBox();
+	spawned->rigidBody3D.SyncBroadPhaseBox();
 	selectedObjectId = spawned->id;
 
 	EditorEdit edit = {};
@@ -467,10 +467,11 @@ void WorldEditor::ApplyTransform(GameObject* object, const GizmoTransform& trans
 	body.acceleration = {};
 	body.angularVelocity = {};
 
-	// Mouse picking reads collisionBox, and the frozen simulation is no longer
-	// refreshing it. Without this an object can only be re-clicked at the
-	// position it occupied before the drag.
-	body.SyncCollisionBox();
+	// The frozen simulation is no longer refreshing the broad-phase box, and the
+	// solver reads it the instant play resumes — a stale box would gate collision
+	// against where the object used to be. The Show Collider overlay draws it too,
+	// so without this the white box lags behind the object being dragged.
+	body.SyncBroadPhaseBox();
 }
 
 void WorldEditor::PushEdit(const EditorEdit& edit)

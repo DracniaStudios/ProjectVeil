@@ -84,14 +84,14 @@ void Scene::ResetID() {
 // solver iterations use the updated position rather than the stale one.
 // Forwards to the rigid body so the solver, RigidBody3D::Update() and the
 // editor's frozen path can never disagree on how a box is built.
-static void refreshCollisionBox(RigidBody3D& body)
+static void refreshBroadPhaseBox(RigidBody3D& body)
 {
-	body.SyncCollisionBox();
+	body.SyncBroadPhaseBox();
 }
 
-// Collision runs in two phases. The CheckCollisionBoxes tests below are the
-// BROAD phase: rigidBody3D.collisionBox is the axis-aligned box enclosing each
-// body, so if two of those miss, the oriented boxes inside them cannot touch.
+// Collision runs in two phases. The OverlapsBroadPhase tests below are the
+// BROAD phase: each body's broadPhaseBox is the axis-aligned box enclosing its
+// collider, so if two of those miss, the colliders inside them cannot touch.
 // Only pairs that survive reach resolveConstrains, which runs the exact
 // separating-axis test. Keeping the cheap gate matters — the narrow phase walks
 // 15 axes per pair and this loop is O(n^2) per iteration.
@@ -118,11 +118,11 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 				if (bodyA.rigidBody3D.canCollide == false || bodyB.rigidBody3D.canCollide == false) { continue; }
 				if (bodyA.rigidBody3D.isStatic && bodyB.rigidBody3D.isStatic) { continue; }
 
-				if (CheckCollisionBoxes(bodyA.rigidBody3D.collisionBox, bodyB.rigidBody3D.collisionBox))
+				if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
 				{
 					bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
-					refreshCollisionBox(bodyA.rigidBody3D);
-					refreshCollisionBox(bodyB.rigidBody3D);
+					refreshBroadPhaseBox(bodyA.rigidBody3D);
+					refreshBroadPhaseBox(bodyB.rigidBody3D);
 				}
 			}
 		}
@@ -132,11 +132,11 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		{
 			for (auto& bodyB : objects)
 			{
-				if (CheckCollisionBoxes(entity->rigidBody3D.collisionBox, bodyB.rigidBody3D.collisionBox))
+				if (entity->rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
 				{
 					entity->rigidBody3D.resolveConstrains(entity.get(), &bodyB);
-					refreshCollisionBox(entity->rigidBody3D);
-					refreshCollisionBox(bodyB.rigidBody3D);
+					refreshBroadPhaseBox(entity->rigidBody3D);
+					refreshBroadPhaseBox(bodyB.rigidBody3D);
 				}
 			}
 		}
@@ -146,11 +146,11 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		{
 			for (auto bodyB = std::next(bodyA); bodyB !=entities.end(); ++bodyB)
 			{
-				if (CheckCollisionBoxes(bodyA->second->rigidBody3D.collisionBox, bodyB->second->rigidBody3D.collisionBox))
+				if (bodyA->second->rigidBody3D.OverlapsBroadPhase(bodyB->second->rigidBody3D))
 				{
 					bodyA->second->rigidBody3D.resolveConstrains(bodyA->second.get(), bodyB->second.get());
-					refreshCollisionBox(bodyA->second->rigidBody3D);
-					refreshCollisionBox(bodyB->second->rigidBody3D);
+					refreshBroadPhaseBox(bodyA->second->rigidBody3D);
+					refreshBroadPhaseBox(bodyB->second->rigidBody3D);
 				}
 			}
 		}
@@ -160,11 +160,11 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		{
 			for (auto& bodyB : objects)
 			{
-				if (CheckCollisionBoxes(entity->rigidBody3D.collisionBox, bodyB.rigidBody3D.collisionBox))
+				if (entity->rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
 				{
 					entity->rigidBody3D.resolveConstrains(entity.get(), &bodyB);
-					refreshCollisionBox(entity->rigidBody3D);
-					refreshCollisionBox(bodyB.rigidBody3D);
+					refreshBroadPhaseBox(entity->rigidBody3D);
+					refreshBroadPhaseBox(bodyB.rigidBody3D);
 				}
 			}
 		}
@@ -174,11 +174,11 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		{
 			for (auto bodyB = entities.begin(); bodyB != entities.end(); ++bodyB)
 			{
-				if (CheckCollisionBoxes(bodyA->second->rigidBody3D.collisionBox, bodyB->second->rigidBody3D.collisionBox))
+				if (bodyA->second->rigidBody3D.OverlapsBroadPhase(bodyB->second->rigidBody3D))
 				{
 					bodyA->second->rigidBody3D.resolveConstrains(bodyA->second.get(), bodyB->second.get());
-					refreshCollisionBox(bodyA->second->rigidBody3D);
-					refreshCollisionBox(bodyB->second->rigidBody3D);
+					refreshBroadPhaseBox(bodyA->second->rigidBody3D);
+					refreshBroadPhaseBox(bodyB->second->rigidBody3D);
 				}
 			}
 		}
@@ -188,11 +188,11 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		{
 			for (auto bodyB = std::next(bodyA); bodyB != interactables.end(); ++bodyB)
 			{
-				if (CheckCollisionBoxes(bodyA->second->rigidBody3D.collisionBox, bodyB->second->rigidBody3D.collisionBox))
+				if (bodyA->second->rigidBody3D.OverlapsBroadPhase(bodyB->second->rigidBody3D))
 				{
 					bodyA->second->rigidBody3D.resolveConstrains(bodyA->second.get(), bodyB->second.get());
-					refreshCollisionBox(bodyA->second->rigidBody3D);
-					refreshCollisionBox(bodyB->second->rigidBody3D);
+					refreshBroadPhaseBox(bodyA->second->rigidBody3D);
+					refreshBroadPhaseBox(bodyB->second->rigidBody3D);
 				}
 			}
 		}
@@ -205,11 +205,11 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		{
 			for (auto& [id, entity] : entities)
 			{
-				if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, entity->rigidBody3D.collisionBox))
+				if (player->rigidBody3D.OverlapsBroadPhase(entity->rigidBody3D))
 				{
 					player->rigidBody3D.resolveConstrains(player, entity.get());
-					refreshCollisionBox(player->rigidBody3D);
-					refreshCollisionBox(entity->rigidBody3D);
+					refreshBroadPhaseBox(player->rigidBody3D);
+					refreshBroadPhaseBox(entity->rigidBody3D);
 				}
 			}
 		}
@@ -218,11 +218,11 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		{
 			for (auto& [id, entity] : interactables)
 			{
-				if (CheckCollisionBoxes(player->rigidBody3D.collisionBox, entity->rigidBody3D.collisionBox))
+				if (player->rigidBody3D.OverlapsBroadPhase(entity->rigidBody3D))
 				{
 					player->rigidBody3D.resolveConstrains(player, entity.get());
-					refreshCollisionBox(player->rigidBody3D);
-					refreshCollisionBox(entity->rigidBody3D);
+					refreshBroadPhaseBox(player->rigidBody3D);
+					refreshBroadPhaseBox(entity->rigidBody3D);
 				}
 			}
 		}
@@ -300,7 +300,7 @@ void Scene_updateScene(float delta) {
 	if (auto player = scene->player) {
 		if (editorFrozen)
 		{
-			player->rigidBody3D.SyncCollisionBox();
+			player->rigidBody3D.SyncBroadPhaseBox();
 		}
 		else if (scene->is2DActive)
 		{
@@ -315,7 +315,7 @@ void Scene_updateScene(float delta) {
 
 	/* Update GameObjects */
 	for (auto& object : scene->gameMap.gameObjects) {
-		if (editorFrozen) { object.rigidBody3D.SyncCollisionBox(); continue; }
+		if (editorFrozen) { object.rigidBody3D.SyncBroadPhaseBox(); continue; }
 		object.isSelectable = true;
 		object.update(scene, delta);
 		clampObject(object, scene->limitYBounds);
@@ -324,7 +324,7 @@ void Scene_updateScene(float delta) {
 	/* Update Interactables */
 	for (auto interactable = scene->gameMap.interactables.begin(); interactable != scene->gameMap.interactables.end();) {
 		interactable->second->id = interactable->first;
-		if (editorFrozen) { interactable->second->rigidBody3D.SyncCollisionBox(); ++interactable; continue; }
+		if (editorFrozen) { interactable->second->rigidBody3D.SyncBroadPhaseBox(); ++interactable; continue; }
 		interactable->second->update(scene, delta);
 		clampObject(*interactable->second.get(), scene->limitYBounds);
 		++interactable;
@@ -339,7 +339,7 @@ void Scene_updateScene(float delta) {
 		// Frozen entities are not culled either: an entity sitting at zero
 		// health would otherwise be deleted out from under the inspector
 		// examining it.
-		if (editorFrozen) { entity->second->rigidBody3D.SyncCollisionBox(); ++entity; continue; }
+		if (editorFrozen) { entity->second->rigidBody3D.SyncBroadPhaseBox(); ++entity; continue; }
 
 		bool shouldKill = entity->second->health <= 0;
 

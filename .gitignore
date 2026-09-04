@@ -60,6 +60,7 @@ out/
 .veil-sync/
 docs/
 tools/
+tests/
 
 # Additive Files
 saves/backup.json

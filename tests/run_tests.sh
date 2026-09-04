@@ -52,6 +52,7 @@ g++ -std=c++23 -Wall \
 	-I "$FMOD_CORE_INC" \
 	tests/SoundFieldTests.cpp \
 	src/gameLayer/Perception/SoundField.cpp \
+	src/gameLayer/Components/Collider3D.cpp \
 	-o "$BIN" \
 	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
 
@@ -60,7 +61,33 @@ echo
 SOUNDFIELD_STATUS=$?
 
 # ---------------------------------------------------------------------------
-# Engine-linked suites: Stalker FSM, and the perception emitters
+# Collider tests
+#
+# Same cheap tier as the SoundField suite: Collider3D.cpp deliberately has no
+# engine dependency, so it links against raylib alone and needs no window. If
+# this block ever starts wanting game objects to link, something has included an
+# engine header in the collider.
+# ---------------------------------------------------------------------------
+COLLIDER_BIN="$OUT_DIR/collider_tests"
+
+echo
+echo "building $COLLIDER_BIN"
+g++ -std=c++23 -Wall \
+	-I src/gameLayer \
+	-I src/engineLayer \
+	-I thirdparty/raylib-6.0/src \
+	-I "$JSON_INC" \
+	tests/ColliderTests.cpp \
+	src/gameLayer/Components/Collider3D.cpp \
+	-o "$COLLIDER_BIN" \
+	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
+
+echo
+"$COLLIDER_BIN"
+COLLIDER_STATUS=$?
+
+# ---------------------------------------------------------------------------
+# Stalker FSM tests
 #
 # These need the engine. Stalker::update runs Entity::update ->
 # GameObject::update -> RigidBody3D::UpdateForce, and the emitter tests drive
@@ -144,6 +171,48 @@ for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
 		-Wl,-rpath,"$ROOT/$BUILD_DIR/game" \
 		-lX11 -lGL -lpthread -ldl -lrt -lm
 
+# ---------------------------------------------------------------------------
+# Collider mode tests
+#
+# The shape maths is covered by collider_tests above, which needs nothing but
+# raylib. What lives in RigidBody3D::resolveConstrains -- collision pushes,
+# trigger does not -- needs real game objects, so this one links the engine on
+# the same terms as the FSM tests and reuses everything they discovered.
+# ---------------------------------------------------------------------------
+TRIGGER_BIN="$OUT_DIR/trigger_tests"
+echo
+echo "building $TRIGGER_BIN"
+g++ -std=c++23 \
+	-I src/gameLayer \
+	-I src/engineLayer \
+	-I src/platform \
+	-I thirdparty/raylib-6.0/src \
+	-I "$JSON_INC" \
+	-I "$FMOD_STUDIO_INC" \
+	-I "$FMOD_CORE_INC" \
+	-I thirdparty/imgui-docking/imgui \
+	-I thirdparty/rlImgui \
+	-I thirdparty/FastNoise2-1.1.1/include \
+	-I thirdparty/steam-1.64/public \
+	-DRESOURCES_PATH=\"$ROOT/resources/\" \
+	tests/TriggerTests.cpp \
+	"${GAME_OBJECTS[@]}" \
+	"${IMGUI_LIBS[@]}" \
+	"$RAYLIB_LIB" \
+	"$FMOD_CORE_LIB" "$FMOD_STUDIO_LIB" \
+	-o "$TRIGGER_BIN" \
+	-Wl,-rpath,"$ROOT/$BUILD_DIR/game" \
+	-lX11 -lGL -lpthread -ldl -lrt -lm
+
+echo
+if [[ -z "${DISPLAY:-}" ]] && command -v xvfb-run >/dev/null 2>&1; then
+	xvfb-run -a --server-args="-screen 0 640x480x24" "$TRIGGER_BIN"
+else
+	"$TRIGGER_BIN"
+fi
+TRIGGER_STATUS=$?
+
+if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $FSM_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
 	echo
 	# GameObject's constructor needs a GL context, so a display is required.
 	# xvfb-run supplies one on a headless machine; a real session already has one.

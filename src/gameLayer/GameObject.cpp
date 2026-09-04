@@ -3,14 +3,11 @@
 #include <LightingSystem.h>
 #include <SceneManager.h>
 
-// A static getBoundingBox(Model, Vector3) used to live here. It had no callers
-// — every collision box is built by RigidBody3D::SyncCollisionBox from the
-// body's own translation/scale — and its guard was inverted:
-// permaAssertComment(mdl.meshCount == 0, "No Meshes In Model") asserts that the
-// model has NO meshes, so it would have fired on every valid model and stayed
-// quiet on exactly the null-mesh case the next line dereferences. Removed
-// rather than corrected: reviving it would reintroduce a second, divergent
-// source of truth for how a bounding box is built.
+// Mesh geometry reaches collision through the collider, never straight from the
+// model. A COLLIDER_MESH collider is fitted from the model's own bounds in
+// loadVisuals() below, and SyncBroadPhaseBox builds the box from the collider
+// alone — one source of truth. A helper that built a bounding box directly from
+// a model used to live here and was deliberately removed; do not revive it.
 
 #pragma region GameObject
 /** Initialization **/
@@ -39,9 +36,11 @@ GameObject::GameObject()
 	// until LightingSystem::Init() has run.
 	LightingSystem::getInstance().ApplyToModel(model);
 
-	// Set Initial Data
-	rigidBody3D.collisionBox = GetMeshBoundingBox(model.meshes[0]);
-
+	// The collision box is not seeded here. It used to be assigned
+	// GetMeshBoundingBox(model.meshes[0]) — a MODEL-LOCAL box written into a
+	// WORLD-space field, which the first SyncBroadPhaseBox() overwrote anyway. The
+	// body builds its own box from its collider, and does so before anything can
+	// read it.
 	lifeSpan = 0;
 	deathSpan = 1;
 
@@ -118,6 +117,15 @@ void GameObject::loadVisuals()
 	// duplication, setModel(), onEnable() and loadCommonFromJson() — which makes
 	// this the one place that guarantees new geometry is lit.
 	LightingSystem::getInstance().ApplyToModel(model);
+
+	// ...and the one place a mesh collider can be kept honest. Its whole point is
+	// to match the art, so it has to be refitted whenever the art changes rather
+	// than only when the object is first built. Box and sphere colliders are
+	// authored by hand and are deliberately left alone.
+	if (rigidBody3D.collider.shape == COLLIDER_MESH)
+	{
+		rigidBody3D.collider.FitToModel(model);
+	}
 }
 
 void GameObject::setModel(const std::string& assetName)
@@ -152,12 +160,9 @@ void GameObject::onEnable()
 	// clears it on its own, so re-enabling must restore it explicitly here.
 	rigidBody3D.canCollide = true;
 
+	// Fits a mesh collider to whatever model this binds, and refreshes the box
 	loadVisuals();
-
-	// Set Initial Data (Update() refreshes this from translation/scale)
-	rigidBody3D.collisionBox = mesh.vertexCount > 0
-		? GetMeshBoundingBox(mesh)
-		: GetMeshBoundingBox(model.meshes[0]);
+	rigidBody3D.SyncBroadPhaseBox();
 
 	lifeSpan = 0;
 	deathSpan = 1;
@@ -189,13 +194,31 @@ void GameObject::render3D()
 
 	if (displayCollider)
 	{
-		// Two volumes, because they are genuinely different things once an object
-		// is rotated. White is the axis-aligned box the solver actually tests;
-		// green is the object's true oriented shape. They coincide exactly while
-		// the object is unrotated, and the gap between them at other angles is
-		// the slack an AABB solver has to accept — not a bug, but worth seeing.
-		DrawBoundingBox(rigidBody3D.collisionBox, WHITE);
-		DrawOrientedBoxWires(rigidBody3D.translation, rigidBody3D.scale, rigidBody3D.rotation, GREEN);
+		// Two volumes, because they are genuinely different things. White is the
+		// axis-aligned box the BROAD phase tests; the coloured one is the collider
+		// the narrow phase actually tests. They coincide exactly while the object is
+		// unrotated and its collider is the default, and every gap between them —
+		// from rotation, from a resized collider, from an offset one — is real slack
+		// worth being able to see.
+		DrawBoundingBox(rigidBody3D.broadPhaseBox, WHITE);
+
+		// Colour carries the mode. A trigger and a solid are indistinguishable on
+		// screen otherwise and behave completely differently, which is a miserable
+		// thing to debug by moving objects around until something stops falling.
+		const Collider3D& collider = rigidBody3D.collider;
+		const Color colliderColor = collider.isTrigger() ? SKYBLUE : GREEN;
+		const Vector3 colliderCenter = rigidBody3D.GetColliderCenter();
+
+		if (collider.shape == COLLIDER_SPHERE)
+		{
+			DrawSphereWires(colliderCenter, collider.GetWorldRadius(rigidBody3D.scale), 8, 8, colliderColor);
+		}
+		else
+		{
+			DrawOrientedBoxWires(colliderCenter,
+				Vector3Scale(rigidBody3D.GetLocalHalfExtents(), 2.0f),
+				rigidBody3D.rotation, colliderColor);
+		}
 	}
 
 	if (display3DModel) {
@@ -222,6 +245,11 @@ void GameObject::render3D()
 
 void GameObject::update(Scene* scene, float deltaTime)
 {
+	// Before the enabled check on purpose: an object that has just been disabled
+	// stops colliding, and anything sitting in its trigger volumes has therefore
+	// left them. Skipping this would leave those overlaps latched open forever.
+	if (scene != nullptr) { rigidBody3D.DispatchTriggerEvents(this, &scene->gameMap); }
+
 	rigidBody3D.isEnabled = isEnabled;
 	if (!isEnabled)
 	{
@@ -233,7 +261,7 @@ void GameObject::update(Scene* scene, float deltaTime)
 		return;
 	}
 
-	// Rigidbody Data (Update() refreshes collisionBox from translation/scale)
+	// Rigidbody Data (Update() refreshes broadPhaseBox from the collider)
 	{
 		rigidBody3D.Update(deltaTime);
 	}
@@ -283,6 +311,16 @@ void GameObject::onDestroy(Scene* scene)
 void GameObject::onCollision(const GameObject* collider)
 {
 	// Collision Data Checks
+}
+
+void GameObject::onTriggerEnter(GameObject* other)
+{
+	// Something entered a trigger volume. Overridden by objects that care.
+}
+
+void GameObject::onTriggerExit(GameObject* other)
+{
+	// Something left a trigger volume, one frame after it actually did.
 }
 
 // FMOD requires forward and up to be normalized and perpendicular

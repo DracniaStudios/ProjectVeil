@@ -97,9 +97,9 @@ static BoundingBox AddBlock(Scene* scene, Vector3 centre, Vector3 size)
 	block.rigidBody3D.canCollide = true;
 	block.rigidBody3D.translation = centre;
 	block.rigidBody3D.scale = size;
-	block.rigidBody3D.SyncCollisionBox();
+	block.rigidBody3D.SyncBroadPhaseBox();
 	scene->gameMap.gameObjects.push_back(block);
-	return scene->gameMap.gameObjects.back().rigidBody3D.collisionBox;
+	return scene->gameMap.gameObjects.back().rigidBody3D.broadPhaseBox;
 }
 
 static bool InsideBox(Vector3 p, const BoundingBox& box)

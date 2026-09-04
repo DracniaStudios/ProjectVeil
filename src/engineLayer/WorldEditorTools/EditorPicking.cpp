@@ -1,5 +1,7 @@
 #include "EditorPicking.h"
 
+#include <Collider.h>
+
 #include <SceneManager.h>
 
 #include <algorithm>
@@ -11,86 +13,6 @@ namespace
 	// Below this, a direction component counts as parallel to the slab it is
 	// being tested against and the reciprocal is not worth trusting.
 	constexpr float kParallelEpsilon = 1.0e-6f;
-
-	// A scale can legitimately be tiny, but a zero half-extent makes the slab
-	// infinitely thin and the test meaningless.
-	constexpr float kMinimumHalfExtent = 0.0001f;
-
-	/**
-	 * Slab test against a box centred on the origin.
-	 *
-	 * Returns the entry distance normally, and the *exit* distance when the ray
-	 * starts inside the box. That second case matters in practice: an editor
-	 * camera flown inside a room's collision volume would otherwise have every
-	 * click swallowed at distance 0 by the walls around it, making the contents
-	 * of the room unselectable.
-	 */
-	bool SlabTest(Vector3 origin, Vector3 direction, Vector3 halfExtents,
-		float& outDistance, Vector3& outNormal)
-	{
-		const float o[3] = { origin.x, origin.y, origin.z };
-		const float d[3] = { direction.x, direction.y, direction.z };
-		const float h[3] = { halfExtents.x, halfExtents.y, halfExtents.z };
-
-		float nearT = -FLT_MAX;
-		float farT = FLT_MAX;
-		int nearAxis = 0;
-		int farAxis = 0;
-		float nearSign = -1.0f;
-		float farSign = 1.0f;
-		bool solved = false;
-
-		for (int axis = 0; axis < 3; ++axis)
-		{
-			const float half = fmaxf(h[axis], kMinimumHalfExtent);
-
-			if (fabsf(d[axis]) < kParallelEpsilon)
-			{
-				// Running parallel to this pair of planes: the ray can only hit
-				// the box if it already lies between them.
-				if (o[axis] < -half || o[axis] > half) { return false; }
-				continue;
-			}
-
-			const float inverse = 1.0f / d[axis];
-			float entry = (-half - o[axis]) * inverse; // plane at -half, outward normal -1
-			float exit = (half - o[axis]) * inverse;   // plane at +half, outward normal +1
-			float entrySign = -1.0f;
-
-			if (entry > exit)
-			{
-				std::swap(entry, exit);
-				entrySign = 1.0f; // the ray runs backwards, so it enters through +half
-			}
-
-			if (entry > nearT) { nearT = entry; nearAxis = axis; nearSign = entrySign; }
-			if (exit < farT) { farT = exit; farAxis = axis; farSign = -entrySign; }
-			if (nearT > farT) { return false; }
-
-			solved = true;
-		}
-
-		// Every axis was parallel, which only happens for a zero-length
-		// direction. Nothing meaningful to report.
-		if (!solved) { return false; }
-
-		if (farT < 0.0f) { return false; } // the whole box is behind the ray
-
-		const bool inside = nearT < 0.0f;
-		const int axis = inside ? farAxis : nearAxis;
-
-		// Face the ray either way: the entry face's outward normal when hit from
-		// outside, the exit face's inward normal when starting inside.
-		const float sign = inside ? -farSign : nearSign;
-
-		outDistance = inside ? farT : nearT;
-		outNormal = {
-			axis == 0 ? sign : 0.0f,
-			axis == 1 ? sign : 0.0f,
-			axis == 2 ? sign : 0.0f
-		};
-		return true;
-	}
 
 	/**
 	 * Only what is actually on screen may be clicked. A hidden or disabled
@@ -116,11 +38,24 @@ namespace
 
 		float distance = 0.0f;
 		Vector3 normal = {};
+		
+		
+		/// Collider Check
+		if (!RayOrientedBox(ray, object->rigidBody3D.translation, object->rigidBody3D.scale * object->rigidBody3D.collider.size,
+			object->rigidBody3D.rotation, distance, normal))
+		{
+			return;
+		}
+		
+		/// Bounding Box Check
+		/* 
 		if (!RayOrientedBox(ray, object->rigidBody3D.translation, object->rigidBody3D.scale,
 			object->rigidBody3D.rotation, distance, normal))
 		{
 			return;
 		}
+		*/
+
 
 		// Strictly nearer, so the first object at a given depth wins and the
 		// selection does not flicker between coplanar faces.
@@ -137,10 +72,9 @@ namespace
 
 Quaternion SafeRotation(Quaternion rotation)
 {
-	const float lengthSquared = rotation.x * rotation.x + rotation.y * rotation.y
-		+ rotation.z * rotation.z + rotation.w * rotation.w;
-	if (lengthSquared < 1.0e-8f) { return QuaternionIdentity(); }
-	return QuaternionNormalize(rotation);
+	// Forwards to the collider's guard so there is a single definition of what a
+	// degenerate rotation repairs to.
+	return SafeOrientation(rotation);
 }
 
 Ray GetEditorMouseRay(const Camera3D& camera)
@@ -151,26 +85,24 @@ Ray GetEditorMouseRay(const Camera3D& camera)
 bool RayOrientedBox(const Ray& ray, Vector3 center, Vector3 size, Quaternion rotation,
 	float& outDistance, Vector3& outNormal)
 {
-	if (Vector3LengthSqr(ray.direction) < kParallelEpsilon) { return false; }
-
-	// Rather than write a dedicated OBB routine, push the ray into the object's
-	// local frame and slab-test there. render3D applies scale first and then
-	// rotation about the object's centre, so the inverse is: translate to the
-	// centre, un-rotate, compare against half the scale.
+	// The ray/box maths lives with the collider in Collider3D.cpp, so the editor
+	// and the game share one implementation instead of two that can drift apart.
+	//
+	// This still describes the VISUAL box — the object's scale and rotation, not
+	// its collider — because selection has to follow what render3D draws. An
+	// object whose collider was shrunk to fit its art must still be clickable
+	// anywhere the art is.
 	const Quaternion orientation = SafeRotation(rotation);
-	const Quaternion inverse = QuaternionInvert(orientation);
 
-	const Vector3 localOrigin = Vector3RotateByQuaternion(Vector3Subtract(ray.position, center), inverse);
-	const Vector3 localDirection = Vector3RotateByQuaternion(Vector3Normalize(ray.direction), inverse);
+	ColliderVolume volume = {};
+	volume.shape = COLLIDER_BOX;
+	volume.center = center;
+	volume.axes[0] = Vector3RotateByQuaternion(Vector3{ 1.0f, 0.0f, 0.0f }, orientation);
+	volume.axes[1] = Vector3RotateByQuaternion(Vector3{ 0.0f, 1.0f, 0.0f }, orientation);
+	volume.axes[2] = Vector3RotateByQuaternion(Vector3{ 0.0f, 0.0f, 1.0f }, orientation);
+	volume.halfExtents = Vector3Scale(size, 0.5f);
 
-	Vector3 localNormal = {};
-	if (!SlabTest(localOrigin, localDirection, Vector3Scale(size, 0.5f), outDistance, localNormal))
-	{
-		return false;
-	}
-
-	outNormal = Vector3RotateByQuaternion(localNormal, orientation);
-	return true;
+	return ColliderRaycast(volume, ray, outDistance, outNormal);
 }
 
 PickResult PickSceneObject(Scene* scene, const Ray& ray, PickFilter filter, std::uint64_t ignoreId)
