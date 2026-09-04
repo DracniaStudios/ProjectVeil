@@ -38,11 +38,24 @@ namespace
 
 		float distance = 0.0f;
 		Vector3 normal = {};
+		
+		
+		/// Collider Check
+		if (!RayOrientedBox(ray, object->rigidBody3D.translation, object->rigidBody3D.scale * object->rigidBody3D.collider.size,
+			object->rigidBody3D.rotation, distance, normal))
+		{
+			return;
+		}
+		
+		/// Bounding Box Check
+		/* 
 		if (!RayOrientedBox(ray, object->rigidBody3D.translation, object->rigidBody3D.scale,
 			object->rigidBody3D.rotation, distance, normal))
 		{
 			return;
 		}
+		*/
+
 
 		// Strictly nearer, so the first object at a given depth wins and the
 		// selection does not flicker between coplanar faces.

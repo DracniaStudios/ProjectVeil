@@ -321,8 +321,11 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::PopID();
 }
 
-void ShowStateButtons(Scene* scene) {
+static void ShowStateButtons(Scene* scene) {
 #pragma region State Buttons
+	
+
+	/// Static/NonStatic All Objects
 	if (ImGui::Button("Make All Static")) {
 		std::cout << "[Object Browser] Set All Object/Interactables Static\n";
 		for (auto& object : scene->gameMap.gameObjects) {
@@ -345,6 +348,8 @@ void ShowStateButtons(Scene* scene) {
 	}
 	ImGui::Spacing();
 
+
+	/// Enable/Disable All Objects
 	if (ImGui::Button("Make All Enabled")) {
 		std::cout << "[Object Browser] Set All Object/Interactables Enabled\n";
 		for (auto& object : scene->gameMap.gameObjects) {
@@ -365,6 +370,46 @@ void ShowStateButtons(Scene* scene) {
 		}
 
 	}
+	ImGui::Spacing();
+	
+	
+	/// Enable/Disable All Objects
+	if (ImGui::Button("Show Collider")) {
+		std::cout << "[Object Browser] Show All Colliders\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.displayCollider = true;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->displayCollider = true;
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Hide Collider")) {
+		std::cout << "[Object Browser] Show All Colliders\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.displayCollider = false;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->displayCollider = false;
+		}
+
+	}
+	ImGui::Spacing();
+
+
+	if (ImGui::Button("Fit To Model")) {
+		std::cout << "[Object Browser] Set All Object to Fit Model\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.rigidBody3D.collider.FitToModel(object.model);
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->rigidBody3D.collider.FitToModel(object->model);
+		}
+		for (auto& [id, object] : scene->gameMap.entities) {
+			object->rigidBody3D.collider.FitToModel(object->model);
+		}
+	}
+	ImGui::SameLine();
 	ImGui::Spacing();
 #pragma endregion
 }
