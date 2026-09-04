@@ -171,6 +171,18 @@ for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
 		-Wl,-rpath,"$ROOT/$BUILD_DIR/game" \
 		-lX11 -lGL -lpthread -ldl -lrt -lm
 
+	echo
+	# GameObject's constructor needs a GL context, so a display is required.
+	# xvfb-run supplies one on a headless machine; a real session already has one.
+	# Failures are collected rather than fatal, so one red suite does not hide
+	# the state of the next.
+	if [[ -z "${DISPLAY:-}" ]] && command -v xvfb-run >/dev/null 2>&1; then
+		xvfb-run -a --server-args="-screen 0 640x480x24" "$TEST_BIN" || ENGINE_STATUS=1
+	else
+		"$TEST_BIN" || ENGINE_STATUS=1
+	fi
+done
+
 # ---------------------------------------------------------------------------
 # Collider mode tests
 #
@@ -212,17 +224,4 @@ else
 fi
 TRIGGER_STATUS=$?
 
-if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $FSM_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
-	echo
-	# GameObject's constructor needs a GL context, so a display is required.
-	# xvfb-run supplies one on a headless machine; a real session already has one.
-	# Failures are collected rather than fatal, so one red suite does not hide
-	# the state of the next.
-	if [[ -z "${DISPLAY:-}" ]] && command -v xvfb-run >/dev/null 2>&1; then
-		xvfb-run -a --server-args="-screen 0 640x480x24" "$TEST_BIN" || ENGINE_STATUS=1
-	else
-		"$TEST_BIN" || ENGINE_STATUS=1
-	fi
-done
-
-if [[ $SOUNDFIELD_STATUS -ne 0 || $ENGINE_STATUS -ne 0 ]]; then exit 1; fi
+if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi

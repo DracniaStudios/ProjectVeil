@@ -254,7 +254,7 @@ static GameObject* AddCrate(Scene* scene, Vector3 at, Vector3 velocity,
 	crate.rigidBody3D.translation = at;
 	crate.rigidBody3D.scale = Vector3{ 1, 1, 1 };
 	crate.rigidBody3D.SetVelocity(velocity);
-	crate.rigidBody3D.SyncCollisionBox();
+	crate.rigidBody3D.SyncBroadPhaseBox();
 	scene->gameMap.gameObjects.push_back(crate);
 	return &scene->gameMap.gameObjects.back();
 }
