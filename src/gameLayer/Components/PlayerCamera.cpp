@@ -17,8 +17,7 @@ void PlayerCamera::UpdateCameraFPS(Camera3D* camera)
 	camera->position = Vector3Add(player->rigidBody3D.translation, offset);
 	lookRotation.x -= GetMouseDelta().x * sensitivity.x;
 	lookRotation.y += GetMouseDelta().y * sensitivity.y;
-
-
+	
 	UpdateCamera(camera, CAMERA_CUSTOM);
 
 	// FPS-style camera look

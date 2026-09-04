@@ -189,7 +189,13 @@ void WorldEditor::showGameObject(GameObject* object) {
 	}
 	// Texture
 	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Texture");
-	ImGui::Image((ImTextureRef)(intptr_t)object->model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture.id, ImVec2(64, 64));
+	// A model whose load failed can carry materialCount == 0 with a null
+	// materials array (see LightingSystem::ApplyToModel's same guard) —
+	// indexing materials[0] unconditionally would crash the inspector on it.
+	if (object->model.materialCount > 0 && object->model.materials != nullptr)
+	{
+		ImGui::Image((ImTextureRef)(intptr_t)object->model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture.id, ImVec2(64, 64));
+	}
 	ImGui::Text("Texture: %s", object->textureName.empty() ? "None" : object->textureName.c_str());
 	Asset* activeTexture = getActiveTexture();
 	if (activeTexture != nullptr && ImGui::Button("Apply Active Texture"))
