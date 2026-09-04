@@ -17,6 +17,11 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 		ImGui::InputInt("Variation", &object->variation);
 		ImGui::TextDisabled("%s", miniGameIdToString(object->variation));
 		ImGui::Checkbox("MiniGame Running", &object->isRunningMiniGame);
+		ImGui::Checkbox("Completed", &object->isCompleted);
+		// Worth stating outright: the Director stops hinting toward a station the
+		// moment this is ticked, so it doubles as the switch for testing whether
+		// hinting moves on to the next outstanding objective.
+		ImGui::TextDisabled("Completed stations are skipped by the Director");
 	}
 
 	if (object->interactType == INTERACT_MINIGAME || object->interactType == INTERACT_ITEM) {

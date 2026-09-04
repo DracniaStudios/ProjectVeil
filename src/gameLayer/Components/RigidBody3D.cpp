@@ -236,6 +236,57 @@ float RigidBody3D::getPenetrationDepth(const RigidBody3D& other) const
 
 // ─── Constraint Resolution ─────────────────────────────────────────────────
 
+namespace
+{
+	// Physics impacts as a perception event (plan's emitter table: scaled by
+	// impact velocity).
+	//
+	// Called from the first-contact branch below rather than from the velocity
+	// response, so one collision is one noise: the solver runs eight iterations
+	// over every overlapping pair and would otherwise emit eight times for a
+	// single bang.
+	//
+	// Loudness comes from closing speed along the contact normal, which is what
+	// separates a thrown crate from a body resting on the floor. A resting or
+	// sliding contact closes at ~0 and never reaches kQuietImpact, so walking a
+	// room does not light up the sound field — footsteps are their own emitter
+	// with their own gait rules, and this must not quietly duplicate them.
+	void EmitImpactNoise(GameObject* self, GameObject* other, const ContactInfo& contact)
+	{
+		constexpr float kQuietImpact = 2.0f;   // below this there is no audible event
+		constexpr float kLoudImpact = 12.0f;   // at or above this, full loudness
+
+		// Symmetric: contact.normal points from self toward other and the
+		// relative velocity is self-minus-other, so swapping the two bodies
+		// negates both factors and leaves the closing speed unchanged.
+		const Vector3 relativeVelocity = Vector3Subtract(
+			self->rigidBody3D.GetVelocity(), other->rigidBody3D.GetVelocity());
+		const float closingSpeed = Vector3DotProduct(relativeVelocity, contact.normal);
+
+		// Gated before anything else is touched: resting and sliding contacts are
+		// the overwhelmingly common case and should cost a dot product, no more.
+		if (closingSpeed <= kQuietImpact) { return; }
+
+		auto scene = SceneManager::getInstance().currentScene;
+		if (scene == nullptr) { return; }
+
+		const float loudness = Clamp(
+			(closingSpeed - kQuietImpact) / (kLoudImpact - kQuietImpact), 0.0f, 1.0f);
+
+		// solveCollision visits each unordered pair exactly once, so `self` is
+		// whichever body the loop happened to reach first — just as likely the
+		// wall as the crate that hit it. Attributing the noise to the faster body
+		// puts it at the thing that actually moved, and makes the source id the
+		// striker's: a stalker that walks into a wall then hears nothing of its
+		// own making instead of chasing itself.
+		const GameObject* striker =
+			Vector3LengthSqr(other->rigidBody3D.GetVelocity()) >
+			Vector3LengthSqr(self->rigidBody3D.GetVelocity()) ? other : self;
+
+		scene->soundField.Emit(striker->getPosition(), loudness, SOUND_IMPACT, striker->id);
+	}
+}
+
 void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 {
 	if (&other->rigidBody3D == this) return;
@@ -264,7 +315,11 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 
 		if (!isKnown(contactsThisFrame))
 		{
-			if (!isKnown(contactsLastFrame)) { self->onCollision(other); }
+			if (!isKnown(contactsLastFrame))
+			{
+				self->onCollision(other);
+				EmitImpactNoise(self, other, contact);
+			}
 			contactsThisFrame.push_back(other);
 		}
 

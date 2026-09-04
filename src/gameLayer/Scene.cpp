@@ -20,6 +20,53 @@ Scene* Scene_new() {
 	return scene;
 }
 
+/** Task Stations **/
+
+// Convenience wrapper over the GameMap-level scan, which lives there so
+// MiniGame.h can reach it without a Scene. See FindRunningStation in gameMap.h.
+InteractableObject* Scene::GetRunningStation()
+{
+	return FindRunningStation(gameMap);
+}
+
+void Scene::SnapshotMiniGameData()
+{
+	if (miniGame == nullptr || miniGame->data == nullptr) { return; }
+
+	currentMiniGameData = *miniGame->data;
+	hasCurrentMiniGameData = true;
+}
+
+// A running task station is a periodic noise source (plan's emitter table:
+// ~0.6, periodic while active).
+//
+// It emits at the *station*, not at the player. The minigame is a 2D overlay
+// with no world position of its own, and using the player's would hand the
+// stalker a live position feed wearing a station's clothes — the exact leak the
+// sound-only decision exists to prevent. That the two happen to coincide while
+// the player is working the station is the player's problem, not a fact
+// perception was told.
+void Scene::EmitStationNoise(float deltaTime)
+{
+	constexpr float kStationInterval = 0.9f;
+	constexpr float kStationLoudness = 0.6f;
+
+	InteractableObject* station = GetRunningStation();
+	if (station == nullptr || !station->isEnabled)
+	{
+		// Reset rather than freeze, so the next station the player starts is
+		// audible immediately instead of inheriting a part-spent countdown.
+		stationNoiseTimer = 0.0f;
+		return;
+	}
+
+	stationNoiseTimer -= deltaTime;
+	if (stationNoiseTimer > 0.0f) { return; }
+	stationNoiseTimer = kStationInterval;
+
+	soundField.Emit(station->getPosition(), kStationLoudness, SOUND_STATION, station->id);
+}
+
 // Renumbers every object sequentially from the first assignable id.
 void Scene::ResetID() {
 	
@@ -238,7 +285,16 @@ void Scene_updateScene(float delta) {
 	// now is heard by entities later in the same frame rather than next one.
 	// Frozen editor time must not expire events either, hence the delta passed
 	// through unchanged only when the sim is actually running.
-	if (!editorFrozen) { scene->soundField.Update(delta); }
+	if (!editorFrozen)
+	{
+		scene->soundField.Update(delta);
+
+		// Ahead of the player and entity updates for the same reason: the hum a
+		// running station makes this frame should reach the stalker this frame,
+		// not next. The minigame's own update runs much later in this function
+		// and is about the overlay, not about the noise the machine makes.
+		scene->EmitStationNoise(delta);
+	}
 
 	/** Update Player **/
 	if (auto player = scene->player) {
@@ -413,6 +469,15 @@ void Scene::ResetMiniGame() {
 			// it for ->data and freed the same two allocations a second time.
 			// Every failed Flappy Bird or Crane attempt took that path.
 	const int replayId = GetLastMiniGame();
+
+	// Captured before the release, which clears it. A replay is the same player
+	// still standing at the same station, so the station has to come back
+	// occupied — otherwise it would fall silent for every attempt after the
+	// first, and the Director would start hinting toward a machine the player is
+	// currently using.
+	const InteractableObject* station = GetRunningStation();
+	const std::uint64_t stationId = station != nullptr ? station->id : 0;
+
 	if (miniGame != nullptr) {
 		ReleaseMiniGame();
 	}
@@ -420,16 +485,45 @@ void Scene::ResetMiniGame() {
 
 	// Nothing to replay: hand the player back to the 3D world rather
 	// than stranding them in an empty 2D overlay with no way out.
-	if (miniGame == nullptr) { is2DActive = false; }
+	if (miniGame == nullptr) { is2DActive = false; return; }
+
+	if (stationId != 0)
+	{
+		if (auto* resumed = FindInteractableByID(gameMap, stationId))
+		{
+			resumed->isRunningMiniGame = true;
+		}
+	}
 }
 
 void Scene::ReleaseMiniGame()
 {
+	// Before the delete, not after: this is the last moment the score the player
+	// reached still exists anywhere. Every way out of a minigame — completing it,
+	// failing it, pausing out of it — funnels through here, so capturing at this
+	// one point covers all of them.
+	SnapshotMiniGameData();
+
 	if (miniGame != nullptr)
 	{
 		delete miniGame->data;
 		delete miniGame;
 	}
+
+	// isRunningMiniGame was a one-way latch: ActivateMiniGame set it and nothing
+	// ever cleared it, so a station counted as occupied for the rest of the
+	// session. That was invisible until something depended on the flag; now two
+	// things do. The station emitter would hum forever at a machine the player
+	// walked away from, and the Director already skips occupied stations, so
+	// every station the player ever touched was permanently excluded from
+	// hinting. Releasing the minigame is the one point that knows the station is
+	// free again. Clearing every flag rather than one remembered id also repairs
+	// a save written while the latch was stuck.
+	for (auto& [id, interactable] : gameMap.interactables)
+	{
+		if (interactable) { interactable->isRunningMiniGame = false; }
+	}
+	stationNoiseTimer = 0.0f;
 
 	// Always null on return, whether or not there was anything to free. That is
 	// the property every caller depends on — it is what makes a second release,
@@ -446,6 +540,14 @@ void Scene::SetMiniGame(int value)
 		std::cout << "[Scene.cpp] Ignoring SetMiniGame with unknown id: " << value << "\n";
 		return;
 	}
+
+	// Roll the history back one slot before the incoming game takes the current
+	// one. Snapshot first: the live data is about to be freed, and what it holds
+	// right now — the score the player actually reached — is the whole point of
+	// keeping it. Ordered ahead of ReleaseMiniGame for that reason.
+	SnapshotMiniGameData();
+	previousMiniGameData = currentMiniGameData;
+	hasPreviousMiniGameData = hasCurrentMiniGameData;
 
 	// Replacing an already-running minigame without freeing it would leak both
 	// the MiniGame and its MiniGameData.
@@ -481,5 +583,19 @@ void Scene::SetMiniGame(int value)
 
 	if (miniGame) {
 		lastMiniGamePlayed = value;
+	}
+
+	// The incoming game's opening state. A constructor that failed to produce a
+	// game leaves the slot empty rather than carrying the outgoing game's score
+	// forward under the new game's name.
+	if (miniGame != nullptr && miniGame->data != nullptr)
+	{
+		currentMiniGameData = *miniGame->data;
+		hasCurrentMiniGameData = true;
+	}
+	else
+	{
+		currentMiniGameData = {};
+		hasCurrentMiniGameData = false;
 	}
 }

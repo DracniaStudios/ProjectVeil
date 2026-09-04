@@ -67,6 +67,13 @@ void Director::Update(Scene* scene, float deltaTime)
 		if (interactable->isRunningMiniGame) { continue; }
 		if (!interactable->isInteractable) { continue; }
 
+		// A finished station is not an outstanding objective. Without this the
+		// Director keeps applying pressure to work the player has already done,
+		// and the hint log fills with stations nobody will return to — which is
+		// the opposite of the "places the player must eventually go" reasoning
+		// the whole heuristic rests on.
+		if (interactable->isCompleted) { continue; }
+
 		// Farthest outstanding station from the stalker: hinting toward the one
 		// it is already near would be a no-op, and covering the far side of the
 		// room is what actually forces re-traversal to be risky.
