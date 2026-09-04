@@ -17,6 +17,11 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 		ImGui::InputInt("Variation", &object->variation);
 		ImGui::TextDisabled("%s", miniGameIdToString(object->variation));
 		ImGui::Checkbox("MiniGame Running", &object->isRunningMiniGame);
+		ImGui::Checkbox("Completed", &object->isCompleted);
+		// Worth stating outright: the Director stops hinting toward a station the
+		// moment this is ticked, so it doubles as the switch for testing whether
+		// hinting moves on to the next outstanding objective.
+		ImGui::TextDisabled("Completed stations are skipped by the Director");
 	}
 
 	if (object->interactType == INTERACT_MINIGAME || object->interactType == INTERACT_ITEM) {
@@ -264,7 +269,13 @@ void WorldEditor::showGameObject(GameObject* object) {
 	}
 	// Texture
 	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Texture");
-	ImGui::Image((ImTextureRef)(intptr_t)object->model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture.id, ImVec2(64, 64));
+	// A model whose load failed can carry materialCount == 0 with a null
+	// materials array (see LightingSystem::ApplyToModel's same guard) —
+	// indexing materials[0] unconditionally would crash the inspector on it.
+	if (object->model.materialCount > 0 && object->model.materials != nullptr)
+	{
+		ImGui::Image((ImTextureRef)(intptr_t)object->model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture.id, ImVec2(64, 64));
+	}
 	ImGui::Text("Texture: %s", object->textureName.empty() ? "None" : object->textureName.c_str());
 	Asset* activeTexture = getActiveTexture();
 	if (activeTexture != nullptr && ImGui::Button("Apply Active Texture"))

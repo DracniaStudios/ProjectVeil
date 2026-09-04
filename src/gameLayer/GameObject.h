@@ -175,6 +175,14 @@ public:
 	bool isInteractable = true;
 	bool isRunningMiniGame = false;
 
+	// Set once the station's minigame has been carried to its score goal. The
+	// Director reads it to tell an outstanding objective from a finished one:
+	// without it a completed station stays "outstanding" forever and keeps
+	// drawing hints, and the slice has no way to say the tasks are done.
+	//
+	// Distinct from isRunningMiniGame, which is only "occupied right now".
+	bool isCompleted = false;
+
 	virtual void render3D() override {
 		GameObject::render3D();
 	};

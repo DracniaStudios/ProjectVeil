@@ -9,8 +9,24 @@ void ActivateMiniGame(InteractableObject* interactable, bool bypass = false)
 	std::cout << "[InteractableObject] Activating MiniGame: " << interactable->variation << "\n";
 	auto scene = SceneManager::getInstance().currentScene;
 
+	// Tampering (plan's emitter table: ~0.8, one-shot): the clunk of the player
+	// physically working a station, as distinct from the hum the station then
+	// makes while it runs. At the stalker's default thresholds 0.8 clears
+	// huntThreshold out to roughly nine unoccluded metres and stays above
+	// hearingThreshold to about thirty, so starting a task is a commitment
+	// anywhere in a one-room slice rather than a free action.
+	//
+	// Emitted ahead of the unlock gate on purpose: rattling a station you cannot
+	// open is still interfering with it, and a failed attempt that costs nothing
+	// would be the safest way to play. Attributed to the station, so the noise
+	// carries where the machine is rather than who touched it.
+	//
+	// The dedicated tamper mechanic belongs to the task-station ticket; when it
+	// lands it should emit here too rather than inventing a second channel.
+	scene->soundField.Emit(interactable->getPosition(), 0.8f, SOUND_TAMPER, interactable->id);
+
 	if (!bypass && scene->player->artifactUnlocked < interactable->variation) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
-		
+
 	scene->SetMiniGame(interactable->variation);
 	// activator == 0 means "no explicit target" — the minigame should toggle
 	// the interactable that launched it rather than nothing at all.
@@ -113,7 +129,9 @@ Json InteractableObject::formatToJson()
 	j["Variation"] = variation;
 	j["Activator"] = activator;
 	j["IsInteractable"] = isInteractable;
-	// Maybe Is Completed
+	j["IsCompleted"] = isCompleted;
+	// isRunningMiniGame is deliberately not persisted: it means "occupied right
+	// now", and a save reloaded later has nobody standing at the station.
 	return j;
 }
 
@@ -128,5 +146,9 @@ bool InteractableObject::loadFromJson(Json& j)
 	// unresolvable id instead of "none".
 	activator = j.value("Activator", 0);
 	isInteractable = j.value("IsInteractable", true);
+	isCompleted = j.value("IsCompleted", false);
+	// A station is never occupied on load, whatever was happening when the save
+	// was written — the same reason the Stalker drops its lastKnownPosition.
+	isRunningMiniGame = false;
 	return true;
 }

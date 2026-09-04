@@ -89,22 +89,21 @@ COLLIDER_STATUS=$?
 # ---------------------------------------------------------------------------
 # Stalker FSM tests
 #
-# These need the engine: Stalker::update runs Entity::update ->
-# GameObject::update -> RigidBody3D::UpdateForce, which reaches
-# SceneManager::currentScene. Rather than restructure the build into a library
-# (which would risk the MSVC build that cannot be verified from here), the test
-# links against the objects CMake already produced, minus the translation unit
-# holding main.
+# These need the engine. Stalker::update runs Entity::update ->
+# GameObject::update -> RigidBody3D::UpdateForce, and the emitter tests drive
+# Scene and RigidBody3D directly; both reach SceneManager::currentScene. Rather
+# than restructure the build into a library (which would risk the MSVC build
+# that cannot be verified from here), they link against the objects CMake
+# already produced, minus the translation unit holding main.
 #
 # Requires the game to have been built: cmake --build <build-dir>
 # ---------------------------------------------------------------------------
 OBJ_ROOT="$BUILD_DIR/CMakeFiles/ProjectVeil.dir"
 if [[ ! -d "$OBJ_ROOT" ]]; then
 	echo
-	echo "skipping Stalker FSM tests: no compiled objects under '$OBJ_ROOT'." >&2
-	echo "                            build the game first: cmake --build $BUILD_DIR" >&2
-	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 ]]; then exit 1; fi
-	exit 0
+	echo "skipping engine-linked suites: no compiled objects under '$OBJ_ROOT'." >&2
+	echo "                               build the game first: cmake --build $BUILD_DIR" >&2
+	exit $SOUNDFIELD_STATUS
 fi
 
 # Every object except the one defining main. Detected rather than hardcoded, so
@@ -140,40 +139,37 @@ esac
 FMOD_CORE_LIB="$(find "thirdparty/fmod-2.3.14/core/lib/$FMOD_ARCH_DIR" -name 'libfmodL.so.*' -size +0 -print -quit)"
 FMOD_STUDIO_LIB="$(find "thirdparty/fmod-2.3.14/studio/lib/$FMOD_ARCH_DIR" -name 'libfmodstudioL.so.*' -size +0 -print -quit)"
 
-FSM_BIN="$OUT_DIR/stalker_fsm_tests"
-echo
-echo "building $FSM_BIN"
-g++ -std=c++23 \
-	-I src/gameLayer \
-	-I src/engineLayer \
-	-I src/platform \
-	-I thirdparty/raylib-6.0/src \
-	-I "$JSON_INC" \
-	-I "$FMOD_STUDIO_INC" \
-	-I "$FMOD_CORE_INC" \
-	-I thirdparty/imgui-docking/imgui \
-	-I thirdparty/rlImgui \
-	-I thirdparty/FastNoise2-1.1.1/include \
-	-I thirdparty/steam-1.64/public \
-	-DRESOURCES_PATH=\"$ROOT/resources/\" \
-	tests/StalkerFsmTests.cpp \
-	"${GAME_OBJECTS[@]}" \
-	"${IMGUI_LIBS[@]}" \
-	"$RAYLIB_LIB" \
-	"$FMOD_CORE_LIB" "$FMOD_STUDIO_LIB" \
-	-o "$FSM_BIN" \
-	-Wl,-rpath,"$ROOT/$BUILD_DIR/game" \
-	-lX11 -lGL -lpthread -ldl -lrt -lm
+# Both suites link identically, so they are built and run from one loop: a new
+# engine-linked suite is a line here rather than another copy of the g++ call.
+ENGINE_STATUS=0
+for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
+             "TaskStationTests:task_station_tests"; do
+	SRC="tests/${suite%%:*}.cpp"
+	TEST_BIN="$OUT_DIR/${suite##*:}"
 
-echo
-# GameObject's constructor needs a GL context, so a display is required. xvfb-run
-# supplies one on a headless machine; a real session already has one.
-if [[ -z "${DISPLAY:-}" ]] && command -v xvfb-run >/dev/null 2>&1; then
-	xvfb-run -a --server-args="-screen 0 640x480x24" "$FSM_BIN"
-else
-	"$FSM_BIN"
-fi
-FSM_STATUS=$?
+	echo
+	echo "building $TEST_BIN"
+	g++ -std=c++23 \
+		-I src/gameLayer \
+		-I src/engineLayer \
+		-I src/platform \
+		-I thirdparty/raylib-6.0/src \
+		-I "$JSON_INC" \
+		-I "$FMOD_STUDIO_INC" \
+		-I "$FMOD_CORE_INC" \
+		-I thirdparty/imgui-docking/imgui \
+		-I thirdparty/rlImgui \
+		-I thirdparty/FastNoise2-1.1.1/include \
+		-I thirdparty/steam-1.64/public \
+		-DRESOURCES_PATH=\"$ROOT/resources/\" \
+		"$SRC" \
+		"${GAME_OBJECTS[@]}" \
+		"${IMGUI_LIBS[@]}" \
+		"$RAYLIB_LIB" \
+		"$FMOD_CORE_LIB" "$FMOD_STUDIO_LIB" \
+		-o "$TEST_BIN" \
+		-Wl,-rpath,"$ROOT/$BUILD_DIR/game" \
+		-lX11 -lGL -lpthread -ldl -lrt -lm
 
 # ---------------------------------------------------------------------------
 # Collider mode tests
@@ -217,3 +213,16 @@ fi
 TRIGGER_STATUS=$?
 
 if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $FSM_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
+	echo
+	# GameObject's constructor needs a GL context, so a display is required.
+	# xvfb-run supplies one on a headless machine; a real session already has one.
+	# Failures are collected rather than fatal, so one red suite does not hide
+	# the state of the next.
+	if [[ -z "${DISPLAY:-}" ]] && command -v xvfb-run >/dev/null 2>&1; then
+		xvfb-run -a --server-args="-screen 0 640x480x24" "$TEST_BIN" || ENGINE_STATUS=1
+	else
+		"$TEST_BIN" || ENGINE_STATUS=1
+	fi
+done
+
+if [[ $SOUNDFIELD_STATUS -ne 0 || $ENGINE_STATUS -ne 0 ]]; then exit 1; fi

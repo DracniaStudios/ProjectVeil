@@ -122,7 +122,11 @@ void WorldEditor::ShowAssetData()
 					bool clicked = ImGui::Button(assets[i].name.c_str(), ImVec2(thumbSize, thumbSize));
 					if (clicked)
 					{
-						if (assets[i].type == ASSET_TEXTURE) activeAssetIndex = i;
+						// Unlike the Textures/Models tabs above, this loop is not
+						// filtered to one type — it lists everything in the folder —
+						// so gating the click on ASSET_TEXTURE left every model in a
+						// folder tab unclickable.
+						activeAssetIndex = i;
 					}
 
 					if (isSelected) { ImGui::PopStyleColor(); }

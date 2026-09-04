@@ -66,8 +66,48 @@
   editor and the game share one implementation. Picking still tests the visual
   box rather than the collider, so shrinking a collider cannot make an object
   unclickable.
+- Task stations now emit a periodic SOUND_STATION noise (0.6, every 0.9s) while
+  their minigame runs. It is emitted at the station, never at the player, so
+  perception is never handed a live position under cover of a world fact.
+- Interacting with a task station emits a one-shot SOUND_TAMPER noise (0.8) at
+  the station. A locked station that refuses to open still makes the noise —
+  a silent failed attempt would otherwise be the safest way to play.
+- Physics collisions emit SOUND_IMPACT scaled by closing speed along the contact
+  normal (silent below 2 u/s, full loudness at 12). Hung off the first-contact
+  branch so one bang is one noise, not one per solver iteration, and attributed
+  to the faster body so a stalker brushing a wall does not chase itself.
+- tests/EmitterTests.cpp — 28 checks over the three emitters above: position,
+  loudness, attribution, one-shot/periodic cadence, and the resting-contact case
+  that decides whether walking a room floods the sound field.
+- InteractableObject::isCompleted records that a task station has been carried to
+  its score goal, filling the "Maybe Is Completed" TODO that had sat in
+  formatToJson. Set by CompleteMiniGame, persisted with the world, and exposed
+  as a checkbox in the Object Browser. The Director now skips completed stations,
+  so it stops applying pressure toward work the player has already finished.
+- Scene keeps a two-deep record of minigame progress — currentMiniGameData and
+  previousMiniGameData, with has-flags so a genuine score of zero is tellable
+  from never having played. MiniGameData is heap-allocated by the MiniGame
+  constructor and freed by ReleaseMiniGame, so a score used to live exactly as
+  long as the overlay showing it; these snapshots outlive the allocation, which
+  is what an interruptible station can be built on. Captured on release (the one
+  path every exit funnels through) and rolled forward when SetMiniGame swaps.
+- tests/TaskStationTests.cpp — 28 checks over station completion, its save/load
+  round trip, the Director's response to it, and the minigame history.
+
+[ Updated ]
+
+- tests/run_tests.sh builds and runs the engine-linked suites from one loop, so
+  adding a suite is a line rather than another copy of the g++ invocation. A
+  failing suite no longer hides the state of the next.
 
 [ Fixed ]
+
+- InteractableObject::isRunningMiniGame was a one-way latch: ActivateMiniGame set
+  it and nothing ever cleared it, so a station counted as occupied for the rest
+  of the session. The Director skips occupied stations, so every station the
+  player ever touched was permanently excluded from hinting. ReleaseMiniGame now
+  clears it, and ResetMiniGame restores it across a replay so a retried station
+  does not fall silent.
 
 
 
