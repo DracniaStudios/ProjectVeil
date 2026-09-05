@@ -41,6 +41,25 @@ struct GameMap {
 
 	// Return Data
 	Vector3 getMapSize() const { return Vector3(size.x, size.y, size.z);}
+
+	/**
+	 * Applies fn to every object in the map, whatever container it lives in.
+	 *
+	 * The three containers hold three different things — GameObjects by value,
+	 * Entities and InteractableObjects by owning pointer — but every caller that
+	 * wants to touch "the whole world" wants the GameObject base of each. Doing
+	 * that by hand means writing the same three loops at every call site, and the
+	 * failure mode is silent: forget the entities loop and the operation just
+	 * quietly applies to part of the world. That is exactly how Fit Model To
+	 * Collider lost its entities.
+	 */
+	template <class F>
+	void ForEachObject(F&& fn)
+	{
+		for (auto& object : gameObjects)         { fn(object); }
+		for (auto& [id, object] : entities)      { fn(*object); }
+		for (auto& [id, object] : interactables) { fn(*object); }
+	}
 };
 
 // Find GameObjects
