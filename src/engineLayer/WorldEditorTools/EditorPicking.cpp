@@ -43,7 +43,7 @@ namespace
 		// follow what render3D draws, not a collider that may have been shrunk to
 		// fit the art. Using the collider size here made a shrunk collider's mesh
 		// silently unclickable outside that smaller volume.
-		if (!RayOrientedBox(ray, object->rigidBody3D.translation, object->rigidBody3D.scale,
+		if (!RayOrientedBox(ray, object->rigidBody3D.translation, object->rigidBody3D.scale * object->rigidBody3D.collider.size,
 			object->rigidBody3D.rotation, distance, normal))
 		{
 			return;
