@@ -424,6 +424,10 @@ void RigidBody3D::UpdateForce(float deltaTime)
 	for (auto& obj : scene->gameMap.gameObjects)
 	{
 		if (&obj.rigidBody3D == this) { continue; } // rays from our own faces always hit our own box
+		// Same rule resolveConstrains applies to this same call: a trigger must
+		// never set a touch flag, or a damage zone or objective volume becomes a
+		// floor the player can stand and jump on.
+		if (obj.rigidBody3D.collider.isTrigger()) { continue; }
 		// Not OverlapsBroadPhase: nearBox is this body's box inflated by the touch
 		// margin, not the box itself, so the pair test does not apply.
 		if (!CheckCollisionBoxes(nearBox, obj.rigidBody3D.broadPhaseBox)) { continue; }

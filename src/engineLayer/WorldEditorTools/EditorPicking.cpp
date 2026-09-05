@@ -38,23 +38,16 @@ namespace
 
 		float distance = 0.0f;
 		Vector3 normal = {};
-		
-		
-		/// Collider Check
+
+		// The VISUAL box (see RayOrientedBox's contract above): selection has to
+		// follow what render3D draws, not a collider that may have been shrunk to
+		// fit the art. Using the collider size here made a shrunk collider's mesh
+		// silently unclickable outside that smaller volume.
 		if (!RayOrientedBox(ray, object->rigidBody3D.translation, object->rigidBody3D.scale * object->rigidBody3D.collider.size,
 			object->rigidBody3D.rotation, distance, normal))
 		{
 			return;
 		}
-		
-		/// Bounding Box Check
-		/* 
-		if (!RayOrientedBox(ray, object->rigidBody3D.translation, object->rigidBody3D.scale,
-			object->rigidBody3D.rotation, distance, normal))
-		{
-			return;
-		}
-		*/
 
 
 		// Strictly nearer, so the first object at a given depth wins and the
