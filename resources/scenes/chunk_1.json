@@ -27,6 +27,17 @@
       "ObjectType": 2,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": false,
         "LockAcceleration": false,
@@ -35,9 +46,9 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 23.52819061279297,
+        "PosX": 22.1165828704834,
         "PosY": 1.9896601438522339,
-        "PosZ": 2.3529086112976074,
+        "PosZ": -0.2527494728565216,
         "RotW": 1.0,
         "RotX": 0.0,
         "RotY": 0.0,
@@ -45,14 +56,14 @@
         "ScaleX": 1.0,
         "ScaleY": 3.0,
         "ScaleZ": 1.0,
-        "VelocityX": -0.015502801164984703,
+        "VelocityX": 0.6446022391319275,
         "VelocityY": 0.0,
-        "VelocityZ": 0.0
+        "VelocityZ": 0.6280827522277832
       },
       "SearchDuration": 8.0,
       "SearchRadius": 6.0,
       "Stamina": 100.0,
-      "State": 0,
+      "State": 3,
       "Texture": "Fabric082A_4K-PNG_NormalGL",
       "Waypoints": []
     }
@@ -70,6 +81,7 @@
         255
       ],
       "InteractType": 1,
+      "IsCompleted": false,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -77,6 +89,17 @@
       "ObjectType": 3,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -113,6 +136,7 @@
         255
       ],
       "InteractType": 1,
+      "IsCompleted": false,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -120,6 +144,17 @@
       "ObjectType": 3,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -156,6 +191,7 @@
         255
       ],
       "InteractType": 1,
+      "IsCompleted": false,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -163,6 +199,17 @@
       "ObjectType": 3,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -199,6 +246,7 @@
         255
       ],
       "InteractType": 1,
+      "IsCompleted": false,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -206,6 +254,17 @@
       "ObjectType": 3,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -242,6 +301,7 @@
         255
       ],
       "InteractType": 1,
+      "IsCompleted": false,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -249,6 +309,17 @@
       "ObjectType": 3,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -285,6 +356,7 @@
         255
       ],
       "InteractType": 1,
+      "IsCompleted": false,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -292,6 +364,17 @@
       "ObjectType": 3,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -328,6 +411,7 @@
         255
       ],
       "InteractType": 1,
+      "IsCompleted": false,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -335,6 +419,17 @@
       "ObjectType": 3,
       "RigidBody3D": {
         "CanCollide": false,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -371,6 +466,7 @@
         255
       ],
       "InteractType": 1,
+      "IsCompleted": false,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -378,6 +474,17 @@
       "ObjectType": 3,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -414,6 +521,7 @@
         255
       ],
       "InteractType": 2,
+      "IsCompleted": false,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -422,6 +530,17 @@
       "ObjectType": 3,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": -2.9802322387695313e-08,
+          "OffsetY": 2.9802322387695313e-08,
+          "OffsetZ": 2.9802322387695313e-08,
+          "Radius": 0.30000001192092896,
+          "Shape": 0,
+          "SizeX": 0.6000000238418579,
+          "SizeY": 0.6000000238418579,
+          "SizeZ": 0.6000000238418579
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -457,6 +576,7 @@
         255
       ],
       "InteractType": 1,
+      "IsCompleted": false,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -464,6 +584,17 @@
       "ObjectType": 3,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -500,6 +631,7 @@
         255
       ],
       "InteractType": 1,
+      "IsCompleted": false,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -508,6 +640,17 @@
       "ObjectType": 3,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 4.151370525360107,
+          "OffsetZ": 0.0,
+          "Radius": 5.151370525360107,
+          "Shape": 0,
+          "SizeX": 6.0,
+          "SizeY": 10.302741050720215,
+          "SizeZ": 6.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -543,6 +686,7 @@
         255
       ],
       "InteractType": 1,
+      "IsCompleted": false,
       "IsDestructible": false,
       "IsEnabled": false,
       "IsInteractable": true,
@@ -550,6 +694,17 @@
       "ObjectType": 3,
       "RigidBody3D": {
         "CanCollide": false,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": false,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -586,6 +741,7 @@
         255
       ],
       "InteractType": 1,
+      "IsCompleted": false,
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
@@ -593,6 +749,17 @@
       "ObjectType": 3,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -825,6 +992,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -864,6 +1042,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -903,6 +1092,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -942,6 +1142,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -981,6 +1192,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1020,6 +1242,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1059,6 +1292,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1098,6 +1342,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1137,6 +1392,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1176,6 +1442,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1215,6 +1492,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1254,6 +1542,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1293,6 +1592,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1332,6 +1642,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1371,6 +1692,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1410,6 +1742,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1449,6 +1792,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1488,6 +1842,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1527,6 +1892,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1565,6 +1941,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1604,6 +1991,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1643,6 +2041,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1682,6 +2091,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1721,6 +2141,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1760,6 +2191,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1799,6 +2241,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1838,6 +2291,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1877,6 +2341,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1916,6 +2391,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1955,6 +2441,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -1994,6 +2491,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2033,6 +2541,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2072,6 +2591,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2111,6 +2641,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2150,6 +2691,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2189,6 +2741,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2228,6 +2791,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2267,6 +2841,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2306,6 +2891,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2345,6 +2941,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2384,6 +2991,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2423,6 +3041,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2462,6 +3091,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2501,6 +3141,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2540,6 +3191,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2579,6 +3241,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2618,6 +3291,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2656,6 +3340,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2695,6 +3390,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2734,6 +3440,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2773,6 +3490,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2812,6 +3540,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2851,6 +3590,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2890,6 +3640,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2929,6 +3690,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -2968,6 +3740,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3007,6 +3790,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3045,6 +3839,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3084,6 +3889,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3123,6 +3939,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3162,6 +3989,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3201,6 +4039,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3240,6 +4089,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3279,6 +4139,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3318,6 +4189,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3357,6 +4239,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3396,6 +4289,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3435,6 +4339,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3473,6 +4388,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3512,6 +4438,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3551,6 +4488,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3590,6 +4538,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3629,6 +4588,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3668,6 +4638,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3707,6 +4688,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3746,6 +4738,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3785,6 +4788,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3824,6 +4838,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3863,6 +4888,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3902,6 +4938,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3941,6 +4988,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -3980,6 +5038,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4019,6 +5088,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4058,6 +5138,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4097,6 +5188,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4136,6 +5238,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4175,6 +5288,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4214,6 +5338,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4253,6 +5388,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4292,6 +5438,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4331,6 +5488,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4370,6 +5538,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4409,6 +5588,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4448,6 +5638,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4487,6 +5688,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4526,6 +5738,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4565,6 +5788,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4604,6 +5838,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4643,6 +5888,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4682,6 +5938,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4721,6 +5988,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4760,6 +6038,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4799,6 +6088,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4838,6 +6138,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4877,6 +6188,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4916,6 +6238,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4955,6 +6288,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -4994,6 +6338,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5033,6 +6388,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5072,6 +6438,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5111,6 +6488,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5150,6 +6538,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5189,6 +6588,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5228,6 +6638,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5267,6 +6688,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5306,6 +6738,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5345,6 +6788,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5384,6 +6838,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5423,6 +6888,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5462,6 +6938,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5501,6 +6988,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5540,6 +7038,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5579,6 +7088,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5618,6 +7138,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5657,6 +7188,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5696,6 +7238,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5735,6 +7288,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5774,6 +7338,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5813,6 +7388,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5852,6 +7438,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5891,6 +7488,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5930,6 +7538,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -5969,6 +7588,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6008,6 +7638,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6047,6 +7688,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6086,6 +7738,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6125,6 +7788,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6164,6 +7838,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6203,6 +7888,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6242,6 +7938,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6281,6 +7988,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6320,6 +8038,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6359,6 +8088,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6398,6 +8138,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6437,6 +8188,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6476,6 +8238,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6515,6 +8288,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6554,6 +8338,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6593,6 +8388,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6632,6 +8438,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6671,6 +8488,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6710,6 +8538,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6749,6 +8588,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6788,6 +8638,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6827,6 +8688,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6866,6 +8738,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6905,6 +8788,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6944,6 +8838,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -6983,6 +8888,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7022,6 +8938,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7061,6 +8988,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7100,6 +9038,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7139,6 +9088,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7178,6 +9138,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7217,6 +9188,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7256,6 +9238,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7295,6 +9288,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7334,6 +9338,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7373,6 +9388,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7412,6 +9438,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7451,6 +9488,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7490,6 +9538,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7529,6 +9588,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7568,6 +9638,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7607,6 +9688,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7646,6 +9738,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7685,6 +9788,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7724,6 +9838,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7763,6 +9888,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7802,6 +9938,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7841,6 +9988,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7880,6 +10038,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7919,6 +10088,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7958,6 +10138,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -7997,6 +10188,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8036,6 +10238,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8075,6 +10288,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8114,6 +10338,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8153,6 +10388,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8192,6 +10438,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8231,6 +10488,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8270,6 +10538,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8309,6 +10588,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8348,6 +10638,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8387,6 +10688,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8426,6 +10738,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8465,6 +10788,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8504,6 +10838,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8543,6 +10888,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8582,6 +10938,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8621,6 +10988,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8660,6 +11038,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8699,6 +11088,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8738,6 +11138,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8777,6 +11188,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8816,6 +11238,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8855,6 +11288,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8894,6 +11338,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8933,6 +11388,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -8972,6 +11438,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -9011,6 +11488,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -9050,6 +11538,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -9089,6 +11588,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -9128,6 +11638,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -9167,6 +11688,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -9206,6 +11738,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -9245,6 +11788,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -9284,6 +11838,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -9323,6 +11888,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
@@ -9362,6 +11938,17 @@
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
         "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,

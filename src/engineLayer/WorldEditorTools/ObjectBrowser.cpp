@@ -1,5 +1,236 @@
 #include "WorldEditor.h"
 
+#include <concepts>
+
+#pragma region Apply All State Buttons
+
+static void StaticButtons(Scene* scene) {
+	/// Static/NonStatic All Objects
+	if (ImGui::Button("Make All Static")) {
+		std::cout << "[Object Browser] Set All Objects Static\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.rigidBody3D.isStatic = true;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->rigidBody3D.isStatic = true;
+		}
+		for (auto& [id, object] : scene->gameMap.entities) {
+			object->rigidBody3D.isStatic = true;
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Make All Not Static")) {
+		std::cout << "[Object Browser] Set All Objects NonStatic\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.rigidBody3D.isStatic = false;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->rigidBody3D.isStatic = false;
+		}
+		for (auto& [id, object] : scene->gameMap.entities) {
+			object->rigidBody3D.isStatic = false;
+		}
+
+	}
+	ImGui::Spacing();
+}
+
+static void DisplayDirectionButtons(Scene* scene) {
+	/// Display Direction All Objects
+	if (ImGui::Button("Show Direction")) {
+		std::cout << "[Object Browser] Show All Objects Direction\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.displayDirection = true;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->displayDirection = true;
+		}
+		for (auto& [id, object] : scene->gameMap.entities) {
+			object->displayDirection = true;
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Hide Direction")) {
+		std::cout << "[Object Browser] Hide All Objects Direction\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.displayDirection = false;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->displayDirection = false;
+		}
+		for (auto& [id, object] : scene->gameMap.entities) {
+			object->displayDirection = false;
+		}
+	}
+	ImGui::Spacing();
+}
+
+static void IsSelectableButtons(Scene* scene) {
+	/// IsSelectable All Objects
+	if (ImGui::Button("Make All Selectable")) {
+		std::cout << "[Object Browser] Set All Objects Selectable\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.isSelectable = true;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->isSelectable = true;
+		}
+		for (auto& [id, object] : scene->gameMap.entities) {
+			object->isSelectable = true;
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Make All Not Selectable")) {
+		std::cout << "[Object Browser] Set All Objects Not Selectable\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.isSelectable = false;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->isSelectable = false;
+		}
+		for (auto& [id, object] : scene->gameMap.entities) {
+			object->isSelectable = false;
+		}
+	}
+	ImGui::Spacing();
+}
+
+static void EnableButtons(Scene* scene) {
+	/// Enable/Disable All Objects
+	if (ImGui::Button("Make All Enabled")) {
+		std::cout << "[Object Browser] Set All Objects Enabled\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.isEnabled = true;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->isEnabled = true;
+		}
+		for (auto& [id, object] : scene->gameMap.entities) {
+			object->isEnabled = true;
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Make All Not Enabled")) {
+		std::cout << "[Object Browser] Set All Objects Not Enabled\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.isEnabled = false;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->isEnabled = false;
+		}
+		for (auto& [id, object] : scene->gameMap.entities) {
+			object->isEnabled = false;
+		}
+	}
+	ImGui::Spacing();
+}
+static void DestructableButton(Scene* scene) {
+	/// Destructable All Objects
+	if (ImGui::Button("Make All Destructable")) {
+		std::cout << "[Object Browser] Set All Objects Destructable\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.isDestructible = true;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->isDestructible = true;
+		}
+		for (auto& [id, object] : scene->gameMap.entities) {
+			object->isDestructible = true;
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Make All Not Destructable")) {
+		std::cout << "[Object Browser] Set All Objects Not Destructable\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.isDestructible = false;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->isDestructible = false;
+		}
+		for (auto& [id, object] : scene->gameMap.entities) {
+			object->isDestructible = false;
+		}
+	}
+	ImGui::Spacing();
+}
+
+
+static void DisplayColliderButtons(Scene* scene) {
+	/// Enable/Disable All Objects
+	if (ImGui::Button("Show Collider")) {
+		std::cout << "[Object Browser] Show All Colliders\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.displayCollider = true;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->displayCollider = true;
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Hide Collider")) {
+		std::cout << "[Object Browser] Show All Colliders\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.displayCollider = false;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->displayCollider = false;
+		}
+
+	}
+	ImGui::Spacing();
+}
+
+#pragma endregion
+
+#pragma region Apply All State Buttons (RigidBody3D)
+
+static void CanCollideButtons(Scene* scene) {
+	/// Enable/Disable All Objects
+	if (ImGui::Button("Make All Can Collide")) {
+		std::cout << "[Object Browser] Set All Objects Can Collide\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.rigidBody3D.canCollide = true;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->rigidBody3D.canCollide = true;
+		}
+		for (auto& [id, object] : scene->gameMap.entities) {
+			object->rigidBody3D.canCollide = true;
+		}
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Make All Not Can Collide")) {
+		std::cout << "[Object Browser] Set All Objects Not Can Collide\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.rigidBody3D.canCollide = false;
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->rigidBody3D.canCollide = false;
+		}
+		for (auto& [id, object] : scene->gameMap.entities) {
+			object->rigidBody3D.canCollide = false;
+		}
+	}
+	ImGui::Spacing();
+}
+
+static void FitModelToColliderButtons(Scene* scene) {
+	/// Enable/Disable All Objects
+	if (ImGui::Button("Fit Model To Collider")) {
+		std::cout << "[Object Browser] Fit Model To Collider\n";
+		for (auto& object : scene->gameMap.gameObjects) {
+			object.rigidBody3D.collider.FitToModel(object.model);
+		}
+		for (auto& [id, object] : scene->gameMap.interactables) {
+			object->rigidBody3D.collider.FitToModel(object->model);
+		}
+	}
+	ImGui::Spacing();
+}
+
+#pragma endregion
+
+
 void WorldEditor::showInteractableObject(InteractableObject* object) {
 	ImGui::PushID(object);
 	ImGui::Separator();
@@ -98,7 +329,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 
 	ImGui::Text("ID: %llu", static_cast<unsigned long long>(object->id));
 	ImGui::Text("Type: %d", static_cast<int>(object->type));
-	ImGui::Checkbox("Selectable", &object->canBeSelected);
+	ImGui::Checkbox("Selectable", &object->isSelectable);
 	ImGui::Spacing();
 
 
@@ -333,96 +564,131 @@ void WorldEditor::showGameObject(GameObject* object) {
 }
 
 static void ShowStateButtons(Scene* scene) {
-#pragma region State Buttons
+
+	ImGui::BeginChild("State Buttons", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.3f));
 	
-
-	/// Static/NonStatic All Objects
-	if (ImGui::Button("Make All Static")) {
-		std::cout << "[Object Browser] Set All Object/Interactables Static\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.rigidBody3D.isStatic = true;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->rigidBody3D.isStatic = true;
-		}
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Make All Not Static")) {
-		std::cout << "[Object Browser] Set All Object/Interactables NonStatic\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.rigidBody3D.isStatic = false;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->rigidBody3D.isStatic = false;
-		}
-
-	}
-	ImGui::Spacing();
-
-
-	/// Enable/Disable All Objects
-	if (ImGui::Button("Make All Enabled")) {
-		std::cout << "[Object Browser] Set All Object/Interactables Enabled\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.isEnabled = true;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->isEnabled = true;
-		}
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Make All Not Enabled")) {
-		std::cout << "[Object Browser] Set All Object/Interactables Disabled\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.isEnabled = false;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->isEnabled = false;
-		}
-
-	}
-	ImGui::Spacing();
+	EnableButtons(scene);
+	StaticButtons(scene);
+	DisplayColliderButtons(scene);
+	DisplayDirectionButtons(scene);
+	IsSelectableButtons(scene);
+	DestructableButton(scene);
+	CanCollideButtons(scene);
+	FitModelToColliderButtons(scene);
 	
+	ImGui::EndChild();
 	
-	/// Enable/Disable All Objects
-	if (ImGui::Button("Show Collider")) {
-		std::cout << "[Object Browser] Show All Colliders\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.displayCollider = true;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->displayCollider = true;
-		}
-	}
+	ImGui::Separator();
+}
+
+static void ObjectList(std::string displayName, std::vector<GameObject>& objects, bool& show, uint64_t& selectID) {
+	ImGui::TextColored(ImVec4(0, 255, 0, 255), "%s", displayName.c_str());
 	ImGui::SameLine();
-	if (ImGui::Button("Hide Collider")) {
-		std::cout << "[Object Browser] Show All Colliders\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.displayCollider = false;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->displayCollider = false;
-		}
+	std::string buttonLabel = show ? "Hide" + displayName : "Show" + displayName;
 
-	}
-	ImGui::Spacing();
+	if (ImGui::ArrowButton(buttonLabel.c_str(), show ? ImGuiDir_Down : ImGuiDir_Left)) { show = !show; }
+	if (show) {
 
-
-	if (ImGui::Button("Fit To Model")) {
-		std::cout << "[Object Browser] Set All Object to Fit Model\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.rigidBody3D.collider.FitToModel(object.model);
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->rigidBody3D.collider.FitToModel(object->model);
-		}
-		for (auto& [id, object] : scene->gameMap.entities) {
-			object->rigidBody3D.collider.FitToModel(object->model);
+		for (const auto& object : objects)
+		{
+			ImGui::PushID(&object);
+			std::string label = object.name + " (" + std::to_string(object.id) + ")";
+			if (ImGui::Selectable(label.c_str(), object.id == selectID))
+			{
+				selectID = object.id;
+			}
+			ImGui::PopID();
 		}
 	}
+}
+static void ObjectList(std::string displayName, std::unordered_map<uint64_t, std::unique_ptr<Entity>>& objects, bool& show, uint64_t& selectID) {
+	ImGui::TextColored(ImVec4(0, 255, 0, 255), "%s", displayName.c_str());
 	ImGui::SameLine();
-	ImGui::Spacing();
-#pragma endregion
+	std::string buttonLabel = show ? "Hide" + displayName : "Show" + displayName;
+
+	if (ImGui::ArrowButton(buttonLabel.c_str(), show ? ImGuiDir_Down : ImGuiDir_Left)) { show = !show; }
+	if (show) {
+
+		for (const auto& [id, object] : objects)
+		{
+			ImGui::PushID(&object);
+			std::string label = object->name + " (" + std::to_string(object->id) + ")";
+			if (ImGui::Selectable(label.c_str(), object->id == selectID))
+			{
+				selectID = object->id;
+			}
+			ImGui::PopID();
+		}
+	}
+}
+static void ObjectList(std::string displayName, std::unordered_map<uint64_t, std::unique_ptr<InteractableObject>>& objects, bool& show, uint64_t& selectID) {
+	ImGui::TextColored(ImVec4(0, 255, 0, 255), "%s", displayName.c_str());
+	ImGui::SameLine();
+	std::string buttonLabel = show ? "Hide" + displayName : "Show" + displayName;
+
+	if (ImGui::ArrowButton(buttonLabel.c_str(), show ? ImGuiDir_Down : ImGuiDir_Left)) { show = !show; }
+	if (show) {
+
+		for (const auto& [id, object] : objects)
+		{
+			ImGui::PushID(&object);
+			std::string label = object->name + " (" + std::to_string(object->id) + ")";
+			if (ImGui::Selectable(label.c_str(), object->id == selectID))
+			{
+				selectID = object->id;
+			}
+			ImGui::PopID();
+		}
+	}
+}
+
+static void ShowObjectList(Scene* scene, uint64_t& selectID, bool& objects, bool& entities, bool& interactable) {
+
+	ImGui::BeginChild("World Object List", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.3f));
+
+	ObjectList("Game Objects", scene->gameMap.gameObjects, objects, selectID);
+	ObjectList("Entities", scene->gameMap.entities, entities, selectID);
+	ObjectList("Interactables", scene->gameMap.interactables, interactable, selectID);
+
+	ImGui::EndChild();
+	ImGui::Separator();
+}
+
+void WorldEditor::showSelectedObject(Scene* scene) {
+	ImGui::BeginChild("Selected Object");
+
+	GameObject* object = getSelectedObject();
+	if (object == nullptr)
+	{
+		ImGui::Text("Nothing selected");
+		ImGui::EndChild();
+		return;
+	}
+
+	// Show Object Data
+
+	// Push ID in GameObject
+	showGameObject(object);
+	// ObjectType comes straight out of the save file and does not imply map
+	// membership — the selected object was found in gameMap.gameObjects. operator[]
+	// on a miss would both return a null unique_ptr to dereference here and leave a
+	// null entry behind for Scene_updateScene to trip over every frame after.
+	if (object->type == OBJECT_ENTITY && scene->gameMap.entities.contains(object->id)) {
+		showEntity(scene->gameMap.entities[object->id].get());
+	}
+	else if (object->type == OBJECT_INTERACTABLE && scene->gameMap.interactables.contains(object->id)) {
+		showInteractableObject(scene->gameMap.interactables[object->id].get());
+	}
+
+	// Both route through the shared commands so the buttons, the keyboard
+	// shortcuts and the viewport all take the identical path — including
+	// cancelling any in-flight gizmo drag before the object is destroyed, and
+	// recording the spawn so Ctrl+Z can take it back.
+	if (ImGui::Button("Duplicate Object")) { DuplicateSelection(); }
+	ImGui::SameLine();
+	if (ImGui::Button("Delete Object")) { DeleteSelection(); }
+
+	ImGui::EndChild();
 }
 
 void WorldEditor::ShowObjectBrowser()
@@ -432,106 +698,11 @@ void WorldEditor::ShowObjectBrowser()
 	/// Show Object Browser Window
 	ImGui::Begin("Object Browser");
 
-	/// List World Objects
-	{
-		ImGui::BeginChild("State Buttons", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.1f));
-		ShowStateButtons(scene);
-		ImGui::EndChild();
-		ImGui::Separator();
-	}
+	ShowStateButtons(scene);
 	
-	/// Show Object List
-	{
-		ImGui::BeginChild("World Object List", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.4f));
-		ImGui::TextColored(ImVec4(0, 255, 0, 255), "Game Objects");
-		ImGui::SameLine();
-		if (ImGui::ArrowButton("Show GameObjects", showGameObjects ? ImGuiDir_Down : ImGuiDir_Left)) { showGameObjects = !showGameObjects; }
-		if (showGameObjects) {
-			for (auto& object : scene->gameMap.gameObjects)
-			{
-				ImGui::PushID(&object);
-				std::string label = object.name + " (" + std::to_string(object.id) + ")";
-				if (ImGui::Selectable(label.c_str(), object.id == selectedObjectId))
-				{
-					selectedObjectId = object.id;
-				}
-				ImGui::PopID();
-			}
-		}
+	ShowObjectList(scene, selectedObjectId, showGameObjects, showEntities, showInteractables);
 
+	showSelectedObject(scene);
 
-		ImGui::TextColored(ImVec4(0, 255, 0, 255), "Entities");
-		ImGui::SameLine();
-		if (ImGui::ArrowButton("Show Entities", showEntities ? ImGuiDir_Down : ImGuiDir_Left)) { showEntities = !showEntities; }
-		if (showEntities) {
-			for (auto& object : scene->gameMap.entities)
-			{
-				ImGui::PushID(&object);
-				std::string label = object.second.get()->name + " (" + std::to_string(object.second.get()->id) + ")";
-				if (ImGui::Selectable(label.c_str(), object.second.get()->id == selectedObjectId))
-				{
-					selectedObjectId = object.second.get()->id;
-				}
-				ImGui::PopID();
-			}
-		}
-
-		ImGui::TextColored(ImVec4(0, 255, 0, 255), "Interactables");
-		ImGui::SameLine();
-		if (ImGui::ArrowButton("Show Interactables", showInteractables ? ImGuiDir_Down : ImGuiDir_Left)) { showInteractables = !showInteractables; }
-		if (showInteractables) {
-			for (auto& object : scene->gameMap.interactables)
-			{
-				ImGui::PushID(&object);
-				std::string label = object.second.get()->name + " (" + std::to_string(object.second.get()->id) + ")";
-				if (ImGui::Selectable(label.c_str(), object.second.get()->id == selectedObjectId))
-				{
-					selectedObjectId = object.second.get()->id;
-				}
-				ImGui::PopID();
-			}
-		}
-		ImGui::EndChild();
-		ImGui::Separator();
-	}
-
-	{
-		/// Show Selected Object Data
-		ImGui::BeginChild("Selected Object");
-
-		GameObject* object = getSelectedObject();
-		if (object == nullptr)
-		{
-			ImGui::Text("Nothing selected");
-			ImGui::EndChild();
-			ImGui::End();
-			return;
-		}
-
-		// Show Object Data
-
-		// Push ID in GameObject
-		showGameObject(object);
-		// ObjectType comes straight out of the save file and does not imply map
-		// membership — the selected object was found in gameMap.gameObjects. operator[]
-		// on a miss would both return a null unique_ptr to dereference here and leave a
-		// null entry behind for Scene_updateScene to trip over every frame after.
-		if (object->type == OBJECT_ENTITY && scene->gameMap.entities.contains(object->id)) {
-			showEntity(scene->gameMap.entities[object->id].get());
-		}
-		else if (object->type == OBJECT_INTERACTABLE && scene->gameMap.interactables.contains(object->id)) {
-			showInteractableObject(scene->gameMap.interactables[object->id].get());
-		}
-
-		// Both route through the shared commands so the buttons, the keyboard
-		// shortcuts and the viewport all take the identical path — including
-		// cancelling any in-flight gizmo drag before the object is destroyed, and
-		// recording the spawn so Ctrl+Z can take it back.
-		if (ImGui::Button("Duplicate Object")) { DuplicateSelection(); }
-		ImGui::SameLine();
-		if (ImGui::Button("Delete Object")) { DeleteSelection(); }
-
-		ImGui::EndChild();
-	}
 	ImGui::End();
 }

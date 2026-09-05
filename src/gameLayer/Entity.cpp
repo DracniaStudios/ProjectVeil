@@ -39,14 +39,6 @@ std::unique_ptr<Entity> Entity::createByKind(EntityKind kind)
 
 Entity::Entity() {
 	type = OBJECT_ENTITY;
-
-	// Installed here as well as in onEnable() because the save loaders build
-	// entities through loadFromJson and never call onEnable — those entities
-	// came up with an empty buffTimers vector, so every getBuff() on them
-	// returned nullptr (no buff ever applied) while logging a miss to stdout
-	// once per lookup per frame. Doing it in onEnable alone is not enough, and
-	// making the loaders call onEnable instead would reset loaded health and
-	// stamina back to maximum.
 	InstallDefaultBuffs(buffTimers);
 }
 
@@ -85,11 +77,7 @@ void Entity::update(Scene* scene, float deltaTime)
 		currentSpeed *= 2;
 	}
 	
-	// Per-second rates. These were applied per FRAME, which made the whole
-	// stamina economy a function of the player's refresh rate: sprinting drained
-	// a full bar in 3.3s at 60 FPS and in 1.4s at 144. The constants below are
-	// the old per-frame amounts multiplied up by the 60 FPS the game targets by
-	// default, so the tuning that was authored is preserved.
+	// Per-second rates.
 	constexpr float kSprintDrainPerSecond = 0.5f * 60.0f;
 	constexpr float kStaminaRegenPerSecond = 0.01f * 60.0f;
 

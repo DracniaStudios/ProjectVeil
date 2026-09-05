@@ -347,7 +347,7 @@ void GameObject::addCommonToJson(Json& j)
 
 	// Flags
 	j["IsEnabled"] = isEnabled;
-	j["CanBeSelected"] = canBeSelected;
+	j["isSelectable"] = isSelectable;
 	j["IsDestructible"] = isDestructible;
 
 	// Renderer
@@ -387,7 +387,7 @@ bool GameObject::loadCommonFromJson(Json& j)
 
 	// Flags
 	isEnabled = j.value("IsEnabled", true);
-	canBeSelected = j.value("CanBeSelected", true);
+	isSelectable = j.value("isSelectable", true);
 	isDestructible = j.value("IsDestructible", true);
 
 	// Renderer

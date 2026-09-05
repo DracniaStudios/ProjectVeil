@@ -34,17 +34,19 @@ struct GameObject
 	std::uint64_t id = 0;
 
 	ObjectType type = OBJECT_GENERIC;
+
 	/// Debug Display
 	bool display3DModel = true;
 	bool displayDirection = false;
 	bool displayCollider = false;
-	bool isSelectable = true;// WorldEditor
 	
 	/// Flags
 	bool isEnabled = true;
-	bool canBeSelected = true;
-	bool isAlive = true;
+	bool isSelectable = true;// WorldEditor
 	bool isDestructible = true;
+
+	/// State Buttons
+	bool isAlive = true; 
 	bool pendingDestroy = false; // removal is deferred to the end of the frame
 	bool ownsModel = false; // generated primitive (unloadable) vs shared AssetManager model
 	bool castsShadow = true; // Shadow Casting is based on each object and rendered in the shadow pass.
@@ -52,10 +54,7 @@ struct GameObject
 	/// Status
 	float lifeSpan = 0;
 	float deathSpan = 1;
-	// Sets how long, in seconds, the object lingers after isAlive is cleared
-	// before GameObject::update() destroys it. Must be called after the object
-	// is registered with GameMap, since onEnable() resets deathSpan to its
-	// default.
+	// Sets how long the Entity will live before it's destroyed.
 	void Decay(float time = 1) { deathSpan = time; }
 
 	// Lives on GameObject (not Entity) so projectiles stored by value in

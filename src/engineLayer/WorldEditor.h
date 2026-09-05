@@ -199,22 +199,23 @@ class WorldEditor
 	// from a previous world do not survive a load, so neither may anything
 	// holding them.
 	void ResetSelectionState();
-
+	
 	/** Helpers **/
 	GameObject* getSelectedObject();
 	Asset* getActiveTexture();
 	Asset* getActiveModel();
 	Asset* getActiveAsset();
 	GizmoTransform getSelectedTransform(const GameObject* object) const;
+
 	// Spawns a copy of stagingObject at a world position, honouring placementKind.
+	
 	// Shared by the Placement Panel's buttons and by point-and-place.
 	GameObject* SpawnStagedObject(Vector3 position);
 	void showGameObject(GameObject* object);
 	void showEntity(Entity* object);
 	void showInteractableObject(InteractableObject* object);
 	void showTransformTools();
-
-
+	void showSelectedObject(Scene* scene);
 
 public:
 	// Singleton Pattern Implementation

@@ -61,6 +61,7 @@ inline bool CompleteMiniGame(MiniGameData& data, Player& player, GameMap& gameMa
 		// Director hinting at it forever.
 		if (InteractableObject* station = FindRunningStation(gameMap)) {
 			station->isCompleted = true;
+			station->isInteractable = false;
 		}
 
 		// Check for Activator Object By using ID instead of Pointer

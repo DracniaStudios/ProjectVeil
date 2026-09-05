@@ -20,7 +20,7 @@ void GameMap::create(Vector3 size)
 
 	GameObject floor{};
 	floor.name = "Floor";
-	floor.canBeSelected = false;
+	floor.isSelectable = false;
 	floor.isDestructible = false;
 	floor.rigidBody3D.isStatic = true;
 	floor.rigidBody3D.translation = Vector3(0, -1, 0);
@@ -87,10 +87,6 @@ Entity* GameMap::saveEntity(Entity& entity)
 	// clone() rather than make_unique<Entity>(entity): the latter slices, so a
 	// Stalker (or any other subclass) handed to this function was stored as a
 	// bare Entity and lost its overrides before it ever ticked.
-	//
-	// No std::move around the call: clone() already returns a prvalue, and
-	// wrapping it blocks the copy elision that would otherwise construct in
-	// place.
 	entities[entity.id] = entity.clone();
 
 	std::cout << "Added Entity \n";

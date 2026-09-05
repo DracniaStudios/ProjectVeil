@@ -24,7 +24,7 @@ namespace
 	{
 		if (!object.isEnabled) { return false; }
 		if (!object.display3DModel) { return false; }
-		if (filter == PICK_SELECTABLE && !object.canBeSelected) { return false; }
+		if (filter == PICK_SELECTABLE && !object.isSelectable) { return false; }
 		return true;
 	}
 

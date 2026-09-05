@@ -140,13 +140,10 @@ bool InteractableObject::loadFromJson(Json& j)
 	if (!loadCommonFromJson(j)) { return false; }
 	interactType = static_cast<InteractionType>(j.value("InteractType", 0));
 	variation = j.value("Variation", 0);
-	// 0 is the "no activator" sentinel every other path uses — both constructors
-	// default to it and ActivateMiniGame tests against it. Defaulting to -1 made
-	// a save written before ActivatorValue existed load as a real-but-
-	// unresolvable id instead of "none".
 	activator = j.value("Activator", 0);
 	isInteractable = j.value("IsInteractable", true);
 	isCompleted = j.value("IsCompleted", false);
+
 	// A station is never occupied on load, whatever was happening when the save
 	// was written — the same reason the Stalker drops its lastKnownPosition.
 	isRunningMiniGame = false;
