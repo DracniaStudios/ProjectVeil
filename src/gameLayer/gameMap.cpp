@@ -87,6 +87,10 @@ Entity* GameMap::saveEntity(Entity& entity)
 	// clone() rather than make_unique<Entity>(entity): the latter slices, so a
 	// Stalker (or any other subclass) handed to this function was stored as a
 	// bare Entity and lost its overrides before it ever ticked.
+	//
+	// No std::move around the call: clone() already returns a prvalue, and
+	// wrapping it blocks the copy elision that would otherwise construct in
+	// place.
 	entities[entity.id] = entity.clone();
 
 	std::cout << "Added Entity \n";

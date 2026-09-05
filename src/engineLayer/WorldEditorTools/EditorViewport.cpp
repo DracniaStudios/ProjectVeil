@@ -215,7 +215,7 @@ void WorldEditor::UpdateHotkeys()
  * Point-and-place preview and commit.
  *
  * The ray is queried with PICK_SURFACE rather than PICK_SELECTABLE: the floor
- * has canBeSelected cleared by GameMap::create(), and it is also the single most
+ * has isSelectable cleared by GameMap::create(), and it is also the single most
  * common thing to drop an object onto. Using the selection filter here makes the
  * ground invisible to placement and every object lands on the fallback plane.
  */

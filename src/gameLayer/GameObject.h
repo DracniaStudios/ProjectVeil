@@ -42,19 +42,22 @@ struct GameObject
 	
 	/// Flags
 	bool isEnabled = true;
-	bool isSelectable = true;// WorldEditor
+	bool isSelectable = true; // WorldEditor
 	bool isDestructible = true;
+	bool castsShadow = true;  // Shadow casting is per object, resolved in the shadow pass.
 
-	/// State Buttons
-	bool isAlive = true; 
+	/// Lifetime
+	bool isAlive = true;
 	bool pendingDestroy = false; // removal is deferred to the end of the frame
 	bool ownsModel = false; // generated primitive (unloadable) vs shared AssetManager model
-	bool castsShadow = true; // Shadow Casting is based on each object and rendered in the shadow pass.
-	
+
 	/// Status
 	float lifeSpan = 0;
 	float deathSpan = 1;
-	// Sets how long the Entity will live before it's destroyed.
+	// Sets how long, in seconds, the object lingers after isAlive is cleared
+	// before GameObject::update() destroys it. Must be called after the object
+	// is registered with GameMap, since onEnable() resets deathSpan to its
+	// default.
 	void Decay(float time = 1) { deathSpan = time; }
 
 	// Lives on GameObject (not Entity) so projectiles stored by value in

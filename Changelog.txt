@@ -22,19 +22,114 @@
 
 [ Added ]
 
-- Added Multiple Object Buttons to Enable/Disable Object States at once.
-	(Now you can select all objects and enable/disable their states at once)
+- Added Collider3D, a collision volume authored independently of the render scale.
+  Shapes: Box, Sphere, and Mesh (auto-fitted to the loaded model's own bounds).
+- Added Collider modes. Collision resolves through the Rigidbody as before;
+  Trigger reports the overlap and applies no physics at all - no push, no
+  impulse, no friction, and no touch flags, so a trigger cannot be stood on.
+- Added GameObject::onTriggerEnter / onTriggerExit. onCollision still fires for
+  triggers as well, so existing listeners are unaffected.
+- Added a Collider section to the Object Browser (shape, mode, size/radius,
+  offset, Fit To Model, Reset Collider) and staged shape/mode in the Placement
+  Panel, so a trigger volume can be dropped in directly.
+- Added tests/ColliderTests.cpp (99 checks, links raylib alone) and
+  tests/TriggerTests.cpp (11 checks, links the engine).
+- Added ColliderRaycast, an exact ray test for every collider shape, and
+  RigidBody3D::Raycast / OverlapsBroadPhase in front of it.
+- Added Apply-To-All buttons to the Object Browser for the shared object states -
+  Enabled, Static, Show Collider, Show Direction, Selectable, Destructible and
+  Can Collide - plus Fit Model To Collider. Each row walks every game object,
+  entity and interactable through one traversal, so a state can never be applied
+  to some of the world and not the rest.
 
 [ Updated ]
 
-- Updated WorldEditor Object Browser by refactoring the code to show Objects in a more organized way. 
-	(Now shows objects in a tree view with categories and subcategories)
-
+- Moved all Engine specific files to "engineLayer" folder.
+- Updated GameMap to hold all Entity and Interactables data.
+- Updated RigidBody3D so the narrow phase, the broad-phase box, the touch rays
+  and the debug draw all read one resolved collider volume instead of `scale`.
+  Defaults reproduce the old numbers exactly, so worlds saved before this load
+  and behave identically and no save version bump was needed.
+- Updated the 15-axis separating-axis test to live in Collider3D.cpp, which has
+  no engine dependency and so can be unit tested against raylib alone.
+- Updated Show Collider to draw the actual collider, coloured by mode, rather
+  than the render scale. Spheres draw as spheres.
+- Updated sound occlusion and stalker line of sight to see through triggers. A
+  damage zone across a corridor no longer muffles footsteps or blinds the AI.
+- Updated mesh bounds to finally reach collision, via Collider3D::FitToModel in
+  loadVisuals(). They were previously computed and discarded every frame.
+- Updated every ray test that decides something - grounding and the touch flags,
+  stalker line of sight, sound occlusion, and the interaction crosshair - to run
+  against the collider instead of the box around it. A rotated ramp, an offset
+  collider or a sphere all sit inside their own bounds, and a ray through that
+  gap was a miss being reported as a hit.
+- Updated RigidBody3D::collisionBox to broadPhaseBox, and SyncCollisionBox to
+  SyncBroadPhaseBox. It is not the collision shape, it is a conservative bound
+  around it, and the old name invited exactly the misuse above. Broad-phase
+  gates now read a.OverlapsBroadPhase(b) so a gate looks like a gate.
+- Updated the editor's ray/box slab test to live with the collider maths, so the
+  editor and the game share one implementation. Picking still tests the visual
+  box rather than the collider, so shrinking a collider cannot make an object
+  unclickable.
+- Task stations now emit a periodic SOUND_STATION noise (0.6, every 0.9s) while
+  their minigame runs. It is emitted at the station, never at the player, so
+  perception is never handed a live position under cover of a world fact.
+- Interacting with a task station emits a one-shot SOUND_TAMPER noise (0.8) at
+  the station. A locked station that refuses to open still makes the noise -
+  a silent failed attempt would otherwise be the safest way to play.
+- Physics collisions emit SOUND_IMPACT scaled by closing speed along the contact
+  normal (silent below 2 u/s, full loudness at 12). Hung off the first-contact
+  branch so one bang is one noise, not one per solver iteration, and attributed
+  to the faster body so a stalker brushing a wall does not chase itself.
+- tests/EmitterTests.cpp - 28 checks over the three emitters above: position,
+  loudness, attribution, one-shot/periodic cadence, and the resting-contact case
+  that decides whether walking a room floods the sound field.
+- InteractableObject::isCompleted records that a task station has been carried to
+  its score goal, filling the "Maybe Is Completed" TODO that had sat in
+  formatToJson. Set by CompleteMiniGame, persisted with the world, and exposed
+  as a checkbox in the Object Browser. The Director now skips completed stations,
+  so it stops applying pressure toward work the player has already finished.
+- Scene keeps a two-deep record of minigame progress - currentMiniGameData and
+  previousMiniGameData, with has-flags so a genuine score of zero is tellable
+  from never having played. MiniGameData is heap-allocated by the MiniGame
+  constructor and freed by ReleaseMiniGame, so a score used to live exactly as
+  long as the overlay showing it; these snapshots outlive the allocation, which
+  is what an interruptible station can be built on. Captured on release (the one
+  path every exit funnels through) and rolled forward when SetMiniGame swaps.
+- tests/TaskStationTests.cpp - 28 checks over station completion, its save/load
+  round trip, the Director's response to it, and the minigame history.
+- tests/run_tests.sh builds and runs the engine-linked suites from one loop, so
+  adding a suite is a line rather than another copy of the g++ invocation. A
+  failing suite no longer hides the state of the next.
+- Updated the Object Browser to draw its three object lists from one shared
+  helper rather than three hand-copied loops, and split the selected-object
+  panel into its own function so the window has exactly one Begin/End pair.
 
 [ Fixed ]
 
-- Fixed an issue where Interactable Objects would not be interactable after "OnInteract".
+- InteractableObject::isRunningMiniGame was a one-way latch: ActivateMiniGame set
+  it and nothing ever cleared it, so a station counted as occupied for the rest
+  of the session. The Director skips occupied stations, so every station the
+  player ever touched was permanently excluded from hinting. ReleaseMiniGame now
+  clears it, and ResetMiniGame restores it across a replay so a retried station
+  does not fall silent.
+- Fixed an issue where Interactable Objects would not be interactable after
+  "OnInteract".
+- Fixed Fit Model To Collider skipping entities. It walked game objects and
+  interactables only, so an entity's collider never fitted its model.
 
 [ Removed ]
 
-- Removed "canBeSelected" from Object Inspector. (Now uses "isSelectable" from Object Inspector)
+- Removed Entity and Interactable data from Scene.
+- Removed RigidBody3D::collisionBoxScale, declared for a collider offset and
+  never read by anything. Collider3D::size and ::offset replace it.
+- Removed RigidBody3D::GetWorldAxes, which had no callers left once the resolved
+  collider volume carried the axes.
+- Removed the two GetMeshBoundingBox assignments in GameObject, which wrote a
+  model-local box into a world-space field that SyncBroadPhaseBox overwrote.
+- Removed RigidBody3D::GetColliderBox, which had no callers and named the
+  collider while returning the broad-phase box.
+- Removed GameObject::canBeSelected, a duplicate of isSelectable that carried the
+  same default and the same meaning. isSelectable is now the only one, and it
+  persists as "IsSelectable"; worlds written before the merge still load their
+  authored "CanBeSelected" value.

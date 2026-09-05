@@ -347,7 +347,7 @@ void GameObject::addCommonToJson(Json& j)
 
 	// Flags
 	j["IsEnabled"] = isEnabled;
-	j["isSelectable"] = isSelectable;
+	j["IsSelectable"] = isSelectable;
 	j["IsDestructible"] = isDestructible;
 
 	// Renderer
@@ -387,7 +387,13 @@ bool GameObject::loadCommonFromJson(Json& j)
 
 	// Flags
 	isEnabled = j.value("IsEnabled", true);
-	isSelectable = j.value("isSelectable", true);
+	// "CanBeSelected" is the legacy key. isSelectable and canBeSelected were two
+	// fields carrying the same meaning and the same default; canBeSelected was the
+	// one that persisted, so every world authored before the merge stores its
+	// authored value under the old name. Without this fallback each of them would
+	// miss and silently default to true - including the floor GameMap::create()
+	// deliberately clears - and the next editor save would write the loss back out.
+	isSelectable = j.value("IsSelectable", j.value("CanBeSelected", true));
 	isDestructible = j.value("IsDestructible", true);
 
 	// Renderer
