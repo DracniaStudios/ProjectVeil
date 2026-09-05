@@ -372,9 +372,7 @@ void LightingSystem::ApplyToScene(Scene* scene) const
 {
 	if (!isReady || scene == nullptr) { return; }
 
-	for (auto& object : scene->gameMap.gameObjects) { ApplyToModel(object.model); }
-	for (auto& [id, entity] : scene->gameMap.entities) { ApplyToModel(entity->model); }
-	for (auto& [id, interactable] : scene->gameMap.interactables) { ApplyToModel(interactable->model); }
+	scene->gameMap.ForEachObject([&](GameObject& object) { ApplyToModel(object.model); });
 
 	if (scene->player != nullptr)
 	{
@@ -625,9 +623,7 @@ void LightingSystem::DrawShadowCasters(Scene* scene) const
 		DrawModel(object.model, object.rigidBody3D.translation, 1.0f, object.defaultColor);
 	};
 
-	for (auto& object : scene->gameMap.gameObjects) { drawCaster(object); }
-	for (auto& [id, entity] : scene->gameMap.entities) { drawCaster(*entity); }
-	for (auto& [id, interactable] : scene->gameMap.interactables) { drawCaster(*interactable); }
+	scene->gameMap.ForEachObject(drawCaster);
 
 	if (scene->player != nullptr)
 	{

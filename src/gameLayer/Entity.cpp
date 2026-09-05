@@ -156,9 +156,9 @@ void Entity::Attack()
 	projectile.health = -1;
 	projectile.isAlive = false;
 
-	// onEnable() (run inside saveObject()) resets deathSpan, so Decay() must be
-	// applied to the saved copy afterward for the 3-second lifetime to stick.
-	GameObject* saved = SceneManager::getInstance().currentScene->gameMap.saveObject(projectile);
+	// onEnable() (run inside SpawnGameObject()) resets deathSpan, so Decay() must
+	// be applied to the saved copy afterward for the 3-second lifetime to stick.
+	GameObject* saved = SceneManager::getInstance().currentScene->gameMap.SpawnGameObject(projectile);
 	saved->Decay(3);
 }
 

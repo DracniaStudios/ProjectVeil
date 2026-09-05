@@ -10,10 +10,10 @@
 void GameMap::create(Vector3 size)
 {
 	// NewWorld() reuses this on a populated map. ~GameObject() is trivial and
-	// never frees GPU resources (see removeObject()), so every object still on
-	// its generated fallback cube would otherwise leak its Model the moment
+	// never frees GPU resources (see DestroyGameObject()), so every object still
+	// on its generated fallback cube would otherwise leak its Model the moment
 	// this clear erases it.
-	for (auto& object : gameObjects) { object.releaseGeneratedModel(); }
+	for (auto& [id, object] : gameObjects) { object.releaseGeneratedModel(); }
 	gameObjects.clear();
 	this->size = size;
 	auto rng = std::ranlux24_base(std::random_device{}());
@@ -30,7 +30,7 @@ void GameMap::create(Vector3 size)
 	// Named asset reference — bound in onEnable() and saved with the object
 	floor.textureName = "Gravel041";
 
-	saveObject(floor);
+	SpawnGameObject(floor);
 
 }
 
@@ -44,7 +44,7 @@ std::uint64_t InstanceID::getIdAndIncrement()
 }
 
 // Load Object into Scene (Vector3)
-GameObject* GameMap::saveObject(GameObject& object)
+GameObject* GameMap::SpawnGameObject(GameObject& object)
 {
 	object.id = instanceHolder.getIdAndIncrement();
 
@@ -56,22 +56,20 @@ GameObject* GameMap::saveObject(GameObject& object)
 
 	/// Set GameMap Data
 	object.onEnable();
-	gameObjects.push_back(object);
+	auto [it, inserted] = gameObjects.emplace(object.id, object);
 
 	std::cout << "Added Object \n";
 
-	auto id = object.id;
-	auto it = std::find_if(gameObjects.begin(), gameObjects.end(), [id](const GameObject& o) { return o.id == id; });
-	return &(*it);
+	return &it->second;
 }
 
 
-Entity* GameMap::saveEntity(Entity& entity)
+Entity* GameMap::SpawnEntity(Entity& entity)
 {
 	entity.id = instanceHolder.getIdAndIncrement();
 	// Sets Object ID and Adds To Scene
 	if (entity.type != OBJECT_PLAYER) {
-		
+
 		std::cout << "Added Object \n";
 	}
 
@@ -97,7 +95,7 @@ Entity* GameMap::saveEntity(Entity& entity)
 	return entities[entity.id].get();
 }
 
-InteractableObject* GameMap::saveInteractable(InteractableObject& object)
+InteractableObject* GameMap::SpawnInteractable(InteractableObject& object)
 {
 	object.id = instanceHolder.getIdAndIncrement();
 	object.onEnable();
@@ -109,39 +107,63 @@ InteractableObject* GameMap::saveInteractable(InteractableObject& object)
 	return interactables[object.id].get();
 }
 
+GameObject* GameMap::LoadGameObject(GameObject object)
+{
+	auto id = object.id;
+	auto [it, inserted] = gameObjects.insert_or_assign(id, std::move(object));
+	return &it->second;
+}
+
+void GameMap::LoadEntity(std::unique_ptr<Entity> entity)
+{
+	auto id = entity->id;
+	entities[id] = std::move(entity);
+}
+
+void GameMap::LoadInteractable(std::unique_ptr<InteractableObject> interactable)
+{
+	auto id = interactable->id;
+	interactables[id] = std::move(interactable);
+}
+
 // Unload Object From Scene GameMap
-void GameMap::removeObject(GameObject* object) {
-    if (!object) return;
+void GameMap::DestroyGameObject(uint64_t id) {
+	auto it = gameObjects.find(id);
+	if (it == gameObjects.end()) return;
 
 	// ~GameObject() is trivial and never frees GPU resources — release a
 	// generated fallback model/mesh here or it leaks the moment this object
 	// is erased.
-	object->releaseGeneratedModel();
-	
-	erase_if(gameObjects, [&](const GameObject& o) { return &o == object;});
+	it->second.releaseGeneratedModel();
+
+	gameObjects.erase(it);
 }
 
 // Remove Entity From Entity List
-void GameMap::removeEntity(Entity* entity)
+void GameMap::DestroyEntity(uint64_t id)
 {
-	// Entities live only in Scene::entities, not in gameObjects (see saveEntity),
+	// Entities live only in Scene::entities, not in gameObjects (see SpawnEntity),
 	// so there is nothing to remove from gameObjects here.
-	if (entity == nullptr) return;
-	// See removeObject() — the unique_ptr erase below destroys the Entity
+	auto it = entities.find(id);
+	if (it == entities.end()) return;
+	// See DestroyGameObject() — the unique_ptr erase below destroys the Entity
 	// without ever freeing its generated model.
-	entity->releaseGeneratedModel();
-	entities.erase(entity->id);
+	it->second->releaseGeneratedModel();
+	entities.erase(it);
 }
 
 // Remove Interactable From InteractableList
-void GameMap::removeInteractable(InteractableObject* object)
+void GameMap::DestroyInteractable(uint64_t id)
 {
-	if (object == nullptr) return;
-	
+	auto it = interactables.find(id);
+	if (it == interactables.end()) return;
+
+	auto* object = it->second.get();
+
 	// Frees Memory Correctly
 	object->releaseGeneratedModel();
 	auto scene = SceneManager::getInstance().currentScene;
-	
+
 	// Player Inventory can hold references to InteractableObjects
 	if (scene->player) {
 		std::erase(scene->player->inventory, object);
@@ -149,6 +171,44 @@ void GameMap::removeInteractable(InteractableObject* object)
 			scene->player->interactObjectId = 0;
 		}
 	}
-	interactables.erase(object->id);
+	interactables.erase(it);
 }
 
+GameObject* GameMap::FindGameObject(uint64_t id)
+{
+	auto it = gameObjects.find(id);
+	if (it == gameObjects.end()) { return nullptr; }
+	return &it->second;
+}
+
+Entity* GameMap::FindEntity(uint64_t id)
+{
+	auto it = entities.find(id);
+	if (it == entities.end()) { return nullptr; }
+	return it->second.get();
+}
+
+InteractableObject* GameMap::FindInteractable(uint64_t id)
+{
+	auto it = interactables.find(id);
+	if (it == interactables.end()) { return nullptr; }
+	return it->second.get();
+}
+
+InteractableObject* GameMap::FindRunningStation()
+{
+	InteractableObject* result = nullptr;
+	ForEachInteractable([&](InteractableObject& interactable) {
+		if (interactable.isRunningMiniGame) { result = &interactable; return false; }
+		return true;
+	});
+	return result;
+}
+
+GameObject* GameMap::FindWorldObject(uint64_t id)
+{
+	// Interactables Hold Pointers to Activator Objects, making them the first ones required.
+	if (auto* interactable = FindInteractable(id)) { return interactable; }
+	if (auto* entity = FindEntity(id)) { return entity; }
+	return FindGameObject(id);
+}

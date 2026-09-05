@@ -421,18 +421,18 @@ void RigidBody3D::UpdateForce(float deltaTime)
 	Scene* scene = SceneManager::getInstance().currentScene;
 	if (scene == nullptr) { return; }
 
-	for (auto& obj : scene->gameMap.gameObjects)
+	scene->gameMap.ForEachGameObject([&](GameObject& obj)
 	{
-		if (&obj.rigidBody3D == this) { continue; } // rays from our own faces always hit our own box
+		if (&obj.rigidBody3D == this) { return; } // rays from our own faces always hit our own box
 		// Same rule resolveConstrains applies to this same call: a trigger must
 		// never set a touch flag, or a damage zone or objective volume becomes a
 		// floor the player can stand and jump on.
-		if (obj.rigidBody3D.collider.isTrigger()) { continue; }
+		if (obj.rigidBody3D.collider.isTrigger()) { return; }
 		// Not OverlapsBroadPhase: nearBox is this body's box inflated by the touch
 		// margin, not the box itself, so the pair test does not apply.
-		if (!CheckCollisionBoxes(nearBox, obj.rigidBody3D.broadPhaseBox)) { continue; }
+		if (!CheckCollisionBoxes(nearBox, obj.rigidBody3D.broadPhaseBox)) { return; }
 		checkRayCollision(obj.rigidBody3D);
-	}
+	});
 }
 
 void RigidBody3D::Update(float deltaTime)
@@ -499,7 +499,7 @@ void RigidBody3D::DispatchTriggerEvents(GameObject* self, GameMap* map)
 
 		// A destroyed partner resolves to nullptr and is simply dropped. This is
 		// the whole reason these lists hold IDs rather than pointers.
-		if (GameObject* other = FindWorldObjectByID(*map, id))
+		if (GameObject* other = map->FindWorldObject(id))
 		{
 			self->onTriggerExit(other);
 		}

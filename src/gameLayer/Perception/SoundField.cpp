@@ -84,13 +84,13 @@ float SoundField::AudibleLoudnessAt(Vector3 listener, const SoundEvent& event, c
 	ray.direction = Vector3Scale(toListener, 1.0f / span);
 
 	int occluders = 0;
-	for (const auto& object : map->gameObjects)
+	map->ForEachGameObject([&](const GameObject& object)
 	{
-		if (!object.isEnabled) { continue; }
-		if (object.id == event.sourceId) { continue; }
+		if (!object.isEnabled) { return true; }
+		if (object.id == event.sourceId) { return true; }
 		// A trigger volume is not geometry and must not muffle anything. A damage
 		// zone across a corridor should not make the footsteps beyond it quieter.
-		if (object.rigidBody3D.collider.isTrigger()) { continue; }
+		if (object.rigidBody3D.collider.isTrigger()) { return true; }
 
 		// The collider, not the box around it, so a rotated pillar muffles sound
 		// across its actual width rather than across its bounding box.
@@ -100,9 +100,10 @@ float SoundField::AudibleLoudnessAt(Vector3 listener, const SoundEvent& event, c
 		// listener still reports a hit on an infinite ray.
 		if (object.rigidBody3D.Raycast(ray, distance, normal) && distance > 0.0f && distance < span)
 		{
-			if (++occluders >= kMaxOccluders) { break; }
+			if (++occluders >= kMaxOccluders) { return false; }
 		}
-	}
+		return true;
+	});
 
 	for (int i = 0; i < occluders; ++i) { heard *= kOcclusionPerBody; }
 

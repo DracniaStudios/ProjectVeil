@@ -93,15 +93,15 @@ float Stalker::DistanceToObstruction(Vector3 direction, float maxDistance, const
 
 	float nearest = maxDistance;
 
-	for (const auto& object : map->gameObjects)
+	map->ForEachGameObject([&](const GameObject& object)
 	{
-		if (!object.isEnabled) { continue; }
+		if (!object.isEnabled) { return; }
 		// Anything the solver will not stop the stalker against should not stop
 		// it here either, or the AI flinches away from things it can walk through.
-		if (!object.rigidBody3D.canCollide) { continue; }
+		if (!object.rigidBody3D.canCollide) { return; }
 		// A trigger volume is not geometry. Letting one block line of sight would
 		// blind the stalker to anything behind a damage zone or an objective area.
-		if (object.rigidBody3D.collider.isTrigger()) { continue; }
+		if (object.rigidBody3D.collider.isTrigger()) { return; }
 
 		// The collider, not the box around it: sight lines that thread past a
 		// rotated wall are exactly the ones the stalker should be able to see down.
@@ -112,7 +112,7 @@ float Stalker::DistanceToObstruction(Vector3 direction, float maxDistance, const
 		{
 			nearest = distance;
 		}
-	}
+	});
 
 	return nearest;
 }

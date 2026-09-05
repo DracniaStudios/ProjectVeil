@@ -27,29 +27,27 @@ void Player::Interact()
 	InteractableObject* closest = nullptr;
 	float closestDistance = 0.0f;
 
-	for (auto& [id, owned] : scene->gameMap.interactables)
+	scene->gameMap.ForEachInteractable([&](InteractableObject& obj)
 	{
-		const auto obj = owned.get();
-
 		// A disabled interactable is one that has been consumed — picked up into
 		// the inventory, or switched off by an activator. It draws nothing
 		// (render3D returns early on !isEnabled) but keeps its collision box, so
 		// without this the player could still interact with thin air.
-		if (!obj->isInteractable || !obj->isEnabled) { continue; }
+		if (!obj.isInteractable || !obj.isEnabled) { return; }
 
 		// The collider, not the box around it, so the crosshair has to actually be
 		// on the object rather than merely within its bounds.
 		float distance = 0.0f;
 		Vector3 normal = {};
-		if (!obj->rigidBody3D.Raycast(cameraRay, distance, normal)) { continue; }
-		if (distance > static_cast<float>(interactRange)) { continue; }
+		if (!obj.rigidBody3D.Raycast(cameraRay, distance, normal)) { return; }
+		if (distance > static_cast<float>(interactRange)) { return; }
 
 		if (closest == nullptr || distance < closestDistance)
 		{
-			closest = obj;
+			closest = &obj;
 			closestDistance = distance;
 		}
-	}
+	});
 
 	if (closest != nullptr)
 	{

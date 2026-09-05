@@ -59,13 +59,13 @@ inline bool CompleteMiniGame(MiniGameData& data, Player& player, GameMap& gameMa
 		// and that returns false — but the player did complete the station, and
 		// letting a missing door un-complete a finished task would leave the
 		// Director hinting at it forever.
-		if (InteractableObject* station = FindRunningStation(gameMap)) {
+		if (InteractableObject* station = gameMap.FindRunningStation()) {
 			station->isCompleted = true;
 			station->isInteractable = false;
 		}
 
 		// Check for Activator Object By using ID instead of Pointer
-		GameObject* target = FindWorldObjectByID(gameMap, player.interactObjectId);
+		GameObject* target = gameMap.FindWorldObject(player.interactObjectId);
 
 		if (target != nullptr) {
 			if (target->isEnabled) {

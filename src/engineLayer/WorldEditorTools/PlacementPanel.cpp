@@ -288,7 +288,7 @@ GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 			if (entity->name == "GameObject") { entity->name = kindName; }
 		}
 
-		spawned = scene->gameMap.saveEntity(*entity);
+		spawned = scene->gameMap.SpawnEntity(*entity);
 		break;
 	}
 	case PLACE_INTERACTABLE:
@@ -301,22 +301,22 @@ GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 		interactable.releaseGeneratedModel();
 		static_cast<GameObject&>(interactable) = object; // shared base fields
 		interactable.type = OBJECT_INTERACTABLE; // base copy overwrote the constructor's type
-		// saveInteractable skips the zero-scale fix saveObject/saveEntity apply
+		// SpawnInteractable skips the zero-scale fix SpawnGameObject/SpawnEntity apply
 		if (interactable.rigidBody3D.scale == Vector3Zero())
 		{
 			interactable.rigidBody3D.scale = Vector3One();
 		}
-		spawned = scene->gameMap.saveInteractable(interactable);
+		spawned = scene->gameMap.SpawnInteractable(interactable);
 		break;
 	}
 	default:
-		spawned = scene->gameMap.saveObject(object);
+		spawned = scene->gameMap.SpawnGameObject(object);
 		break;
 	}
 
 	if (spawned == nullptr) { statusMessage = "Spawn failed"; return nullptr; }
 
-	// saveObject/saveEntity repair a zero scale, but none of them rebuild the
+	// SpawnGameObject/SpawnEntity repair a zero scale, but none of them rebuild the
 	// collision box afterwards — and with the simulation frozen nothing else
 	// will. A freshly placed object would be invisible to the very mouse ray
 	// that placed it until physics was resumed.

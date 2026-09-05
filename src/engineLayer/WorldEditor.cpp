@@ -142,9 +142,7 @@ GameObject* WorldEditor::getSelectedObject()
 	if (SceneManager::getInstance().currentScene == nullptr) { return nullptr; }
 	if (selectedObjectId == 0) { return nullptr; }
 
-	if (InteractableObject* interactable = FindInteractableByID(SceneManager::getInstance().currentScene->gameMap, selectedObjectId)) { return interactable; }
-	if (Entity* entity = FindEntityByID(SceneManager::getInstance().currentScene->gameMap, selectedObjectId)) { return entity; }
-	return FindGameObjectByID(SceneManager::getInstance().currentScene->gameMap, selectedObjectId);
+	return SceneManager::getInstance().currentScene->gameMap.FindWorldObject(selectedObjectId);
 }
 
 Asset* WorldEditor::getActiveTexture()

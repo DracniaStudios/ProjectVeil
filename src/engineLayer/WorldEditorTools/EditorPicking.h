@@ -29,9 +29,10 @@ enum PickFilter
 /**
  * Result of a mouse-ray query against the scene.
  *
- * `object` is valid only for the frame it was produced in. GameMap::saveObject()
- * push_backs and re-sorts gameObjects, so every pointer into that vector dies on
- * the next spawn or delete — `id` is the value worth keeping.
+ * `object` is only guaranteed valid until the next Destroy* of that same
+ * object — GameMap's containers are id-keyed and pointer-stable across
+ * spawns, but a pointer surviving past its own destruction is still a
+ * use-after-free. `id` is the value worth keeping across frames.
  */
 struct PickResult
 {

@@ -89,7 +89,7 @@ static ProbeEntity* AddProbe(Scene* scene, Vector3 at, std::uint64_t id = 700)
 	owned->rigidBody3D.scale = Vector3{ 1, 1, 1 };
 	owned->rigidBody3D.SyncBroadPhaseBox();
 	ProbeEntity* probe = owned.get();
-	scene->gameMap.entities[id] = std::move(owned);
+	scene->gameMap.LoadEntity(std::move(owned));
 	return probe;
 }
 
@@ -110,32 +110,31 @@ static GameObject* AddFloor(Scene* scene, Vector3 centre, Vector3 size, Collider
 	floor.rigidBody3D.scale = size;
 	floor.rigidBody3D.collider.mode = mode;
 	floor.rigidBody3D.SyncBroadPhaseBox();
-	scene->gameMap.gameObjects.push_back(floor);
-	return &scene->gameMap.gameObjects.back();
+	return scene->gameMap.LoadGameObject(floor);
 }
 
 // One frame, mirroring Scene_updateScene's order: bodies integrate, then the
 // solver runs its iterations over every overlapping pair.
 static void Step(Scene* scene, float dt, int solverIterations = 8)
 {
-	for (auto& object : scene->gameMap.gameObjects) { object.update(scene, dt); }
-	for (auto& [id, entity] : scene->gameMap.entities) { entity->update(scene, dt); }
+	scene->gameMap.ForEachGameObject([&](GameObject& object) { object.update(scene, dt); });
+	scene->gameMap.ForEachEntity([&](Entity& entity) { entity.update(scene, dt); });
 
 	for (int iteration = 0; iteration < solverIterations; ++iteration)
 	{
 		// Scene.cpp:84-95 — entities against world objects
-		for (auto& [id, entity] : scene->gameMap.entities)
+		scene->gameMap.ForEachEntity([&](Entity& entity)
 		{
-			for (auto& body : scene->gameMap.gameObjects)
+			scene->gameMap.ForEachGameObject([&](GameObject& body)
 			{
-				if (entity->rigidBody3D.OverlapsBroadPhase(body.rigidBody3D))
+				if (entity.rigidBody3D.OverlapsBroadPhase(body.rigidBody3D))
 				{
-					entity->rigidBody3D.resolveConstrains(entity.get(), &body);
-					entity->rigidBody3D.SyncBroadPhaseBox();
+					entity.rigidBody3D.resolveConstrains(&entity, &body);
+					entity.rigidBody3D.SyncBroadPhaseBox();
 					body.rigidBody3D.SyncBroadPhaseBox();
 				}
-			}
-		}
+			});
+		});
 	}
 }
 

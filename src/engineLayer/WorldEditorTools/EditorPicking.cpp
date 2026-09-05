@@ -103,22 +103,10 @@ PickResult PickSceneObject(Scene* scene, const Ray& ray, PickFilter filter, std:
 	PickResult best = {};
 	if (scene == nullptr) { return best; }
 
-	// Index rather than a range-for: TestObject only reads, but iterating a
-	// vector that anything else could grow is the habit this file avoids.
-	for (size_t i = 0; i < scene->gameMap.gameObjects.size(); ++i)
+	scene->gameMap.ForEachObject([&](GameObject& object)
 	{
-		TestObject(&scene->gameMap.gameObjects[i], ray, filter, ignoreId, best);
-	}
-
-	for (auto& [id, entity] : scene->gameMap.entities)
-	{
-		TestObject(entity.get(), ray, filter, ignoreId, best);
-	}
-
-	for (auto& [id, interactable] : scene->gameMap.interactables)
-	{
-		TestObject(interactable.get(), ray, filter, ignoreId, best);
-	}
+		TestObject(&object, ray, filter, ignoreId, best);
+	});
 
 	return best;
 }

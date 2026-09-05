@@ -71,36 +71,14 @@ void UpdateActions(Player* player) {
 void updateCollision(Player* player) {
 	player->rigidBody3D.canCollide = true;
 	/// Resolve Player Collision
-	for (auto& obj : SceneManager::getInstance().currentScene->gameMap.gameObjects)
+	SceneManager::getInstance().currentScene->gameMap.ForEachObject([&](GameObject& obj)
 	{
-		if (&obj != player)
+		if (&obj == player) { return; }
+		if (player->rigidBody3D.OverlapsBroadPhase(obj.rigidBody3D))
 		{
-			if (player->rigidBody3D.OverlapsBroadPhase(obj.rigidBody3D))
-			{
-				player->rigidBody3D.resolveConstrains(player, &obj);
-			}
+			player->rigidBody3D.resolveConstrains(player, &obj);
 		}
-	}
-
-	for (auto& obj : SceneManager::getInstance().currentScene->gameMap.entities)
-	{
-		auto ent = obj.second.get();
-		if (ent != player)
-		{
-			if (player->rigidBody3D.OverlapsBroadPhase(ent->rigidBody3D))
-			{
-				player->rigidBody3D.resolveConstrains(player, ent);
-			}
-		}
-	}
-	for (auto& obj : SceneManager::getInstance().currentScene->gameMap.interactables)
-	{
-		auto ent = obj.second.get();
-		if (player->rigidBody3D.OverlapsBroadPhase(ent->rigidBody3D))
-		{
-			player->rigidBody3D.resolveConstrains(player, ent);
-		}
-	}
+	});
 }
 
 void updateArtifact(Player* player, float deltaTime) {

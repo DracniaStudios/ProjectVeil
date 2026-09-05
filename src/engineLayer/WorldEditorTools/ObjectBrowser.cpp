@@ -1,5 +1,8 @@
 #include "WorldEditor.h"
 
+#include <algorithm>
+#include <vector>
+
 namespace
 {
 	constexpr ImVec4 kHeaderColour = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
@@ -38,7 +41,7 @@ namespace
 void WorldEditor::showInteractableObject(InteractableObject* object) {
 	ImGui::PushID(object);
 	ImGui::Separator();
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Interactable");
+	ImGui::TextColored(ImVec4(1, 0, 1, 1), "Interactable");
 	ImGui::Checkbox("Interactable", &object->isInteractable);
 
 	ImGui::Text("Interact Type: %s", interactTypeToString(object->interactType));
@@ -64,10 +67,10 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 
 		if (object->interactType == INTERACT_MINIGAME) {
 			// activator == 0 (or an id nothing resolves to) means "no explicit
-			// target" — FindWorldObjectByID returns nullptr for that, and
+			// target" — FindWorldObject returns nullptr for that, and
 			// dereferencing it here crashed the editor on the common
 			// self-activating case (see PlacementPanel's "Activator ID" field).
-			if (GameObject* activatorObject = FindWorldObjectByID(SceneManager::getInstance().currentScene->gameMap, object->activator)) {
+			if (GameObject* activatorObject = SceneManager::getInstance().currentScene->gameMap.FindWorldObject(object->activator)) {
 				ImGui::TextDisabled("%s", activatorObject->name.c_str());
 			}
 			else {
@@ -387,15 +390,11 @@ static void ShowStateButtons(Scene* scene)
 
 namespace
 {
-	// The three object containers hold their elements differently. Normalising to
-	// GameObject& here is what lets one ObjectList serve all of them.
-	GameObject& AsObject(GameObject& object) { return object; }
-
-	template <class T>
-	GameObject& AsObject(const std::pair<const std::uint64_t, std::unique_ptr<T>>& entry) { return *entry.second; }
-
-	template <class Range>
-	void ObjectList(const char* displayName, Range& objects, bool& show, std::uint64_t& selectID)
+	// GameMap's containers are private and no longer share one element shape
+	// (gameObjects is value-stored, entities/interactables own via unique_ptr) —
+	// callers gather a snapshot of GameObject* through ForEach* and hand that
+	// uniform list here instead.
+	void ObjectList(const char* displayName, const std::vector<GameObject*>& objects, bool& show, std::uint64_t& selectID)
 	{
 		ImGui::PushID(displayName);
 		ImGui::TextColored(kHeaderColour, "%s", displayName);
@@ -408,12 +407,11 @@ namespace
 
 		if (show)
 		{
-			for (auto& entry : objects)
+			for (GameObject* object : objects)
 			{
-				GameObject& object = AsObject(entry);
-				ImGui::PushID(&object);
-				const std::string label = object.name + " (" + std::to_string(object.id) + ")";
-				if (ImGui::Selectable(label.c_str(), object.id == selectID)) { selectID = object.id; }
+				ImGui::PushID(object);
+				const std::string label = object->name + " (" + std::to_string(object->id) + ")";
+				if (ImGui::Selectable(label.c_str(), object->id == selectID)) { selectID = object->id; }
 				ImGui::PopID();
 			}
 		}
@@ -423,9 +421,24 @@ namespace
 
 static void ShowObjectList(Scene* scene, std::uint64_t& selectID, bool& objects, bool& entities, bool& interactable)
 {
-	ObjectList("Game Objects", scene->gameMap.gameObjects, objects, selectID);
-	ObjectList("Entities", scene->gameMap.entities, entities, selectID);
-	ObjectList("Interactables", scene->gameMap.interactables, interactable, selectID);
+	// Display order is this panel's own concern — GameMap's storage is
+	// unordered and owes none (see ForEachGameObject). Sorted by id descending
+	// to match the order the Ctrl+2 hotkey used to force by sorting GameMap's
+	// storage in place, before that container became unsortable by design.
+	std::vector<GameObject*> gameObjectList;
+	scene->gameMap.ForEachGameObject([&](GameObject& object) { gameObjectList.push_back(&object); });
+	std::sort(gameObjectList.begin(), gameObjectList.end(),
+		[](const GameObject* a, const GameObject* b) { return a->id > b->id; });
+
+	std::vector<GameObject*> entityList;
+	scene->gameMap.ForEachEntity([&](Entity& entity) { entityList.push_back(&entity); });
+
+	std::vector<GameObject*> interactableList;
+	scene->gameMap.ForEachInteractable([&](InteractableObject& interactable) { interactableList.push_back(&interactable); });
+
+	ObjectList("Game Objects", gameObjectList, objects, selectID);
+	ObjectList("Entities", entityList, entities, selectID);
+	ObjectList("Interactables", interactableList, interactable, selectID);
 }
 
 void WorldEditor::showSelectedObject(Scene* scene) {
@@ -440,15 +453,12 @@ void WorldEditor::showSelectedObject(Scene* scene) {
 
 	// Push ID in GameObject
 	showGameObject(object);
-	// ObjectType comes straight out of the save file and does not imply map
-	// membership — the selected object was found in gameMap.gameObjects. operator[]
-	// on a miss would both return a null unique_ptr to dereference here and leave a
-	// null entry behind for Scene_updateScene to trip over every frame after.
-	if (object->type == OBJECT_ENTITY && scene->gameMap.entities.contains(object->id)) {
-		showEntity(scene->gameMap.entities[object->id].get());
+	
+	if (object->type == OBJECT_ENTITY) {
+		if (Entity* entity = scene->gameMap.FindEntity(object->id)) { showEntity(entity); }
 	}
-	else if (object->type == OBJECT_INTERACTABLE && scene->gameMap.interactables.contains(object->id)) {
-		showInteractableObject(scene->gameMap.interactables[object->id].get());
+	else if (object->type == OBJECT_INTERACTABLE) {
+		if (InteractableObject* interactable = scene->gameMap.FindInteractable(object->id)) { showInteractableObject(interactable); }
 	}
 
 	// Both route through the shared commands so the buttons, the keyboard
