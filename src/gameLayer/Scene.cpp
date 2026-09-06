@@ -248,22 +248,19 @@ void Scene_updateScene(float delta) {
 
 	const bool editorFrozen = worldEditor->IsEnabled() && worldEditor->IsSimulationPaused();
 
-	auto clampObject = [scene](GameObject& object, bool limit) {
-		
+	auto clampObject = [](GameObject& object, bool limit) {
+
 		// Recover any object that falls through the floor;
 		if (object.rigidBody3D.translation.y < -1000.0f) {
-			/*
-			std::cout << "[Scene.cpp] Consider deleting fallen objects to prevent bugs \n";
-			const Vector3 recovery = scene->gameMap.hasSpawnPoint
-				? Vector3{ scene->gameMap.spawnPoint.x,
-				           scene->gameMap.spawnPoint.y + 2.0f,
-				           scene->gameMap.spawnPoint.z }
-				: Vector3{ 0, 5, 0 };
-			//object.rigidBody3D.Teleport(recovery);
+			// GameMap no longer tracks a single map-wide spawn point — each
+			// Entity records its own when it is placed (see
+			// GameMap::SpawnEntity) — so recover an Entity to that, and fall
+			// back to a safe default for anything that isn't one (plain
+			// GameObjects, interactables).
+			Entity* asEntity = dynamic_cast<Entity*>(&object);
+			const Vector3 recovery = asEntity ? asEntity->getSpawnPoint() : Vector3{ 0, 5, 0 };
 
-			*/
-			std::cout << "[Scene.cpp] Object " << object.name << " fell out of the world, recovering to spawn point \n";
-			std::cout << "[Scene.cpp] !!! Modify these lines correctly to delete fallen objects and restore entities. !!! \n";
+			object.rigidBody3D.Teleport(recovery);
 
 			// Reset Velocity on Teleport
 			object.rigidBody3D.SetVelocity(Vector3Zero());
