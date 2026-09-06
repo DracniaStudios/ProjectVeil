@@ -72,6 +72,7 @@ private:
 	// frame. Replaces attackStartTime/attackWaitTime, which were declared for
 	// this but never actually wired into update().
 	CooldownTimer attackCooldown = CooldownTimer(3.0);
+	Vector3 spawnPoint = Vector3(0, 0, 0);
 public:
 	Entity();
 
@@ -121,9 +122,11 @@ public:
 	virtual void update(Scene* scene, float deltaTime) override;
 	virtual void onCollision(const GameObject* collider) override;
 
+	Vector3 getSpawnPoint() { return spawnPoint; }
+	void setSpawnPoint(Vector3 spawn) { spawnPoint = spawn; }
+
 	/** Status **/
 	std::vector<CooldownTimer> buffTimers = {};
-	
 	CooldownTimer* getBuff(int id);
 	float getMaxHealth() const { return maxHealth; }
 	float getMaxStamina() const { return maxStamina; }

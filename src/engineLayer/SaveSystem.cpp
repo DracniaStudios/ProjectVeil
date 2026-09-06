@@ -400,16 +400,6 @@ namespace SaveSystem
 		j["Map"]["SizeY"] = scene->gameMap.size.y;
 		j["Map"]["SizeZ"] = scene->gameMap.size.z;
 
-		// Spawn point is authored level data. Only written once it has actually
-		// been set, so loading an older world stays a no-op rather than
-		// teleporting the player to an origin nobody chose.
-		if (scene->gameMap.hasSpawnPoint)
-		{
-			j["Map"]["SpawnX"] = scene->gameMap.spawnPoint.x;
-			j["Map"]["SpawnY"] = scene->gameMap.spawnPoint.y;
-			j["Map"]["SpawnZ"] = scene->gameMap.spawnPoint.z;
-		}
-
 		// Lighting is authored level data, so it belongs in the world file too
 		j["Lighting"] = LightingSystem::getInstance().formatToJson();
 
@@ -504,29 +494,6 @@ namespace SaveSystem
 			scene.gameMap.size.x = j["Map"].value("SizeX", scene.gameMap.size.x);
 			scene.gameMap.size.y = j["Map"].value("SizeY", scene.gameMap.size.y);
 			scene.gameMap.size.z = j["Map"].value("SizeZ", scene.gameMap.size.z);
-
-			// Place the player, which nothing else in this function does. Without
-			// it the player keeps whatever position it had — on a fresh launch
-			// the RigidBody3D default of (0,0,0), which in chunk_1 is inside the
-			// artifact display plinth.
-			scene.gameMap.hasSpawnPoint = j["Map"].contains("SpawnX");
-			if (scene.gameMap.hasSpawnPoint)
-			{
-				scene.gameMap.spawnPoint = Vector3{
-					j["Map"].value("SpawnX", 0.0f),
-					j["Map"].value("SpawnY", 0.0f),
-					j["Map"].value("SpawnZ", 0.0f)
-				};
-
-				if (scene.player)
-				{
-					scene.player->rigidBody3D.Teleport(scene.gameMap.spawnPoint);
-					// Teleporting without clearing velocity carries any fall speed
-					// from the previous world into the new one, so the player
-					// arrives already accelerating downward.
-					scene.player->rigidBody3D.SetVelocity(Vector3Zero());
-				}
-			}
 		}
 
 		// Lighting — pre-lighting world files have no section, so install the
@@ -648,16 +615,6 @@ namespace SaveSystem
 			<< scene.gameMap.EntityCount() << " entities, next id "
 			<< scene.gameMap.instanceHolder.idCounter << ")\n";
 
-		if (scene.gameMap.hasSpawnPoint)
-		{
-			std::cout << "[Save System]   spawned player at ("
-				<< scene.gameMap.spawnPoint.x << ", " << scene.gameMap.spawnPoint.y
-				<< ", " << scene.gameMap.spawnPoint.z << ")\n";
-		}
-		else
-		{
-			std::cout << "[Save System]   no spawn point in world; player left at its current position\n";
-		}
 		return true;
 	}
 

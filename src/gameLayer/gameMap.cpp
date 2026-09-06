@@ -66,30 +66,29 @@ GameObject* GameMap::SpawnGameObject(GameObject& object)
 
 Entity* GameMap::SpawnEntity(Entity& entity)
 {
-	entity.id = instanceHolder.getIdAndIncrement();
 	// Sets Object ID and Adds To Scene
 	if (entity.type != OBJECT_PLAYER) {
 
 		std::cout << "Added Object \n";
 	}
-
-	/// Set GameMap Data
-	entity.onEnable();
+	
+	// Use clone() to preserve the dynamic type of the passed-in entity (e.g., Stalker)
+	entities[entity.id] = entity.clone();
+	
+	// Sets Object ID and Adds To Scene
+	auto ent = entities[entity.id].get();
+	ent->id = instanceHolder.getIdAndIncrement();
+	
+	ent->onEnable();
 
 	/// Set RigidBody3D Data
-	if (entity.rigidBody3D.scale == Vector3Zero())
+	if (ent->rigidBody3D.scale == Vector3Zero())
 	{
-		entity.rigidBody3D.scale = Vector3One();
+		ent->rigidBody3D.scale = Vector3One();
 	}
-	/// Add Entity To Scene Entity Data
-	// clone() rather than make_unique<Entity>(entity): the latter slices, so a
-	// Stalker (or any other subclass) handed to this function was stored as a
-	// bare Entity and lost its overrides before it ever ticked.
-	//
-	// No std::move around the call: clone() already returns a prvalue, and
-	// wrapping it blocks the copy elision that would otherwise construct in
-	// place.
-	entities[entity.id] = entity.clone();
+
+	ent->setSpawnPoint(ent->getPosition());
+	ent->rigidBody3D.Teleport(ent->getSpawnPoint());
 
 	std::cout << "Added Entity \n";
 	return entities[entity.id].get();
@@ -111,6 +110,7 @@ GameObject* GameMap::LoadGameObject(GameObject object)
 {
 	auto id = object.id;
 	auto [it, inserted] = gameObjects.insert_or_assign(id, std::move(object));
+	it->second.onEnable();
 	return &it->second;
 }
 
@@ -118,12 +118,17 @@ void GameMap::LoadEntity(std::unique_ptr<Entity> entity)
 {
 	auto id = entity->id;
 	entities[id] = std::move(entity);
+	entities[id]->onEnable();
+	if (entities[id]->getSpawnPoint().y > 0) {
+		entities[id]->rigidBody3D.Teleport(entities[id]->getSpawnPoint());
+	}
 }
 
 void GameMap::LoadInteractable(std::unique_ptr<InteractableObject> interactable)
 {
 	auto id = interactable->id;
 	interactables[id] = std::move(interactable);
+	interactables[id]->onEnable();
 }
 
 // Unload Object From Scene GameMap

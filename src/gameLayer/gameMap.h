@@ -221,8 +221,8 @@ struct GameMap {
 	Vector3 size = {10, 10, 10};
 
 	// PLayer Spawn Point on Load Scene
-	Vector3 spawnPoint = {0, 0, 0};
-	bool hasSpawnPoint = false;
+	//Vector3 spawnPoint = {0, 0, 0};
+	//bool hasSpawnPoint = false;
 
 	// Not part of the container-privacy deepening below: SaveSystem and
 	// Scene::ResetID already manipulate the id-floor/reset logic directly,

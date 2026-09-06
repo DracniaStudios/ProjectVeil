@@ -110,10 +110,14 @@ void WorldEditor::ShowStalkerData()
 			stalker->displayRoute = true;
 			statusMessage = "Added waypoint " + std::to_string(stalker->waypoints.size());
 		}
-		ImGui::SameLine();
-		if (ImGui::Button("Add At Stalker"))
+		if (ImGui::Button("Add Waypoint At Stalker"))
 		{
 			stalker->waypoints.push_back(stalker->getPosition());
+			stalker->displayRoute = true;
+		}
+		if (ImGui::Button("Add Waypoint At Camera"))
+		{
+			stalker->waypoints.push_back(SceneManager::getInstance().camera3D.position);
 			stalker->displayRoute = true;
 		}
 

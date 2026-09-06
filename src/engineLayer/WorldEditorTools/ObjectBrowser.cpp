@@ -120,6 +120,18 @@ void WorldEditor::showEntity(Entity* object) {
 		ImGui::PopID();
 	}
 
+	if (ImGui::Button("Teleport To Player")) {
+		object->rigidBody3D.Teleport(SceneManager::getInstance().currentScene->player->getPosition());
+	}
+	if (ImGui::Button("Teleport To Camera")) {
+		object->rigidBody3D.Teleport(SceneManager::getInstance().camera3D.position);
+	}
+
+	auto spawnPoint = object->getSpawnPoint();
+	if (ImGui::InputFloat3("Spawn Position", &spawnPoint.x)) {
+		object->setSpawnPoint(spawnPoint);
+	}
+
 	ImGui::PopID();
 }
 

@@ -58,6 +58,9 @@ void Entity::onEnable()
 	// Reset Buffs
 	InstallDefaultBuffs(buffTimers);
 
+	// Spawn Entity
+	rigidBody3D.SetVelocity(Vector3Zero());
+
 	GameObject::onEnable();
 }
 
@@ -175,6 +178,9 @@ Json Entity::formatToJson()
 	j["MaxStamina"] = maxStamina;
 	j["BaseDamage"] = baseDamage;
 	j["BaseSpeed"] = baseSpeed;
+	j["SpawnX"] = spawnPoint.x;
+	j["SpawnY"] = spawnPoint.y;
+	j["SpawnZ"] = spawnPoint.z;
 
 	return j;
 }
@@ -194,6 +200,9 @@ bool Entity::loadFromJson(Json& j)
 	stamina = j.value("Stamina", maxStamina);
 	baseDamage = j.value("BaseDamage", baseDamage);
 	baseSpeed = j.value("BaseSpeed", baseSpeed);
+	spawnPoint.x = j.value("SpawnX", 0.0f);
+	spawnPoint.y = j.value("SpawnY", 5.0f);
+	spawnPoint.z = j.value("SpawnZ", 0.0f);
 
 	return true;
 }

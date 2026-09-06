@@ -179,9 +179,22 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 			}
 		});
 
-		// Player Vs. Entities — the player lives outside both containers, so
+		// Player Vs. Game Objects — the player lives outside both containers, so
 		// without this pass it walks straight through every entity (it already
 		// resolves against gameObjects in Player::update3D)
+
+		if (auto player = scene->player) {
+			gameMap.ForEachObject([&](GameObject& obj)
+				{
+					if (&obj == player) { return; }
+					if (player->rigidBody3D.OverlapsBroadPhase(obj.rigidBody3D))
+					{
+						player->rigidBody3D.resolveConstrains(player, &obj);
+					}
+				});
+		}
+
+		// Player Vs. Entities
 		if (auto player = scene->player)
 		{
 			gameMap.ForEachEntity([&](Entity& entity)
@@ -195,6 +208,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 			});
 		}
 
+		// Player Vs. Interactables
 		if (auto player = scene->player)
 		{
 			gameMap.ForEachInteractable([&](InteractableObject& entity)
@@ -238,15 +252,18 @@ void Scene_updateScene(float delta) {
 		
 		// Revcover any object that falls through the floor;
 		if (object.rigidBody3D.translation.y < -1000.0f) {
-			
+			/*
 			std::cout << "[Scene.cpp] Consider deleting fallen objects to prevent bugs \n";
 			const Vector3 recovery = scene->gameMap.hasSpawnPoint
 				? Vector3{ scene->gameMap.spawnPoint.x,
 				           scene->gameMap.spawnPoint.y + 2.0f,
 				           scene->gameMap.spawnPoint.z }
 				: Vector3{ 0, 5, 0 };
+			//object.rigidBody3D.Teleport(recovery);
 
-			object.rigidBody3D.Teleport(recovery);
+			*/
+			std::cout << "[Scene.cpp] Object " << object.name << " fell out of the world, recovering to spawn point \n";
+			std::cout << "[Scene.cpp] !!! Modify these lines correctly to delete fallen objects and restore entities. !!! \n";
 
 			// Reset Velocity on Teleport
 			object.rigidBody3D.SetVelocity(Vector3Zero());

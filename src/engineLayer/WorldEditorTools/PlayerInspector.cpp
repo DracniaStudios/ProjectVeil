@@ -34,6 +34,13 @@ void WorldEditor::ShowPlayerData(Player* player)
 		if (ImGui::InputFloat3("Player Position 3D", &stagePosition.x)) {
 			player->rigidBody3D.Teleport(stagePosition);
 		}
+
+		Vector3 stageSpawnPosition = player->getSpawnPoint();
+		if (ImGui::InputFloat3("Player Spawn Position", &stageSpawnPosition.x)) {
+			player->setSpawnPoint(stageSpawnPosition);
+		}
+
+
 		//ImGui::Text("Player Velocity 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.GetVelocity().x, player->rigidBody3D.GetVelocity().y, player->rigidBody3D.GetVelocity().z);
 		Vector3 stageVelocity = player->rigidBody3D.GetVelocity();
 		if (ImGui::InputFloat3("Player Vecocity 3D", &stageVelocity.x)) {

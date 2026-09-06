@@ -68,19 +68,6 @@ void UpdateActions(Player* player) {
 	}
 }
 
-void updateCollision(Player* player) {
-	player->rigidBody3D.canCollide = true;
-	/// Resolve Player Collision
-	SceneManager::getInstance().currentScene->gameMap.ForEachObject([&](GameObject& obj)
-	{
-		if (&obj == player) { return; }
-		if (player->rigidBody3D.OverlapsBroadPhase(obj.rigidBody3D))
-		{
-			player->rigidBody3D.resolveConstrains(player, &obj);
-		}
-	});
-}
-
 void updateArtifact(Player* player, float deltaTime) {
 
 	auto inputSystem = &InputSystem::getInstance();
@@ -263,8 +250,6 @@ void Player::update3D(float deltaTime)
 
 	/// Update RigidBody3D Physics
 	rigidBody3D.Update(deltaTime);
-
-	updateCollision(this);
 
 	// After the physics step so the noise is stamped at the position the player
 	// actually reached this frame, not the one they started it at.
