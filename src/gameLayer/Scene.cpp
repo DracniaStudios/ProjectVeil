@@ -250,7 +250,7 @@ void Scene_updateScene(float delta) {
 
 	auto clampObject = [scene](GameObject& object, bool limit) {
 		
-		// Revcover any object that falls through the floor;
+		// Recover any object that falls through the floor;
 		if (object.rigidBody3D.translation.y < -1000.0f) {
 			/*
 			std::cout << "[Scene.cpp] Consider deleting fallen objects to prevent bugs \n";
