@@ -66,6 +66,7 @@ tests/
 saves/backup.json
 saves/settings.json
 veil-digest.py
+CLAUDE.md
 
 # CMake generated files
 CMakeFiles/

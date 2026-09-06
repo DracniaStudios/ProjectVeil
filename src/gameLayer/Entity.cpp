@@ -39,6 +39,14 @@ std::unique_ptr<Entity> Entity::createByKind(EntityKind kind)
 
 Entity::Entity() {
 	type = OBJECT_ENTITY;
+
+	// Installed here as well as in onEnable() because the save loaders build
+	// entities through loadFromJson and never call onEnable — those entities
+	// came up with an empty buffTimers vector, so every getBuff() on them
+	// returned nullptr (no buff ever applied) while logging a miss to stdout
+	// once per lookup per frame. Doing it in onEnable alone is not enough, and
+	// making the loaders call onEnable instead would reset loaded health and
+	// stamina back to maximum.
 	InstallDefaultBuffs(buffTimers);
 }
 
@@ -49,6 +57,9 @@ void Entity::onEnable()
 
 	// Reset Buffs
 	InstallDefaultBuffs(buffTimers);
+
+	// Spawn Entity
+	rigidBody3D.SetVelocity(Vector3Zero());
 
 	GameObject::onEnable();
 }
@@ -77,7 +88,11 @@ void Entity::update(Scene* scene, float deltaTime)
 		currentSpeed *= 2;
 	}
 	
-	// Per-second rates.
+	// Per-second rates. These were applied per FRAME, which made the whole
+	// stamina economy a function of the player's refresh rate: sprinting drained
+	// a full bar in 3.3s at 60 FPS and in 1.4s at 144. The constants below are
+	// the old per-frame amounts multiplied up by the 60 FPS the game targets by
+	// default, so the tuning that was authored is preserved.
 	constexpr float kSprintDrainPerSecond = 0.5f * 60.0f;
 	constexpr float kStaminaRegenPerSecond = 0.01f * 60.0f;
 
@@ -144,9 +159,9 @@ void Entity::Attack()
 	projectile.health = -1;
 	projectile.isAlive = false;
 
-	// onEnable() (run inside saveObject()) resets deathSpan, so Decay() must be
-	// applied to the saved copy afterward for the 3-second lifetime to stick.
-	GameObject* saved = SceneManager::getInstance().currentScene->gameMap.saveObject(projectile);
+	// onEnable() (run inside SpawnGameObject()) resets deathSpan, so Decay() must
+	// be applied to the saved copy afterward for the 3-second lifetime to stick.
+	GameObject* saved = SceneManager::getInstance().currentScene->gameMap.SpawnGameObject(projectile);
 	saved->Decay(3);
 }
 
@@ -163,6 +178,9 @@ Json Entity::formatToJson()
 	j["MaxStamina"] = maxStamina;
 	j["BaseDamage"] = baseDamage;
 	j["BaseSpeed"] = baseSpeed;
+	j["SpawnX"] = spawnPoint.x;
+	j["SpawnY"] = spawnPoint.y;
+	j["SpawnZ"] = spawnPoint.z;
 
 	return j;
 }
@@ -182,6 +200,9 @@ bool Entity::loadFromJson(Json& j)
 	stamina = j.value("Stamina", maxStamina);
 	baseDamage = j.value("BaseDamage", baseDamage);
 	baseSpeed = j.value("BaseSpeed", baseSpeed);
+	spawnPoint.x = j.value("SpawnX", 0.0f);
+	spawnPoint.y = j.value("SpawnY", 5.0f);
+	spawnPoint.z = j.value("SpawnZ", 0.0f);
 
 	return true;
 }

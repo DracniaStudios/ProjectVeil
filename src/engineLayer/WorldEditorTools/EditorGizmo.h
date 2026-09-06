@@ -30,10 +30,10 @@ enum GizmoHandle
 /**
  * The transform the gizmo reads and writes.
  *
- * Deliberately not a GameObject pointer. GameMap::saveObject() push_backs and
- * re-sorts gameObjects, so every pointer into that vector dies on the next spawn
- * or delete. The editor resolves its selection by id once per frame and hands
- * the gizmo a plain value type valid for the duration of that frame only.
+ * Deliberately not a GameObject pointer: a pointer only survives until its
+ * own object is destroyed, and the gizmo can outlive that. The editor
+ * resolves its selection by id once per frame and hands the gizmo a plain
+ * value type valid for the duration of that frame only.
  */
 struct GizmoTransform
 {

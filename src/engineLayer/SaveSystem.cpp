@@ -121,28 +121,28 @@ namespace SaveSystem
 
 		// Game Objects (interactables live in their own section)
 		Json objects = Json::object();
-		for (auto& obj : scene->gameMap.gameObjects)
+		scene->gameMap.ForEachGameObject([&](GameObject& obj)
 		{
-			if (scene->gameMap.interactables.contains(obj.id)) { continue; }
+			if (scene->gameMap.FindInteractable(obj.id) != nullptr) { return; }
 			objects[std::to_string(obj.id)] = obj.formatToJson();
-		}
+		});
 		j["Objects"] = objects;
 
 		// Entities (player lives in its own section)
 		Json entities = Json::object();
-		for (auto& [id, entity] : scene->gameMap.entities)
+		scene->gameMap.ForEachEntity([&](Entity& entity)
 		{
-			if (entity->type == OBJECT_PLAYER) { continue; }
-			entities[std::to_string(id)] = entity->formatToJson();
-		}
+			if (entity.type == OBJECT_PLAYER) { return; }
+			entities[std::to_string(entity.id)] = entity.formatToJson();
+		});
 		j["Entities"] = entities;
 
 		// Interactables
 		Json interactables = Json::object();
-		for (auto& [id, interactable] : scene->gameMap.interactables)
+		scene->gameMap.ForEachInteractable([&](InteractableObject& interactable)
 		{
-			interactables[std::to_string(id)] = interactable->formatToJson();
-		}
+			interactables[std::to_string(interactable.id)] = interactable.formatToJson();
+		});
 		j["Interactables"] = interactables;
 
 		// Player
@@ -168,10 +168,13 @@ namespace SaveSystem
 		// gameObjects/entities are already empty here — LoadGame() released and
 		// cleared them before calling in. interactables is the one container
 		// that still holds the previous scene's live objects at this point.
-		for (auto& [id, interactable] : scene.gameMap.interactables) { interactable->releaseGeneratedModel(); }
-		scene.gameMap.gameObjects.clear();
-		scene.gameMap.entities.clear();
-		scene.gameMap.interactables.clear();
+		// DestroyInteractable already does the release-then-erase this used to
+		// do by hand.
+		{
+			std::vector<std::uint64_t> interactableIds;
+			scene.gameMap.ForEachInteractable([&](InteractableObject& interactable) { interactableIds.push_back(interactable.id); return true; });
+			for (auto id : interactableIds) { scene.gameMap.DestroyInteractable(id); }
+		}
 		// Player::inventory is a list of non-owning pointers into the map just
 		// cleared above; the player object itself survives the load, so those
 		// pointers would otherwise dangle (inventory contents aren't persisted yet).
@@ -229,7 +232,7 @@ namespace SaveSystem
 					continue;
 				}
 
-				scene.gameMap.gameObjects.push_back(obj);
+				scene.gameMap.LoadGameObject(obj);
 			}
 		}
 
@@ -256,7 +259,7 @@ namespace SaveSystem
 					continue;
 				}
 
-				scene.gameMap.entities[entity->id] = std::move(entity->clone());
+				scene.gameMap.LoadEntity(entity->clone());
 			}
 		}
 
@@ -282,10 +285,10 @@ namespace SaveSystem
 				}
 
 				// Interactables live only in Scene::interactables, not in gameObjects
-				// (see GameMap::saveInteractable/removeInteractable) — pushing the loaded
+				// (see GameMap::SpawnInteractable/DestroyInteractable) — pushing the loaded
 				// copy into gameObjects here sliced it to a plain GameObject and duplicated
 				// the entity under the same ID.
-				scene.gameMap.interactables[interactable.id] = std::make_unique<InteractableObject>(interactable);
+				scene.gameMap.LoadInteractable(std::make_unique<InteractableObject>(interactable));
 			}
 		}
 
@@ -311,9 +314,9 @@ namespace SaveSystem
 		// unrelated, so a save whose objects are numbered above their own count
 		// still let the next spawn collide with an id already in use.
 		std::uint64_t highestId = 0;
-		for (const auto& obj : scene.gameMap.gameObjects) { highestId = std::max(highestId, obj.id); }
-		for (const auto& [id, entity] : scene.gameMap.entities) { highestId = std::max(highestId, id); }
-		for (const auto& [id, interactable] : scene.gameMap.interactables) { highestId = std::max(highestId, id); }
+		scene.gameMap.ForEachGameObject([&](GameObject& obj) { highestId = std::max(highestId, obj.id); });
+		scene.gameMap.ForEachEntity([&](Entity& entity) { highestId = std::max(highestId, entity.id); });
+		scene.gameMap.ForEachInteractable([&](InteractableObject& interactable) { highestId = std::max(highestId, interactable.id); });
 
 		scene.gameMap.instanceHolder.idCounter = std::max(scene.gameMap.instanceHolder.idCounter, highestId + 1);
 
@@ -325,7 +328,7 @@ namespace SaveSystem
 		if (scene == nullptr) { return false; }
 
 		// Check For Object Limit
-		if (scene->gameMap.gameObjects.size() > OBJECT_LIMIT) { return false; }
+		if (scene->gameMap.GameObjectCount() > OBJECT_LIMIT) { return false; }
 
 		const std::string savePath = RESOURCES_PATH "../saves/";
 		const fs::path path = savePath + fileName + ".json";
@@ -356,13 +359,18 @@ namespace SaveSystem
 			return false;
 		}
 
-		// ~GameObject()/~Entity() never free GPU resources (see
-		// GameMap::removeObject()); release each object's generated fallback
-		// model before these clears erase it, or it leaks.
-		for (auto& object : scene.gameMap.gameObjects) { object.releaseGeneratedModel(); }
-		for (auto& [id, entity] : scene.gameMap.entities) { entity->releaseGeneratedModel(); }
-		scene.gameMap.gameObjects.clear();
-		scene.gameMap.entities.clear();
+		// DestroyGameObject/DestroyEntity already release each object's
+		// generated fallback model before erasing (see GameMap::create()) —
+		// snapshot ids first since destroying while iterating is unsafe.
+		{
+			std::vector<std::uint64_t> gameObjectIds;
+			scene.gameMap.ForEachGameObject([&](GameObject& object) { gameObjectIds.push_back(object.id); return true; });
+			for (auto id : gameObjectIds) { scene.gameMap.DestroyGameObject(id); }
+
+			std::vector<std::uint64_t> entityIds;
+			scene.gameMap.ForEachEntity([&](Entity& entity) { entityIds.push_back(entity.id); return true; });
+			for (auto id : entityIds) { scene.gameMap.DestroyEntity(id); }
+		}
 		scene.gameMap.instanceHolder.idCounter = 0;
 
 		if (!ApplyJsonToScene(j, scene)) { return false; }
@@ -377,7 +385,7 @@ namespace SaveSystem
 		if (scene == nullptr) { return false; }
 
 		// Check For Object Limit
-		if (scene->gameMap.gameObjects.size() > OBJECT_LIMIT) { return false; }
+		if (scene->gameMap.GameObjectCount() > OBJECT_LIMIT) { return false; }
 
 		Json j;
 		fs::path path = WORLD_SAVE_PATH + fileName + ".json";
@@ -392,35 +400,25 @@ namespace SaveSystem
 		j["Map"]["SizeY"] = scene->gameMap.size.y;
 		j["Map"]["SizeZ"] = scene->gameMap.size.z;
 
-		// Spawn point is authored level data. Only written once it has actually
-		// been set, so loading an older world stays a no-op rather than
-		// teleporting the player to an origin nobody chose.
-		if (scene->gameMap.hasSpawnPoint)
-		{
-			j["Map"]["SpawnX"] = scene->gameMap.spawnPoint.x;
-			j["Map"]["SpawnY"] = scene->gameMap.spawnPoint.y;
-			j["Map"]["SpawnZ"] = scene->gameMap.spawnPoint.z;
-		}
-
 		// Lighting is authored level data, so it belongs in the world file too
 		j["Lighting"] = LightingSystem::getInstance().formatToJson();
 
 		// Game Objects (interactables live in their own section, projectiles are transient)
 		Json objects = Json::object();
-		for (auto& obj : scene->gameMap.gameObjects)
+		scene->gameMap.ForEachGameObject([&](GameObject& obj)
 		{
-			if (scene->gameMap.interactables.contains(obj.id)) { continue; }
-			if (obj.type == OBJECT_PROJECTILE) { continue; }
+			if (scene->gameMap.FindInteractable(obj.id) != nullptr) { return; }
+			if (obj.type == OBJECT_PROJECTILE) { return; }
 			objects[std::to_string(obj.id)] = obj.formatToJson();
-		}
+		});
 		j["Objects"] = objects;
 
 		// Interactables
 		Json interactables = Json::object();
-		for (auto& [id, interactable] : scene->gameMap.interactables)
+		scene->gameMap.ForEachInteractable([&](InteractableObject& interactable)
 		{
-			interactables[std::to_string(id)] = interactable->formatToJson();
-		}
+			interactables[std::to_string(interactable.id)] = interactable.formatToJson();
+		});
 		j["Interactables"] = interactables;
 
 		// Entities. A world file carried none until now, while LoadWorld cleared
@@ -433,12 +431,12 @@ namespace SaveSystem
 		// its own section in game saves, and a world file has no business
 		// carrying a second copy of it.
 		Json entities = Json::object();
-		for (auto& [id, entity] : scene->gameMap.entities)
+		scene->gameMap.ForEachEntity([&](Entity& entity)
 		{
-			if (!entity || entity->type == OBJECT_PLAYER) { continue; }
-			if (entity->kind == ENTITYKIND_PLAYER) { continue; }
-			entities[std::to_string(id)] = entity->formatToJson();
-		}
+			if (entity.type == OBJECT_PLAYER) { return; }
+			if (entity.kind == ENTITYKIND_PLAYER) { return; }
+			entities[std::to_string(entity.id)] = entity.formatToJson();
+		});
 		j["Entities"] = entities;
 
 		if (!WriteJsonAtomic(path, j)) { return false; }
@@ -461,17 +459,23 @@ namespace SaveSystem
 			return false;
 		}
 
-		// Reset world geometry only — entities and player are untouched
-		// (entities live in scene.entities, not gameMap.gameObjects; live projectiles are discarded)
-		// ~GameObject()/~Entity()/~InteractableObject() never free GPU resources
-		// (see GameMap::removeObject()); release each object's generated
-		// fallback model before these clears erase it, or it leaks.
-		for (auto& object : scene.gameMap.gameObjects) { object.releaseGeneratedModel(); }
-		for (auto& [id, interactable] : scene.gameMap.interactables) { interactable->releaseGeneratedModel(); }
-		for (auto& [id, entity] : scene.gameMap.entities) { entity->releaseGeneratedModel(); }
-		scene.gameMap.gameObjects.clear();
-		scene.gameMap.interactables.clear();
-		scene.gameMap.entities.clear();
+		// Reset world geometry only — player is untouched (live projectiles are
+		// discarded). Destroy* already release each object's generated fallback
+		// model before erasing (see GameMap::create()) — snapshot ids first
+		// since destroying while iterating is unsafe.
+		{
+			std::vector<std::uint64_t> gameObjectIds;
+			scene.gameMap.ForEachGameObject([&](GameObject& object) { gameObjectIds.push_back(object.id); return true; });
+			for (auto id : gameObjectIds) { scene.gameMap.DestroyGameObject(id); }
+
+			std::vector<std::uint64_t> interactableIds;
+			scene.gameMap.ForEachInteractable([&](InteractableObject& interactable) { interactableIds.push_back(interactable.id); return true; });
+			for (auto id : interactableIds) { scene.gameMap.DestroyInteractable(id); }
+
+			std::vector<std::uint64_t> entityIds;
+			scene.gameMap.ForEachEntity([&](Entity& entity) { entityIds.push_back(entity.id); return true; });
+			for (auto id : entityIds) { scene.gameMap.DestroyEntity(id); }
+		}
 		// Player::inventory is a list of non-owning pointers into the map just
 		// cleared above; the player object itself survives the load, so those
 		// pointers would otherwise dangle (inventory contents aren't persisted yet).
@@ -490,29 +494,6 @@ namespace SaveSystem
 			scene.gameMap.size.x = j["Map"].value("SizeX", scene.gameMap.size.x);
 			scene.gameMap.size.y = j["Map"].value("SizeY", scene.gameMap.size.y);
 			scene.gameMap.size.z = j["Map"].value("SizeZ", scene.gameMap.size.z);
-
-			// Place the player, which nothing else in this function does. Without
-			// it the player keeps whatever position it had — on a fresh launch
-			// the RigidBody3D default of (0,0,0), which in chunk_1 is inside the
-			// artifact display plinth.
-			scene.gameMap.hasSpawnPoint = j["Map"].contains("SpawnX");
-			if (scene.gameMap.hasSpawnPoint)
-			{
-				scene.gameMap.spawnPoint = Vector3{
-					j["Map"].value("SpawnX", 0.0f),
-					j["Map"].value("SpawnY", 0.0f),
-					j["Map"].value("SpawnZ", 0.0f)
-				};
-
-				if (scene.player)
-				{
-					scene.player->rigidBody3D.Teleport(scene.gameMap.spawnPoint);
-					// Teleporting without clearing velocity carries any fall speed
-					// from the previous world into the new one, so the player
-					// arrives already accelerating downward.
-					scene.player->rigidBody3D.SetVelocity(Vector3Zero());
-				}
-			}
 		}
 
 		// Lighting — pre-lighting world files have no section, so install the
@@ -544,7 +525,7 @@ namespace SaveSystem
 					continue;
 				}
 
-				scene.gameMap.gameObjects.push_back(obj);
+				scene.gameMap.LoadGameObject(obj);
 			}
 		}
 
@@ -570,10 +551,10 @@ namespace SaveSystem
 				}
 
 				// Interactables live only in Scene::interactables, not in gameObjects
-				// (see GameMap::saveInteractable/removeInteractable) — pushing the loaded
+				// (see GameMap::SpawnInteractable/DestroyInteractable) — pushing the loaded
 				// copy into gameObjects here sliced it to a plain GameObject and duplicated
 				// the entity under the same ID.
-				scene.gameMap.interactables[interactable.id] = std::make_unique<InteractableObject>(interactable);
+				scene.gameMap.LoadInteractable(std::make_unique<InteractableObject>(interactable));
 			}
 		}
 
@@ -600,7 +581,7 @@ namespace SaveSystem
 					continue;
 				}
 
-				scene.gameMap.entities[entity->id] = std::move(entity);
+				scene.gameMap.LoadEntity(std::move(entity));
 			}
 		}
 
@@ -610,17 +591,17 @@ namespace SaveSystem
 		// or written by an older build may not carry the key at all, in which
 		// case this fell back to the counter zeroed above and the very next
 		// object placed in the editor was handed an id another object already
-		// answered to. FindGameObjectByID returns the first match, so the
+		// answered to. FindWorldObject returns the first match, so the
 		// duplicate would shadow the original for picking, activator lookup and
 		// save/load alike. Deriving the floor from the ids actually present
 		// makes the file's own contents authoritative.
 		std::uint64_t highestId = 0;
-		for (const auto& obj : scene.gameMap.gameObjects) { highestId = std::max(highestId, obj.id); }
-		for (const auto& [id, interactable] : scene.gameMap.interactables) { highestId = std::max(highestId, id); }
+		scene.gameMap.ForEachGameObject([&](GameObject& obj) { highestId = std::max(highestId, obj.id); });
+		scene.gameMap.ForEachInteractable([&](InteractableObject& interactable) { highestId = std::max(highestId, interactable.id); });
 		// Entities count toward the floor now that a world file carries them;
 		// leaving them out would hand a freshly placed object an id a loaded
 		// entity already answers to.
-		for (const auto& [id, entity] : scene.gameMap.entities) { highestId = std::max(highestId, id); }
+		scene.gameMap.ForEachEntity([&](Entity& entity) { highestId = std::max(highestId, entity.id); });
 
 		scene.gameMap.instanceHolder.idCounter = std::max({
 			scene.gameMap.instanceHolder.idCounter,
@@ -629,21 +610,11 @@ namespace SaveSystem
 		});
 
 		std::cout << "[Save System] Loaded World: " << path
-			<< " (" << scene.gameMap.gameObjects.size() << " objects, "
-			<< scene.gameMap.interactables.size() << " interactables, "
-			<< scene.gameMap.entities.size() << " entities, next id "
+			<< " (" << scene.gameMap.GameObjectCount() << " objects, "
+			<< scene.gameMap.InteractableCount() << " interactables, "
+			<< scene.gameMap.EntityCount() << " entities, next id "
 			<< scene.gameMap.instanceHolder.idCounter << ")\n";
 
-		if (scene.gameMap.hasSpawnPoint)
-		{
-			std::cout << "[Save System]   spawned player at ("
-				<< scene.gameMap.spawnPoint.x << ", " << scene.gameMap.spawnPoint.y
-				<< ", " << scene.gameMap.spawnPoint.z << ")\n";
-		}
-		else
-		{
-			std::cout << "[Save System]   no spawn point in world; player left at its current position\n";
-		}
 		return true;
 	}
 

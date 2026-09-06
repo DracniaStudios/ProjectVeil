@@ -1,243 +1,47 @@
 #include "WorldEditor.h"
 
-#include <concepts>
+#include <algorithm>
+#include <vector>
 
-#pragma region Apply All State Buttons
+namespace
+{
+	constexpr ImVec4 kHeaderColour = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
 
-static void StaticButtons(Scene* scene) {
-	/// Static/NonStatic All Objects
-	if (ImGui::Button("Make All Static")) {
-		std::cout << "[Object Browser] Set All Objects Static\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.rigidBody3D.isStatic = true;
+	/**
+	 * One "<Label>  [All] [None]" row that applies a state to the whole world.
+	 *
+	 * set is called as set(object, value) so a row can reach a field on the
+	 * GameObject or on its RigidBody3D without needing a separate helper for
+	 * each. The label doubles as the ImGui ID, so two rows cannot collide and a
+	 * row's ID does not move when the world changes underneath it.
+	 */
+	template <class Set>
+	void ApplyAllRow(Scene* scene, const char* label, Set set)
+	{
+		ImGui::PushID(label);
+		ImGui::TextUnformatted(label);
+		ImGui::SameLine();
+		if (ImGui::Button("All"))
+		{
+			std::cout << "[Object Browser] " << label << ": all\n";
+			scene->gameMap.ForEachObject([&](GameObject& object) { set(object, true); });
 		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->rigidBody3D.isStatic = true;
+		ImGui::SameLine();
+		if (ImGui::Button("None"))
+		{
+			std::cout << "[Object Browser] " << label << ": none\n";
+			scene->gameMap.ForEachObject([&](GameObject& object) { set(object, false); });
 		}
-		for (auto& [id, object] : scene->gameMap.entities) {
-			object->rigidBody3D.isStatic = true;
-		}
+		ImGui::PopID();
 	}
-	ImGui::SameLine();
-	if (ImGui::Button("Make All Not Static")) {
-		std::cout << "[Object Browser] Set All Objects NonStatic\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.rigidBody3D.isStatic = false;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->rigidBody3D.isStatic = false;
-		}
-		for (auto& [id, object] : scene->gameMap.entities) {
-			object->rigidBody3D.isStatic = false;
-		}
-
-	}
-	ImGui::Spacing();
 }
 
-static void DisplayDirectionButtons(Scene* scene) {
-	/// Display Direction All Objects
-	if (ImGui::Button("Show Direction")) {
-		std::cout << "[Object Browser] Show All Objects Direction\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.displayDirection = true;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->displayDirection = true;
-		}
-		for (auto& [id, object] : scene->gameMap.entities) {
-			object->displayDirection = true;
-		}
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Hide Direction")) {
-		std::cout << "[Object Browser] Hide All Objects Direction\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.displayDirection = false;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->displayDirection = false;
-		}
-		for (auto& [id, object] : scene->gameMap.entities) {
-			object->displayDirection = false;
-		}
-	}
-	ImGui::Spacing();
-}
-
-static void IsSelectableButtons(Scene* scene) {
-	/// IsSelectable All Objects
-	if (ImGui::Button("Make All Selectable")) {
-		std::cout << "[Object Browser] Set All Objects Selectable\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.isSelectable = true;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->isSelectable = true;
-		}
-		for (auto& [id, object] : scene->gameMap.entities) {
-			object->isSelectable = true;
-		}
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Make All Not Selectable")) {
-		std::cout << "[Object Browser] Set All Objects Not Selectable\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.isSelectable = false;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->isSelectable = false;
-		}
-		for (auto& [id, object] : scene->gameMap.entities) {
-			object->isSelectable = false;
-		}
-	}
-	ImGui::Spacing();
-}
-
-static void EnableButtons(Scene* scene) {
-	/// Enable/Disable All Objects
-	if (ImGui::Button("Make All Enabled")) {
-		std::cout << "[Object Browser] Set All Objects Enabled\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.isEnabled = true;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->isEnabled = true;
-		}
-		for (auto& [id, object] : scene->gameMap.entities) {
-			object->isEnabled = true;
-		}
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Make All Not Enabled")) {
-		std::cout << "[Object Browser] Set All Objects Not Enabled\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.isEnabled = false;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->isEnabled = false;
-		}
-		for (auto& [id, object] : scene->gameMap.entities) {
-			object->isEnabled = false;
-		}
-	}
-	ImGui::Spacing();
-}
-static void DestructableButton(Scene* scene) {
-	/// Destructable All Objects
-	if (ImGui::Button("Make All Destructable")) {
-		std::cout << "[Object Browser] Set All Objects Destructable\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.isDestructible = true;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->isDestructible = true;
-		}
-		for (auto& [id, object] : scene->gameMap.entities) {
-			object->isDestructible = true;
-		}
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Make All Not Destructable")) {
-		std::cout << "[Object Browser] Set All Objects Not Destructable\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.isDestructible = false;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->isDestructible = false;
-		}
-		for (auto& [id, object] : scene->gameMap.entities) {
-			object->isDestructible = false;
-		}
-	}
-	ImGui::Spacing();
-}
-
-
-static void DisplayColliderButtons(Scene* scene) {
-	/// Enable/Disable All Objects
-	if (ImGui::Button("Show Collider")) {
-		std::cout << "[Object Browser] Show All Colliders\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.displayCollider = true;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->displayCollider = true;
-		}
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Hide Collider")) {
-		std::cout << "[Object Browser] Show All Colliders\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.displayCollider = false;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->displayCollider = false;
-		}
-
-	}
-	ImGui::Spacing();
-}
-
-#pragma endregion
-
-#pragma region Apply All State Buttons (RigidBody3D)
-
-static void CanCollideButtons(Scene* scene) {
-	/// Enable/Disable All Objects
-	if (ImGui::Button("Make All Can Collide")) {
-		std::cout << "[Object Browser] Set All Objects Can Collide\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.rigidBody3D.canCollide = true;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->rigidBody3D.canCollide = true;
-		}
-		for (auto& [id, object] : scene->gameMap.entities) {
-			object->rigidBody3D.canCollide = true;
-		}
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Make All Not Can Collide")) {
-		std::cout << "[Object Browser] Set All Objects Not Can Collide\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.rigidBody3D.canCollide = false;
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->rigidBody3D.canCollide = false;
-		}
-		for (auto& [id, object] : scene->gameMap.entities) {
-			object->rigidBody3D.canCollide = false;
-		}
-	}
-	ImGui::Spacing();
-}
-
-static void FitModelToColliderButtons(Scene* scene) {
-	/// Enable/Disable All Objects
-	if (ImGui::Button("Fit Model To Collider")) {
-		std::cout << "[Object Browser] Fit Model To Collider\n";
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.rigidBody3D.collider.FitToModel(object.model);
-		}
-		for (auto& [id, object] : scene->gameMap.interactables) {
-			object->rigidBody3D.collider.FitToModel(object->model);
-		}
-		for (auto& [id, object] : scene->gameMap.entities) {
-			object->rigidBody3D.collider.FitToModel(object->model);
-		}
-	}
-	ImGui::Spacing();
-}
-
-#pragma endregion
 
 
 void WorldEditor::showInteractableObject(InteractableObject* object) {
 	ImGui::PushID(object);
 	ImGui::Separator();
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Interactable");
+	ImGui::TextColored(ImVec4(1, 0, 1, 1), "Interactable");
 	ImGui::Checkbox("Interactable", &object->isInteractable);
 
 	ImGui::Text("Interact Type: %s", interactTypeToString(object->interactType));
@@ -263,10 +67,10 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 
 		if (object->interactType == INTERACT_MINIGAME) {
 			// activator == 0 (or an id nothing resolves to) means "no explicit
-			// target" — FindWorldObjectByID returns nullptr for that, and
+			// target" — FindWorldObject returns nullptr for that, and
 			// dereferencing it here crashed the editor on the common
 			// self-activating case (see PlacementPanel's "Activator ID" field).
-			if (GameObject* activatorObject = FindWorldObjectByID(SceneManager::getInstance().currentScene->gameMap, object->activator)) {
+			if (GameObject* activatorObject = SceneManager::getInstance().currentScene->gameMap.FindWorldObject(object->activator)) {
 				ImGui::TextDisabled("%s", activatorObject->name.c_str());
 			}
 			else {
@@ -314,6 +118,18 @@ void WorldEditor::showEntity(Entity* object) {
 		ImGui::SameLine();
 		if (ImGui::Button("Use Buff")) { buff.use(); }
 		ImGui::PopID();
+	}
+
+	if (ImGui::Button("Teleport To Player")) {
+		object->rigidBody3D.Teleport(SceneManager::getInstance().currentScene->player->getPosition());
+	}
+	if (ImGui::Button("Teleport To Camera")) {
+		object->rigidBody3D.Teleport(SceneManager::getInstance().camera3D.position);
+	}
+
+	auto spawnPoint = object->getSpawnPoint();
+	if (ImGui::InputFloat3("Spawn Position", &spawnPoint.x)) {
+		object->setSpawnPoint(spawnPoint);
 	}
 
 	ImGui::PopID();
@@ -566,105 +382,82 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::PopID();
 }
 
-static void ShowStateButtons(Scene* scene) {
+static void ShowStateButtons(Scene* scene)
+{
+	ApplyAllRow(scene, "Enabled",        [](GameObject& o, bool v) { o.isEnabled = v; });
+	ApplyAllRow(scene, "Selectable",     [](GameObject& o, bool v) { o.isSelectable = v; });
+	ApplyAllRow(scene, "Destructible",   [](GameObject& o, bool v) { o.isDestructible = v; });
+	ApplyAllRow(scene, "Static",         [](GameObject& o, bool v) { o.rigidBody3D.isStatic = v; });
+	ApplyAllRow(scene, "Can Collide",    [](GameObject& o, bool v) { o.rigidBody3D.canCollide = v; });
+	ApplyAllRow(scene, "Show Collider",  [](GameObject& o, bool v) { o.displayCollider = v; });
+	ApplyAllRow(scene, "Show Direction", [](GameObject& o, bool v) { o.displayDirection = v; });
 
-	ImGui::BeginChild("State Buttons", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.3f));
-	
-	EnableButtons(scene);
-	StaticButtons(scene);
-	DisplayColliderButtons(scene);
-	DisplayDirectionButtons(scene);
-	IsSelectableButtons(scene);
-	DestructableButton(scene);
-	CanCollideButtons(scene);
-	FitModelToColliderButtons(scene);
-	
-	ImGui::EndChild();
-	
-	ImGui::Separator();
-}
-
-static void ObjectList(std::string displayName, std::vector<GameObject>& objects, bool& show, uint64_t& selectID) {
-	ImGui::TextColored(ImVec4(0, 255, 0, 255), "%s", displayName.c_str());
-	ImGui::SameLine();
-	std::string buttonLabel = show ? "Hide" + displayName : "Show" + displayName;
-
-	if (ImGui::ArrowButton(buttonLabel.c_str(), show ? ImGuiDir_Down : ImGuiDir_Left)) { show = !show; }
-	if (show) {
-
-		for (const auto& object : objects)
-		{
-			ImGui::PushID(&object);
-			std::string label = object.name + " (" + std::to_string(object.id) + ")";
-			if (ImGui::Selectable(label.c_str(), object.id == selectID))
-			{
-				selectID = object.id;
-			}
-			ImGui::PopID();
-		}
-	}
-}
-static void ObjectList(std::string displayName, std::unordered_map<uint64_t, std::unique_ptr<Entity>>& objects, bool& show, uint64_t& selectID) {
-	ImGui::TextColored(ImVec4(0, 255, 0, 255), "%s", displayName.c_str());
-	ImGui::SameLine();
-	std::string buttonLabel = show ? "Hide" + displayName : "Show" + displayName;
-
-	if (ImGui::ArrowButton(buttonLabel.c_str(), show ? ImGuiDir_Down : ImGuiDir_Left)) { show = !show; }
-	if (show) {
-
-		for (const auto& [id, object] : objects)
-		{
-			ImGui::PushID(&object);
-			std::string label = object->name + " (" + std::to_string(object->id) + ")";
-			if (ImGui::Selectable(label.c_str(), object->id == selectID))
-			{
-				selectID = object->id;
-			}
-			ImGui::PopID();
-		}
-	}
-}
-static void ObjectList(std::string displayName, std::unordered_map<uint64_t, std::unique_ptr<InteractableObject>>& objects, bool& show, uint64_t& selectID) {
-	ImGui::TextColored(ImVec4(0, 255, 0, 255), "%s", displayName.c_str());
-	ImGui::SameLine();
-	std::string buttonLabel = show ? "Hide" + displayName : "Show" + displayName;
-
-	if (ImGui::ArrowButton(buttonLabel.c_str(), show ? ImGuiDir_Down : ImGuiDir_Left)) { show = !show; }
-	if (show) {
-
-		for (const auto& [id, object] : objects)
-		{
-			ImGui::PushID(&object);
-			std::string label = object->name + " (" + std::to_string(object->id) + ")";
-			if (ImGui::Selectable(label.c_str(), object->id == selectID))
-			{
-				selectID = object->id;
-			}
-			ImGui::PopID();
-		}
+	ImGui::Spacing();
+	if (ImGui::Button("Fit Model To Collider"))
+	{
+		std::cout << "[Object Browser] Fit Model To Collider\n";
+		scene->gameMap.ForEachObject([](GameObject& o) { o.rigidBody3D.collider.FitToModel(o.model); });
 	}
 }
 
-static void ShowObjectList(Scene* scene, uint64_t& selectID, bool& objects, bool& entities, bool& interactable) {
+namespace
+{
+	// GameMap's containers are private and no longer share one element shape
+	// (gameObjects is value-stored, entities/interactables own via unique_ptr) —
+	// callers gather a snapshot of GameObject* through ForEach* and hand that
+	// uniform list here instead.
+	void ObjectList(const char* displayName, const std::vector<GameObject*>& objects, bool& show, std::uint64_t& selectID)
+	{
+		ImGui::PushID(displayName);
+		ImGui::TextColored(kHeaderColour, "%s", displayName);
+		ImGui::SameLine();
 
-	ImGui::BeginChild("World Object List", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.3f));
+		// The arrow's ID is the list name, not its current caption. Deriving it
+		// from the caption changes the widget's identity the frame it is clicked,
+		// which is how an ImGui ID stack starts drifting.
+		if (ImGui::ArrowButton("toggle", show ? ImGuiDir_Down : ImGuiDir_Left)) { show = !show; }
 
-	ObjectList("Game Objects", scene->gameMap.gameObjects, objects, selectID);
-	ObjectList("Entities", scene->gameMap.entities, entities, selectID);
-	ObjectList("Interactables", scene->gameMap.interactables, interactable, selectID);
+		if (show)
+		{
+			for (GameObject* object : objects)
+			{
+				ImGui::PushID(object);
+				const std::string label = object->name + " (" + std::to_string(object->id) + ")";
+				if (ImGui::Selectable(label.c_str(), object->id == selectID)) { selectID = object->id; }
+				ImGui::PopID();
+			}
+		}
+		ImGui::PopID();
+	}
+}
 
-	ImGui::EndChild();
-	ImGui::Separator();
+static void ShowObjectList(Scene* scene, std::uint64_t& selectID, bool& objects, bool& entities, bool& interactable)
+{
+	// Display order is this panel's own concern — GameMap's storage is
+	// unordered and owes none (see ForEachGameObject). Sorted by id descending
+	// to match the order the Ctrl+2 hotkey used to force by sorting GameMap's
+	// storage in place, before that container became unsortable by design.
+	std::vector<GameObject*> gameObjectList;
+	scene->gameMap.ForEachGameObject([&](GameObject& object) { gameObjectList.push_back(&object); });
+	std::sort(gameObjectList.begin(), gameObjectList.end(),
+		[](const GameObject* a, const GameObject* b) { return a->id > b->id; });
+
+	std::vector<GameObject*> entityList;
+	scene->gameMap.ForEachEntity([&](Entity& entity) { entityList.push_back(&entity); });
+
+	std::vector<GameObject*> interactableList;
+	scene->gameMap.ForEachInteractable([&](InteractableObject& interactable) { interactableList.push_back(&interactable); });
+
+	ObjectList("Game Objects", gameObjectList, objects, selectID);
+	ObjectList("Entities", entityList, entities, selectID);
+	ObjectList("Interactables", interactableList, interactable, selectID);
 }
 
 void WorldEditor::showSelectedObject(Scene* scene) {
-	ImGui::BeginChild("Selected Object");
-
 	GameObject* object = getSelectedObject();
 	if (object == nullptr)
 	{
 		ImGui::Text("Nothing selected");
-		ImGui::EndChild();
 		return;
 	}
 
@@ -672,15 +465,12 @@ void WorldEditor::showSelectedObject(Scene* scene) {
 
 	// Push ID in GameObject
 	showGameObject(object);
-	// ObjectType comes straight out of the save file and does not imply map
-	// membership — the selected object was found in gameMap.gameObjects. operator[]
-	// on a miss would both return a null unique_ptr to dereference here and leave a
-	// null entry behind for Scene_updateScene to trip over every frame after.
-	if (object->type == OBJECT_ENTITY && scene->gameMap.entities.contains(object->id)) {
-		showEntity(scene->gameMap.entities[object->id].get());
+	
+	if (object->type == OBJECT_ENTITY) {
+		if (Entity* entity = scene->gameMap.FindEntity(object->id)) { showEntity(entity); }
 	}
-	else if (object->type == OBJECT_INTERACTABLE && scene->gameMap.interactables.contains(object->id)) {
-		showInteractableObject(scene->gameMap.interactables[object->id].get());
+	else if (object->type == OBJECT_INTERACTABLE) {
+		if (InteractableObject* interactable = scene->gameMap.FindInteractable(object->id)) { showInteractableObject(interactable); }
 	}
 
 	// Both route through the shared commands so the buttons, the keyboard
@@ -690,8 +480,6 @@ void WorldEditor::showSelectedObject(Scene* scene) {
 	if (ImGui::Button("Duplicate Object")) { DuplicateSelection(); }
 	ImGui::SameLine();
 	if (ImGui::Button("Delete Object")) { DeleteSelection(); }
-
-	ImGui::EndChild();
 }
 
 void WorldEditor::ShowObjectBrowser()
@@ -701,11 +489,23 @@ void WorldEditor::ShowObjectBrowser()
 	/// Show Object Browser Window
 	ImGui::Begin("Object Browser");
 
+	// The panel owns how the three regions divide the window; the helpers below
+	// only draw into whatever they are given. Each fraction is of the space still
+	// remaining, so they compose left to right: 0.3 of the window, then 0.4 of the
+	// 0.7 that is left, then everything after that.
+	ImGui::BeginChild("State Buttons", ImVec2(0, ImGui::GetContentRegionAvail().y * 0.3f));
 	ShowStateButtons(scene);
-	
-	ShowObjectList(scene, selectedObjectId, showGameObjects, showEntities, showInteractables);
+	ImGui::EndChild();
+	ImGui::Separator();
 
+	ImGui::BeginChild("World Object List", ImVec2(0, ImGui::GetContentRegionAvail().y * 0.4f));
+	ShowObjectList(scene, selectedObjectId, showGameObjects, showEntities, showInteractables);
+	ImGui::EndChild();
+	ImGui::Separator();
+
+	ImGui::BeginChild("Selected Object");
 	showSelectedObject(scene);
+	ImGui::EndChild();
 
 	ImGui::End();
 }

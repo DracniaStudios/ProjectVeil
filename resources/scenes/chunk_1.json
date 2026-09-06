@@ -5,7 +5,6 @@
       "AvoidProbeDistance": 3.0,
       "BaseDamage": 25.0,
       "BaseSpeed": 1.0,
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -13,13 +12,14 @@
         255,
         255
       ],
-      "CurrentWaypoint": 0,
+      "CurrentWaypoint": 1,
       "Health": 10.0,
       "HearingThreshold": 0.05000000074505806,
       "HuntPatience": 4.0,
       "HuntThreshold": 0.3499999940395355,
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Kind": 2,
       "MaxHealth": 10.0,
       "MaxStamina": 100.0,
@@ -46,9 +46,9 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 22.1165828704834,
-        "PosY": 1.9896601438522339,
-        "PosZ": -0.2527494728565216,
+        "PosX": 13.397455215454102,
+        "PosY": -31030.666015625,
+        "PosZ": 115.8066635131836,
         "RotW": 1.0,
         "RotX": 0.0,
         "RotY": 0.0,
@@ -56,23 +56,321 @@
         "ScaleX": 1.0,
         "ScaleY": 3.0,
         "ScaleZ": 1.0,
-        "VelocityX": 0.6446022391319275,
+        "VelocityX": 0.0,
         "VelocityY": 0.0,
-        "VelocityZ": 0.6280827522277832
+        "VelocityZ": 0.0
       },
       "SearchDuration": 8.0,
       "SearchRadius": 6.0,
+      "SpawnX": 20.0,
+      "SpawnY": 2.0,
+      "SpawnZ": 0.0,
       "Stamina": 100.0,
-      "State": 3,
+      "State": 0,
       "Texture": "Fabric082A_4K-PNG_NormalGL",
-      "Waypoints": []
+      "Waypoints": [
+        {
+          "x": 19.890764236450195,
+          "y": 1.5639593601226807,
+          "z": 116.13655090332031
+        },
+        {
+          "x": 15.461859703063965,
+          "y": 1.5639593601226807,
+          "z": 107.68097686767578
+        },
+        {
+          "x": 13.420811653137207,
+          "y": 2.889335870742798,
+          "z": 96.23341369628906
+        },
+        {
+          "x": 8.612677574157715,
+          "y": 2.7024707794189453,
+          "z": 84.9329833984375
+        },
+        {
+          "x": 7.397725582122803,
+          "y": 3.1009857654571533,
+          "z": 73.08098602294922
+        },
+        {
+          "x": -8.385847091674805,
+          "y": 2.895479917526245,
+          "z": 79.61569213867188
+        },
+        {
+          "x": -14.405725479125977,
+          "y": 3.225233316421509,
+          "z": 59.29313659667969
+        },
+        {
+          "x": 7.672473907470703,
+          "y": 3.6834096908569336,
+          "z": 68.67869567871094
+        },
+        {
+          "x": 17.620540618896484,
+          "y": 3.648905038833618,
+          "z": 52.558692932128906
+        },
+        {
+          "x": 31.367626190185547,
+          "y": 2.9480996131896973,
+          "z": 44.910274505615234
+        },
+        {
+          "x": 46.82659149169922,
+          "y": 3.406959056854248,
+          "z": 44.78202819824219
+        },
+        {
+          "x": 64.81380462646484,
+          "y": 3.95324444770813,
+          "z": 28.892505645751953
+        },
+        {
+          "x": 73.7145004272461,
+          "y": 3.089491605758667,
+          "z": 14.250916481018066
+        },
+        {
+          "x": 87.10686492919922,
+          "y": 3.476229667663574,
+          "z": 5.004220485687256
+        },
+        {
+          "x": 87.67779541015625,
+          "y": 3.9549243450164795,
+          "z": -5.302877426147461
+        },
+        {
+          "x": 74.3101806640625,
+          "y": 3.2119483947753906,
+          "z": -21.424301147460938
+        },
+        {
+          "x": 60.06507873535156,
+          "y": 3.977856397628784,
+          "z": -24.960552215576172
+        },
+        {
+          "x": 57.158302307128906,
+          "y": 3.2896313667297363,
+          "z": -40.39366912841797
+        },
+        {
+          "x": 70.92060089111328,
+          "y": 4.7695794105529785,
+          "z": -42.43266296386719
+        },
+        {
+          "x": 85.24176025390625,
+          "y": 3.488589286804199,
+          "z": -50.28746795654297
+        },
+        {
+          "x": 105.60334777832031,
+          "y": 4.518288612365723,
+          "z": -54.82951354980469
+        },
+        {
+          "x": 117.90117645263672,
+          "y": 3.689013719558716,
+          "z": -52.769351959228516
+        },
+        {
+          "x": 136.26026916503906,
+          "y": 2.6391146183013916,
+          "z": -51.08422088623047
+        },
+        {
+          "x": 137.86375427246094,
+          "y": 4.607918739318848,
+          "z": -38.36708450317383
+        },
+        {
+          "x": 162.84796142578125,
+          "y": 4.75814151763916,
+          "z": -34.03743362426758
+        },
+        {
+          "x": 164.0948486328125,
+          "y": 4.5311198234558105,
+          "z": -14.621907234191895
+        },
+        {
+          "x": 163.53726196289063,
+          "y": 3.5751953125,
+          "z": 8.775790214538574
+        },
+        {
+          "x": 162.2577667236328,
+          "y": 4.964468955993652,
+          "z": 28.624866485595703
+        },
+        {
+          "x": 153.42030334472656,
+          "y": 4.237514495849609,
+          "z": 37.491973876953125
+        },
+        {
+          "x": 122.74237060546875,
+          "y": 4.277243614196777,
+          "z": 48.079044342041016
+        },
+        {
+          "x": 117.1938247680664,
+          "y": 5.317509651184082,
+          "z": 35.97279739379883
+        },
+        {
+          "x": 130.1042938232422,
+          "y": 5.782968044281006,
+          "z": 21.841358184814453
+        },
+        {
+          "x": 126.48953247070313,
+          "y": 6.0808329582214355,
+          "z": 17.68522834777832
+        },
+        {
+          "x": 111.18795776367188,
+          "y": 4.858905792236328,
+          "z": -6.286471366882324
+        },
+        {
+          "x": 112.9716567993164,
+          "y": 4.531628131866455,
+          "z": -13.969012260437012
+        },
+        {
+          "x": 127.40705108642578,
+          "y": 3.7171261310577393,
+          "z": -24.580841064453125
+        },
+        {
+          "x": 129.0069580078125,
+          "y": 3.8720996379852295,
+          "z": -44.00424575805664
+        },
+        {
+          "x": 119.34646606445313,
+          "y": 3.9922595024108887,
+          "z": -51.24635314941406
+        },
+        {
+          "x": 98.95946502685547,
+          "y": 4.840775489807129,
+          "z": -51.14689636230469
+        },
+        {
+          "x": 71.29376220703125,
+          "y": 4.383602142333984,
+          "z": -39.62523651123047
+        },
+        {
+          "x": 72.818603515625,
+          "y": 4.055953502655029,
+          "z": -23.361778259277344
+        },
+        {
+          "x": 88.13008117675781,
+          "y": 2.9012410640716553,
+          "z": -9.557300567626953
+        },
+        {
+          "x": 80.03240966796875,
+          "y": 4.456142425537109,
+          "z": 12.881125450134277
+        },
+        {
+          "x": 70.50736999511719,
+          "y": 3.902005195617676,
+          "z": 37.212974548339844
+        },
+        {
+          "x": 75.51911926269531,
+          "y": 4.726072311401367,
+          "z": 55.06986999511719
+        },
+        {
+          "x": 67.34640502929688,
+          "y": 4.8382134437561035,
+          "z": 81.332275390625
+        },
+        {
+          "x": 59.877662658691406,
+          "y": 5.285659313201904,
+          "z": 112.276611328125
+        },
+        {
+          "x": 82.2721176147461,
+          "y": 4.146811008453369,
+          "z": 118.13612365722656
+        },
+        {
+          "x": 82.94245147705078,
+          "y": 4.394471168518066,
+          "z": 131.6853790283203
+        },
+        {
+          "x": 53.631065368652344,
+          "y": 5.430950164794922,
+          "z": 128.7718505859375
+        },
+        {
+          "x": 57.101470947265625,
+          "y": 3.9674596786499023,
+          "z": 106.90946197509766
+        },
+        {
+          "x": 66.44906616210938,
+          "y": 5.1505446434021,
+          "z": 73.39026641845703
+        },
+        {
+          "x": 75.72738647460938,
+          "y": 5.437533855438232,
+          "z": 47.89067840576172
+        },
+        {
+          "x": 51.12353515625,
+          "y": 5.673733711242676,
+          "z": 46.0692138671875
+        },
+        {
+          "x": 30.23476791381836,
+          "y": 4.781114101409912,
+          "z": 47.18291091918945
+        },
+        {
+          "x": 16.556194305419922,
+          "y": 4.324829578399658,
+          "z": 53.68471908569336
+        },
+        {
+          "x": 11.406923294067383,
+          "y": 4.7192559242248535,
+          "z": 67.28868865966797
+        },
+        {
+          "x": 13.833367347717285,
+          "y": 4.363818168640137,
+          "z": 91.63728332519531
+        },
+        {
+          "x": 21.354320526123047,
+          "y": 4.100400924682617,
+          "z": 116.571533203125
+        }
+      ]
     }
   },
   "IdCounter": 303,
   "Interactables": {
     "114": {
       "Activator": 0,
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -85,6 +383,7 @@
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
+      "IsSelectable": true,
       "Name": "Crane",
       "ObjectType": 3,
       "RigidBody3D": {
@@ -127,7 +426,6 @@
     },
     "283": {
       "Activator": 0,
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -140,6 +438,7 @@
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
+      "IsSelectable": true,
       "Name": "Flappy Bird",
       "ObjectType": 3,
       "RigidBody3D": {
@@ -182,7 +481,6 @@
     },
     "284": {
       "Activator": 0,
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -195,6 +493,7 @@
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
+      "IsSelectable": true,
       "Name": "Crane",
       "ObjectType": 3,
       "RigidBody3D": {
@@ -237,7 +536,6 @@
     },
     "285": {
       "Activator": 0,
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -250,6 +548,7 @@
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
+      "IsSelectable": true,
       "Name": "Crane",
       "ObjectType": 3,
       "RigidBody3D": {
@@ -292,7 +591,6 @@
     },
     "286": {
       "Activator": 0,
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -305,6 +603,7 @@
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
+      "IsSelectable": true,
       "Name": "Crane",
       "ObjectType": 3,
       "RigidBody3D": {
@@ -347,7 +646,6 @@
     },
     "287": {
       "Activator": 0,
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -360,6 +658,7 @@
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
+      "IsSelectable": true,
       "Name": "Crane",
       "ObjectType": 3,
       "RigidBody3D": {
@@ -402,7 +701,6 @@
     },
     "288": {
       "Activator": 0,
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -415,10 +713,11 @@
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
+      "IsSelectable": true,
       "Name": "Ro Sham Boo",
       "ObjectType": 3,
       "RigidBody3D": {
-        "CanCollide": false,
+        "CanCollide": true,
         "Collider": {
           "Mode": 0,
           "OffsetX": 0.0,
@@ -457,7 +756,6 @@
     },
     "289": {
       "Activator": 0,
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -470,6 +768,7 @@
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
+      "IsSelectable": true,
       "Name": "Doctor",
       "ObjectType": 3,
       "RigidBody3D": {
@@ -512,7 +811,6 @@
     },
     "295": {
       "Activator": 0,
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -525,6 +823,7 @@
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
+      "IsSelectable": true,
       "Model": "RubixCube1",
       "Name": "Artifact",
       "ObjectType": 3,
@@ -567,7 +866,6 @@
     },
     "299": {
       "Activator": 0,
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -580,6 +878,7 @@
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
+      "IsSelectable": true,
       "Name": "FlappyBird",
       "ObjectType": 3,
       "RigidBody3D": {
@@ -622,7 +921,6 @@
     },
     "302": {
       "Activator": 301,
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -635,6 +933,7 @@
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
+      "IsSelectable": true,
       "Model": "Terminal",
       "Name": "Terminal 1",
       "ObjectType": 3,
@@ -677,7 +976,6 @@
     },
     "33": {
       "Activator": 0,
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -688,12 +986,13 @@
       "InteractType": 1,
       "IsCompleted": false,
       "IsDestructible": false,
-      "IsEnabled": false,
+      "IsEnabled": true,
       "IsInteractable": true,
+      "IsSelectable": true,
       "Name": "FlappyBird",
       "ObjectType": 3,
       "RigidBody3D": {
-        "CanCollide": false,
+        "CanCollide": true,
         "Collider": {
           "Mode": 0,
           "OffsetX": 0.0,
@@ -705,7 +1004,7 @@
           "SizeY": 1.0,
           "SizeZ": 1.0
         },
-        "IsEnabled": false,
+        "IsEnabled": true,
         "IsStatic": true,
         "LockAcceleration": false,
         "LockAngularVelocity": false,
@@ -732,7 +1031,6 @@
     },
     "73": {
       "Activator": 0,
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -745,6 +1043,7 @@
       "IsDestructible": true,
       "IsEnabled": true,
       "IsInteractable": true,
+      "IsSelectable": true,
       "Name": "Crane",
       "ObjectType": 3,
       "RigidBody3D": {
@@ -971,14 +1270,10 @@
   "Map": {
     "SizeX": 100.0,
     "SizeY": 100.0,
-    "SizeZ": 100.0,
-    "SpawnX": 20.0,
-    "SpawnY": 2.0,
-    "SpawnZ": 0.0
+    "SizeZ": 100.0
   },
   "Objects": {
     "1": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -988,6 +1283,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Artifact Display Floor",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1028,7 +1324,6 @@
       "Texture": "Tiles133A"
     },
     "100": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         100,
@@ -1038,6 +1333,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1078,7 +1374,6 @@
       "Texture": "Ground088"
     },
     "101": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1088,6 +1383,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1128,7 +1424,6 @@
       "Texture": "Ground088"
     },
     "102": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1138,6 +1433,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1178,7 +1474,6 @@
       "Texture": "Ground088"
     },
     "103": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1188,6 +1483,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1228,7 +1524,6 @@
       "Texture": "Ground088"
     },
     "104": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1238,6 +1533,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1278,7 +1574,6 @@
       "Texture": "Ground088"
     },
     "106": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1288,6 +1583,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1328,7 +1624,6 @@
       "Texture": "Ground088"
     },
     "107": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1338,6 +1633,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1378,7 +1674,6 @@
       "Texture": "Ground088"
     },
     "108": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1388,6 +1683,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1428,7 +1724,6 @@
       "Texture": "Ground088"
     },
     "109": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1438,6 +1733,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1478,7 +1774,6 @@
       "Texture": "Ground088"
     },
     "111": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1488,6 +1783,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Floor",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1528,7 +1824,6 @@
       "Texture": "Ground088"
     },
     "112": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1538,6 +1833,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Floor",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1578,7 +1874,6 @@
       "Texture": "Ground088"
     },
     "113": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1588,6 +1883,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Floor",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1628,7 +1924,6 @@
       "Texture": "Ground088"
     },
     "115": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1638,6 +1933,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1678,7 +1974,6 @@
       "Texture": "Ground088"
     },
     "116": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1688,6 +1983,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1728,7 +2024,6 @@
       "Texture": "Ground088"
     },
     "117": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1738,6 +2033,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1778,7 +2074,6 @@
       "Texture": "Ground088"
     },
     "118": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1788,6 +2083,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1828,7 +2124,6 @@
       "Texture": "Ground088"
     },
     "119": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1838,6 +2133,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1878,7 +2174,6 @@
       "Texture": "Ground088"
     },
     "12": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         0,
@@ -1888,6 +2183,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Abyss",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1927,7 +2223,6 @@
       }
     },
     "120": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1937,6 +2232,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -1977,7 +2273,6 @@
       "Texture": "Ground088"
     },
     "121": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1987,6 +2282,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2027,7 +2323,6 @@
       "Texture": "Ground088"
     },
     "122": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2037,6 +2332,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2077,7 +2373,6 @@
       "Texture": "Ground088"
     },
     "123": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2087,6 +2382,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2127,7 +2423,6 @@
       "Texture": "Ground088"
     },
     "124": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2137,6 +2432,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2177,7 +2473,6 @@
       "Texture": "Ground088"
     },
     "125": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2187,6 +2482,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2227,7 +2523,6 @@
       "Texture": "Ground088"
     },
     "126": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2237,6 +2532,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2277,7 +2573,6 @@
       "Texture": "Ground088"
     },
     "127": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2287,6 +2582,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2327,7 +2623,6 @@
       "Texture": "Ground088"
     },
     "128": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2337,6 +2632,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2377,7 +2673,6 @@
       "Texture": "Ground088"
     },
     "129": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2387,6 +2682,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2427,7 +2723,6 @@
       "Texture": "Ground088"
     },
     "130": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2437,6 +2732,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2477,7 +2773,6 @@
       "Texture": "Ground088"
     },
     "131": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2487,6 +2782,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2527,7 +2823,6 @@
       "Texture": "Ground088"
     },
     "132": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2537,6 +2832,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2577,7 +2873,6 @@
       "Texture": "Ground088"
     },
     "133": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2587,6 +2882,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2627,7 +2923,6 @@
       "Texture": "Ground088"
     },
     "134": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2637,6 +2932,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2677,7 +2973,6 @@
       "Texture": "Ground088"
     },
     "135": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2687,6 +2982,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2727,7 +3023,6 @@
       "Texture": "Ground088"
     },
     "136": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2737,6 +3032,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2777,7 +3073,6 @@
       "Texture": "Ground088"
     },
     "138": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2787,6 +3082,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2827,7 +3123,6 @@
       "Texture": "Ground088"
     },
     "139": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2837,6 +3132,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2877,7 +3173,6 @@
       "Texture": "frame"
     },
     "142": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2887,6 +3182,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2927,7 +3223,6 @@
       "Texture": "Ground088"
     },
     "143": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2937,6 +3232,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -2977,7 +3273,6 @@
       "Texture": "Ground088"
     },
     "144": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -2987,6 +3282,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3027,7 +3323,6 @@
       "Texture": "Ground088"
     },
     "145": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3037,6 +3332,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3077,7 +3373,6 @@
       "Texture": "Ground088"
     },
     "146": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3087,6 +3382,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3127,7 +3423,6 @@
       "Texture": "Ground088"
     },
     "147": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3137,6 +3432,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3177,7 +3473,6 @@
       "Texture": "Ground088"
     },
     "148": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3187,6 +3482,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3227,7 +3523,6 @@
       "Texture": "Ground088"
     },
     "149": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3237,6 +3532,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3277,7 +3573,6 @@
       "Texture": "Ground088"
     },
     "15": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         0,
@@ -3287,6 +3582,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Abyss",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3326,7 +3622,6 @@
       }
     },
     "150": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3336,6 +3631,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3376,7 +3672,6 @@
       "Texture": "Ground088"
     },
     "151": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3386,6 +3681,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3426,7 +3722,6 @@
       "Texture": "Ground088"
     },
     "152": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3436,6 +3731,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3476,7 +3772,6 @@
       "Texture": "Ground088"
     },
     "153": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3486,6 +3781,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3526,7 +3822,6 @@
       "Texture": "Ground088"
     },
     "154": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3536,6 +3831,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3576,7 +3872,6 @@
       "Texture": "Ground088"
     },
     "155": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3586,6 +3881,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3626,7 +3922,6 @@
       "Texture": "Ground088"
     },
     "156": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3636,6 +3931,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3676,7 +3972,6 @@
       "Texture": "Ground088"
     },
     "157": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3686,6 +3981,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3726,7 +4022,6 @@
       "Texture": "Ground088"
     },
     "159": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3736,6 +4031,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3776,7 +4072,6 @@
       "Texture": "Ground088"
     },
     "16": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         0,
@@ -3786,6 +4081,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Abyss",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3825,7 +4121,6 @@
       }
     },
     "160": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3835,6 +4130,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3875,7 +4171,6 @@
       "Texture": "Ground088"
     },
     "161": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3885,6 +4180,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3925,7 +4221,6 @@
       "Texture": "Ground088"
     },
     "162": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3935,6 +4230,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -3975,7 +4271,6 @@
       "Texture": "Ground088"
     },
     "163": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -3985,6 +4280,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4025,7 +4321,6 @@
       "Texture": "Ground088"
     },
     "164": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4035,6 +4330,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4075,7 +4371,6 @@
       "Texture": "Ground088"
     },
     "165": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4085,6 +4380,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4125,7 +4421,6 @@
       "Texture": "Ground088"
     },
     "166": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4135,6 +4430,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4175,7 +4471,6 @@
       "Texture": "Ground088"
     },
     "167": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4185,6 +4480,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4225,7 +4521,6 @@
       "Texture": "Ground088"
     },
     "168": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4235,6 +4530,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4275,7 +4571,6 @@
       "Texture": "Ground088"
     },
     "169": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4285,6 +4580,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4325,7 +4621,6 @@
       "Texture": "Ground088"
     },
     "17": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         0,
@@ -4335,6 +4630,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Abyss",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4374,7 +4670,6 @@
       }
     },
     "170": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4384,6 +4679,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4424,7 +4720,6 @@
       "Texture": "Ground088"
     },
     "171": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4434,6 +4729,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4474,7 +4770,6 @@
       "Texture": "Ground088"
     },
     "172": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4484,6 +4779,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4524,7 +4820,6 @@
       "Texture": "Ground088"
     },
     "173": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4534,6 +4829,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4574,7 +4870,6 @@
       "Texture": "Ground088"
     },
     "174": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4584,6 +4879,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4624,7 +4920,6 @@
       "Texture": "Ground088"
     },
     "175": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4634,6 +4929,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4674,7 +4970,6 @@
       "Texture": "Ground088"
     },
     "176": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4684,6 +4979,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4724,7 +5020,6 @@
       "Texture": "frame"
     },
     "178": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4734,6 +5029,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4774,7 +5070,6 @@
       "Texture": "Ground088"
     },
     "179": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4784,6 +5079,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4824,7 +5120,6 @@
       "Texture": "Ground088"
     },
     "180": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4834,6 +5129,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4874,7 +5170,6 @@
       "Texture": "Ground088"
     },
     "181": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4884,6 +5179,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4924,7 +5220,6 @@
       "Texture": "Ground088"
     },
     "183": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4934,6 +5229,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -4974,7 +5270,6 @@
       "Texture": "Ground088"
     },
     "184": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -4984,6 +5279,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5024,7 +5320,6 @@
       "Texture": "Ground088"
     },
     "185": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5034,6 +5329,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5074,7 +5370,6 @@
       "Texture": "Ground088"
     },
     "186": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5084,6 +5379,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5124,7 +5420,6 @@
       "Texture": "Ground088"
     },
     "187": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5134,6 +5429,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5174,7 +5470,6 @@
       "Texture": "Ground088"
     },
     "188": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5184,6 +5479,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5224,7 +5520,6 @@
       "Texture": "Ground088"
     },
     "189": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5234,6 +5529,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5273,58 +5569,7 @@
       },
       "Texture": "Ground088"
     },
-    "19": {
-      "CanBeSelected": false,
-      "CastsShadow": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": false,
-      "IsEnabled": true,
-      "Name": "SpawnPoint",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "CanCollide": true,
-        "Collider": {
-          "Mode": 0,
-          "OffsetX": 0.0,
-          "OffsetY": 0.0,
-          "OffsetZ": 0.0,
-          "Radius": 0.5,
-          "Shape": 0,
-          "SizeX": 1.0,
-          "SizeY": 1.0,
-          "SizeZ": 1.0
-        },
-        "IsEnabled": true,
-        "IsStatic": true,
-        "LockAcceleration": false,
-        "LockAngularVelocity": false,
-        "LockRotation": false,
-        "LockScale": false,
-        "LockTranslation": false,
-        "LockVelocity": false,
-        "PosX": 25.0,
-        "PosY": 5.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 1.0,
-        "ScaleY": 1.0,
-        "ScaleZ": 1.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "frame"
-    },
     "190": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5334,6 +5579,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5374,7 +5620,6 @@
       "Texture": "Ground088"
     },
     "191": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5384,6 +5629,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5407,9 +5653,9 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 101.89994049072266,
+        "PosX": 101.9000015258789,
         "PosY": 4.957486152648926,
-        "PosZ": -45.77894592285156,
+        "PosZ": -43.77899932861328,
         "RotW": 0.9981349110603333,
         "RotX": 0.0,
         "RotY": 0.06104854866862297,
@@ -5424,7 +5670,6 @@
       "Texture": "Ground088"
     },
     "192": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5434,6 +5679,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5457,9 +5703,9 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 110.45366668701172,
+        "PosX": 111.4540023803711,
         "PosY": 4.957486152648926,
-        "PosZ": -43.542747497558594,
+        "PosZ": -43.542999267578125,
         "RotW": 0.9961947202682495,
         "RotX": 0.0,
         "RotY": -0.08715573698282242,
@@ -5474,7 +5720,6 @@
       "Texture": "Ground088"
     },
     "193": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5484,6 +5729,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5523,58 +5769,7 @@
       },
       "Texture": "Ground088"
     },
-    "194": {
-      "CanBeSelected": true,
-      "CastsShadow": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Outside Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "CanCollide": true,
-        "Collider": {
-          "Mode": 0,
-          "OffsetX": 0.0,
-          "OffsetY": 0.0,
-          "OffsetZ": 0.0,
-          "Radius": 0.5,
-          "Shape": 0,
-          "SizeX": 1.0,
-          "SizeY": 1.0,
-          "SizeZ": 1.0
-        },
-        "IsEnabled": true,
-        "IsStatic": true,
-        "LockAcceleration": false,
-        "LockAngularVelocity": false,
-        "LockRotation": false,
-        "LockScale": false,
-        "LockTranslation": false,
-        "LockVelocity": false,
-        "PosX": 111.8229751586914,
-        "PosY": 4.957486152648926,
-        "PosZ": -61.95367431640625,
-        "RotW": 0.9993908405303955,
-        "RotX": 0.0,
-        "RotY": -0.03489949554204941,
-        "RotZ": 0.0,
-        "ScaleX": 9.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Ground088"
-    },
     "195": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5584,6 +5779,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5607,14 +5803,14 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 113.74839782714844,
+        "PosX": 109.74800109863281,
         "PosY": 4.957486152648926,
-        "PosZ": -58.162261962890625,
-        "RotW": 0.9799246788024902,
+        "PosZ": -59.1619987487793,
+        "RotW": 0.9945219159126282,
         "RotX": 0.0,
-        "RotY": -0.1993679255247116,
+        "RotY": -0.10452846437692642,
         "RotZ": 0.0,
-        "ScaleX": 9.0,
+        "ScaleX": 19.0,
         "ScaleY": 10.0,
         "ScaleZ": 2.0,
         "VelocityX": 0.0,
@@ -5624,7 +5820,6 @@
       "Texture": "Ground088"
     },
     "196": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5634,6 +5829,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5674,7 +5870,6 @@
       "Texture": "Ground088"
     },
     "197": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5684,6 +5879,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5724,7 +5920,6 @@
       "Texture": "Ground088"
     },
     "198": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5734,6 +5929,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5774,7 +5970,6 @@
       "Texture": "Ground088"
     },
     "199": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5784,6 +5979,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5810,9 +6006,9 @@
         "PosX": 137.22621154785156,
         "PosY": 4.957486152648926,
         "PosZ": -72.83812713623047,
-        "RotW": 0.8433914184570313,
+        "RotW": 0.7547096014022827,
         "RotX": 0.0,
-        "RotY": -0.537299633026123,
+        "RotY": -0.6560590267181396,
         "RotZ": 0.0,
         "ScaleX": 2.0,
         "ScaleY": 10.0,
@@ -5824,7 +6020,6 @@
       "Texture": "Ground088"
     },
     "2": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5834,6 +6029,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Pedastool",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5874,7 +6070,6 @@
       "Texture": "Chip001"
     },
     "20": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -5884,6 +6079,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5924,7 +6120,6 @@
       "Texture": "Ground088"
     },
     "200": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5934,6 +6129,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -5957,12 +6153,12 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 145.27809143066406,
+        "PosX": 145.2779998779297,
         "PosY": 4.957486152648926,
-        "PosZ": -75.88385009765625,
-        "RotW": 1.0,
+        "PosZ": -73.88400268554688,
+        "RotW": 0.9914448857307434,
         "RotX": 0.0,
-        "RotY": 0.0,
+        "RotY": 0.13052619993686676,
         "RotZ": 0.0,
         "ScaleX": 7.0,
         "ScaleY": 10.0,
@@ -5974,7 +6170,6 @@
       "Texture": "Ground088"
     },
     "201": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -5984,6 +6179,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6007,12 +6203,12 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 152.10939025878906,
+        "PosX": 150.10899353027344,
         "PosY": 4.957486152648926,
-        "PosZ": -78.09378051757813,
-        "RotW": 0.965925931930542,
+        "PosZ": -76.09400177001953,
+        "RotW": 0.9455185532569885,
         "RotX": 0.0,
-        "RotY": 0.2588190734386444,
+        "RotY": 0.32556813955307007,
         "RotZ": 0.0,
         "ScaleX": 7.0,
         "ScaleY": 10.0,
@@ -6024,7 +6220,6 @@
       "Texture": "Ground088"
     },
     "202": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6034,6 +6229,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6057,14 +6253,14 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 156.6663818359375,
+        "PosX": 155.66600036621094,
         "PosY": 4.957486152648926,
-        "PosZ": -83.5925521850586,
-        "RotW": 0.9170600771903992,
+        "PosZ": -80.59300231933594,
+        "RotW": 0.948323667049408,
         "RotX": 0.0,
-        "RotY": 0.39874908328056335,
+        "RotY": 0.3173046410083771,
         "RotZ": 0.0,
-        "ScaleX": 7.0,
+        "ScaleX": 9.0,
         "ScaleY": 10.0,
         "ScaleZ": 2.0,
         "VelocityX": 0.0,
@@ -6074,7 +6270,6 @@
       "Texture": "Ground088"
     },
     "203": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6084,6 +6279,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6124,7 +6320,6 @@
       "Texture": "Ground088"
     },
     "204": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6134,6 +6329,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6157,7 +6353,7 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 133.22132873535156,
+        "PosX": 132.2209930419922,
         "PosY": 4.957486152648926,
         "PosZ": -62.925209045410156,
         "RotW": 1.0,
@@ -6174,7 +6370,6 @@
       "Texture": "Ground088"
     },
     "205": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6184,6 +6379,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6207,12 +6403,12 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 138.25,
+        "PosX": 136.25,
         "PosY": 4.957485675811768,
-        "PosZ": -63.87678527832031,
-        "RotW": 0.9969174265861511,
+        "PosZ": -62.87699890136719,
+        "RotW": 0.9990482330322266,
         "RotX": 0.0,
-        "RotY": 0.07845910638570786,
+        "RotY": 0.04361938685178757,
         "RotZ": 0.0,
         "ScaleX": 5.0,
         "ScaleY": 10.0,
@@ -6224,7 +6420,6 @@
       "Texture": "Ground088"
     },
     "206": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6234,6 +6429,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6257,9 +6453,9 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 145.34555053710938,
+        "PosX": 145.3459930419922,
         "PosY": 4.957486152648926,
-        "PosZ": -63.85356521606445,
+        "PosZ": -65.85399627685547,
         "RotW": 0.9848078489303589,
         "RotX": 0.0,
         "RotY": 0.1736481934785843,
@@ -6274,7 +6470,6 @@
       "Texture": "Ground088"
     },
     "207": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6284,6 +6479,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6310,9 +6506,9 @@
         "PosX": 158.1947784423828,
         "PosY": 4.957486152648926,
         "PosZ": -70.81822204589844,
-        "RotW": 0.9455185532569885,
+        "RotW": 0.9781476259231567,
         "RotX": 0.0,
-        "RotY": 0.32556813955307007,
+        "RotY": 0.20791170001029968,
         "RotZ": 0.0,
         "ScaleX": 14.0,
         "ScaleY": 10.0,
@@ -6324,7 +6520,6 @@
       "Texture": "Ground088"
     },
     "208": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6334,6 +6529,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6374,7 +6570,6 @@
       "Texture": "Ground088"
     },
     "209": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6384,6 +6579,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6424,7 +6620,6 @@
       "Texture": "Ground088"
     },
     "21": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -6434,6 +6629,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6474,7 +6670,6 @@
       "Texture": "Ground088"
     },
     "210": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6484,6 +6679,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6524,7 +6720,6 @@
       "Texture": "Ground088"
     },
     "211": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6534,6 +6729,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6574,7 +6770,6 @@
       "Texture": "Ground088"
     },
     "212": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6584,6 +6779,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6624,7 +6820,6 @@
       "Texture": "Ground088"
     },
     "213": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6634,6 +6829,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6674,7 +6870,6 @@
       "Texture": "Ground088"
     },
     "214": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6684,6 +6879,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6707,7 +6903,7 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 118.11493682861328,
+        "PosX": 120.11499786376953,
         "PosY": 4.957486152648926,
         "PosZ": -8.425128936767578,
         "RotW": 1.0,
@@ -6716,7 +6912,7 @@
         "RotZ": 0.0,
         "ScaleX": 2.0,
         "ScaleY": 10.0,
-        "ScaleZ": 14.0,
+        "ScaleZ": 10.0,
         "VelocityX": 0.0,
         "VelocityY": 0.0,
         "VelocityZ": 0.0
@@ -6724,7 +6920,6 @@
       "Texture": "Ground088"
     },
     "215": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6734,6 +6929,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6774,7 +6970,6 @@
       "Texture": "Ground088"
     },
     "217": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6784,6 +6979,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6807,12 +7003,12 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 106.40382385253906,
+        "PosX": 107.40399932861328,
         "PosY": 4.957485675811768,
         "PosZ": 1.3264080286026,
-        "RotW": 0.9781476259231567,
+        "RotW": 0.9271838665008545,
         "RotX": 0.0,
-        "RotY": -0.20791170001029968,
+        "RotY": -0.37460657954216003,
         "RotZ": 0.0,
         "ScaleX": 8.0,
         "ScaleY": 10.0,
@@ -6824,7 +7020,6 @@
       "Texture": "Ground088"
     },
     "218": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6834,6 +7029,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6864,7 +7060,7 @@
         "RotX": 0.0,
         "RotY": -0.43051108717918396,
         "RotZ": 0.0,
-        "ScaleX": 6.0,
+        "ScaleX": 9.0,
         "ScaleY": 10.0,
         "ScaleZ": 2.0,
         "VelocityX": 0.0,
@@ -6874,7 +7070,6 @@
       "Texture": "Ground088"
     },
     "219": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6884,6 +7079,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6914,7 +7110,7 @@
         "RotX": 0.0,
         "RotY": 0.3420201539993286,
         "RotZ": 0.0,
-        "ScaleX": 16.0,
+        "ScaleX": 11.0,
         "ScaleY": 10.0,
         "ScaleZ": 2.0,
         "VelocityX": 0.0,
@@ -6924,7 +7120,6 @@
       "Texture": "Ground088"
     },
     "221": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6934,6 +7129,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -6957,12 +7153,12 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 112.36107635498047,
+        "PosX": 112.36100006103516,
         "PosY": 4.957486152648926,
-        "PosZ": 2.156973361968994,
-        "RotW": 0.9537169337272644,
+        "PosZ": 4.1570000648498535,
+        "RotW": 0.9743700623512268,
         "RotX": 0.0,
-        "RotY": -0.30070579051971436,
+        "RotY": -0.22495104372501373,
         "RotZ": 0.0,
         "ScaleX": 8.0,
         "ScaleY": 10.0,
@@ -6974,7 +7170,6 @@
       "Texture": "Ground088"
     },
     "222": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -6984,6 +7179,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7007,7 +7203,7 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 119.43416595458984,
+        "PosX": 117.43399810791016,
         "PosY": 4.957486152648926,
         "PosZ": 8.122756004333496,
         "RotW": 0.8987940549850464,
@@ -7024,7 +7220,6 @@
       "Texture": "Ground088"
     },
     "223": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7034,6 +7229,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7074,7 +7270,6 @@
       "Texture": "Ground088"
     },
     "224": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7084,6 +7279,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7124,7 +7320,6 @@
       "Texture": "Ground088"
     },
     "225": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7134,6 +7329,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7157,62 +7353,12 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 123.28399658203125,
+        "PosX": 125.28399658203125,
         "PosY": 4.957486152648926,
         "PosZ": -17.1200008392334,
-        "RotW": 0.9914448857307434,
+        "RotW": 0.9304175972938538,
         "RotX": 0.0,
-        "RotY": 0.13052619993686676,
-        "RotZ": 0.0,
-        "ScaleX": 13.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Ground088"
-    },
-    "226": {
-      "CanBeSelected": true,
-      "CastsShadow": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "Name": "Outside Wall",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "CanCollide": true,
-        "Collider": {
-          "Mode": 0,
-          "OffsetX": 0.0,
-          "OffsetY": 0.0,
-          "OffsetZ": 0.0,
-          "Radius": 0.5,
-          "Shape": 0,
-          "SizeX": 1.0,
-          "SizeY": 1.0,
-          "SizeZ": 1.0
-        },
-        "IsEnabled": true,
-        "IsStatic": true,
-        "LockAcceleration": false,
-        "LockAngularVelocity": false,
-        "LockRotation": false,
-        "LockScale": false,
-        "LockTranslation": false,
-        "LockVelocity": false,
-        "PosX": 129.68600463867188,
-        "PosY": 4.957486152648926,
-        "PosZ": -19.249147415161133,
-        "RotW": 0.838670551776886,
-        "RotX": 0.0,
-        "RotY": 0.5446390509605408,
+        "RotY": 0.36650121212005615,
         "RotZ": 0.0,
         "ScaleX": 14.0,
         "ScaleY": 10.0,
@@ -7223,8 +7369,7 @@
       },
       "Texture": "Ground088"
     },
-    "227": {
-      "CanBeSelected": true,
+    "226": {
       "CastsShadow": true,
       "Color": [
         255,
@@ -7234,6 +7379,57 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
+      "Name": "Outside Wall",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
+        "IsEnabled": true,
+        "IsStatic": true,
+        "LockAcceleration": false,
+        "LockAngularVelocity": false,
+        "LockRotation": false,
+        "LockScale": false,
+        "LockTranslation": false,
+        "LockVelocity": false,
+        "PosX": 130.68600463867188,
+        "PosY": 4.957486152648926,
+        "PosZ": -23.249000549316406,
+        "RotW": 0.838670551776886,
+        "RotX": 0.0,
+        "RotY": 0.5446390509605408,
+        "RotZ": 0.0,
+        "ScaleX": 6.0,
+        "ScaleY": 10.0,
+        "ScaleZ": 2.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Ground088"
+    },
+    "227": {
+      "CastsShadow": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7274,7 +7470,6 @@
       "Texture": "Ground088"
     },
     "228": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7284,6 +7479,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7307,14 +7503,14 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 162.27549743652344,
+        "PosX": 160.27499389648438,
         "PosY": 4.957486152648926,
-        "PosZ": -40.72462844848633,
+        "PosZ": -39.724998474121094,
         "RotW": 0.9876883625984192,
         "RotX": 0.0,
         "RotY": -0.15643447637557983,
         "RotZ": 0.0,
-        "ScaleX": 10.0,
+        "ScaleX": 8.0,
         "ScaleY": 10.0,
         "ScaleZ": 2.0,
         "VelocityX": 0.0,
@@ -7324,7 +7520,6 @@
       "Texture": "Ground088"
     },
     "229": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7334,6 +7529,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7357,9 +7553,9 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 165.60711669921875,
+        "PosX": 166.60699462890625,
         "PosY": 4.957486152648926,
-        "PosZ": -34.82841491699219,
+        "PosZ": -35.827999114990234,
         "RotW": 0.948323667049408,
         "RotX": 0.0,
         "RotY": -0.3173046410083771,
@@ -7374,7 +7570,6 @@
       "Texture": "Ground088"
     },
     "230": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7384,6 +7579,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7407,12 +7603,12 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 172.09584045410156,
+        "PosX": 171.0959930419922,
         "PosY": 4.957486152648926,
-        "PosZ": -30.690296173095703,
-        "RotW": 0.8338858485221863,
+        "PosZ": -28.690000534057617,
+        "RotW": 0.7880107760429382,
         "RotX": 0.0,
-        "RotY": -0.5519369840621948,
+        "RotY": -0.6156615018844604,
         "RotZ": 0.0,
         "ScaleX": 10.0,
         "ScaleY": 10.0,
@@ -7424,7 +7620,6 @@
       "Texture": "Ground088"
     },
     "231": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7434,6 +7629,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7474,7 +7670,6 @@
       "Texture": "Ground088"
     },
     "232": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7484,6 +7679,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7524,7 +7720,6 @@
       "Texture": "Ground088"
     },
     "233": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7534,6 +7729,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7557,12 +7753,12 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 155.6930694580078,
+        "PosX": 154.6929931640625,
         "PosY": 4.957486152648926,
-        "PosZ": -29.502605438232422,
-        "RotW": 0.9304175972938538,
+        "PosZ": -28.503000259399414,
+        "RotW": 0.9063078761100769,
         "RotX": 0.0,
-        "RotY": -0.36650121212005615,
+        "RotY": -0.4226183295249939,
         "RotZ": 0.0,
         "ScaleX": 7.0,
         "ScaleY": 10.0,
@@ -7574,7 +7770,6 @@
       "Texture": "Ground088"
     },
     "234": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7584,6 +7779,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7624,7 +7820,6 @@
       "Texture": "Ground088"
     },
     "235": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7634,6 +7829,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7674,7 +7870,6 @@
       "Texture": "Ground088"
     },
     "237": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7684,6 +7879,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7724,7 +7920,6 @@
       "Texture": "Ground088"
     },
     "238": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7734,6 +7929,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7774,7 +7970,6 @@
       "Texture": "Ground088"
     },
     "239": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7784,6 +7979,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7807,9 +8003,9 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 153.32330322265625,
+        "PosX": 150.322998046875,
         "PosY": 4.957486152648926,
-        "PosZ": 11.889151573181152,
+        "PosZ": 13.888999938964844,
         "RotW": 1.0,
         "RotX": 0.0,
         "RotY": 0.0,
@@ -7824,7 +8020,6 @@
       "Texture": "Ground088"
     },
     "24": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -7834,6 +8029,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7874,7 +8070,6 @@
       "Texture": "Ground088"
     },
     "240": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7884,6 +8079,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7924,7 +8120,6 @@
       "Texture": "Ground088"
     },
     "241": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7934,6 +8129,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -7974,7 +8170,6 @@
       "Texture": "Ground088"
     },
     "242": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -7984,6 +8179,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8024,7 +8220,6 @@
       "Texture": "Ground088"
     },
     "243": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8034,6 +8229,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8074,7 +8270,6 @@
       "Texture": "Ground088"
     },
     "244": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8084,6 +8279,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8124,7 +8320,6 @@
       "Texture": "Ground088"
     },
     "245": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8134,6 +8329,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8157,12 +8353,12 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 156.49693298339844,
+        "PosX": 154.4969940185547,
         "PosY": 4.957486152648926,
         "PosZ": 22.655216217041016,
-        "RotW": 0.9914448857307434,
+        "RotW": 0.9999619126319885,
         "RotX": 0.0,
-        "RotY": -0.13052619993686676,
+        "RotY": 0.008726535364985466,
         "RotZ": 0.0,
         "ScaleX": 2.0,
         "ScaleY": 10.0,
@@ -8174,7 +8370,6 @@
       "Texture": "Ground088"
     },
     "246": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8184,6 +8379,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8207,16 +8403,16 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 155.02003479003906,
+        "PosX": 153.02000427246094,
         "PosY": 4.957486152648926,
         "PosZ": 29.627023696899414,
-        "RotW": 0.9743700623512268,
+        "RotW": 0.9832549095153809,
         "RotX": 0.0,
-        "RotY": -0.22495104372501373,
+        "RotY": -0.18223552405834198,
         "RotZ": 0.0,
         "ScaleX": 2.0,
         "ScaleY": 10.0,
-        "ScaleZ": 7.0,
+        "ScaleZ": 9.0,
         "VelocityX": 0.0,
         "VelocityY": 0.0,
         "VelocityZ": 0.0
@@ -8224,7 +8420,6 @@
       "Texture": "Ground088"
     },
     "247": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8234,6 +8429,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8274,7 +8470,6 @@
       "Texture": "Ground088"
     },
     "248": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8284,6 +8479,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8324,7 +8520,6 @@
       "Texture": "Ground088"
     },
     "249": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8334,6 +8529,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8357,7 +8553,7 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 168.4097137451172,
+        "PosX": 166.41000366210938,
         "PosY": 4.957486152648926,
         "PosZ": 27.40432357788086,
         "RotW": 0.9902681708335876,
@@ -8374,7 +8570,6 @@
       "Texture": "Ground088"
     },
     "25": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -8384,6 +8579,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8424,7 +8620,6 @@
       "Texture": "Ground088"
     },
     "250": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8434,6 +8629,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8474,7 +8670,6 @@
       "Texture": "Ground088"
     },
     "251": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8484,6 +8679,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8507,9 +8703,9 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 158.88595581054688,
+        "PosX": 156.88600158691406,
         "PosY": 4.957486152648926,
-        "PosZ": 42.05601119995117,
+        "PosZ": 40.055999755859375,
         "RotW": 0.9063078761100769,
         "RotX": 0.0,
         "RotY": -0.4226183295249939,
@@ -8524,7 +8720,6 @@
       "Texture": "Ground088"
     },
     "252": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8534,6 +8729,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8574,7 +8770,6 @@
       "Texture": "Ground088"
     },
     "253": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8584,6 +8779,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8624,7 +8820,6 @@
       "Texture": "Ground088"
     },
     "254": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8634,6 +8829,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8674,7 +8870,6 @@
       "Texture": "Ground088"
     },
     "255": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8684,6 +8879,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8724,7 +8920,6 @@
       "Texture": "Ground088"
     },
     "256": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8734,6 +8929,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8757,9 +8953,9 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 185.81561279296875,
+        "PosX": 186.8159942626953,
         "PosY": 4.957486152648926,
-        "PosZ": -5.846867084503174,
+        "PosZ": -5.8470001220703125,
         "RotW": 1.0,
         "RotX": 0.0,
         "RotY": 0.0,
@@ -8774,7 +8970,6 @@
       "Texture": "Ground088"
     },
     "257": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8784,6 +8979,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8807,14 +9003,14 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 183.76937866210938,
+        "PosX": 186.7689971923828,
         "PosY": 4.957486152648926,
         "PosZ": 2.9314310550689697,
         "RotW": 1.0,
         "RotX": 0.0,
         "RotY": 0.0,
         "RotZ": 0.0,
-        "ScaleX": 10.0,
+        "ScaleX": 8.0,
         "ScaleY": 10.0,
         "ScaleZ": 2.0,
         "VelocityX": 0.0,
@@ -8824,7 +9020,6 @@
       "Texture": "Ground088"
     },
     "258": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8834,6 +9029,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8874,7 +9070,6 @@
       "Texture": "Ground088"
     },
     "259": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8884,6 +9079,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8907,14 +9103,14 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 202.0986328125,
+        "PosX": 202.0,
         "PosY": 4.957486152648926,
-        "PosZ": 10.59795093536377,
-        "RotW": 0.9170600771903992,
+        "PosZ": 11.597999572753906,
+        "RotW": 0.9025852680206299,
         "RotX": 0.0,
-        "RotY": -0.39874908328056335,
+        "RotY": -0.43051108717918396,
         "RotZ": 0.0,
-        "ScaleX": 10.0,
+        "ScaleX": 12.0,
         "ScaleY": 10.0,
         "ScaleZ": 2.0,
         "VelocityX": 0.0,
@@ -8924,7 +9120,6 @@
       "Texture": "Ground088"
     },
     "26": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -8934,6 +9129,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -8974,7 +9170,6 @@
       "Texture": "Ground088"
     },
     "260": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -8984,6 +9179,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9024,7 +9220,6 @@
       "Texture": "Ground088"
     },
     "261": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9034,6 +9229,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9057,9 +9253,9 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 193.37380981445313,
+        "PosX": 195.37399291992188,
         "PosY": 4.957486152648926,
-        "PosZ": -7.395919322967529,
+        "PosZ": -5.395999908447266,
         "RotW": 0.9925461411476135,
         "RotX": 0.0,
         "RotY": -0.12186934798955917,
@@ -9074,7 +9270,6 @@
       "Texture": "Ground088"
     },
     "262": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9084,6 +9279,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9124,7 +9320,6 @@
       "Texture": "Ground088"
     },
     "263": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9134,6 +9329,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9174,7 +9370,6 @@
       "Texture": "Ground088"
     },
     "264": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9184,6 +9379,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9207,14 +9403,14 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 214.5982208251953,
+        "PosX": 212.59800720214844,
         "PosY": 4.957486152648926,
-        "PosZ": 13.29223346710205,
-        "RotW": 0.7986355423927307,
+        "PosZ": 11.291999816894531,
+        "RotW": 0.760405957698822,
         "RotX": 0.0,
-        "RotY": -0.6018149852752686,
+        "RotY": -0.649448037147522,
         "RotZ": 0.0,
-        "ScaleX": 10.0,
+        "ScaleX": 9.0,
         "ScaleY": 10.0,
         "ScaleZ": 2.0,
         "VelocityX": 0.0,
@@ -9224,7 +9420,6 @@
       "Texture": "Ground088"
     },
     "265": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9234,6 +9429,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9274,7 +9470,6 @@
       "Texture": "Ground088"
     },
     "266": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9284,6 +9479,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9324,7 +9520,6 @@
       "Texture": "Ground088"
     },
     "267": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9334,6 +9529,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9374,7 +9570,6 @@
       "Texture": "Ground088"
     },
     "268": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9384,6 +9579,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9424,7 +9620,6 @@
       "Texture": "Ground088"
     },
     "269": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9434,6 +9629,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9474,7 +9670,6 @@
       "Texture": "Ground088"
     },
     "27": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -9484,6 +9679,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9524,7 +9720,6 @@
       "Texture": "Ground088"
     },
     "270": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9534,6 +9729,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9574,7 +9770,6 @@
       "Texture": "Ground088"
     },
     "271": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9584,6 +9779,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9624,7 +9820,6 @@
       "Texture": "Ground088"
     },
     "272": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9634,6 +9829,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9674,7 +9870,6 @@
       "Texture": "Ground088"
     },
     "273": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9684,6 +9879,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9724,7 +9920,6 @@
       "Texture": "Ground088"
     },
     "274": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9734,6 +9929,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9774,7 +9970,6 @@
       "Texture": "Ground088"
     },
     "275": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9784,6 +9979,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9824,7 +10020,6 @@
       "Texture": "Ground088"
     },
     "277": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9834,6 +10029,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9874,7 +10070,6 @@
       "Texture": "Ground088"
     },
     "278": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9884,6 +10079,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9924,7 +10120,6 @@
       "Texture": "Ground088"
     },
     "279": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -9934,6 +10129,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -9974,7 +10170,6 @@
       "Texture": "Ground088"
     },
     "28": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -9984,6 +10179,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10024,7 +10220,6 @@
       "Texture": "Ground088"
     },
     "280": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -10034,6 +10229,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10074,7 +10270,6 @@
       "Texture": "Ground088"
     },
     "281": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -10084,6 +10279,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10124,7 +10320,6 @@
       "Texture": "Ground088"
     },
     "29": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         255,
@@ -10134,6 +10329,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Roof",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10174,7 +10370,6 @@
       "Texture": "Marble021"
     },
     "291": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         255,
@@ -10184,6 +10379,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Floor",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10224,7 +10420,6 @@
       "Texture": "Ground088"
     },
     "292": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         255,
@@ -10234,6 +10429,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Floor",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10274,7 +10470,6 @@
       "Texture": "Ground088"
     },
     "293": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         255,
@@ -10284,6 +10479,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Floor",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10323,58 +10519,7 @@
       },
       "Texture": "Ground088"
     },
-    "294": {
-      "CanBeSelected": false,
-      "CastsShadow": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "IsDestructible": false,
-      "IsEnabled": true,
-      "Name": "Outside Roof",
-      "ObjectType": 0,
-      "RigidBody3D": {
-        "CanCollide": true,
-        "Collider": {
-          "Mode": 0,
-          "OffsetX": 0.0,
-          "OffsetY": 0.0,
-          "OffsetZ": 0.0,
-          "Radius": 0.5,
-          "Shape": 0,
-          "SizeX": 1.0,
-          "SizeY": 1.0,
-          "SizeZ": 1.0
-        },
-        "IsEnabled": true,
-        "IsStatic": true,
-        "LockAcceleration": false,
-        "LockAngularVelocity": false,
-        "LockRotation": false,
-        "LockScale": false,
-        "LockTranslation": false,
-        "LockVelocity": false,
-        "PosX": 140.0,
-        "PosY": 10.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 200.0,
-        "ScaleY": 1.0,
-        "ScaleZ": 200.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Ground088"
-    },
     "30": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -10384,6 +10529,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10424,7 +10570,6 @@
       "Texture": "Ground088"
     },
     "301": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -10434,6 +10579,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Guard Door",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10474,7 +10620,6 @@
       "Texture": "Bricks058"
     },
     "31": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -10484,6 +10629,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Roof",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10524,7 +10670,6 @@
       "Texture": "Ground088"
     },
     "36": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         255,
@@ -10534,6 +10679,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Floor",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10574,7 +10720,6 @@
       "Texture": "Ground088"
     },
     "4": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -10584,6 +10729,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Pillar",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10624,7 +10770,6 @@
       "Texture": "Ground088"
     },
     "43": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         255,
@@ -10634,6 +10779,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Roof",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10674,7 +10820,6 @@
       "Texture": "Ground088"
     },
     "44": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -10684,6 +10829,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10724,7 +10870,6 @@
       "Texture": "Ground088"
     },
     "45": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -10734,6 +10879,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10774,7 +10920,6 @@
       "Texture": "Ground088"
     },
     "46": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -10784,6 +10929,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10824,7 +10970,6 @@
       "Texture": "Ground088"
     },
     "47": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -10834,6 +10979,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10874,7 +11020,6 @@
       "Texture": "Ground088"
     },
     "48": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         255,
@@ -10884,6 +11029,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Floor",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10924,7 +11070,6 @@
       "Texture": "Ground088"
     },
     "5": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         255,
@@ -10934,6 +11079,7 @@
       ],
       "IsDestructible": false,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Floor",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -10974,7 +11120,6 @@
       "Texture": "Ground088"
     },
     "59": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -10984,6 +11129,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11024,7 +11170,6 @@
       "Texture": "Ground088"
     },
     "60": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11034,6 +11179,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11074,7 +11220,6 @@
       "Texture": "Ground088"
     },
     "61": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11084,6 +11229,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11124,7 +11270,6 @@
       "Texture": "Ground088"
     },
     "62": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11134,6 +11279,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11174,7 +11320,6 @@
       "Texture": "Ground088"
     },
     "63": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11184,6 +11329,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11224,7 +11370,6 @@
       "Texture": "Ground088"
     },
     "64": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11234,6 +11379,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11274,7 +11420,6 @@
       "Texture": "Ground088"
     },
     "65": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11284,6 +11429,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11324,7 +11470,6 @@
       "Texture": "Ground088"
     },
     "66": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11334,6 +11479,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11374,7 +11520,6 @@
       "Texture": "Ground088"
     },
     "67": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11384,6 +11529,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11424,7 +11570,6 @@
       "Texture": "Ground088"
     },
     "68": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11434,6 +11579,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11474,7 +11620,6 @@
       "Texture": "Ground088"
     },
     "69": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11484,6 +11629,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11524,7 +11670,6 @@
       "Texture": "Ground088"
     },
     "70": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11534,6 +11679,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11574,7 +11720,6 @@
       "Texture": "Ground088"
     },
     "71": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11584,6 +11729,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11624,7 +11770,6 @@
       "Texture": "Ground088"
     },
     "74": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11634,6 +11779,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Cavern Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11674,7 +11820,6 @@
       "Texture": "Ground088"
     },
     "94": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -11684,6 +11829,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11724,7 +11870,6 @@
       "Texture": "Ground088"
     },
     "95": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -11734,6 +11879,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11774,7 +11920,6 @@
       "Texture": "Ground088"
     },
     "96": {
-      "CanBeSelected": true,
       "CastsShadow": true,
       "Color": [
         255,
@@ -11784,6 +11929,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11824,7 +11970,6 @@
       "Texture": "Ground088"
     },
     "97": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11834,6 +11979,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11874,7 +12020,6 @@
       "Texture": "Ground088"
     },
     "98": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11884,6 +12029,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {
@@ -11924,7 +12070,6 @@
       "Texture": "Ground088"
     },
     "99": {
-      "CanBeSelected": false,
       "CastsShadow": true,
       "Color": [
         100,
@@ -11934,6 +12079,7 @@
       ],
       "IsDestructible": true,
       "IsEnabled": true,
+      "IsSelectable": true,
       "Name": "Outside Wall",
       "ObjectType": 0,
       "RigidBody3D": {

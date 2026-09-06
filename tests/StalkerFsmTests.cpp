@@ -74,7 +74,7 @@ static Stalker* AddStalker(Scene* scene, Vector3 at, std::uint64_t id = 500)
 	// steers and measures on the XZ plane regardless of height.
 	owned->rigidBody3D.isStatic = true;
 	Stalker* stalker = owned.get();
-	scene->gameMap.entities[id] = std::move(owned);
+	scene->gameMap.LoadEntity(std::move(owned));
 	return stalker;
 }
 
@@ -98,8 +98,8 @@ static BoundingBox AddBlock(Scene* scene, Vector3 centre, Vector3 size)
 	block.rigidBody3D.translation = centre;
 	block.rigidBody3D.scale = size;
 	block.rigidBody3D.SyncBroadPhaseBox();
-	scene->gameMap.gameObjects.push_back(block);
-	return scene->gameMap.gameObjects.back().rigidBody3D.broadPhaseBox;
+	GameObject* spawned = scene->gameMap.LoadGameObject(block);
+	return spawned->rigidBody3D.broadPhaseBox;
 }
 
 static bool InsideBox(Vector3 p, const BoundingBox& box)

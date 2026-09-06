@@ -26,7 +26,7 @@ Scene* Scene_new() {
 // MiniGame.h can reach it without a Scene. See FindRunningStation in gameMap.h.
 InteractableObject* Scene::GetRunningStation()
 {
-	return FindRunningStation(gameMap);
+	return gameMap.FindRunningStation();
 }
 
 void Scene::SnapshotMiniGameData()
@@ -69,13 +69,8 @@ void Scene::EmitStationNoise(float deltaTime)
 
 // Renumbers every object sequentially from the first assignable id.
 void Scene::ResetID() {
-	
 	// Start at 2 to avoid Object 0 and Player;
-	gameMap.instanceHolder = InstanceID{};
-
-	for (auto& object : gameMap.gameObjects) {
-		object.id = gameMap.instanceHolder.getIdAndIncrement();
-	}
+	gameMap.ResetGameObjectIds();
 }
 
 /** Physics Solutions **/
@@ -99,134 +94,133 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 {
 	solverIterations = static_cast<int>(Clamp(static_cast<float>(solverIterations), 4, 8));
 
-	auto& objects = scene->gameMap.gameObjects;
-	auto& entities = scene->gameMap.entities;
-	auto& interactables = scene->gameMap.interactables;
+	auto& gameMap = scene->gameMap;
 
 	for (int iter = 0; iter < solverIterations; iter++)
 	{
-		// Game Objects Vs. Game Objects — each unordered pair once (j starts
-		// at i+1); resolveConstrains already moves both bodies, so visiting
-		// (A,B) and (B,A) doubled every correction and collision event
-		for (size_t i = 0; i < objects.size(); i++)
+		// Game Objects Vs. Game Objects — each unordered pair once;
+		// resolveConstrains already moves both bodies, so visiting (A,B) and
+		// (B,A) doubled every correction and collision event
+		gameMap.ForEachObjectPair([&](GameObject& bodyA, GameObject& bodyB)
 		{
-			for (size_t j = i + 1; j < objects.size(); j++)
+			if (bodyA.rigidBody3D.canCollide == false || bodyB.rigidBody3D.canCollide == false) { return true; }
+			if (bodyA.rigidBody3D.isStatic && bodyB.rigidBody3D.isStatic) { return true; }
+
+			if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
 			{
-				auto& bodyA = objects[i];
-				auto& bodyB = objects[j];
+				bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
+				refreshBroadPhaseBox(bodyA.rigidBody3D);
+				refreshBroadPhaseBox(bodyB.rigidBody3D);
+			}
+			return true;
+		});
 
-				if (bodyA.rigidBody3D.canCollide == false || bodyB.rigidBody3D.canCollide == false) { continue; }
-				if (bodyA.rigidBody3D.isStatic && bodyB.rigidBody3D.isStatic) { continue; }
+		// Entities Vs. Game Objects
+		gameMap.ForEachEntity([&](Entity& entity)
+		{
+			gameMap.ForEachGameObject([&](GameObject& bodyB)
+			{
+				if (entity.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
+				{
+					entity.rigidBody3D.resolveConstrains(&entity, &bodyB);
+					refreshBroadPhaseBox(entity.rigidBody3D);
+					refreshBroadPhaseBox(bodyB.rigidBody3D);
+				}
+			});
+		});
 
+		// Entities Vs. Entities — each unordered pair once
+		gameMap.ForEachEntityPair([&](Entity& bodyA, Entity& bodyB)
+		{
+			if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
+			{
+				bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
+				refreshBroadPhaseBox(bodyA.rigidBody3D);
+				refreshBroadPhaseBox(bodyB.rigidBody3D);
+			}
+		});
+
+		// Interactable Vs. Game Objects
+		gameMap.ForEachInteractable([&](InteractableObject& entity)
+		{
+			gameMap.ForEachGameObject([&](GameObject& bodyB)
+			{
+				if (entity.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
+				{
+					entity.rigidBody3D.resolveConstrains(&entity, &bodyB);
+					refreshBroadPhaseBox(entity.rigidBody3D);
+					refreshBroadPhaseBox(bodyB.rigidBody3D);
+				}
+			});
+		});
+
+		// Interactable Vs. Entities — each unordered pair once
+		gameMap.ForEachInteractable([&](InteractableObject& bodyA)
+		{
+			gameMap.ForEachEntity([&](Entity& bodyB)
+			{
 				if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
 				{
 					bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
 					refreshBroadPhaseBox(bodyA.rigidBody3D);
 					refreshBroadPhaseBox(bodyB.rigidBody3D);
 				}
-			}
-		}
+			});
+		});
 
-		// Entities Vs. Game Objects
-		for (auto& [id, entity] : entities)
-		{
-			for (auto& bodyB : objects)
-			{
-				if (entity->rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
-				{
-					entity->rigidBody3D.resolveConstrains(entity.get(), &bodyB);
-					refreshBroadPhaseBox(entity->rigidBody3D);
-					refreshBroadPhaseBox(bodyB.rigidBody3D);
-				}
-			}
-		}
-
-		// Entities Vs. Entities — each unordered pair once
-		for (auto bodyA = entities.begin(); bodyA !=entities.end(); ++bodyA)
-		{
-			for (auto bodyB = std::next(bodyA); bodyB !=entities.end(); ++bodyB)
-			{
-				if (bodyA->second->rigidBody3D.OverlapsBroadPhase(bodyB->second->rigidBody3D))
-				{
-					bodyA->second->rigidBody3D.resolveConstrains(bodyA->second.get(), bodyB->second.get());
-					refreshBroadPhaseBox(bodyA->second->rigidBody3D);
-					refreshBroadPhaseBox(bodyB->second->rigidBody3D);
-				}
-			}
-		}
-		
-		// Interactable Vs. Game Objects
-		for (auto& [id, entity] :interactables)
-		{
-			for (auto& bodyB : objects)
-			{
-				if (entity->rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
-				{
-					entity->rigidBody3D.resolveConstrains(entity.get(), &bodyB);
-					refreshBroadPhaseBox(entity->rigidBody3D);
-					refreshBroadPhaseBox(bodyB.rigidBody3D);
-				}
-			}
-		}
-
-		// Interactable Vs. Entities — each unordered pair once
-		for (auto bodyA = interactables.begin(); bodyA != interactables.end(); ++bodyA)
-		{
-			for (auto bodyB = entities.begin(); bodyB != entities.end(); ++bodyB)
-			{
-				if (bodyA->second->rigidBody3D.OverlapsBroadPhase(bodyB->second->rigidBody3D))
-				{
-					bodyA->second->rigidBody3D.resolveConstrains(bodyA->second.get(), bodyB->second.get());
-					refreshBroadPhaseBox(bodyA->second->rigidBody3D);
-					refreshBroadPhaseBox(bodyB->second->rigidBody3D);
-				}
-			}
-		}
-		
 		// Interactable Vs. Interactable — each unordered pair once
-		for (auto bodyA = interactables.begin(); bodyA != interactables.end(); ++bodyA)
+		gameMap.ForEachInteractablePair([&](InteractableObject& bodyA, InteractableObject& bodyB)
 		{
-			for (auto bodyB = std::next(bodyA); bodyB != interactables.end(); ++bodyB)
+			if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
 			{
-				if (bodyA->second->rigidBody3D.OverlapsBroadPhase(bodyB->second->rigidBody3D))
-				{
-					bodyA->second->rigidBody3D.resolveConstrains(bodyA->second.get(), bodyB->second.get());
-					refreshBroadPhaseBox(bodyA->second->rigidBody3D);
-					refreshBroadPhaseBox(bodyB->second->rigidBody3D);
-				}
+				bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
+				refreshBroadPhaseBox(bodyA.rigidBody3D);
+				refreshBroadPhaseBox(bodyB.rigidBody3D);
 			}
-		}
+		});
 
-		// Player Vs. Entities — the player lives outside both containers, so
+		// Player Vs. Game Objects — the player lives outside both containers, so
 		// without this pass it walks straight through every entity (it already
 		// resolves against gameObjects in Player::update3D)
-		
-		if (auto player = scene->player)
-		{
-			for (auto& [id, entity] : entities)
-			{
-				if (player->rigidBody3D.OverlapsBroadPhase(entity->rigidBody3D))
+
+		if (auto player = scene->player) {
+			gameMap.ForEachObject([&](GameObject& obj)
 				{
-					player->rigidBody3D.resolveConstrains(player, entity.get());
-					refreshBroadPhaseBox(player->rigidBody3D);
-					refreshBroadPhaseBox(entity->rigidBody3D);
-				}
-			}
+					if (&obj == player) { return; }
+					if (player->rigidBody3D.OverlapsBroadPhase(obj.rigidBody3D))
+					{
+						player->rigidBody3D.resolveConstrains(player, &obj);
+					}
+				});
 		}
 
+		// Player Vs. Entities
 		if (auto player = scene->player)
 		{
-			for (auto& [id, entity] : interactables)
+			gameMap.ForEachEntity([&](Entity& entity)
 			{
-				if (player->rigidBody3D.OverlapsBroadPhase(entity->rigidBody3D))
+				if (player->rigidBody3D.OverlapsBroadPhase(entity.rigidBody3D))
 				{
-					player->rigidBody3D.resolveConstrains(player, entity.get());
+					player->rigidBody3D.resolveConstrains(player, &entity);
 					refreshBroadPhaseBox(player->rigidBody3D);
-					refreshBroadPhaseBox(entity->rigidBody3D);
+					refreshBroadPhaseBox(entity.rigidBody3D);
 				}
-			}
+			});
 		}
-		
+
+		// Player Vs. Interactables
+		if (auto player = scene->player)
+		{
+			gameMap.ForEachInteractable([&](InteractableObject& entity)
+			{
+				if (player->rigidBody3D.OverlapsBroadPhase(entity.rigidBody3D))
+				{
+					player->rigidBody3D.resolveConstrains(player, &entity);
+					refreshBroadPhaseBox(player->rigidBody3D);
+					refreshBroadPhaseBox(entity.rigidBody3D);
+				}
+			});
+		}
 	}
 }
 
@@ -258,13 +252,18 @@ void Scene_updateScene(float delta) {
 		
 		// Recover any object that falls through the floor;
 		if (object.rigidBody3D.translation.y < -1000.0f) {
+			/*
+			std::cout << "[Scene.cpp] Consider deleting fallen objects to prevent bugs \n";
 			const Vector3 recovery = scene->gameMap.hasSpawnPoint
 				? Vector3{ scene->gameMap.spawnPoint.x,
 				           scene->gameMap.spawnPoint.y + 2.0f,
 				           scene->gameMap.spawnPoint.z }
 				: Vector3{ 0, 5, 0 };
+			//object.rigidBody3D.Teleport(recovery);
 
-			object.rigidBody3D.Teleport(recovery);
+			*/
+			std::cout << "[Scene.cpp] Object " << object.name << " fell out of the world, recovering to spawn point \n";
+			std::cout << "[Scene.cpp] !!! Modify these lines correctly to delete fallen objects and restore entities. !!! \n";
 
 			// Reset Velocity on Teleport
 			object.rigidBody3D.SetVelocity(Vector3Zero());
@@ -312,55 +311,46 @@ void Scene_updateScene(float delta) {
 	}
 
 	/* Update GameObjects */
-	for (auto& object : scene->gameMap.gameObjects) {
-		if (editorFrozen) { object.rigidBody3D.SyncBroadPhaseBox(); continue; }
+	scene->gameMap.ForEachGameObject([&](GameObject& object) {
+		if (editorFrozen) { object.rigidBody3D.SyncBroadPhaseBox(); return; }
 		object.isSelectable = true;
 		object.update(scene, delta);
 		clampObject(object, scene->limitYBounds);
-	}
+	});
 
 	/* Update Interactables */
-	for (auto interactable = scene->gameMap.interactables.begin(); interactable != scene->gameMap.interactables.end();) {
-		interactable->second->id = interactable->first;
-		if (editorFrozen) { interactable->second->rigidBody3D.SyncBroadPhaseBox(); ++interactable; continue; }
-		interactable->second->update(scene, delta);
-		clampObject(*interactable->second.get(), scene->limitYBounds);
-		++interactable;
-	}
+	scene->gameMap.ForEachInteractable([&](InteractableObject& interactable) {
+		if (editorFrozen) { interactable.rigidBody3D.SyncBroadPhaseBox(); return; }
+		interactable.update(scene, delta);
+		clampObject(interactable, scene->limitYBounds);
+	});
 
 	/** Update Entities **/
-	for (auto entity = scene->gameMap.entities.begin(); entity != scene->gameMap.entities.end();)
+	// DestroyEntity() erases from the same map ForEachEntity is iterating, so
+	// dead items are collected here and destroyed in a second pass afterward
+	// rather than mid-traversal.
+	std::vector<std::uint64_t> deadItemEntityIds;
+	scene->gameMap.ForEachEntity([&](Entity& entity)
 	{
-		// Update Data
-		entity->second->id = entity->first;
-
 		// Frozen entities are not culled either: an entity sitting at zero
 		// health would otherwise be deleted out from under the inspector
 		// examining it.
-		if (editorFrozen) { entity->second->rigidBody3D.SyncBroadPhaseBox(); ++entity; continue; }
+		if (editorFrozen) { entity.rigidBody3D.SyncBroadPhaseBox(); return; }
 
-		bool shouldKill = entity->second->health <= 0;
+		bool shouldKill = entity.health <= 0;
 
 		if (shouldKill)
 		{
 			// Only items are auto-removed here; other entity types keep their
 			// (still-zero-health) entry until their own death handling runs.
-			if (entity->second->type != OBJECT_ITEM) { ++entity; continue; }
-
-			// removeEntity() erases this key from scene->entities, invalidating
-			// `entity` - grab the next iterator first.
-			auto next = std::next(entity);
-			scene->gameMap.removeEntity(entity->second.get());
-			entity = next;
+			if (entity.type == OBJECT_ITEM) { deadItemEntityIds.push_back(entity.id); }
+			return;
 		}
-		else
-		{
-			entity->second->update(scene, delta);
 
-			clampObject(*entity->second.get(), scene->limitYBounds);
-			++entity;
-		}
-	}
+		entity.update(scene, delta);
+		clampObject(entity, scene->limitYBounds);
+	});
+	for (auto id : deadItemEntityIds) { scene->gameMap.DestroyEntity(id); }
 
 	// After the entities have settled, so the Director advises on the state the
 	// stalker actually ended the frame in rather than the previous one.
@@ -369,7 +359,7 @@ void Scene_updateScene(float delta) {
 
 	// Sweep objects flagged by Destroy() — removal must happen outside the
 	// update loop above, since erasing mid-iteration invalidates it
-	std::erase_if(scene->gameMap.gameObjects, [&](GameObject& object) {
+	scene->gameMap.EraseGameObjectsIf([&](GameObject& object) {
 		if (!object.pendingDestroy) { return false; }
 		object.onDestroy(scene);
 		return true;
@@ -441,17 +431,7 @@ void Scene_drawScene3D() {
 		
 		scene->draw3D();
 
-		for (auto& object : scene->gameMap.gameObjects) {
-			object.render3D();
-		}
-
-		for (auto& entity : scene->gameMap.entities) {
-			entity.second->render3D();
-		}
-
-		for (auto& interact : scene->gameMap.interactables) {
-			interact.second->render3D();
-		}
+		scene->gameMap.ForEachObject([](GameObject& object) { object.render3D(); });
 
 		scene->player->render3D();
 	}
@@ -487,7 +467,7 @@ void Scene::ResetMiniGame() {
 
 	if (stationId != 0)
 	{
-		if (auto* resumed = FindInteractableByID(gameMap, stationId))
+		if (auto* resumed = gameMap.FindInteractable(stationId))
 		{
 			resumed->isRunningMiniGame = true;
 		}
@@ -517,10 +497,7 @@ void Scene::ReleaseMiniGame()
 	// hinting. Releasing the minigame is the one point that knows the station is
 	// free again. Clearing every flag rather than one remembered id also repairs
 	// a save written while the latch was stuck.
-	for (auto& [id, interactable] : gameMap.interactables)
-	{
-		if (interactable) { interactable->isRunningMiniGame = false; }
-	}
+	gameMap.ForEachInteractable([](InteractableObject& interactable) { interactable.isRunningMiniGame = false; });
 	stationNoiseTimer = 0.0f;
 
 	// Always null on return, whether or not there was anything to free. That is

@@ -13,39 +13,24 @@ namespace
 	const Color kSelectionColor = Color{ 255, 190, 60, 255 };
 	const Color kPlacementColor = Color{ 90, 220, 160, 255 };
 
-	/**
-	 * Resolves an id across all three containers.
-	 *
-	 * Objects are addressed by id and never by pointer anywhere in the editor:
-	 * GameMap::saveObject() push_backs into a vector and then re-sorts it, so a
-	 * single spawn invalidates every outstanding GameObject* into gameObjects.
-	 */
-	GameObject* FindAnyById(Scene* scene, std::uint64_t id)
-	{
-		if (scene == nullptr || id == 0) { return nullptr; }
-		if (GameObject* interactable = FindInteractableByID(SceneManager::getInstance().currentScene->gameMap, id)) { return interactable; }
-		if (GameObject* entity = FindEntityByID(SceneManager::getInstance().currentScene->gameMap, id)) { return entity; }
-		return FindGameObjectByID(SceneManager::getInstance().currentScene->gameMap, id);
-	}
-
 	/** Removes by id from whichever container actually owns the object. */
 	bool RemoveById(Scene* scene, std::uint64_t id)
 	{
 		if (scene == nullptr || id == 0) { return false; }
 
-		if (scene->gameMap.interactables.contains(id))
+		if (scene->gameMap.FindInteractable(id) != nullptr)
 		{
-			scene->gameMap.removeInteractable(scene->gameMap.interactables[id].get());
+			scene->gameMap.DestroyInteractable(id);
 			return true;
 		}
-		if (scene->gameMap.entities.contains(id))
+		if (scene->gameMap.FindEntity(id) != nullptr)
 		{
-			scene->gameMap.removeEntity(scene->gameMap.entities[id].get());
+			scene->gameMap.DestroyEntity(id);
 			return true;
 		}
-		if (GameObject* object = FindGameObjectByID(SceneManager::getInstance().currentScene->gameMap, id))
+		if (scene->gameMap.FindGameObject(id) != nullptr)
 		{
-			scene->gameMap.removeObject(object);
+			scene->gameMap.DestroyGameObject(id);
 			return true;
 		}
 		return false;
@@ -148,7 +133,6 @@ void WorldEditor::UpdateViewportInput()
 void WorldEditor::UpdateHotkeys()
 {
 	const ImGuiIO& io = ImGui::GetIO();
-	auto& gameObjects = SceneManager::getInstance().currentScene->gameMap.gameObjects;
 
 	// Typing into an ImGui field must not also drive the editor. Without this,
 	// naming an object "Duplicate" cycles tools and deletes the selection while
@@ -158,11 +142,9 @@ void WorldEditor::UpdateHotkeys()
 	if (IsKeyDown(KEY_LEFT_CONTROL))
 	{
 		if (IsKeyPressed(KEY_ONE)) { isWorldSettingsActive = !isWorldSettingsActive; }
-		if (IsKeyPressed(KEY_TWO)) { isObjectBrowserActive = !isObjectBrowserActive; 
-			std::sort(gameObjects.begin(), gameObjects.end(), [](const GameObject& a, const GameObject& b) {
-				return a.id > b.id;
-			});
-		}
+		// Display order (id descending) is now the Object Browser's own concern —
+		// GameMap no longer exposes a sortable container to mutate in place here.
+		if (IsKeyPressed(KEY_TWO)) { isObjectBrowserActive = !isObjectBrowserActive; }
 		if (IsKeyPressed(KEY_THREE)) { isPlacementActive = !isPlacementActive; }
 		if (IsKeyPressed(KEY_FOUR)) { isPlayerActive = !isPlayerActive; }
 		if (IsKeyPressed(KEY_FIVE)) { isCameraActive = !isCameraActive; }
@@ -215,7 +197,7 @@ void WorldEditor::UpdateHotkeys()
  * Point-and-place preview and commit.
  *
  * The ray is queried with PICK_SURFACE rather than PICK_SELECTABLE: the floor
- * has canBeSelected cleared by GameMap::create(), and it is also the single most
+ * has isSelectable cleared by GameMap::create(), and it is also the single most
  * common thing to drop an object onto. Using the selection filter here makes the
  * ground invisible to placement and every object lands on the fallback plane.
  */
@@ -250,7 +232,7 @@ void WorldEditor::UpdatePlacementPreview(Scene* scene, const Camera3D& camera, b
 		return;
 	}
 
-	// The staging object starts life with a zeroed scale; saveObject() repairs
+	// The staging object starts life with a zeroed scale; SpawnGameObject() repairs
 	// that on spawn, but the preview has to agree with the object that will
 	// actually appear or the ghost sits half-buried. A typed-in negative extent
 	// would additionally push the object *into* the surface below, so it is
@@ -367,22 +349,21 @@ void WorldEditor::DuplicateSelection()
 		Entity copy = *static_cast<Entity*>(object);
 		copy.disownModel();
 		copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), offset));
-		spawned = scene->gameMap.saveEntity(copy);
+		spawned = scene->gameMap.SpawnEntity(copy);
 	}
 	else if (object->type == OBJECT_INTERACTABLE)
 	{
 		InteractableObject copy = *static_cast<InteractableObject*>(object);
 		copy.disownModel();
 		copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), offset));
-		spawned = scene->gameMap.saveInteractable(copy);
+		spawned = scene->gameMap.SpawnInteractable(copy);
 	}
 	else
 	{
 		GameObject copy = *object;
 		copy.disownModel();
 		copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), offset));
-		// saveObject may reallocate gameObjects — `object` is dead after this.
-		spawned = scene->gameMap.saveObject(copy);
+		spawned = scene->gameMap.SpawnGameObject(copy);
 	}
 
 	if (spawned == nullptr) { statusMessage = "Duplicate failed"; return; }
@@ -502,7 +483,7 @@ void WorldEditor::Undo()
 			return;
 		}
 
-		GameObject* object = FindAnyById(scene, edit.id);
+		GameObject* object = scene->gameMap.FindWorldObject(edit.id);
 		if (object == nullptr) { continue; }
 
 		ApplyTransform(object, GizmoTransform{ edit.position, edit.rotation, edit.scale });

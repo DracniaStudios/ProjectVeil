@@ -42,21 +42,21 @@ void WorldEditor::ShowStalkerData()
 
 	// --- Stalkers ---------------------------------------------------------
 	int found = 0;
-	for (auto& [id, entity] : scene->gameMap.entities)
+	scene->gameMap.ForEachEntity([&](Entity& entity)
 	{
-		if (!entity || entity->kind != ENTITYKIND_STALKER) { continue; }
-		auto* stalker = static_cast<Stalker*>(entity.get());
+		if (entity.kind != ENTITYKIND_STALKER) { return; }
+		auto* stalker = static_cast<Stalker*>(&entity);
 		++found;
 
-		ImGui::PushID(static_cast<int>(id));
-		ImGui::TextColored(ImVec4(255, 0, 0, 255), "%s (id %d)", stalker->name.c_str(), static_cast<int>(id));
+		ImGui::PushID(static_cast<int>(entity.id));
+		ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s (id %d)", stalker->name.c_str(), static_cast<int>(entity.id));
 
 		ImGui::Text("State: %s", stalkerStateToString(stalker->state));
 		ImGui::Text("Time in state: %.1fs", stalker->timeInState);
 		ImGui::Text("Position: (%.1f, %.1f)", stalker->getPosition().x, stalker->getPosition().z);
 
 		ImGui::Spacing();
-		ImGui::TextColored(ImVec4(255, 255, 0, 255), "Belief");
+		ImGui::TextColored(ImVec4(1, 1, 0, 1), "Belief");
 		if (stalker->hasLastKnown)
 		{
 			// The whole of what the stalker knows. If this ever tracks the
@@ -74,7 +74,7 @@ void WorldEditor::ShowStalkerData()
 		}
 
 		ImGui::Spacing();
-		ImGui::TextColored(ImVec4(255, 255, 0, 255), "Tuning");
+		ImGui::TextColored(ImVec4(1, 1, 0, 1), "Tuning");
 		ImGui::DragFloat("Hearing threshold", &stalker->hearingThreshold, 0.01f, 0.0f, 1.0f);
 		ImGui::DragFloat("Hunt threshold", &stalker->huntThreshold, 0.01f, 0.0f, 1.0f);
 		ImGui::DragFloat("Hunt patience", &stalker->huntPatience, 0.1f, 0.0f, 30.0f);
@@ -87,7 +87,7 @@ void WorldEditor::ShowStalkerData()
 		ImGui::DragFloat("Avoid probe", &stalker->avoidProbeDistance, 0.1f, 0.0f, 20.0f);
 
 		ImGui::Spacing();
-		ImGui::TextColored(ImVec4(255, 255, 0, 255), "Patrol Route");
+		ImGui::TextColored(ImVec4(1, 1, 0, 1), "Patrol Route");
 		ImGui::Checkbox("Draw route in world", &stalker->displayRoute);
 		ImGui::Text("Waypoints: %d (heading for %d)",
 			static_cast<int>(stalker->waypoints.size()), stalker->currentWaypoint);
@@ -97,7 +97,7 @@ void WorldEditor::ShowStalkerData()
 			// Worth stating outright: an empty route is not an error, but it does
 			// mean the stalker never moves until something makes a noise, which
 			// looks identical to the AI being broken.
-			ImGui::TextColored(ImVec4(255, 255, 0, 255),
+			ImGui::TextColored(ImVec4(1, 1, 0, 1),
 				"No route: the stalker holds position until it hears something.");
 		}
 
@@ -110,10 +110,14 @@ void WorldEditor::ShowStalkerData()
 			stalker->displayRoute = true;
 			statusMessage = "Added waypoint " + std::to_string(stalker->waypoints.size());
 		}
-		ImGui::SameLine();
-		if (ImGui::Button("Add At Stalker"))
+		if (ImGui::Button("Add Waypoint At Stalker"))
 		{
 			stalker->waypoints.push_back(stalker->getPosition());
+			stalker->displayRoute = true;
+		}
+		if (ImGui::Button("Add Waypoint At Camera"))
+		{
+			stalker->waypoints.push_back(SceneManager::getInstance().camera3D.position);
 			stalker->displayRoute = true;
 		}
 
@@ -157,7 +161,7 @@ void WorldEditor::ShowStalkerData()
 
 		ImGui::PopID();
 		ImGui::Separator();
-	}
+	});
 
 	if (found == 0) { ImGui::Text("No stalker in the scene."); }
 

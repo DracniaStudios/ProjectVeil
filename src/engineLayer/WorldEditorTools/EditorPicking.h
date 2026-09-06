@@ -14,7 +14,7 @@ struct Scene;
  * What a pick query is allowed to hit.
  *
  * Selection and placement deliberately use different sets. Selection honours
- * canBeSelected, which GameMap::create() clears on the floor so a designer
+ * isSelectable, which GameMap::create() clears on the floor so a designer
  * cannot accidentally drag the world out from under themselves. Placement has
  * the exact opposite requirement — the floor is the most common surface to drop
  * an object onto — so it queries every visible solid instead. Sharing one
@@ -22,16 +22,17 @@ struct Scene;
  */
 enum PickFilter
 {
-	PICK_SELECTABLE, // Honours canBeSelected — what a left click selects
+	PICK_SELECTABLE, // Honours isSelectable — what a left click selects
 	PICK_SURFACE,    // Any visible solid — what point-and-place lands on
 };
 
 /**
  * Result of a mouse-ray query against the scene.
  *
- * `object` is valid only for the frame it was produced in. GameMap::saveObject()
- * push_backs and re-sorts gameObjects, so every pointer into that vector dies on
- * the next spawn or delete — `id` is the value worth keeping.
+ * `object` is only guaranteed valid until the next Destroy* of that same
+ * object — GameMap's containers are id-keyed and pointer-stable across
+ * spawns, but a pointer surviving past its own destruction is still a
+ * use-after-free. `id` is the value worth keeping across frames.
  */
 struct PickResult
 {

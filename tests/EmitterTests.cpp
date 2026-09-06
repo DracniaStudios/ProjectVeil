@@ -55,7 +55,7 @@ static Scene* MakeScene()
 }
 
 // A task station at a known position. Registered directly rather than through
-// saveInteractable so the id is predictable and the assertions can name it.
+// SpawnInteractable so the id is predictable and the assertions can name it.
 static InteractableObject* AddStation(Scene* scene, Vector3 at, std::uint64_t id = 700)
 {
 	auto owned = std::make_unique<InteractableObject>(INTERACT_MINIGAME, MINI_GAME_FLAPPY_BIRD_ID, 0);
@@ -65,7 +65,7 @@ static InteractableObject* AddStation(Scene* scene, Vector3 at, std::uint64_t id
 	owned->isInteractable = true;
 	owned->rigidBody3D.Teleport(at);
 	InteractableObject* station = owned.get();
-	scene->gameMap.interactables[id] = std::move(owned);
+	scene->gameMap.LoadInteractable(std::move(owned));
 	return station;
 }
 
@@ -239,12 +239,6 @@ static void TestLockedStationStillMakesNoise()
 static GameObject* AddCrate(Scene* scene, Vector3 at, Vector3 velocity,
                             bool isStatic, std::uint64_t id)
 {
-	// These cases hold pointers into gameObjects across a second addition, and
-	// a growing vector would dangle the first one. Reserving once up front is
-	// enough for every case here; the game itself never holds such a pointer
-	// across a push, which is why nothing else needs this.
-	scene->gameMap.gameObjects.reserve(8);
-
 	GameObject crate = {};
 	crate.id = id;
 	crate.name = "TestCrate";
@@ -255,8 +249,7 @@ static GameObject* AddCrate(Scene* scene, Vector3 at, Vector3 velocity,
 	crate.rigidBody3D.scale = Vector3{ 1, 1, 1 };
 	crate.rigidBody3D.SetVelocity(velocity);
 	crate.rigidBody3D.SyncBroadPhaseBox();
-	scene->gameMap.gameObjects.push_back(crate);
-	return &scene->gameMap.gameObjects.back();
+	return scene->gameMap.LoadGameObject(crate);
 }
 
 static void TestFastImpactIsAudible()

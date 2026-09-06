@@ -22,19 +22,20 @@
 
 [ Added ]
 
-- Added Multiple Object Buttons to Enable/Disable Object States at once.
-	(Now you can select all objects and enable/disable their states at once)
+- Added new Teleport buttons to the Object Inspector for teleporting to player, camera, and spawn.
+- Added new SpawnPosition to Entities
+- Added new Spawn Waypoints to Stalker Inspector for Stalker and Camera positions.
+
 
 [ Updated ]
 
-- Updated WorldEditor Object Browser by refactoring the code to show Objects in a more organized way. 
-	(Now shows objects in a tree view with categories and subcategories)
-
+- Updated "SpawnEntity" to use clone Entity instead of using the old one.
+- Updated Scene.cpp to check Player vs GameObject collisions.
 
 [ Fixed ]
 
-- Fixed an issue where Interactable Objects would not be interactable after "OnInteract".
+
 
 [ Removed ]
 
-- Removed "canBeSelected" from Object Inspector. (Now uses "isSelectable" from Object Inspector)
+

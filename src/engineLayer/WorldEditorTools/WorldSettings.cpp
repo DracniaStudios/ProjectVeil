@@ -4,15 +4,18 @@
 
 void NewWorld(Scene& scene) {
 
-	// ~Entity()/~InteractableObject() never free GPU resources (see
-	// GameMap::removeObject()); release each object's generated fallback model
-	// before the clears below erase it, or it leaks.
-	for (auto& [id, entity] : scene.gameMap.entities) { entity->releaseGeneratedModel(); }
-	for (auto& [id, interactable] : scene.gameMap.interactables) { interactable->releaseGeneratedModel(); }
+	// DestroyEntity/DestroyInteractable each already release a generated
+	// fallback model before erasing (see GameMap::DestroyGameObject()) — snapshot
+	// ids first since destroying while iterating the same map is unsafe.
+	std::vector<uint64_t> entityIds;
+	scene.gameMap.ForEachEntity([&](Entity& entity) { entityIds.push_back(entity.id); return true; });
+	for (auto id : entityIds) { scene.gameMap.DestroyEntity(id); }
+
+	std::vector<uint64_t> interactableIds;
+	scene.gameMap.ForEachInteractable([&](InteractableObject& interactable) { interactableIds.push_back(interactable.id); return true; });
+	for (auto id : interactableIds) { scene.gameMap.DestroyInteractable(id); }
 
 	scene.gameMap.create(Vector3(10.0f, 1.0f, 10.0f));
-	scene.gameMap.entities.clear();
-	scene.gameMap.interactables.clear();
 
 	// Player::inventory and Player::interactObjectId are non-owning references
 	// into the interactables map just cleared above (see
@@ -35,39 +38,21 @@ void WorldEditor::ShowWorldSettings()
 	ImGui::Begin("World Settings");
 
 	/// Show Scene Data
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Scene Data");
+	ImGui::TextColored(ImVec4(1, 0, 1, 1), "Scene Data");
 	ImGui::Checkbox("Is 2D Active", &scene->is2DActive);
 	ImGui::Checkbox("Is Mini Game Active", &scene->isMiniActive);
 	ImGui::Checkbox("Limit Y Bounds", &scene->limitYBounds);
 	ImGui::Separator();
 
 	/// Show Game Map Data
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Game Map Data");
+	ImGui::TextColored(ImVec4(1, 0, 1, 1), "Game Map Data");
 
 	ImGui::InputFloat3("Map Size", &scene->gameMap.size.x);
 
-	// Spawn point. Authored here and saved with the world; LoadWorld places the
-	// player on it. A world with none leaves the player at the RigidBody3D
-	// default of (0,0,0), which is how chunk_1 used to start every session
-	// inside the artifact display plinth.
-	if (ImGui::InputFloat3("Spawn Point", &scene->gameMap.spawnPoint.x))
-	{
-		scene->gameMap.hasSpawnPoint = true;
-	}
-	if (ImGui::Button("Set Spawn To Player") && scene->player)
-	{
-		scene->gameMap.spawnPoint = scene->player->getPosition();
-		scene->gameMap.hasSpawnPoint = true;
-		statusMessage = "Spawn point set to player position";
-	}
-	if (!scene->gameMap.hasSpawnPoint)
-	{
-		ImGui::TextColored(ImVec4(255, 255, 0, 255),
-			"No spawn point: player starts wherever it already was.");
-	}
-	ImGui::Text("Game Objects: %d", static_cast<int>(scene->gameMap.gameObjects.size()));
-	ImGui::Text("Entities: %d", static_cast<int>(scene->gameMap.entities.size()));
-	ImGui::Text("Interactables: %d", static_cast<int>(scene->gameMap.interactables.size()));
+
+	ImGui::Text("Game Objects: %d", static_cast<int>(scene->gameMap.GameObjectCount()));
+	ImGui::Text("Entities: %d", static_cast<int>(scene->gameMap.EntityCount()));
+	ImGui::Text("Interactables: %d", static_cast<int>(scene->gameMap.InteractableCount()));
 	ImGui::Text("Next ID: %llu", static_cast<unsigned long long>(scene->gameMap.instanceHolder.idCounter));
 	ImGui::Separator();
 

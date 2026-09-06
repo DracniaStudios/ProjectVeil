@@ -58,7 +58,7 @@ static InteractableObject* AddStation(Scene* scene, Vector3 at, int miniGameId,
 	owned->isInteractable = true;
 	owned->rigidBody3D.Teleport(at);
 	InteractableObject* station = owned.get();
-	scene->gameMap.interactables[id] = std::move(owned);
+	scene->gameMap.LoadInteractable(std::move(owned));
 	return station;
 }
 
@@ -164,7 +164,7 @@ static void TestDirectorSkipsCompletedStations()
 	owned->id = 912;
 	owned->rigidBody3D.Teleport(Vector3{ 0, 0, 0 });
 	owned->rigidBody3D.isStatic = true;
-	scene->gameMap.entities[912] = std::move(owned);
+	scene->gameMap.LoadEntity(std::move(owned));
 
 	// Long enough past kQuietBeforeHint that the Director is willing to speak.
 	const auto runDirector = [scene]() {
