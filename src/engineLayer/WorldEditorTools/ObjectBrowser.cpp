@@ -224,6 +224,9 @@ static void FitModelToColliderButtons(Scene* scene) {
 		for (auto& [id, object] : scene->gameMap.interactables) {
 			object->rigidBody3D.collider.FitToModel(object->model);
 		}
+		for (auto& [id, object] : scene->gameMap.entities) {
+			object->rigidBody3D.collider.FitToModel(object->model);
+		}
 	}
 	ImGui::Spacing();
 }
