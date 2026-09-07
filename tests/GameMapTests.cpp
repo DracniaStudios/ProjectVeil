@@ -68,6 +68,22 @@ static void TestIdsUniqueAcrossKinds()
 	Check(std::adjacent_find(ids.begin(), ids.end()) == ids.end(),
 		"every spawned object across all three kinds gets a distinct id");
 
+	// Distinct ids alone did not prove the objects were STORED under those ids.
+	// SpawnEntity used to insert under the incoming entity.id -- 0 for a fresh
+	// Entity -- and only then assign the real one, so all five spawns overwrote
+	// each other at key 0 while still handing back five distinct ids. This
+	// assertion is what tells the two apart.
+	Check(map.GameObjectCount() == 5, "all five spawned GameObjects are stored");
+	Check(map.EntityCount() == 5, "all five spawned Entities are stored");
+	Check(map.InteractableCount() == 5, "all five spawned Interactables are stored");
+
+	// And the id handed back at spawn time is the key the object is reachable by.
+	for (std::uint64_t id : ids)
+	{
+		Check(map.FindWorldObject(id) != nullptr,
+			"every spawned id resolves through FindWorldObject");
+	}
+
 	delete scene;
 }
 
