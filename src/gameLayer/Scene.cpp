@@ -84,6 +84,31 @@ static void refreshBroadPhaseBox(RigidBody3D& body)
 	body.SyncBroadPhaseBox();
 }
 
+// The pair gate every collision pass now shares.
+//
+// Only the gameObject-vs-gameObject pass used to apply any of this, so every
+// other pass ran the broad phase against pairs that could not produce a result:
+// 13 static interactables against 217 static objects, eight solver iterations
+// deep, every frame.
+//
+// canCollide is free to check here -- resolveConstrains() already returns
+// immediately on it, so hoisting it out only saves work.
+//
+// Two static bodies cannot be separated either: resolveCollision() returns as
+// soon as it sees `isStatic && other.isStatic`. What such a pair CAN still do is
+// report a first contact, which is why trigger pairs are deliberately excluded
+// from the skip -- reporting is the entire purpose of a trigger, and a static
+// trigger volume overlapping static scenery must keep firing onTriggerEnter.
+// For two static *solids* the only thing suppressed is an onCollision, and its
+// impact noise, between bodies that will never move: a level-geometry artifact
+// rather than gameplay.
+static bool skipCollisionPair(const RigidBody3D& a, const RigidBody3D& b)
+{
+	if (!a.canCollide || !b.canCollide) { return true; }
+	if (a.collider.isTrigger() || b.collider.isTrigger()) { return false; }
+	return a.isStatic && b.isStatic;
+}
+
 // Collision runs in two phases. The OverlapsBroadPhase tests below are the
 // BROAD phase: each body's broadPhaseBox is the axis-aligned box enclosing its
 // collider, so if two of those miss, the colliders inside them cannot touch.
@@ -103,8 +128,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		// (B,A) doubled every correction and collision event
 		gameMap.ForEachObjectPair([&](GameObject& bodyA, GameObject& bodyB)
 		{
-			if (bodyA.rigidBody3D.canCollide == false || bodyB.rigidBody3D.canCollide == false) { return true; }
-			if (bodyA.rigidBody3D.isStatic && bodyB.rigidBody3D.isStatic) { return true; }
+			if (skipCollisionPair(bodyA.rigidBody3D, bodyB.rigidBody3D)) { return true; }
 
 			if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
 			{
@@ -120,6 +144,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		{
 			gameMap.ForEachGameObject([&](GameObject& bodyB)
 			{
+				if (skipCollisionPair(entity.rigidBody3D, bodyB.rigidBody3D)) { return; }
 				if (entity.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
 				{
 					entity.rigidBody3D.resolveConstrains(&entity, &bodyB);
@@ -132,6 +157,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		// Entities Vs. Entities — each unordered pair once
 		gameMap.ForEachEntityPair([&](Entity& bodyA, Entity& bodyB)
 		{
+			if (skipCollisionPair(bodyA.rigidBody3D, bodyB.rigidBody3D)) { return; }
 			if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
 			{
 				bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
@@ -145,6 +171,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		{
 			gameMap.ForEachGameObject([&](GameObject& bodyB)
 			{
+				if (skipCollisionPair(entity.rigidBody3D, bodyB.rigidBody3D)) { return; }
 				if (entity.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
 				{
 					entity.rigidBody3D.resolveConstrains(&entity, &bodyB);
@@ -159,6 +186,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		{
 			gameMap.ForEachEntity([&](Entity& bodyB)
 			{
+				if (skipCollisionPair(bodyA.rigidBody3D, bodyB.rigidBody3D)) { return; }
 				if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
 				{
 					bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
@@ -171,6 +199,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		// Interactable Vs. Interactable — each unordered pair once
 		gameMap.ForEachInteractablePair([&](InteractableObject& bodyA, InteractableObject& bodyB)
 		{
+			if (skipCollisionPair(bodyA.rigidBody3D, bodyB.rigidBody3D)) { return; }
 			if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
 			{
 				bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
@@ -179,17 +208,27 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 			}
 		});
 
-		// Player Vs. Game Objects — the player lives outside both containers, so
-		// without this pass it walks straight through every entity (it already
-		// resolves against gameObjects in Player::update3D)
-
+		// Player Vs. Game Objects — the player lives outside all three containers,
+		// so without these passes it walks straight through everything (it already
+		// resolves against gameObjects in Player::update3D).
+		//
+		// ForEachGameObject, NOT ForEachObject: the latter walks entities and
+		// interactables too, and the two passes below already cover those. The
+		// player was being resolved against every entity and every interactable
+		// twice per solver iteration — sixteen times a frame — the same double
+		// correction the gameObject pair comment above warns about. This pass also
+		// skipped the refreshBroadPhaseBox calls the other two make, so the three
+		// disagreed on whether the box was current.
 		if (auto player = scene->player) {
-			gameMap.ForEachObject([&](GameObject& obj)
+			gameMap.ForEachGameObject([&](GameObject& obj)
 				{
 					if (&obj == player) { return; }
+					if (skipCollisionPair(player->rigidBody3D, obj.rigidBody3D)) { return; }
 					if (player->rigidBody3D.OverlapsBroadPhase(obj.rigidBody3D))
 					{
 						player->rigidBody3D.resolveConstrains(player, &obj);
+						refreshBroadPhaseBox(player->rigidBody3D);
+						refreshBroadPhaseBox(obj.rigidBody3D);
 					}
 				});
 		}
@@ -199,6 +238,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		{
 			gameMap.ForEachEntity([&](Entity& entity)
 			{
+				if (skipCollisionPair(player->rigidBody3D, entity.rigidBody3D)) { return; }
 				if (player->rigidBody3D.OverlapsBroadPhase(entity.rigidBody3D))
 				{
 					player->rigidBody3D.resolveConstrains(player, &entity);
@@ -213,6 +253,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		{
 			gameMap.ForEachInteractable([&](InteractableObject& entity)
 			{
+				if (skipCollisionPair(player->rigidBody3D, entity.rigidBody3D)) { return; }
 				if (player->rigidBody3D.OverlapsBroadPhase(entity.rigidBody3D))
 				{
 					player->rigidBody3D.resolveConstrains(player, &entity);
