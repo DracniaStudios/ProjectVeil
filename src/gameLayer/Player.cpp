@@ -162,7 +162,7 @@ void Player::render3D()
 {
 	if (!this->isEnabled) { return; }
 	if (artifact) { artifact->render3D(); }
-	GameObject::render3D();
+	Entity::render3D();
 }
 
 void Player::update2D(float deltaTime, bool canMove)

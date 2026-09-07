@@ -39,8 +39,11 @@ bool init_game()
 
 bool update_game()
 {
-	/// Limit Frame Rate
-	constexpr float maxDeltaTime = 1.0f / 120.0f; // 120 FPS
+	// Guard against a huge simulation jump after a stall (breakpoint, GC pause,
+	// window drag) by capping deltaTime, not by forcing it down every normal
+	// frame: the target is 60 FPS (see SetTargetFPS in ProjectVeil.cpp), so a
+	// cap smaller than 1/60s would clamp every frame and halve game speed.
+	constexpr float maxDeltaTime = 1.0f / 15.0f; // never simulate slower than 15 FPS worth of time
 	const float deltaTime = fminf(GetFrameTime(), maxDeltaTime);
 
 	// Nothing draws a sky, so the clear colour *is* the horizon. Clearing to the

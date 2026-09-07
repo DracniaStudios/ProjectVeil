@@ -58,9 +58,9 @@ public:
 	bool limitYBounds = false; // Limit Y Bounds
 
 	// Global Functions
-	updateSceneMethod update;
-	drawSceneMethod2D draw2D;
-	drawSceneMethod3D draw3D;
+	updateSceneMethod update = nullptr;
+	drawSceneMethod2D draw2D = nullptr;
+	drawSceneMethod3D draw3D = nullptr;
 
 	// Map Data
 	GameMap gameMap = {}; // The GameMap of the Scene
