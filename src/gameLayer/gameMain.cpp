@@ -1,5 +1,7 @@
 #include "gameMain.h"
 
+#include <cmath>
+
 bool init_game()
 {
 	Settings::getInstance().Init();
@@ -37,7 +39,9 @@ bool init_game()
 
 bool update_game()
 {
-	float deltaTime = GetFrameTime();
+	/// Limit Frame Rate
+	constexpr float maxDeltaTime = 1.0f / 120.0f; // 120 FPS
+	const float deltaTime = fminf(GetFrameTime(), maxDeltaTime);
 
 	// Nothing draws a sky, so the clear colour *is* the horizon. Clearing to the
 	// fog colour lets distant geometry dissolve into the background instead of

@@ -19,7 +19,9 @@ void Scene_MainMenuDraw3D()
 {
 	auto manager = &SceneManager::getInstance();
 	auto scene = manager->currentScene;
+
 	// Weird Interaction Between Rendering Ray and layer Objects
+
 }
 
 Scene* Scene_MainMenuConstruct()
@@ -32,6 +34,9 @@ Scene* Scene_MainMenuConstruct()
 	scene->draw2D = Scene_MainMenuDraw2D;
 	scene->draw3D = Scene_MainMenuDraw3D;
    
+	scene->player->setSpawnPoint(Vector3(20, 2, 0));
+	scene->player->rigidBody3D.Teleport(Vector3(20, 2, 0));
+
 	SaveSystem::LoadWorld("chunk_1", *scene);
 
 	return scene;

@@ -14,6 +14,11 @@ Scene* Scene_new() {
 	scene->player = new Player;
 	scene->player->type = OBJECT_PLAYER;
 	scene->player->id = PLAYER_ID;
+
+	// Player Spawn
+	scene->player->setSpawnPoint(Vector3{ 0, 5, 2 });
+	scene->player->rigidBody3D.Teleport(scene->player->getSpawnPoint());
+
 	scene->player->onEnable();
 
 	SceneManager::getInstance().currentScene = scene;
@@ -252,11 +257,7 @@ void Scene_updateScene(float delta) {
 
 		// Recover any object that falls through the floor;
 		if (object.rigidBody3D.translation.y < -1000.0f) {
-			// GameMap no longer tracks a single map-wide spawn point — each
-			// Entity records its own when it is placed (see
-			// GameMap::SpawnEntity) — so recover an Entity to that, and fall
-			// back to a safe default for anything that isn't one (plain
-			// GameObjects, interactables).
+			
 			Entity* asEntity = dynamic_cast<Entity*>(&object);
 			const Vector3 recovery = asEntity ? asEntity->getSpawnPoint() : Vector3{ 0, 5, 0 };
 
@@ -264,9 +265,6 @@ void Scene_updateScene(float delta) {
 
 			// Reset Velocity on Teleport
 			object.rigidBody3D.SetVelocity(Vector3Zero());
-
-			std::cout << "[Scene] Recovered " << object.name
-				<< " after falling out of the world\n";
 		}
 
 		if (object.rigidBody3D.translation.y < 0 && limit) {

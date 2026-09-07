@@ -147,12 +147,6 @@ void Entity::Attack()
 	
 	projectile.rigidBody3D.Teleport(rigidBody3D.translation + rigidBody3D.forward);
 	projectile.rigidBody3D.scale = Vector3(0.2f, 0.2f, 0.2f);
-	// No GenMeshSphere here. render3D() draws `model`, never `mesh`, so the
-	// generated sphere was never visible — and the projectile is copied into
-	// GameMap::gameObjects (slicing to GameObject) and later erased by the
-	// pendingDestroy sweep, which never runs onDisable(), so nothing ever called
-	// UnloadMesh on it. Every shot leaked its vertex buffers, once per frame for
-	// as long as forceFire was held.
 
 	projectile.rigidBody3D.SetVelocity(Vector3Scale(rigidBody3D.forward, projectile.baseSpeed * 10));
 

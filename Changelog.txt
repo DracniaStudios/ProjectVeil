@@ -1,5 +1,5 @@
 // Game Name: Subject Veil
-// Version: 0.3.3
+// Version: 0.4.12
 // Due: 2026-09-11 (Month 3)
 // Date: 2026-09-1 (Current Development Date)
 
@@ -22,15 +22,13 @@
 
 [ Added ]
 
-- Added new Teleport buttons to the Object Inspector for teleporting to player, camera, and spawn.
-- Added new SpawnPosition to Entities
-- Added new Spawn Waypoints to Stalker Inspector for Stalker and Camera positions.
 
 
 [ Updated ]
 
-- Updated "SpawnEntity" to use clone Entity instead of using the old one.
-- Updated Scene.cpp to check Player vs GameObject collisions.
+- Updated DeltaTime to cap at "GetFrameTime()" or 120FPS
+- Updated Scene.cpp to define Player default spawn location.
+
 
 [ Fixed ]
 

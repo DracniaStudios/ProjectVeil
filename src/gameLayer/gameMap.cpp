@@ -119,9 +119,6 @@ void GameMap::LoadEntity(std::unique_ptr<Entity> entity)
 	auto id = entity->id;
 	entities[id] = std::move(entity);
 	entities[id]->onEnable();
-	if (entities[id]->getSpawnPoint().y > 0) {
-		entities[id]->rigidBody3D.Teleport(entities[id]->getSpawnPoint());
-	}
 }
 
 void GameMap::LoadInteractable(std::unique_ptr<InteractableObject> interactable)
