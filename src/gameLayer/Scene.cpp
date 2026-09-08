@@ -236,7 +236,7 @@ void Scene_updateScene(float delta) {
 	auto worldEditor = &WorldEditor::getInstance();
 	auto inputSystem = &InputSystem::getInstance();
 	auto scene = manager->currentScene;
-	scene->update(delta);
+	if (scene->update) { scene->update(delta); }
 
 	// Swap Editor and Player Camera
 	if (!scene->is2DActive) {
@@ -398,7 +398,7 @@ void Scene_drawScene2D() {
 	auto manager = &SceneManager::getInstance();
 	
 	if (auto scene = manager->currentScene) {
-		scene->draw2D();
+		if (scene->draw2D) { scene->draw2D(); }
 
 		if (scene->is2DActive)
 		{
@@ -423,8 +423,8 @@ void Scene_drawScene3D() {
 	auto manager = &SceneManager::getInstance();
 	if (auto scene = manager->currentScene) {
 		if (WorldEditor::getInstance().IsEnabled()) { DrawGrid(100.0f, 1.0f); }
-		
-		scene->draw3D();
+
+		if (scene->draw3D) { scene->draw3D(); }
 
 		scene->gameMap.ForEachObject([](GameObject& object) { object.render3D(); });
 
