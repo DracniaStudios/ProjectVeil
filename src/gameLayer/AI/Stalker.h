@@ -158,6 +158,7 @@ private:
 	float EffectiveSearchRadius();
 
 	void PickNextSearchTarget();
+	bool CheckIfTargetInRadius(Vector3 target);
 };
 
 #endif

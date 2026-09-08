@@ -4,6 +4,7 @@
 
 #include <raylib.h>
 #include <nlohmann/json.hpp>
+#include <iostream>
 
 using Json = nlohmann::json;
 
@@ -173,9 +174,15 @@ Vector3 SanitizeColliderSize(Vector3 size);
 
 struct Collider3D
 {
+private:
+	uint64_t objectID = -1;
+	bool canSetID = true;
+public:
+	int SetObjectID(uint64_t id = 0) { if (canSetID) { objectID = id; canSetID = false; return objectID; } else return objectID; }
+	int GetObjectID() const { return objectID; }
 	ColliderShape shape = COLLIDER_BOX;
 	ColliderMode mode = COLLIDER_COLLISION;
-
+	bool canCollide = true;
 	/**
 	 * Size and offset are LOCAL units, multiplied by the body's Transform::scale
 	 * — the same composition render3D performs when it bakes
@@ -193,6 +200,11 @@ struct Collider3D
 	float radius = 0.5f; // Sphere only
 
 	bool isTrigger() const { return mode == COLLIDER_TRIGGER; }
+
+	virtual bool onCollisionEnter(Collider3D& other) const;
+	virtual bool onCollisionExit(Collider3D& other) const;
+	virtual bool onTriggerEnter(Collider3D& other) const;
+	virtual bool onTriggerExit(Collider3D& other) const;
 
 	/** Half extents along the body's own axes, clamped away from degenerate. */
 	Vector3 GetLocalHalfExtents(Vector3 bodyScale) const;

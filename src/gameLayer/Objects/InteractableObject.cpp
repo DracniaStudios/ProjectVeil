@@ -51,7 +51,7 @@ void Unlock(InteractableObject* interactable)
 		player->artifact->name = "Artifact";
 		player->artifact->isDestructible = false;
 		player->artifact->rigidBody3D.scale = Vector3One();
-		player->artifact->rigidBody3D.canCollide = false;
+		player->artifact->rigidBody3D.collider.canCollide = false;
 		player->artifact->rigidBody3D.SetGravity(0.0f, 0.0f, 0.0f);
 		player->artifact->rigidBody3D.angularVelocity = Vector3(0.0f, 1.0f, 0.0f);
 		player->artifact->rigidBody3D.lockAngularVelocity = true;

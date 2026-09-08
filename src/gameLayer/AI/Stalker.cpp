@@ -98,7 +98,7 @@ float Stalker::DistanceToObstruction(Vector3 direction, float maxDistance, const
 		if (!object.isEnabled) { return; }
 		// Anything the solver will not stop the stalker against should not stop
 		// it here either, or the AI flinches away from things it can walk through.
-		if (!object.rigidBody3D.canCollide) { return; }
+		if (!object.rigidBody3D.collider.canCollide) { return; }
 		// A trigger volume is not geometry. Letting one block line of sight would
 		// blind the stalker to anything behind a damage zone or an objective area.
 		if (object.rigidBody3D.collider.isTrigger()) { return; }
@@ -254,6 +254,33 @@ void Stalker::render3D()
 	if (hasLastKnown) { DrawSphereWires(lastKnownPosition, 0.6f, 6, 6, MAROON); }
 }
 
+// Use Player Position as Target
+bool Stalker::CheckIfTargetInRadius(Vector3 target) {
+	auto currentPosition = rigidBody3D.getPosition();
+
+	// If Target is in Search Radious
+	if (CheckCollisionSpheres(currentPosition, searchRadius, target, 1)) {
+
+		// Check If Stalker Can See Target
+		Vector3 direction = Vector3Normalize(Vector3(target - currentPosition));
+
+		// Stalker To Target Ray
+		Ray collisionRay{
+			.position = currentPosition,
+			.direction = direction
+		};
+
+		// Collision Info
+		RayCollision contactInfo = GetRayCollisionSphere(collisionRay, target, 1);
+		if (contactInfo.hit) {
+			state = STALKER_HUNT;
+			MoveToward(target, currentSpeed, GetFrameTime(), &SceneManager::getInstance().currentScene->gameMap);
+			return true;
+		}
+	}
+	return false;
+}
+
 void Stalker::update(Scene* scene, float deltaTime)
 {
 	// Entity::update owns the stamina economy and recomputes currentSpeed from
@@ -283,6 +310,8 @@ void Stalker::update(Scene* scene, float deltaTime)
 		lastHeardLoudness = heardLoudness;
 		lastHeardKind = heard.kind;
 	}
+
+	CheckIfTargetInRadius(scene->player->getPosition());
 
 	const float stimulusAge = scene->soundField.Now() - lastStimulusTime;
 

@@ -263,7 +263,6 @@ public:
 
 	bool isEnabled = true;
 	bool isStatic = false;
-	bool canCollide = true;
 
 	/**
 	 * Axis-aligned box enclosing the collider — the BROAD phase, and nothing else.
@@ -369,11 +368,6 @@ public:
 	/// Editor Support
 	// Rebuilds the AABB from the current translation/scale without stepping the
 	// simulation, and repairs a degenerate scale/rotation on the way through.
-	//
-	// Update() normally does both, but the World Editor freezes the simulation
-	// while objects are being manipulated — and mouse picking reads broadPhaseBox.
-	// Without this the editor would only be able to re-click an object where it
-	// used to be, and a zeroed quaternion would never be repaired.
 	void SyncBroadPhaseBox();
 
 	/// Force Application

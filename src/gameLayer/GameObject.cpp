@@ -158,7 +158,8 @@ void GameObject::onEnable()
 
 	// RigidBody3D::Update() latches canCollide false while disabled and never
 	// clears it on its own, so re-enabling must restore it explicitly here.
-	rigidBody3D.canCollide = true;
+	rigidBody3D.collider.canCollide = true;
+	rigidBody3D.collider.SetObjectID(id);
 
 	// Fits a mesh collider to whatever model this binds, and refreshes the box
 	loadVisuals();
@@ -171,7 +172,7 @@ void GameObject::onEnable()
 void GameObject::onDisable()
 {
 	isEnabled = false;
-	rigidBody3D.canCollide = false;
+	rigidBody3D.collider.canCollide = false;
 	// Textures and named models belong to the AssetManager — only unload
 	// primitives this object generated for itself
 	releaseGeneratedModel();
@@ -257,7 +258,7 @@ void GameObject::update(Scene* scene, float deltaTime)
 		// but returning here means it never runs — and solveCollision() filters
 		// on canCollide alone, so a disabled object stayed a solid invisible
 		// wall. onEnable() already restores the flag on the way back.
-		rigidBody3D.canCollide = false;
+		rigidBody3D.collider.canCollide = false;
 		return;
 	}
 
@@ -306,21 +307,6 @@ void GameObject::onDestroy(Scene* scene)
 	// primitive's Model/Mesh would otherwise leak the moment this object is
 	// erased. onDisable() already does exactly this release, idempotently.
 	onDisable();
-}
-
-void GameObject::onCollision(const GameObject* collider)
-{
-	// Collision Data Checks
-}
-
-void GameObject::onTriggerEnter(GameObject* other)
-{
-	// Something entered a trigger volume. Overridden by objects that care.
-}
-
-void GameObject::onTriggerExit(GameObject* other)
-{
-	// Something left a trigger volume, one frame after it actually did.
 }
 
 // FMOD requires forward and up to be normalized and perpendicular
