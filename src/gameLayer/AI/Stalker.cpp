@@ -311,7 +311,7 @@ void Stalker::update(Scene* scene, float deltaTime)
 		lastHeardKind = heard.kind;
 	}
 
-	CheckIfTargetInRadius(scene->player->getPosition());
+	if (scene->player != nullptr) { CheckIfTargetInRadius(scene->player->getPosition()); }
 
 	const float stimulusAge = scene->soundField.Now() - lastStimulusTime;
 

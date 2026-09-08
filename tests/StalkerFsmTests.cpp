@@ -94,7 +94,7 @@ static BoundingBox AddBlock(Scene* scene, Vector3 centre, Vector3 size)
 	block.name = "TestBlock";
 	block.isEnabled = true;
 	block.rigidBody3D.isStatic = true;
-	block.rigidBody3D.canCollide = true;
+	block.rigidBody3D.collider.canCollide = true;
 	block.rigidBody3D.translation = centre;
 	block.rigidBody3D.scale = size;
 	block.rigidBody3D.SyncBroadPhaseBox();
