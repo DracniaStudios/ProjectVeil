@@ -2,7 +2,7 @@
 
 #include <SaveSystem.h>
 
-void NewWorld(Scene& scene) {
+static void NewWorld(Scene& scene) {
 
 	// DestroyEntity/DestroyInteractable each already release a generated
 	// fallback model before erasing (see GameMap::DestroyGameObject()) — snapshot
@@ -36,6 +36,7 @@ void WorldEditor::ShowWorldSettings()
 
 	/// Show World Settings Window
 	ImGui::Begin("World Settings");
+	ImGui::TextDisabled(std::to_string(GetFrameTime()).c_str());
 
 	/// Show Scene Data
 	ImGui::TextColored(ImVec4(1, 0, 1, 1), "Scene Data");

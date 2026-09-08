@@ -176,7 +176,7 @@ namespace
 void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 {
 	if (&other->rigidBody3D == this) return;
-	if (other->rigidBody3D.canCollide == false || self->rigidBody3D.canCollide == false) return;
+	if (other->rigidBody3D.collider.canCollide == false || self->rigidBody3D.collider.canCollide == false) return;
 
 	// A trigger reports contacts and applies no physics. That has to include the
 	// touch flags: a trigger volume that set downTouch would be a floor the
@@ -202,6 +202,7 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 		// damage) live in onCollision overrides so no unchecked casts happen here.
 		// "First contact" means absent from last frame's contacts, not merely
 		// different from the previous pair the solver happened to visit.
+
 		const auto isKnown = [other](const std::vector<GameObject*>& contacts) {
 			return std::find(contacts.begin(), contacts.end(), other) != contacts.end();
 		};
@@ -213,11 +214,17 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 				// onCollision fires for triggers too, so switching an object to a
 				// trigger does not silently stop whatever already listened to it.
 				// onTriggerEnter is the additional signal, not a replacement.
-				if (isTriggerPair) { self->onTriggerEnter(other); }
-				self->onCollision(other);
+				if (isTriggerPair) { self->rigidBody3D.collider.onTriggerEnter(other->rigidBody3D.collider); }
+				self->rigidBody3D.collider.onCollisionEnter(other->rigidBody3D.collider);
 				EmitImpactNoise(self, other, contact);
 			}
 			contactsThisFrame.push_back(other);
+
+			if (std::find(contactsThisFrame.begin(), contactsThisFrame.end(), other) == contactsThisFrame.end())
+			{
+				// Handle the case where the object is not in the list
+			}
+
 		}
 
 		// Recorded by ID: the matching exit fires a frame later, by which time this
@@ -227,6 +234,13 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 				== triggerContactsThisFrame.end())
 		{
 			triggerContactsThisFrame.push_back(other->id);
+
+			// Enable Trigger
+			if (std::find(triggerContactsLastFrame.begin(), triggerContactsLastFrame.end(), other->id)
+				== triggerContactsLastFrame.end())
+			{
+				self->rigidBody3D.collider.onTriggerEnter(other->rigidBody3D.collider);
+			}
 		}
 
 		isColliding = true;
@@ -445,7 +459,7 @@ void RigidBody3D::Update(float deltaTime)
 	contactsThisFrame.clear();
 
 	if (!isEnabled) {
-		canCollide = false;
+		collider.canCollide = false;
 		return;
 	}
 	if (!isStatic) {
@@ -501,7 +515,7 @@ void RigidBody3D::DispatchTriggerEvents(GameObject* self, GameMap* map)
 		// the whole reason these lists hold IDs rather than pointers.
 		if (GameObject* other = map->FindWorldObject(id))
 		{
-			self->onTriggerExit(other);
+			self->rigidBody3D.collider.onTriggerExit(other->rigidBody3D.collider);
 		}
 	}
 
@@ -586,7 +600,7 @@ Json RigidBody3D::formatToJson()
 
 	j["IsStatic"] = isStatic;
 	j["IsEnabled"] = isEnabled;
-	j["CanCollide"] = canCollide;
+	j["CanCollide"] = collider.canCollide;
 
 	j["LockAngularVelocity"] = lockAngularVelocity;
 	j["LockVelocity"] = lockVelocity;
@@ -631,7 +645,7 @@ bool RigidBody3D::loadFromJson(const Json& j)
 
 	isStatic = j.value("IsStatic", false);
 	isEnabled = j.value("IsEnabled", true);
-	canCollide = j.value("CanCollide", true);
+	collider.canCollide = j.value("CanCollide", true);
 
 	lockAngularVelocity = j.value("LockAngularVelocity", false);
 	lockVelocity = j.value("LockVelocity", false);

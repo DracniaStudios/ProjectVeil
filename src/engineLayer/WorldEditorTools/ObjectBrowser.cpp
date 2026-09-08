@@ -368,7 +368,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::Checkbox("isStatic", &object->rigidBody3D.isStatic);
 	ImGui::Checkbox("isVisible", &object->display3DModel);
 	ImGui::Checkbox("isDestructible", &object->isDestructible);
-	ImGui::Checkbox("Can Collide", &object->rigidBody3D.canCollide);
+	ImGui::Checkbox("Can Collide", &object->rigidBody3D.collider.canCollide);
 
 	ImGui::Separator();
 	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Debug");
@@ -388,7 +388,7 @@ static void ShowStateButtons(Scene* scene)
 	ApplyAllRow(scene, "Selectable",     [](GameObject& o, bool v) { o.isSelectable = v; });
 	ApplyAllRow(scene, "Destructible",   [](GameObject& o, bool v) { o.isDestructible = v; });
 	ApplyAllRow(scene, "Static",         [](GameObject& o, bool v) { o.rigidBody3D.isStatic = v; });
-	ApplyAllRow(scene, "Can Collide",    [](GameObject& o, bool v) { o.rigidBody3D.canCollide = v; });
+	ApplyAllRow(scene, "Can Collide",    [](GameObject& o, bool v) { o.rigidBody3D.collider.canCollide = v; });
 	ApplyAllRow(scene, "Show Collider",  [](GameObject& o, bool v) { o.displayCollider = v; });
 	ApplyAllRow(scene, "Show Direction", [](GameObject& o, bool v) { o.displayDirection = v; });
 

@@ -120,7 +120,6 @@ public:
 	virtual void onDisable() override;
 	virtual void render3D() override;
 	virtual void update(Scene* scene, float deltaTime) override;
-	virtual void onCollision(const GameObject* collider) override;
 
 	Vector3 getSpawnPoint() { return spawnPoint; }
 	void setSpawnPoint(Vector3 spawn) { spawnPoint = spawn; }

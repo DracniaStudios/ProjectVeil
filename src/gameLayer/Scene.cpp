@@ -108,7 +108,7 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		// (B,A) doubled every correction and collision event
 		gameMap.ForEachObjectPair([&](GameObject& bodyA, GameObject& bodyB)
 		{
-			if (bodyA.rigidBody3D.canCollide == false || bodyB.rigidBody3D.canCollide == false) { return true; }
+			if (bodyA.rigidBody3D.collider.canCollide == false || bodyB.rigidBody3D.collider.canCollide == false) { return true; }
 			if (bodyA.rigidBody3D.isStatic && bodyB.rigidBody3D.isStatic) { return true; }
 
 			if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
