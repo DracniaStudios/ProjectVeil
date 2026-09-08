@@ -14,12 +14,17 @@ struct GameMap;
 /**
  * The slice's single enemy.
  *
- * The load-bearing invariant, and the reason this class is written the way it
- * is: the stalker never holds a pointer to the player and never reads the
- * player's position. Everything it knows arrives as a SoundEvent and is
- * flattened immediately into `lastKnownPosition` — a place a noise *was*, not
- * a thing that moves. If a future change hands this class the player, the
- * "sound only" design decision is dead no matter what the FSM still looks like.
+ * Was designed around a load-bearing invariant — the stalker never holds a
+ * pointer to the player and never reads the player's position, with
+ * everything it knows arriving as a SoundEvent flattened into
+ * `lastKnownPosition` — a place a noise *was*, not a thing that moves.
+ *
+ * CheckIfTargetInRadius() now breaks that invariant: it is handed the
+ * player's live position directly (see its call site in update()) and uses
+ * it for a sight-based radius check alongside the sound-only FSM below. That
+ * is a design decision for whoever owns this system to make deliberately,
+ * not a stale comment to quietly ignore — flagging here rather than
+ * reverting it outright.
  *
  * Physical contact is not perception and is handled elsewhere: the player
  * detects being caught in Player::onCollision, because Scene resolves

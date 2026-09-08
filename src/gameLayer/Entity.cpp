@@ -117,6 +117,16 @@ void Entity::update(Scene* scene, float deltaTime)
 
 /** Combat Functions **/
 
+// Damage reactions live here (virtual dispatch) instead of in the physics
+// solver so only real Entity instances ever take damage
+
+void Entity::onCollision(const GameObject* collider)
+{
+	if (collider->type == OBJECT_PROJECTILE)
+	{
+		applyHealthValue(collider->baseDamage, true);
+	}
+}
 // Move OnHit to OnCollision
 void Entity::onHit(const Entity* collider)
 {

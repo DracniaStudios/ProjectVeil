@@ -1,7 +1,5 @@
 #include <Collider.h>
 
-#include <SceneManager.h>
-
 #include <raymath.h>
 #include <algorithm>
 #include <cfloat>
@@ -288,47 +286,6 @@ namespace
 		return contact;
 	}
 }
-
-#pragma region Collision
-
-bool Collider3D::onCollisionEnter(Collider3D& other) const {
-	
-	auto gameMap = &SceneManager::getInstance().currentScene->gameMap;
-	auto self = gameMap->FindWorldObject(objectID);
-	auto object = gameMap->FindWorldObject(other.GetObjectID());
-
-	std::cout << "Add Collison Rules. Check Player vs Stalkers. \n";
-	//std::cout << self->name << " entered collision with " << object->name << "\n";
-	return true;
-}
-bool Collider3D::onCollisionExit(Collider3D& other) const {
-	
-	auto gameMap = &SceneManager::getInstance().currentScene->gameMap;
-	auto self = gameMap->FindWorldObject(objectID);
-	auto object = gameMap->FindWorldObject(other.GetObjectID());
-
-	//std::cout << self->name << " exited collision with " << object->name << "\n";
-	return true;
-}
-bool Collider3D::onTriggerEnter(Collider3D& other) const {
-	
-	auto gameMap = &SceneManager::getInstance().currentScene->gameMap;
-	auto self = gameMap->FindWorldObject(objectID);
-	auto object = gameMap->FindWorldObject(other.GetObjectID());
-
-	//std::cout << self->name << " entered trigger with " << object->name << "\n";
-	return true;
-}
-bool Collider3D::onTriggerExit(Collider3D& other) const {
-	
-	auto gameMap = &SceneManager::getInstance().currentScene->gameMap;
-	auto self = gameMap->FindWorldObject(objectID);
-	auto object = gameMap->FindWorldObject(other.GetObjectID());
-
-	//std::cout << self->name << " exited trigger with " << object->name << "\n";
-	return true;
-}
-#pragma endregion
 
 
 

@@ -214,17 +214,11 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 				// onCollision fires for triggers too, so switching an object to a
 				// trigger does not silently stop whatever already listened to it.
 				// onTriggerEnter is the additional signal, not a replacement.
-				if (isTriggerPair) { self->rigidBody3D.collider.onTriggerEnter(other->rigidBody3D.collider); }
-				self->rigidBody3D.collider.onCollisionEnter(other->rigidBody3D.collider);
+				if (isTriggerPair) { self->onTriggerEnter(other); }
+				self->onCollision(other);
 				EmitImpactNoise(self, other, contact);
 			}
 			contactsThisFrame.push_back(other);
-
-			if (std::find(contactsThisFrame.begin(), contactsThisFrame.end(), other) == contactsThisFrame.end())
-			{
-				// Handle the case where the object is not in the list
-			}
-
 		}
 
 		// Recorded by ID: the matching exit fires a frame later, by which time this
@@ -234,13 +228,6 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 				== triggerContactsThisFrame.end())
 		{
 			triggerContactsThisFrame.push_back(other->id);
-
-			// Enable Trigger
-			if (std::find(triggerContactsLastFrame.begin(), triggerContactsLastFrame.end(), other->id)
-				== triggerContactsLastFrame.end())
-			{
-				self->rigidBody3D.collider.onTriggerEnter(other->rigidBody3D.collider);
-			}
 		}
 
 		isColliding = true;
@@ -515,7 +502,7 @@ void RigidBody3D::DispatchTriggerEvents(GameObject* self, GameMap* map)
 		// the whole reason these lists hold IDs rather than pointers.
 		if (GameObject* other = map->FindWorldObject(id))
 		{
-			self->rigidBody3D.collider.onTriggerExit(other->rigidBody3D.collider);
+			self->onTriggerExit(other);
 		}
 	}
 

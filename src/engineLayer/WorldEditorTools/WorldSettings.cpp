@@ -36,7 +36,7 @@ void WorldEditor::ShowWorldSettings()
 
 	/// Show World Settings Window
 	ImGui::Begin("World Settings");
-	ImGui::TextDisabled(std::to_string(GetFrameTime()).c_str());
+	ImGui::TextDisabled("%s", std::to_string(GetFrameTime()).c_str());
 
 	/// Show Scene Data
 	ImGui::TextColored(ImVec4(1, 0, 1, 1), "Scene Data");

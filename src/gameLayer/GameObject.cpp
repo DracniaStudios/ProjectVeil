@@ -309,6 +309,21 @@ void GameObject::onDestroy(Scene* scene)
 	onDisable();
 }
 
+void GameObject::onCollision(const GameObject* collider)
+{
+	// Collision Data Checks
+}
+
+void GameObject::onTriggerEnter(GameObject* other)
+{
+	// Something entered a trigger volume. Overridden by objects that care.
+}
+
+void GameObject::onTriggerExit(GameObject* other)
+{
+	// Something left a trigger volume, one frame after it actually did.
+}
+
 // FMOD requires forward and up to be normalized and perpendicular
 FMOD_3D_ATTRIBUTES GameObject::get3DAttributes() const
 {

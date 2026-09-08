@@ -256,29 +256,28 @@ void Stalker::render3D()
 
 // Use Player Position as Target
 bool Stalker::CheckIfTargetInRadius(Vector3 target) {
-	auto currentPosition = rigidBody3D.getPosition();
+	const Vector3 currentPosition = rigidBody3D.getPosition();
+	const float radius = EffectiveSearchRadius();
 
-	// If Target is in Search Radious
-	if (CheckCollisionSpheres(currentPosition, searchRadius, target, 1)) {
+	// If Target is in Search Radius
+	if (!CheckCollisionSpheres(currentPosition, radius, target, 1)) { return false; }
 
-		// Check If Stalker Can See Target
-		Vector3 direction = Vector3Normalize(Vector3(target - currentPosition));
+	const Vector3 toTarget = target - currentPosition;
+	const float distance = Vector3Length(toTarget);
+	if (distance <= 0.0f) { return false; }
+	const Vector3 direction = Vector3Scale(toTarget, 1.0f / distance);
 
-		// Stalker To Target Ray
-		Ray collisionRay{
-			.position = currentPosition,
-			.direction = direction
-		};
+	// Line of sight: a ray fired straight at the target's own position always
+	// "hits" it, so that alone proves nothing. What actually determines
+	// visibility is whether anything solid stands in between — the same
+	// obstruction test used elsewhere in this file — otherwise the stalker
+	// would detect and beeline for the player straight through walls.
+	GameMap* map = &SceneManager::getInstance().currentScene->gameMap;
+	if (DistanceToObstruction(direction, distance, map) < distance) { return false; }
 
-		// Collision Info
-		RayCollision contactInfo = GetRayCollisionSphere(collisionRay, target, 1);
-		if (contactInfo.hit) {
-			state = STALKER_HUNT;
-			MoveToward(target, currentSpeed, GetFrameTime(), &SceneManager::getInstance().currentScene->gameMap);
-			return true;
-		}
-	}
-	return false;
+	TransitionTo(STALKER_HUNT);
+	MoveToward(target, currentSpeed, GetFrameTime(), map);
+	return true;
 }
 
 void Stalker::update(Scene* scene, float deltaTime)
@@ -311,7 +310,7 @@ void Stalker::update(Scene* scene, float deltaTime)
 		lastHeardKind = heard.kind;
 	}
 
-	CheckIfTargetInRadius(scene->player->getPosition());
+	if (scene->player != nullptr) { CheckIfTargetInRadius(scene->player->getPosition()); }
 
 	const float stimulusAge = scene->soundField.Now() - lastStimulusTime;
 

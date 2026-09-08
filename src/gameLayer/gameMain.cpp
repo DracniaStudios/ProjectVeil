@@ -39,8 +39,13 @@ bool init_game()
 
 bool update_game()
 {
-	/// Limit Frame Rate
-	constexpr float maxDeltaTime = 1.0f / 60.0f; // 120 FPS
+	// Bound the simulation step against real stalls (a load hitch, a debugger
+	// pause) so physics never takes one giant leap and tunnels an object
+	// through the floor. The target is 60 FPS (see SetTargetFPS in
+	// ProjectVeil.cpp), so this only ever engages on a frame far slower than
+	// that — ordinary sub-60fps jitter still gets its real elapsed time and
+	// is not slowed down to match.
+	constexpr float maxDeltaTime = 1.0f / 20.0f; // 20 FPS floor
 	const float deltaTime = fminf(GetFrameTime(), maxDeltaTime);
 
 	// Nothing draws a sky, so the clear colour *is* the horizon. Clearing to the
