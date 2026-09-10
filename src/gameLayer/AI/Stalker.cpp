@@ -256,29 +256,30 @@ void Stalker::render3D()
 
 // Use Player Position as Target
 bool Stalker::CheckIfTargetInRadius(Vector3 target) {
-	auto currentPosition = rigidBody3D.getPosition();
+	const auto currentPosition = rigidBody3D.getPosition();
+	const float radius = EffectiveSearchRadius();
 
-	// If Target is in Search Radious
-	if (CheckCollisionSpheres(currentPosition, searchRadius, target, 1)) {
-
-		// Check If Stalker Can See Target
-		Vector3 direction = Vector3Normalize(Vector3(target - currentPosition));
-
-		// Stalker To Target Ray
-		Ray collisionRay{
-			.position = currentPosition,
-			.direction = direction
-		};
-
-		// Collision Info
-		RayCollision contactInfo = GetRayCollisionSphere(collisionRay, target, 1);
-		if (contactInfo.hit) {
-			state = STALKER_HUNT;
-			MoveToward(target, currentSpeed, GetFrameTime(), &SceneManager::getInstance().currentScene->gameMap);
-			return true;
-		}
+	if (!CheckCollisionSpheres(currentPosition, radius, target, 1)) {
+		return false;
 	}
-	return false;
+
+	/// Check If Stalker Can See Target
+	// Stalker Line Of Sight To Target Position
+	const Vector3 ToTarget = Vector3(target - currentPosition); // Ray-Like Pointer
+	const float distance = Vector3Length(ToTarget); // Length of Ray
+
+	if (distance <= 0.0001f) { return true; }
+	const auto direction = Vector3Scale(ToTarget, 1.0f / distance); // Create the Correct Ray Direction
+	
+	GameMap* map = &SceneManager::getInstance().currentScene->gameMap;
+	if (DistanceToObstruction(direction, distance, map) < distance) {
+		return false;
+	}
+	
+	TransitionTo(STALKER_HUNT);
+	MoveToward(target, currentSpeed, GetFrameTime(), map);
+
+	return true;
 }
 
 void Stalker::update(Scene* scene, float deltaTime)
@@ -311,7 +312,7 @@ void Stalker::update(Scene* scene, float deltaTime)
 		lastHeardKind = heard.kind;
 	}
 
-	CheckIfTargetInRadius(scene->player->getPosition());
+	if (scene->player != nullptr) { CheckIfTargetInRadius(scene->player->getPosition()); }
 
 	const float stimulusAge = scene->soundField.Now() - lastStimulusTime;
 

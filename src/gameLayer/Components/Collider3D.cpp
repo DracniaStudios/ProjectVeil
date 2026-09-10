@@ -292,11 +292,13 @@ namespace
 #pragma region Collision
 
 bool Collider3D::onCollisionEnter(Collider3D& other) const {
-	
+	/*
 	auto gameMap = &SceneManager::getInstance().currentScene->gameMap;
 	auto self = gameMap->FindWorldObject(objectID);
 	auto object = gameMap->FindWorldObject(other.GetObjectID());
+	*/
 
+	(void)other;
 	std::cout << "Add Collison Rules. Check Player vs Stalkers. \n";
 	//std::cout << self->name << " entered collision with " << object->name << "\n";
 	return true;
