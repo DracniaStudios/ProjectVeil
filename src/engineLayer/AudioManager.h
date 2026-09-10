@@ -32,6 +32,12 @@ enum AudioType {
 	AUDIO_DIALOGUE,
 };
 
+struct AudioDetails {
+	std::string soundName = "";
+	GameObject* object = nullptr;
+	AudioType type = AUDIO_NONE;
+};
+
 class AudioManager
 {
 	AudioManager() = default;
@@ -54,10 +60,15 @@ public:
 	void update();
 	void shutdown();
 
+	// File Audio
 	bool Play(const std::string& name, AudioType type = AUDIO_NONE, float volume = 1.0f);
 	bool Play3D(const std::string& name, GameObject& object, AudioType type = AUDIO_NONE, float volume = 1.0f);
+	bool Play3D(const std::string& name, Vector3 position, AudioType type = AUDIO_NONE, float volume = 1.0f);
+	
+	// Bank Audio
 	bool PlayEvent(const std::string& eventPath, AudioType type = AUDIO_NONE, float volume = 1.0f);
 	bool PlayEvent3D(const std::string& eventPath, GameObject& object, AudioType type = AUDIO_NONE, float volume = 1.0f);
+	bool PlayEvent3D(const std::string& eventPath, Vector3 position, AudioType type = AUDIO_NONE, float volume = 1.0f);
 
 private:
 	FMOD::System* system = nullptr;

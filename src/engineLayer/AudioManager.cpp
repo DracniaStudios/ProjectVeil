@@ -68,7 +68,7 @@ void AudioManager::loadAll()
 
 		static const std::vector<std::string> supportedExtensions = { ".wav", ".mp3", ".ogg", ".flac" };
 
-		for (const auto& entry : fs::directory_iterator(audioDir))
+		for (const auto& entry : fs::recursive_directory_iterator(audioDir))
 		{
 			if (!entry.is_regular_file()) continue;
 
@@ -139,7 +139,7 @@ void AudioManager::loadAll()
 		tryLoadBank(masterBankPath);
 		tryLoadBank(masterStringBankPath);
 
-		for (const auto& entry : fs::directory_iterator(bankDir)) {
+		for (const auto& entry : fs::recursive_directory_iterator(bankDir)) {
 			if (!entry.is_regular_file()) continue;
 
 			if (entry.path().extension() != ".bank") continue;
@@ -249,6 +249,33 @@ bool AudioManager::Play3D(const std::string& name, GameObject& object, AudioType
 	}
 	return true;
 }
+bool AudioManager::Play3D(const std::string& name, Vector3 position, AudioType type, float volume)
+{
+	if (!system) return false;
+
+	const auto it = sounds.find(name);
+	if (it == sounds.end())
+	{
+		std::cout << "[AudioManager] No sound loaded with name \"" << name << "\"\n";
+		PlayEvent3D(name, position, type, volume);
+		return false;
+	}
+
+	// Start paused so the sound is positioned before the first audible frame
+	FMOD::Channel* channel = nullptr;
+	system->playSound(it->second, nullptr, true, &channel);
+
+	if (channel)
+	{
+		FMOD_VECTOR pos = Vector3ToFMOD(position);
+		FMOD_VECTOR vel = Vector3ToFMOD(Vector3(0, 0, 0));
+		channel->set3DAttributes(&pos, &vel);
+		updateVolume(volume, type);
+		channel->setVolume(volume);
+		channel->setPaused(false);
+	}
+	return true;
+}
 
 bool AudioManager::PlayEvent(const std::string& eventPath, AudioType type, float volume) {
 	if (!studioSystem) return false;
@@ -309,5 +336,50 @@ bool AudioManager::PlayEvent3D(const std::string& eventPath, GameObject& object,
 	object.soundInstance->setVolume(volume);
 	object.soundInstance->start();
 	object.soundInstance->release(); // Destroy when finished playing sound
+	return true;
+}
+
+
+bool AudioManager::PlayEvent3D(const std::string& eventPath, Vector3 position, AudioType type, float volume) {
+	if (!studioSystem) return false;
+
+	FMOD::Studio::EventDescription* description = nullptr;
+	FMOD_RESULT result = studioSystem->getEvent(eventPath.c_str(),
+		&description);
+
+	if (result != FMOD_OK) {
+		std::cout << "[Audio Manager] No event \"" << eventPath << "\": " << FMOD_ErrorString(result) << "\n";
+		return false;
+	}
+
+	FMOD::Studio::EventInstance* soundInstance;
+
+	// Stop the previous event on this object before starting a new one
+	if (soundInstance != nullptr) {
+		if (soundInstance->isValid()) {
+			soundInstance->stop(FMOD_STUDIO_STOP_ALLOWFADEOUT);
+			soundInstance->release(); // Release the instance to free resources
+		}
+		soundInstance = nullptr;
+	}
+
+	result = description->createInstance(&soundInstance);
+	if (result != FMOD_OK || soundInstance == nullptr) {
+		std::cout << "[Audio Manager] Failed to create instance for \"" << eventPath << "\": " << FMOD_ErrorString(result) << "\n";
+		return false;
+	}
+
+	// Position the event before it starts so the first frame is already spatialized
+	FMOD_3D_ATTRIBUTES attributes = {};
+	attributes.position = Vector3ToFMOD(position);
+	attributes.velocity = Vector3ToFMOD(Vector3(0, 0, 0));
+	attributes.forward = Vector3ToFMOD(Vector3Normalize(Vector3(1, 0, 0)));
+	attributes.up = Vector3ToFMOD(Vector3Normalize(Vector3(0, 1, 0)));
+
+	soundInstance->set3DAttributes(&attributes);
+	updateVolume(volume, type);
+	soundInstance->setVolume(volume);
+	soundInstance->start();
+	soundInstance->release(); // Destroy when finished playing sound
 	return true;
 }

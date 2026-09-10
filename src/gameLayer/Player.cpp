@@ -208,7 +208,7 @@ static void EmitFootsteps(Player* player, float deltaTime)
 	if (player->footstepTimer > 0.0f) { return; }
 	player->footstepTimer = interval;
 
-	scene->soundField.Emit(player->getPosition(), loudness, SOUND_FOOTSTEP, player->id);
+	scene->soundField.Emit("Jump_Landing_With_Small_Coins", player->getPosition(), loudness, SOUND_FOOTSTEP, player->id);
 }
 
 void Player::update3D(float deltaTime)

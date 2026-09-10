@@ -124,6 +124,8 @@ float RigidBody3D::getPenetrationDepth(const RigidBody3D& other) const
 
 namespace
 {
+
+	const char* groundImpactSound = "Jump_Landing_With_Small_Coins";
 	// Physics impacts as a perception event (plan's emitter table: scaled by
 	// impact velocity).
 	//
@@ -169,7 +171,9 @@ namespace
 			Vector3LengthSqr(other->rigidBody3D.GetVelocity()) >
 			Vector3LengthSqr(self->rigidBody3D.GetVelocity()) ? other : self;
 
-		scene->soundField.Emit(striker->getPosition(), loudness, SOUND_IMPACT, striker->id);
+		scene->soundField.Emit(groundImpactSound, striker->getPosition(), loudness, SOUND_IMPACT, striker->id);
+		//scene->soundField.Emit(striker->getPosition(), loudness, SOUND_IMPACT, striker->id);
+		//AudioManager::getInstance().Play3D(groundImpactSound, self->getPosition(), AUDIO_GAMEPLAY_SFX, loudness);
 	}
 }
 

@@ -48,6 +48,21 @@ void SoundField::Emit(const SoundEvent& event)
 	nextSlot = (nextSlot + 1) % kCapacity;
 }
 
+// Plays a Sound Event at the position with the player hearing it.
+void SoundField::Emit(std::string soundName, Vector3 position, float loudness, SoundKind kind, std::uint64_t sourceId)
+{
+	std::cout << "Emit Sound Field at {" << position.x << ", " << position.y << ", " << position.z << "}\n";
+	AudioManager::getInstance().Play(soundName, AUDIO_GAMEPLAY_SFX, 1);
+
+	SoundEvent event = {};
+	event.position = position;
+	event.loudness = loudness;
+	event.kind = kind;
+	event.sourceId = sourceId;
+	Emit(event);
+}
+
+// Plays a Sound Event at the position without the player hearing it.
 void SoundField::Emit(Vector3 position, float loudness, SoundKind kind, std::uint64_t sourceId)
 {
 	SoundEvent event = {};

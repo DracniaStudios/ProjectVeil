@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
-// Version: 0.4.13
+// Version: 0.4.16
 // Due: 2026-09-11 
-// Date: 2026-09-8 (Current Development Date)
+// Date: 2026-09-10 (Current Development Date)
 
 [Notice] World Editor doesn't use new InputSystem.
 [Notice] Create Maze Minigame
@@ -22,21 +22,17 @@
 
 [ Added ]
 
-
+- New Player Jump Landing Sound
 
 [ Updated ]
 
-- Moved Collider.h Into GameLayer.
-- Updated Collider3D to control Collision Detection and Collision Response.
-- Updated Stalker to Check for Targets in TargetRadius (CheckIfTargetIsRadius).
-- Updated FrameLimit to 60fps.
+- Updated the AudioManager to use Recursive Directory Search for Audio Files and Banks
+- Updated the AudioManager to use the position of Objects for 3D Audio.
+- Updated the RigidBody3D component to emit the Landing Sound when landing.
 
 [ Fixed ]
 
 
 
 [ Removed ]
-
-- Removed Collision Calls (RigidBody3D canCollide & Gameobject onCollsion).
-
 

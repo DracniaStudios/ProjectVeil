@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <cstddef>
+#include <string>
 
 struct GameMap;
 
@@ -49,6 +50,7 @@ public:
 	// Records a noise. `timestamp` is stamped here, so callers leave it zero.
 	void Emit(const SoundEvent& event);
 	void Emit(Vector3 position, float loudness, SoundKind kind, std::uint64_t sourceId = 0);
+	void Emit(std::string soundName, Vector3 position, float loudness, SoundKind kind, std::uint64_t sourceId = 0);
 
 	void Clear() { events.clear(); }
 
