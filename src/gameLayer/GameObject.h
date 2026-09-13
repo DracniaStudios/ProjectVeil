@@ -7,9 +7,21 @@
 #include <helpers.h>
 #include <Physics.h>
 #include <AssetManager.h>
-#include <AudioManager.h>
 
 struct Scene;
+
+// The other half of the AudioManager.h cycle. This header only names two FMOD
+// types -- soundInstance is a pointer, and get3DAttributes() is a declaration, so
+// an incomplete return type is legal -- and neither needs the definition here.
+// Pulling <AudioManager.h> for them put the FMOD headers into 40 of 50 TUs.
+// A .cpp that touches either one includes <AudioManager.h> itself.
+//
+// The class key matters: fmod_studio.hpp declares EventInstance as `class` (and
+// forward-declares it in exactly this nesting at line 28), and MSVC warns C4099 on
+// a mismatch. FMOD_3D_ATTRIBUTES is a named struct tag in fmod_common.h, not an
+// anonymous typedef, so it forward-declares cleanly.
+struct FMOD_3D_ATTRIBUTES;
+namespace FMOD { namespace Studio { class EventInstance; } }
 
 enum ObjectType
 {

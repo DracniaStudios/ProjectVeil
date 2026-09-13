@@ -1,6 +1,7 @@
 #include "Player.h"
 
 #include <raymath.h>
+#include <AudioManager.h>
 #include <LightingSystem.h>
 #include <SceneManager.h>
 #include <WorldEditor.h>
