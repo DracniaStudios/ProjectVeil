@@ -1,5 +1,6 @@
 #include <Perception/SoundField.h>
 
+#include <AudioManager.h>
 #include <gameMap.h>
 #include <GameObject.h>
 
