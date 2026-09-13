@@ -16,6 +16,8 @@
 
 #include <Collider.h>
 
+#include <nlohmann/json.hpp>
+
 #include <raymath.h>
 
 #include <cmath>

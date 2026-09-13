@@ -1,5 +1,7 @@
 #include "Physics.h"
 
+#include <nlohmann/json.hpp>
+
 #include <gameMap.h>
 #include <iostream>
 #include <SceneManager.h>

@@ -15,6 +15,8 @@
 
 #include <raylib.h>
 
+#include <nlohmann/json.hpp>
+
 #include <Scene.h>
 #include <SceneManager.h>
 #include <AI/Director.h>

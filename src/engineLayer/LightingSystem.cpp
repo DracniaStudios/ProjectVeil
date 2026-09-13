@@ -1,5 +1,7 @@
 #include "LightingSystem.h"
 
+#include <nlohmann/json.hpp>
+
 #include <rlgl.h>
 
 #include <AssetManager.h>

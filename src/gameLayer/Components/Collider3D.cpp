@@ -1,5 +1,7 @@
 #include <Collider.h>
 
+#include <nlohmann/json.hpp>
+
 #include <SceneManager.h>
 
 #include <raymath.h>
