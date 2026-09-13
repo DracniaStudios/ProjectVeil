@@ -165,7 +165,11 @@ namespace
 			Vector3LengthSqr(other->rigidBody3D.GetVelocity()) >
 			Vector3LengthSqr(self->rigidBody3D.GetVelocity()) ? other : self;
 
-		scene->soundField.Emit(groundImpactSound, striker->getPosition(), loudness, SOUND_IMPACT, striker->id);
+		// SoundField only records the AI-perception event; playing it back for
+		// the player is a separate, explicit step here (SoundField itself has
+		// no AudioManager/FMOD dependency by design).
+		AudioManager::getInstance().Play3D(groundImpactSound, striker->getPosition(), AUDIO_GAMEPLAY_SFX, loudness);
+		scene->soundField.Emit(striker->getPosition(), loudness, SOUND_IMPACT, striker->id);
 	}
 }
 
@@ -215,12 +219,6 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 				EmitImpactNoise(self, other, contact);
 			}
 			contactsThisFrame.push_back(other);
-
-			if (std::find(contactsThisFrame.begin(), contactsThisFrame.end(), other) == contactsThisFrame.end())
-			{
-				// Handle the case where the object is not in the list
-			}
-
 		}
 
 		// Recorded by ID: the matching exit fires a frame later, by which time this
