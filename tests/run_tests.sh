@@ -1,11 +1,20 @@
 #!/usr/bin/env bash
 #
-# Builds and runs the standalone perception tests.
+# Builds and runs the standalone test suites.
 #
-# These are not part of the game binary on purpose. FMOD is vendored
-# Windows-only (.dll/.lib, no .so), so the game cannot link on Linux and
-# anything hosted inside it would be unrunnable there. SoundField references no
-# FMOD symbol, so it links against raylib alone and actually executes.
+# These are not part of the game binary on purpose -- they are built here so a
+# suite can construct engine objects directly rather than driving them through a
+# running game.
+#
+# There used to be a "cheap tier" here: SoundFieldTests and ColliderTests linked
+# against raylib alone, with no engine objects and no GL context, because
+# SoundField.cpp and Collider3D.cpp had no engine dependency. Both have since
+# acquired one -- Collider3D.cpp includes <SceneManager.h> and reaches
+# currentScene->gameMap, and SoundField.cpp calls AudioManager::getInstance() --
+# so they now link like every other suite. The old comments predicted exactly
+# this ("if this block ever starts wanting game objects to link, something has
+# included an engine header in the collider"); restoring the cheap tier means
+# removing those dependencies, not editing this file.
 #
 # Requires a configured build directory for the raylib static library:
 #   cmake --preset linux-debug
@@ -40,52 +49,6 @@ FMOD_CORE_INC="$(dirname "$(find thirdparty -name fmod.hpp -print -quit)")"
 
 OUT_DIR="$BUILD_DIR/tests"
 mkdir -p "$OUT_DIR"
-BIN="$OUT_DIR/soundfield_tests"
-
-echo "building $BIN"
-g++ -std=c++23 -Wall \
-	-I src/gameLayer \
-	-I src/engineLayer \
-	-I thirdparty/raylib-6.0/src \
-	-I "$JSON_INC" \
-	-I "$FMOD_STUDIO_INC" \
-	-I "$FMOD_CORE_INC" \
-	tests/SoundFieldTests.cpp \
-	src/gameLayer/Perception/SoundField.cpp \
-	src/gameLayer/Components/Collider3D.cpp \
-	-o "$BIN" \
-	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
-
-echo
-"$BIN"
-SOUNDFIELD_STATUS=$?
-
-# ---------------------------------------------------------------------------
-# Collider tests
-#
-# Same cheap tier as the SoundField suite: Collider3D.cpp deliberately has no
-# engine dependency, so it links against raylib alone and needs no window. If
-# this block ever starts wanting game objects to link, something has included an
-# engine header in the collider.
-# ---------------------------------------------------------------------------
-COLLIDER_BIN="$OUT_DIR/collider_tests"
-
-echo
-echo "building $COLLIDER_BIN"
-g++ -std=c++23 -Wall \
-	-I src/gameLayer \
-	-I src/engineLayer \
-	-I thirdparty/raylib-6.0/src \
-	-I "$JSON_INC" \
-	tests/ColliderTests.cpp \
-	src/gameLayer/Components/Collider3D.cpp \
-	-o "$COLLIDER_BIN" \
-	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
-
-echo
-"$COLLIDER_BIN"
-COLLIDER_STATUS=$?
-
 # ---------------------------------------------------------------------------
 # Stalker FSM tests
 #
@@ -101,9 +64,10 @@ COLLIDER_STATUS=$?
 OBJ_ROOT="$BUILD_DIR/CMakeFiles/ProjectVeil.dir"
 if [[ ! -d "$OBJ_ROOT" ]]; then
 	echo
-	echo "skipping engine-linked suites: no compiled objects under '$OBJ_ROOT'." >&2
-	echo "                               build the game first: cmake --build $BUILD_DIR" >&2
-	exit $SOUNDFIELD_STATUS
+	echo "error: no compiled objects under '$OBJ_ROOT'." >&2
+	echo "       every suite links the engine now; build the game first:" >&2
+	echo "       cmake --build $BUILD_DIR" >&2
+	exit 1
 fi
 
 # Every object except the one defining main. Detected rather than hardcoded, so
@@ -142,7 +106,8 @@ FMOD_STUDIO_LIB="$(find "thirdparty/fmod-2.3.14/studio/lib/$FMOD_ARCH_DIR" -name
 # Both suites link identically, so they are built and run from one loop: a new
 # engine-linked suite is a line here rather than another copy of the g++ call.
 ENGINE_STATUS=0
-for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
+for suite in "SoundFieldTests:soundfield_tests" "ColliderTests:collider_tests" \
+             "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
              "TaskStationTests:task_station_tests" "GameMapTests:game_map_tests"; do
 	SRC="tests/${suite%%:*}.cpp"
 	TEST_BIN="$OUT_DIR/${suite##*:}"
@@ -224,4 +189,4 @@ else
 fi
 TRIGGER_STATUS=$?
 
-if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
+if [[ $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
