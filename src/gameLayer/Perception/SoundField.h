@@ -47,9 +47,13 @@ public:
 	void Update(float deltaTime);
 
 	/// Records a noise. `timestamp` is stamped here, so callers leave it zero.
+	/// Deliberately takes no sound name and plays no audio: this class has no
+	/// engine/FMOD dependency by design (see the class comment and
+	/// tests/run_tests.sh, which link this file against raylib alone). A
+	/// caller that wants the noise to also be audible plays it itself through
+	/// AudioManager, in addition to calling this for the AI-perception side.
 	void Emit(const SoundEvent& event);
 	void Emit(Vector3 position, float loudness, SoundKind kind, std::uint64_t sourceId = 0);
-	void Emit(std::string soundName, Vector3 position, float loudness, SoundKind kind, std::uint64_t sourceId = 0);
 
 	void Clear() { events.clear(); }
 

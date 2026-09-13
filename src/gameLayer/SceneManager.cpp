@@ -19,7 +19,12 @@ void SceneManager_init(SceneManager* manager) {
 
 	manager->transition = Transition_new();
 
-	SceneManager_push(manager, SCENE_MAIN_MENU);
+	// Not pushed here: gameMain.cpp's init_game() does the initial
+	// SceneManager_push once its own setup (camera, etc.) is done. Pushing here
+	// too used to set currentScene immediately (transitioning IN from a null
+	// scene), so that second push then saw a non-null currentScene and started
+	// a spurious OUT transition — a fade-to-black-and-back playing over the
+	// main menu right after launch for no reason.
 }
 
 void SceneManager_update(SceneManager* manager, float delta) {

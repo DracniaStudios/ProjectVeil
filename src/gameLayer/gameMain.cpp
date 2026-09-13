@@ -2,7 +2,6 @@
 
 #include <cmath>
 
-constexpr float minimumDeltaTime = 1.0f / 240.0f; // 120 FPS
 constexpr float maxDeltaTime = 1.0f / 30.0f; // 30 FPS
 
 bool init_game()

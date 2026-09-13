@@ -1,7 +1,5 @@
 #include <Collider.h>
 
-#include <SceneManager.h>
-
 #include <raymath.h>
 #include <algorithm>
 #include <cfloat>
@@ -275,43 +273,28 @@ namespace
 
 #pragma region Collision
 
+// Deliberately do not look up the owning GameObjects here (e.g. through
+// SceneManager::getInstance().currentScene->gameMap) — doing so once before
+// pulled in SceneManager.h/Scene.h/imgui.h, breaking the "no engine
+// dependency" contract this file documents at the top and, with it, the
+// standalone SoundField/Collider unit tests that link this translation unit
+// against raylib alone (see tests/run_tests.sh). Resolve `other.GetObjectID()`
+// through the caller if a future rule needs the actual GameObjects.
 bool Collider3D::onCollisionEnter(Collider3D& other) const {
-	/*
-	auto gameMap = &SceneManager::getInstance().currentScene->gameMap;
-	auto self = gameMap->FindWorldObject(objectID);
-	auto object = gameMap->FindWorldObject(other.GetObjectID());
-	*/
-
 	(void)other;
 	std::cout << "Add Collison Rules. Check Player vs Stalkers. \n";
-	//std::cout << self->name << " entered collision with " << object->name << "\n";
 	return true;
 }
 bool Collider3D::onCollisionExit(Collider3D& other) const {
-	
-	auto gameMap = &SceneManager::getInstance().currentScene->gameMap;
-	auto self = gameMap->FindWorldObject(objectID);
-	auto object = gameMap->FindWorldObject(other.GetObjectID());
-
-	//std::cout << self->name << " exited collision with " << object->name << "\n";
+	(void)other;
 	return true;
 }
 bool Collider3D::onTriggerEnter(Collider3D& other) const {
-	
-	auto gameMap = &SceneManager::getInstance().currentScene->gameMap;
-	auto self = gameMap->FindWorldObject(objectID);
-	auto object = gameMap->FindWorldObject(other.GetObjectID());
-
-	//std::cout << self->name << " entered trigger with " << object->name << "\n";
+	(void)other;
 	return true;
 }
 bool Collider3D::onTriggerExit(Collider3D& other) const {
-	
-	auto gameMap = &SceneManager::getInstance().currentScene->gameMap;
-	auto self = gameMap->FindWorldObject(objectID);
-	auto object = gameMap->FindWorldObject(other.GetObjectID());
-
-	//std::cout << self->name << " exited trigger with " << object->name << "\n";
+	(void)other;
 	return true;
 }
 #pragma endregion

@@ -105,7 +105,7 @@ static GameObject* AddFloor(Scene* scene, Vector3 centre, Vector3 size, Collider
 	floor.name = "TestFloor";
 	floor.isEnabled = true;
 	floor.rigidBody3D.isStatic = true;
-	floor.rigidBody3D.canCollide = true;
+	floor.rigidBody3D.collider.canCollide = true;
 	floor.rigidBody3D.translation = centre;
 	floor.rigidBody3D.scale = size;
 	floor.rigidBody3D.collider.mode = mode;

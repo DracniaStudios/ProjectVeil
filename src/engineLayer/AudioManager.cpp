@@ -352,17 +352,7 @@ bool AudioManager::PlayEvent3D(const std::string& eventPath, Vector3 position, A
 		return false;
 	}
 
-	FMOD::Studio::EventInstance* soundInstance{};
-
-	// Stop the previous event on this object before starting a new one
-	if (soundInstance != nullptr) {
-		if (soundInstance->isValid()) {
-			soundInstance->stop(FMOD_STUDIO_STOP_ALLOWFADEOUT);
-			soundInstance->release(); // Release the instance to free resources
-		}
-		soundInstance = nullptr;
-	}
-
+	FMOD::Studio::EventInstance* soundInstance = nullptr;
 	result = description->createInstance(&soundInstance);
 	if (result != FMOD_OK || soundInstance == nullptr) {
 		std::cout << "[Audio Manager] Failed to create instance for \"" << eventPath << "\": " << FMOD_ErrorString(result) << "\n";
