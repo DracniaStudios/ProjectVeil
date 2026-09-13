@@ -72,13 +72,21 @@ Entity* GameMap::SpawnEntity(Entity& entity)
 		std::cout << "Added Object \n";
 	}
 	
+	// The id is assigned BEFORE the insert, not after. This map is keyed by id,
+	// so inserting under the incoming entity.id stored every spawn under the wrong
+	// key: 0 on a fresh Entity, and the source's own id when the editor duplicates
+	// one. Each spawn then overwrote the previous entry at that key, FindEntity()
+	// missed every spawned entity, and DestroyEntity() could never reach one --
+	// so the dead-item sweep in Scene_updateScene silently did nothing.
+	// SpawnGameObject and SpawnInteractable have always assigned first; this now
+	// matches them. Setting it before clone() is what carries the id into the copy.
+	entity.id = instanceHolder.getIdAndIncrement();
+
 	// Use clone() to preserve the dynamic type of the passed-in entity (e.g., Stalker)
 	entities[entity.id] = entity.clone();
-	
-	// Sets Object ID and Adds To Scene
+
 	auto ent = entities[entity.id].get();
-	ent->id = instanceHolder.getIdAndIncrement();
-	
+
 	ent->onEnable();
 
 	/// Set RigidBody3D Data
@@ -91,7 +99,7 @@ Entity* GameMap::SpawnEntity(Entity& entity)
 	ent->rigidBody3D.Teleport(ent->getSpawnPoint());
 
 	std::cout << "Added Entity \n";
-	return entities[entity.id].get();
+	return ent;
 }
 
 InteractableObject* GameMap::SpawnInteractable(InteractableObject& object)

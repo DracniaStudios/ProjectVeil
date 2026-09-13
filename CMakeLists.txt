@@ -110,6 +110,49 @@ nlohmann_json
 FMOD
 STEAM)
 
+# Precompiled header.
+#
+# Deliberately after target_link_libraries: <fmod.hpp> and <nlohmann/json.hpp>
+# resolve through the INTERFACE include directories of the linked targets, not
+# through the target_include_directories above, so a PCH declared before this
+# point cannot find them.
+#
+# Third-party and standard headers only, and only ones that are effectively
+# frozen. A header from src/ here would mean every edit to it invalidates the
+# PCH and rebuilds all 50 translation units, which is worse than having no PCH.
+#
+# <nlohmann/json.hpp> is deliberately NOT here, which is counter-intuitive given
+# it is the largest header in the build. Measured, serial rebuild of the 50 game
+# TUs:
+#
+#   PCH with json.hpp      99s   (.gch 144 MB)
+#   PCH without json.hpp   77s   (.gch  93 MB)
+#
+# Every TU pays to load the .gch, and since the headers stopped dragging json in
+# only eleven .cpp files need it at all -- so carrying it made the PCH cost more
+# to read than it saved in parsing. <chrono> is what dominates what remains;
+# raylib and the FMOD headers measured free, so they stay for the TUs that use
+# them.
+#
+# This complements the include hygiene rather than replacing it: the PCH pays
+# for clean builds, while headers that no longer drag json.hpp and the FMOD
+# headers behind them pay for incremental ones and for the standalone suites in
+# tests/run_tests.sh, which compile with raw g++ and never see this.
+#
+# Note a PCH is force-included into every TU, so a file that forgets an #include
+# can still compile. Building once with -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+# is what catches that.
+target_precompile_headers("${CMAKE_PROJECT_NAME}" PRIVATE
+	<raylib.h>
+	<raymath.h>
+	<fmod.hpp>
+	<fmod_studio.hpp>
+	<string>
+	<vector>
+	<unordered_map>
+	<chrono>
+	<iostream>)
+
 
 # TODO: Add tests and install targets if needed.
 

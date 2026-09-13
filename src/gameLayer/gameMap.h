@@ -5,6 +5,7 @@
 #include <raylib.h>
 #include <vector>
 #include <type_traits>
+#include <unordered_map>
 #include <Entity.h>
 
 inline constexpr int OBJECT_LIMIT = 10000;

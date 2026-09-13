@@ -1,5 +1,8 @@
 #include <GameObject.h>
 
+#include <nlohmann/json.hpp>
+
+#include <AudioManager.h>
 #include <SceneManager.h>
 #include <gameMap.h>
 
