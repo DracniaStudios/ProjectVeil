@@ -3,7 +3,12 @@
 #define COLLIDER_H
 
 #include <raylib.h>
-#include <nlohmann/json.hpp>
+// json_fwd.hpp, not json.hpp. Every Json in this header is a by-value return in a
+// declaration or a reference parameter, and both are legal with an incomplete type.
+// The full header is ~148k preprocessed lines against json_fwd's ~63k, and it was
+// reaching 42 of 50 translation units from here. A .cpp that actually builds or
+// reads a Json includes <nlohmann/json.hpp> itself.
+#include <nlohmann/json_fwd.hpp>
 #include <iostream>
 
 using Json = nlohmann::json;

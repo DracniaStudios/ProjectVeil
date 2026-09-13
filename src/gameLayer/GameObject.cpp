@@ -1,5 +1,7 @@
 #include "GameObject.h"
 
+#include <nlohmann/json.hpp>
+
 #include <AudioManager.h>
 #include <LightingSystem.h>
 #include <SceneManager.h>

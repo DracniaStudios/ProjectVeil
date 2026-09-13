@@ -1,5 +1,7 @@
 #include <Settings.h>
 
+#include <nlohmann/json.hpp>
+
 #include <SaveSystem.h>
 #include <SceneManager.h>
 #include <filesystem>

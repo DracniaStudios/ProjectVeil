@@ -1,5 +1,7 @@
 #include "Entity.h"
 
+#include <nlohmann/json.hpp>
+
 #include <complex>
 #include <SceneManager.h>
 #include <helpers.h>

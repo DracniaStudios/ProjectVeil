@@ -1,5 +1,7 @@
 #include "SaveSystem.h"
 
+#include <nlohmann/json.hpp>
+
 #include <algorithm>
 #include <filesystem>
 #include <fstream>

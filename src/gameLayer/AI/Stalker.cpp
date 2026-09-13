@@ -1,5 +1,7 @@
 #include <AI/Stalker.h>
 
+#include <nlohmann/json.hpp>
+
 #include <Scene.h>
 #include <SceneManager.h>
 #include <Perception/SoundField.h>
