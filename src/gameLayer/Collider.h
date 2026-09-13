@@ -74,32 +74,16 @@ inline const char* colliderModeToString(int mode)
 
 /**
  * Smallest extent a collider may present to the solver.
- *
- * A zero or negative half extent inverts the volume (min > max). Both
- * CheckCollisionBoxes and the editor's ray test then report no hit, so the
- * object silently becomes uncollidable *and* unclickable with nothing on screen
- * to explain why — see the same trap documented for scale in EditorPicking.h.
- * Clamping lives in the accessors below rather than in the fields, so no route
- * into a collider (JSON, the inspector, a script) can get past it.
  */
 inline constexpr float MINIMUM_COLLIDER_EXTENT = 0.01f;
 
 /**
  * Normalises a rotation, falling back to identity when it is degenerate.
- *
- * A zeroed quaternion normalises to zero and collapses every vector it rotates
- * onto the origin — a body read before it has ever ticked would become a point
- * and pass through everything. Every route that turns a collider into world
- * space goes through here so none of them can disagree.
  */
 Quaternion SafeOrientation(Quaternion rotation);
 
 /**
  * Result of a narrow-phase contact test.
- *
- * Produced by ColliderContact() and consumed by the resolution code, so a
- * single test answers "do they touch", "which way do I push" and "how far" at
- * once rather than being recomputed for each question.
  */
 struct ContactInfo
 {
@@ -110,11 +94,6 @@ struct ContactInfo
 
 /**
  * A collider resolved into world space, which is all the narrow phase needs.
- *
- * Separating the resolved volume from the authored Collider3D is what keeps the
- * shape maths free of any engine dependency: ColliderContact() below takes two
- * of these and knows nothing about rigid bodies, game objects or the scene. That
- * is what lets it be unit tested against raylib alone.
  */
 struct ColliderVolume
 {
@@ -128,41 +107,16 @@ struct ColliderVolume
 
 /**
  * Narrow phase for every supported shape pair.
- *
- * Box/box is the separating axis theorem: two convex shapes are apart if and
- * only if some axis exists on which their projections do not overlap, and for
- * two boxes it is enough to test 15 candidates — each box's 3 face normals plus
- * the 9 cross products of their edge directions. A gap on any one proves
- * separation and returns early; if all 15 overlap, the smallest overlap is the
- * contact normal and depth.
- *
+ * 
  * The 9 cross products are not optional: without them two boxes can pass through
  * one another corner-first, which is exactly the case an axis-aligned test
  * cannot see.
- *
- * Sphere pairs are closest-point tests instead — cheaper, and exact.
- *
- * The returned normal always points from `a` toward `b`, which the resolution
- * code relies on to know which way to push.
  */
 ContactInfo ColliderContact(const ColliderVolume& a, const ColliderVolume& b);
 
 /**
  * Ray against a collider volume — exact for every shape, unlike testing the
  * axis-aligned box that encloses it.
- *
- * That difference is the whole point of using this rather than raylib's
- * GetRayCollisionBox on a body's broad-phase box: a rotated ramp, an offset
- * collider or a sphere all sit some way inside their own bounds, and a ray
- * through that gap is a miss being reported as a hit. Grounding, line of sight
- * and sound occlusion all read this, so the gap is the difference between being
- * grounded on thin air beside a wall and not.
- *
- * Returns the entry distance normally, and the EXIT distance when the ray starts
- * inside the volume — so a camera or a listener standing inside a room is not
- * swallowed at distance 0 by the walls around it. `outNormal` always faces the
- * ray: the entry face's outward normal from outside, the exit face's inward
- * normal from within.
  *
  * A zero-length direction is rejected rather than normalised.
  */
@@ -214,26 +168,11 @@ public:
 
 	/**
 	 * World radius of a sphere collider.
-	 *
-	 * A non-uniformly scaled sphere is an ellipsoid, which this solver has no
-	 * shape for, so the largest scale component wins. That over-covers rather
-	 * than under-covers: a body is never smaller to the solver than it looks.
 	 */
 	float GetWorldRadius(Vector3 bodyScale) const;
 
 	/**
 	 * Fits `size` and `offset` to the model's own geometry.
-	 *
-	 * Unions GetMeshBoundingBox over every mesh in the model. The result is in
-	 * mesh-local units, which is exactly the frame `size`/`offset` live in, so it
-	 * composes with Transform::scale like an authored box would.
-	 *
-	 * This does not reintroduce the second source of truth the tombstone comment
-	 * in GameObject.cpp warns about: mesh bounds feed *into* the collider, and
-	 * the collider remains the one thing SyncBroadPhaseBox() reads.
-	 *
-	 * A model with no meshes leaves the collider untouched rather than collapsing
-	 * it to nothing.
 	 */
 	void FitToModel(const Model& model);
 	void FitToBounds(BoundingBox bounds);
@@ -243,26 +182,9 @@ public:
 	bool loadFromJson(const Json& j);
 };
 
-/**
- * Resolves a collider riding on a transform into the world volume the narrow
- * phase tests.
- *
- * This is the single definition of how `size`, `offset` and `radius` compose
- * with a transform. The rigid body builds its volumes through here and so do the
- * tests, so the solver, the broad-phase box, the touch rays and the debug draw
- * can never disagree about where a collider is or how big it is.
- */
 ColliderVolume MakeColliderVolume(const Collider3D& collider, Vector3 translation,
 	Quaternion rotation, Vector3 scale);
 
-/**
- * Half extents of the smallest AXIS-ALIGNED box containing the volume.
- *
- * This is the BROAD-phase size. A rotated box is represented by the smallest
- * axis-aligned volume that still contains it — the standard |R| * halfExtents
- * construction — and a sphere is its radius on all three axes. The narrow phase
- * uses the true oriented volume and does not inherit this slack.
- */
 Vector3 ColliderWorldHalfExtents(const ColliderVolume& volume);
 
 #endif

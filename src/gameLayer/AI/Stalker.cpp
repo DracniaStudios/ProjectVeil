@@ -14,7 +14,7 @@ Stalker::Stalker()
 	name = "Stalker";
 
 	maxHealth = 100.0f;
-	baseSpeed = 2.0f;
+	baseSpeed = 5.0f;
 	baseDamage = 25.0f;
 }
 

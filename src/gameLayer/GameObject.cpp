@@ -422,4 +422,9 @@ bool GameObject::loadFromJson(Json& j)
 {
 	return loadCommonFromJson(j);
 }
+
+void GameObject::DrawGizmos() {
+
+}
+
 #pragma endregion

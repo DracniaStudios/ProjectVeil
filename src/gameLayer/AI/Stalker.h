@@ -93,11 +93,6 @@ struct Stalker : Entity
 
 	/**
 	 * Nearest obstruction along `direction`, out to `maxDistance`.
-	 *
-	 * Returns the hit distance, or maxDistance when the path is clear. Only
-	 * GameMap::gameObjects are considered: entities and interactables live in
-	 * their own containers, so the stalker steers around the level but will
-	 * still walk into another entity and let the collision solver separate them.
 	 */
 	float DistanceToObstruction(Vector3 direction, float maxDistance, const GameMap* map) const;
 
@@ -116,39 +111,17 @@ private:
 
 	/**
 	 * Steer toward a target, going around world geometry in the way.
-	 *
-	 * `map` may be null, which skips avoidance entirely and steers straight —
-	 * that is the behaviour every caller had before avoidance existed, and it
-	 * keeps a stalker driven without a world (the FSM tests) working.
 	 */
 	void MoveToward(Vector3 target, float speed, float deltaTime, const GameMap* map);
-
 
 	/**
 	 * Pick a heading that makes progress toward `desired` without walking into
 	 * a wall.
-	 *
-	 * A whisker scan: if the straight path is clear it is used unchanged,
-	 * otherwise the direction is rotated outward in steps and the first clear
-	 * heading wins, falling back to whichever probe saw furthest. This is
-	 * deliberately local and stateless — it handles walls and pillars, and it
-	 * can still stall in a deep concave corner where every heading is blocked.
-	 * A route authored with clear line of travel between waypoints never
-	 * exercises that case; proper pathfinding is a Phase 2 concern once the
-	 * game has more than one room.
 	 */
 	Vector3 SteerAround(Vector3 desired, const GameMap* map) const;
 
 	/**
 	 * Distance to a target on the plane the stalker actually steers on.
-	 *
-	 * MoveToward zeroes the vertical component and leaves gravity to own it, so
-	 * measuring arrival in 3D asked a question the movement could never answer:
-	 * a target whose height differs from the stalker's body centre by more than
-	 * arriveDistance stayed permanently "not arrived", and the stalker parked on
-	 * top of it forever without advancing. That is easy to hit, because
-	 * waypoints are authored from the player's position and the two bodies do
-	 * not share a centre height.
 	 */
 	float PlanarDistanceTo(Vector3 target) const;
 

@@ -38,16 +38,15 @@ public:
 	// Multiplier applied per solid body between source and listener.
 	static constexpr float kOcclusionPerBody = 0.45f;
 
-	// Occluders counted before we stop testing. Beyond this the sound is
-	// inaudible anyway and the extra raycasts are wasted.
+	/// Occluders counted before we stop testing.
 	static constexpr int kMaxOccluders = 4;
 
 	SoundField() { events.reserve(kCapacity); }
 
-	// Advances the clock and drops expired events. Call once per frame.
+	/// Advances the clock and drops expired events. Call once per frame.
 	void Update(float deltaTime);
 
-	// Records a noise. `timestamp` is stamped here, so callers leave it zero.
+	/// Records a noise. `timestamp` is stamped here, so callers leave it zero.
 	void Emit(const SoundEvent& event);
 	void Emit(Vector3 position, float loudness, SoundKind kind, std::uint64_t sourceId = 0);
 	void Emit(std::string soundName, Vector3 position, float loudness, SoundKind kind, std::uint64_t sourceId = 0);
@@ -57,22 +56,11 @@ public:
 	float Now() const { return clock; }
 	const std::vector<SoundEvent>& Events() const { return events; }
 
-	/**
-	 * How loud `event` is at `listener`, after distance falloff and occlusion.
-	 * Returns 0 when inaudible. `map` may be null, which skips occlusion.
-	 */
+	/// How loud `event` is at `listener`, after distance falloff and occlusion.
 	float AudibleLoudnessAt(Vector3 listener, const SoundEvent& event, const GameMap* map) const;
 
-	/**
-	 * Strongest currently-audible event at `listener`, above `threshold`.
-	 *
-	 * Ties break toward the more recent event, so a listener standing between
-	 * two equally loud noises follows the fresher one instead of oscillating.
-	 * Events from `ignoreSourceId` are skipped — that is how the stalker avoids
-	 * hearing its own footsteps and chasing itself.
-	 *
-	 * Returns false and leaves the out-params untouched when nothing qualifies.
-	 */
+	/// Strongest currently-audible event at `listener`, above `threshold`. 
+	/// Tied by most recent event
 	bool LoudestAudible(Vector3 listener,
 	                    float threshold,
 	                    std::uint64_t ignoreSourceId,

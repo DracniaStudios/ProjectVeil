@@ -161,19 +161,11 @@ namespace
 		const float loudness = Clamp(
 			(closingSpeed - kQuietImpact) / (kLoudImpact - kQuietImpact), 0.0f, 1.0f);
 
-		// solveCollision visits each unordered pair exactly once, so `self` is
-		// whichever body the loop happened to reach first — just as likely the
-		// wall as the crate that hit it. Attributing the noise to the faster body
-		// puts it at the thing that actually moved, and makes the source id the
-		// striker's: a stalker that walks into a wall then hears nothing of its
-		// own making instead of chasing itself.
 		const GameObject* striker =
 			Vector3LengthSqr(other->rigidBody3D.GetVelocity()) >
 			Vector3LengthSqr(self->rigidBody3D.GetVelocity()) ? other : self;
 
 		scene->soundField.Emit(groundImpactSound, striker->getPosition(), loudness, SOUND_IMPACT, striker->id);
-		//scene->soundField.Emit(striker->getPosition(), loudness, SOUND_IMPACT, striker->id);
-		//AudioManager::getInstance().Play3D(groundImpactSound, self->getPosition(), AUDIO_GAMEPLAY_SFX, loudness);
 	}
 }
 

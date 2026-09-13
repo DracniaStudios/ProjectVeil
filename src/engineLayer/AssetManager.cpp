@@ -93,12 +93,13 @@ void AssetManager::loadFolder(const char* folder)
 		std::cerr << "Asset folder not found: " << root.string() << "\n";
 		return;
 	}
-
+	/*
 	// Check if Folder Exists in the list of folders, if not add it
 	if (std::find(folders.begin(), folders.end(), folder) == folders.end())
 	{
 		folders.push_back(folder);
 	}
+	*/
 	
 	// Collect first and sort so load order (and asset indices) don't depend on the OS
 	std::vector<fs::path> files;
@@ -116,8 +117,14 @@ void AssetManager::loadFolder(const char* folder)
 
 		// If the entry is a regular file, add it to the list of files
 		if (entry.is_regular_file()) { files.push_back(entry.path()); }
+
+
+
 	}
 	std::sort(files.begin(), files.end());
+
+	if (files.empty()) { std::remove(folder); }
+
 
 	for (const auto& file : files)
 	{

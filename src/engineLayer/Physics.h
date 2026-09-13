@@ -259,6 +259,7 @@ private:
 	bool isColliding = false;
 
 	float airTime = 0;
+	uint64_t objectID = 0;
 public:
 
 	bool isEnabled = true;
@@ -266,25 +267,9 @@ public:
 
 	/**
 	 * Axis-aligned box enclosing the collider — the BROAD phase, and nothing else.
-	 *
-	 * Deliberately not called `broadPhaseBox`: it is not the collision shape, it is
-	 * a conservative bound around it. Because it can only ever be larger than the
-	 * collider, a miss here is a guaranteed miss, which is exactly what makes it a
-	 * sound gate in front of the exact test — and exactly why nothing should use
-	 * it to answer a question. Anything asking "is something solid here" wants
-	 * Raycast() or getContact() instead.
 	 */
 	BoundingBox broadPhaseBox = {};
 
-	/**
-	 * The collision volume, authored independently of the render scale.
-	 *
-	 * This replaces `broadPhaseBoxScale`, which was declared for exactly this and
-	 * never read by anything. Its defaults — size {1,1,1}, offset {0,0,0},
-	 * COLLIDER_BOX, COLLIDER_COLLISION — make every accessor below return what it
-	 * returned when the collision shape was simply `scale`, so an object that has
-	 * never had its collider touched behaves exactly as it always did.
-	 */
 	Collider3D collider = {};
 	Vector3 angularVelocity = {}; // radians/sec, axis = spin axis
 	Vector3 velocity = {};
@@ -317,36 +302,8 @@ public:
 
 	/**
 	 * World-space half-extents of the collision volume, accounting for rotation.
-	 *
-	 * The solver is axis-aligned, so a rotated body is represented by the
-	 * smallest axis-aligned box that still contains it. Every half-extent in the
-	 * collision path goes through here, so the box, the penetration depth, the
-	 * contact normal and the touch rays can never disagree about how big a body
-	 * is.
-	 *
-	 * Returns exactly `scale * 0.5f` for an unrotated body, so nothing changes
-	 * for the axis-aligned common case.
-	 *
-	 * This is the BROAD-phase volume. The narrow phase (getContact) uses the
-	 * true oriented box and does not inherit this slack.
 	 */
 	Vector3 GetWorldHalfExtents() const { return ColliderWorldHalfExtents(GetColliderVolume()); }
-
-	/**
-	 * The collider resolved into world space — shape, centre, axes and extents.
-	 *
-	 * This is what the narrow phase actually tests, and every geometry query on
-	 * this body is a thin read off it, so the solver, the broad-phase box, the
-	 * touch rays and the debug draw cannot disagree about where a body is or how
-	 * big it is.
-	 */
-	//
-	// Defined here rather than in RigidBody3D.cpp on purpose. These are one-line
-	// compositions of the collider with the transform and need nothing from the
-	// engine, whereas RigidBody3D.cpp reaches SceneManager inside UpdateForce and
-	// so cannot be linked on its own. Keeping them inline lets a translation unit
-	// that only asks geometry questions — SoundField's occlusion pass, say — link
-	// against Collider3D.cpp alone.
 	ColliderVolume GetColliderVolume() const
 	{
 		return MakeColliderVolume(collider, translation, rotation, scale);
@@ -354,11 +311,6 @@ public:
 
 	/**
 	 * World-space centre of the collision volume.
-	 *
-	 * Deliberately not the same thing as getCenter(), which is the transform's
-	 * own position: a collider may be offset from the body it rides on, and the
-	 * collision path wants the volume while the render and audio paths want the
-	 * object.
 	 */
 	Vector3 GetColliderCenter() const { return GetColliderVolume().center; }
 
@@ -393,16 +345,6 @@ public:
 	/// Collision Detection
 	/**
 	 * Narrow phase: exact oriented-box overlap by the separating axis theorem.
-	 *
-	 * Two convex shapes are apart if and only if some axis exists on which their
-	 * projections do not overlap. For two boxes it is enough to test 15
-	 * candidates — each box's 3 face normals, plus the 9 cross products of their
-	 * edge directions. A gap on any one proves separation and returns early; if
-	 * all 15 overlap, the smallest overlap is the contact normal and depth.
-	 *
-	 * The 9 cross products are not optional: without them two boxes can pass
-	 * through one another corner-first, which is exactly the case an
-	 * axis-aligned test cannot see.
 	 */
 	ContactInfo getContact(const RigidBody3D& other) const;
 

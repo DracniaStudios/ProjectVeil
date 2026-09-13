@@ -5,13 +5,8 @@
 #include <raylib.h>
 #include <cstdint>
 
-/**
- * What made the noise.
- *
- * The stalker treats kinds differently — a footstep is worth investigating, a
- * tampering alarm is worth hunting — so the cause travels with the event rather
- * than being inferred from loudness alone.
- */
+
+/// What made the noise.
 enum SoundKind
 {
 	SOUND_FOOTSTEP,
@@ -35,14 +30,7 @@ inline const char* soundKindToString(int kind)
 	}
 }
 
-/**
- * A single gameplay-audible noise.
- *
- * Deliberately separate from FMOD. AudioManager decides what the *player*
- * hears; this decides what the *AI* hears. Tying them together would make
- * perception depend on bank load state and on sounds that exist for atmosphere
- * only, and would make the stalker deaf whenever audio failed to initialise.
- */
+///A single gameplay-audible noise.
 struct SoundEvent
 {
 	Vector3       position = {};

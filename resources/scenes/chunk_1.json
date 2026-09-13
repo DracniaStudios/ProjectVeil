@@ -4,7 +4,7 @@
       "ArriveDistance": 1.0,
       "AvoidProbeDistance": 3.0,
       "BaseDamage": 25.0,
-      "BaseSpeed": 1.0,
+      "BaseSpeed": 5.0,
       "CastsShadow": true,
       "Color": [
         255,
@@ -12,7 +12,7 @@
         255,
         255
       ],
-      "CurrentWaypoint": 1,
+      "CurrentWaypoint": 2,
       "Health": 10.0,
       "HearingThreshold": 0.05000000074505806,
       "HuntPatience": 4.0,
@@ -46,9 +46,9 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 15.092741012573242,
-        "PosY": 1.9896601438522339,
-        "PosZ": 125.51351928710938,
+        "PosX": 13.421120643615723,
+        "PosY": 1.989568829536438,
+        "PosZ": 108.48153686523438,
         "RotW": 1.0,
         "RotX": 0.0,
         "RotY": 0.0,
@@ -56,9 +56,9 @@
         "ScaleX": 1.0,
         "ScaleY": 3.0,
         "ScaleZ": 1.0,
-        "VelocityX": 0.018625255674123764,
+        "VelocityX": -2.2704818547936156e-05,
         "VelocityY": 0.0,
-        "VelocityZ": -0.8998072743415833
+        "VelocityZ": 0.0
       },
       "SearchDuration": 8.0,
       "SearchRadius": 6.0,
@@ -367,7 +367,7 @@
       ]
     }
   },
-  "IdCounter": 303,
+  "IdCounter": 310,
   "Interactables": {
     "114": {
       "Activator": 0,
@@ -848,13 +848,13 @@
         "LockScale": false,
         "LockTranslation": true,
         "LockVelocity": false,
-        "PosX": -0.003950174897909164,
-        "PosY": 3.282369613647461,
-        "PosZ": 0.31910523772239685,
-        "RotW": -0.5163366198539734,
-        "RotX": -0.5610806345939636,
-        "RotY": -0.5332126617431641,
-        "RotZ": 0.3664279282093048,
+        "PosX": 0.0,
+        "PosY": 3.0,
+        "PosZ": 0.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
         "ScaleX": 1.0,
         "ScaleY": 1.0,
         "ScaleZ": 1.0,
@@ -862,61 +862,6 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Variation": 0
-    },
-    "299": {
-      "Activator": 0,
-      "CastsShadow": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "InteractType": 1,
-      "IsCompleted": false,
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "IsInteractable": true,
-      "IsSelectable": true,
-      "Name": "FlappyBird",
-      "ObjectType": 3,
-      "RigidBody3D": {
-        "CanCollide": true,
-        "Collider": {
-          "Mode": 0,
-          "OffsetX": 0.0,
-          "OffsetY": 0.0,
-          "OffsetZ": 0.0,
-          "Radius": 0.5,
-          "Shape": 0,
-          "SizeX": 1.0,
-          "SizeY": 1.0,
-          "SizeZ": 1.0
-        },
-        "IsEnabled": true,
-        "IsStatic": true,
-        "LockAcceleration": false,
-        "LockAngularVelocity": false,
-        "LockRotation": false,
-        "LockScale": false,
-        "LockTranslation": false,
-        "LockVelocity": false,
-        "PosX": 77.48899841308594,
-        "PosY": 4.9141058921813965,
-        "PosZ": -18.72800064086914,
-        "RotW": 0.948323667049408,
-        "RotX": 0.0,
-        "RotY": 0.3173046410083771,
-        "RotZ": 0.0,
-        "ScaleX": 11.0,
-        "ScaleY": 11.0,
-        "ScaleZ": 1.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Chip001",
       "Variation": 0
     },
     "302": {
@@ -929,10 +874,10 @@
         255
       ],
       "InteractType": 1,
-      "IsCompleted": false,
+      "IsCompleted": true,
       "IsDestructible": true,
       "IsEnabled": true,
-      "IsInteractable": true,
+      "IsInteractable": false,
       "IsSelectable": true,
       "Model": "Terminal",
       "Name": "Terminal 1",
@@ -974,63 +919,8 @@
       },
       "Variation": 0
     },
-    "33": {
-      "Activator": 0,
-      "CastsShadow": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "InteractType": 1,
-      "IsCompleted": false,
-      "IsDestructible": false,
-      "IsEnabled": true,
-      "IsInteractable": true,
-      "IsSelectable": true,
-      "Name": "FlappyBird",
-      "ObjectType": 3,
-      "RigidBody3D": {
-        "CanCollide": true,
-        "Collider": {
-          "Mode": 0,
-          "OffsetX": 0.0,
-          "OffsetY": 0.0,
-          "OffsetZ": 0.0,
-          "Radius": 0.5,
-          "Shape": 0,
-          "SizeX": 1.0,
-          "SizeY": 1.0,
-          "SizeZ": 1.0
-        },
-        "IsEnabled": true,
-        "IsStatic": true,
-        "LockAcceleration": false,
-        "LockAngularVelocity": false,
-        "LockRotation": false,
-        "LockScale": false,
-        "LockTranslation": false,
-        "LockVelocity": false,
-        "PosX": 28.0,
-        "PosY": 5.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 2.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 15.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Texture": "Chip001",
-      "Variation": 0
-    },
-    "73": {
-      "Activator": 0,
+    "303": {
+      "Activator": 307,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1044,20 +934,21 @@
       "IsEnabled": true,
       "IsInteractable": true,
       "IsSelectable": true,
-      "Name": "Crane",
+      "Model": "Terminal",
+      "Name": "Terminal: Crane",
       "ObjectType": 3,
       "RigidBody3D": {
         "CanCollide": true,
         "Collider": {
           "Mode": 0,
           "OffsetX": 0.0,
-          "OffsetY": 0.0,
+          "OffsetY": 4.151370525360107,
           "OffsetZ": 0.0,
-          "Radius": 0.5,
-          "Shape": 0,
-          "SizeX": 1.0,
-          "SizeY": 1.0,
-          "SizeZ": 1.0
+          "Radius": 5.151370525360107,
+          "Shape": 2,
+          "SizeX": 6.0,
+          "SizeY": 10.302741050720215,
+          "SizeZ": 6.0
         },
         "IsEnabled": true,
         "IsStatic": true,
@@ -1067,22 +958,76 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 77.0,
-        "PosY": 5.0,
-        "PosZ": -44.0,
-        "RotW": 0.8571673035621643,
-        "RotX": 0.0,
-        "RotY": -0.5150380730628967,
-        "RotZ": 0.0,
-        "ScaleX": 14.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 1.0,
+        "PosX": 78.28565979003906,
+        "PosY": 1.0,
+        "PosZ": -34.0538330078125,
+        "RotW": 1.910685465164705e-15,
+        "RotX": 4.371138828673793e-08,
+        "RotY": 1.0,
+        "RotZ": 4.371138828673793e-08,
+        "ScaleX": 0.30000001192092896,
+        "ScaleY": 0.30000001192092896,
+        "ScaleZ": 0.30000001192092896,
         "VelocityX": 0.0,
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Chip001",
-      "Variation": 0
+      "Variation": 1
+    },
+    "309": {
+      "Activator": 306,
+      "CastsShadow": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "InteractType": 1,
+      "IsCompleted": false,
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "IsInteractable": true,
+      "IsSelectable": true,
+      "Model": "Terminal",
+      "Name": "Terminal: Crane",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 4.151370525360107,
+          "OffsetZ": 0.0,
+          "Radius": 5.151370525360107,
+          "Shape": 2,
+          "SizeX": 6.0,
+          "SizeY": 10.302741050720215,
+          "SizeZ": 6.0
+        },
+        "IsEnabled": true,
+        "IsStatic": true,
+        "LockAcceleration": false,
+        "LockAngularVelocity": false,
+        "LockRotation": false,
+        "LockScale": false,
+        "LockTranslation": false,
+        "LockVelocity": false,
+        "PosX": 78.30001068115234,
+        "PosY": 1.0,
+        "PosZ": -26.459505081176758,
+        "RotW": 1.910685465164705e-15,
+        "RotX": 4.371138828673793e-08,
+        "RotY": 1.0,
+        "RotZ": 4.371138828673793e-08,
+        "ScaleX": 0.30000001192092896,
+        "ScaleY": 0.30000001192092896,
+        "ScaleZ": 0.30000001192092896,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Variation": 1
     }
   },
   "Lighting": {
@@ -1129,7 +1074,7 @@
         "Type": 0
       },
       {
-        "CastsShadow": false,
+        "CastsShadow": true,
         "Color": [
           255,
           196,
@@ -1138,20 +1083,20 @@
         ],
         "Direction": [
           0.0,
-          -1.0,
+          0.0,
           0.0
         ],
-        "InnerCone": 13.088000297546387,
-        "Intensity": 5.0,
+        "InnerCone": 20.426000595092773,
+        "Intensity": 2.7660000324249268,
         "IsEnabled": true,
         "Name": "Spawn Lamp",
-        "OuterCone": 31.46500015258789,
+        "OuterCone": 75.53099822998047,
         "Position": [
           0.0,
-          59.0,
+          20.0,
           0.0
         ],
-        "Range": 101.42400360107422,
+        "Range": 36.474998474121094,
         "Type": 2
       },
       {
@@ -1168,16 +1113,16 @@
           0.0
         ],
         "InnerCone": 20.0,
-        "Intensity": 2.171999931335449,
+        "Intensity": 0.5120000243186951,
         "IsEnabled": true,
         "Name": "Point Light 3",
         "OuterCone": 35.0,
         "Position": [
-          62.65599822998047,
-          7.358127593994141,
-          -33.698001861572266
+          79.0,
+          5.0,
+          -30.0
         ],
-        "Range": 200.0,
+        "Range": 20.94099998474121,
         "Type": 1
       },
       {
@@ -1194,16 +1139,16 @@
           0.0
         ],
         "InnerCone": 20.0,
-        "Intensity": 2.3359999656677246,
+        "Intensity": 0.5329999923706055,
         "IsEnabled": true,
         "Name": "Point Light 4",
         "OuterCone": 35.0,
         "Position": [
-          60.75530242919922,
-          7.674478054046631,
-          40.29936599731445
+          69.0,
+          5.0,
+          46.0
         ],
-        "Range": 200.0,
+        "Range": 20.94099998474121,
         "Type": 1
       },
       {
@@ -1220,14 +1165,14 @@
           0.0
         ],
         "InnerCone": 20.0,
-        "Intensity": 2.253999948501587,
+        "Intensity": 0.984000027179718,
         "IsEnabled": true,
         "Name": "Point Light 5",
         "OuterCone": 35.0,
         "Position": [
-          129.4593048095703,
-          12.335033416748047,
-          107.04546356201172
+          137.0,
+          5.0,
+          109.0
         ],
         "Range": 200.0,
         "Type": 1
@@ -1246,16 +1191,16 @@
           0.0
         ],
         "InnerCone": 20.0,
-        "Intensity": 1.0,
+        "Intensity": 0.5329999923706055,
         "IsEnabled": true,
         "Name": "Point Light 6",
         "OuterCone": 35.0,
         "Position": [
-          14.243062019348145,
-          8.485735893249512,
-          129.1201629638672
+          15.0,
+          5.0,
+          130.0
         ],
-        "Range": 200.0,
+        "Range": 20.94099998474121,
         "Type": 1
       }
     ],
@@ -10572,9 +10517,9 @@
     "301": {
       "CastsShadow": true,
       "Color": [
-        255,
-        255,
-        255,
+        10,
+        10,
+        10,
         255
       ],
       "IsDestructible": true,
@@ -10612,7 +10557,107 @@
         "RotZ": 0.0,
         "ScaleX": 1.0,
         "ScaleY": 10.0,
-        "ScaleZ": 15.0,
+        "ScaleZ": 12.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Bricks058"
+    },
+    "306": {
+      "CastsShadow": true,
+      "Color": [
+        10,
+        10,
+        10,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "IsSelectable": true,
+      "Name": "Terminal Gate",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 2,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
+        "IsEnabled": true,
+        "IsStatic": true,
+        "LockAcceleration": false,
+        "LockAngularVelocity": false,
+        "LockRotation": false,
+        "LockScale": false,
+        "LockTranslation": false,
+        "LockVelocity": false,
+        "PosX": 77.0,
+        "PosY": 5.500000476837158,
+        "PosZ": -20.0,
+        "RotW": 0.9510565400123596,
+        "RotX": 0.0,
+        "RotY": 0.30901700258255005,
+        "RotZ": 0.0,
+        "ScaleX": 10.0,
+        "ScaleY": 10.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Bricks058"
+    },
+    "307": {
+      "CastsShadow": true,
+      "Color": [
+        10,
+        10,
+        10,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "IsSelectable": true,
+      "Name": "Terminal Gate",
+      "ObjectType": 0,
+      "RigidBody3D": {
+        "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 2,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
+        "IsEnabled": true,
+        "IsStatic": true,
+        "LockAcceleration": false,
+        "LockAngularVelocity": false,
+        "LockRotation": false,
+        "LockScale": false,
+        "LockTranslation": false,
+        "LockVelocity": false,
+        "PosX": 78.0,
+        "PosY": 5.5,
+        "PosZ": -43.0,
+        "RotW": 0.8987940549850464,
+        "RotX": 0.0,
+        "RotY": -0.4383711516857147,
+        "RotZ": 0.0,
+        "ScaleX": 15.0,
+        "ScaleY": 15.0,
+        "ScaleZ": 1.0,
         "VelocityX": 0.0,
         "VelocityY": 0.0,
         "VelocityZ": 0.0

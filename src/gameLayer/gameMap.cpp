@@ -59,7 +59,6 @@ GameObject* GameMap::SpawnGameObject(GameObject& object)
 	auto [it, inserted] = gameObjects.emplace(object.id, object);
 
 	std::cout << "Added Object \n";
-
 	return &it->second;
 }
 

@@ -9,12 +9,6 @@
 
 /**
  * Deliberately free of every engine dependency.
- *
- * RigidBody3D.cpp reaches SceneManager::getInstance().currentScene inside
- * UpdateForce, so it cannot be linked on its own. Keeping the shape maths here
- * instead means tests/ColliderTests.cpp links against raylib alone — the cheap
- * tier that tests/SoundFieldTests.cpp lives in — rather than dragging in the
- * whole game and a GL context. Do not include a game header in this file.
  */
 
 namespace
@@ -57,16 +51,6 @@ namespace
 	constexpr float kMinimumHalfExtent = 0.0001f;
 
 	/**
-	 * Slab test against a box centred on the origin.
-	 *
-	 * Returns the entry distance normally, and the *exit* distance when the ray
-	 * starts inside the box. That second case matters in practice: an editor
-	 * camera flown inside a room's collision volume would otherwise have every
-	 * click swallowed at distance 0 by the walls around it, making the contents
-	 * of the room unselectable.
-	 *
-	 * Moved here from EditorPicking.cpp so the editor's ray test and the game's
-	 * share one implementation rather than two that can drift.
 	 */
 	bool SlabTest(Vector3 origin, Vector3 direction, Vector3 halfExtents,
 		float& outDistance, Vector3& outNormal)

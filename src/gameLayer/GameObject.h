@@ -136,6 +136,9 @@ struct GameObject
 	virtual bool loadFromJson(Json& j);
 	void addCommonToJson(Json& j);
 	bool loadCommonFromJson(Json& j);
+
+	// Gizmos
+	virtual void DrawGizmos();
 };
 
 /** Interfaces **/

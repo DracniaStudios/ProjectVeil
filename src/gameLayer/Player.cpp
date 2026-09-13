@@ -78,13 +78,6 @@ void updateArtifact(Player* player, float deltaTime) {
 		: inputSystem->IsActionPressed(ACTION_USE_ARTIFACT_LEFT) ? -1
 		: 0;
 	player->artifactMode = static_cast<int>(Clamp(static_cast<float>(player->artifactMode), -1, player->artifactUnlocked));
-	// ACTION_USE_ARTIFACT and ACTION_MOVE_INTERACT are both bound to F (see
-	// InputSystem::SetDefaultActions), and UpdateActions runs Interact() earlier
-	// in this same frame — so one keypress reached SetMiniGame twice, and the
-	// game the player actually walked up to and interacted with was immediately
-	// torn down and replaced by whatever the artifact dial was pointing at.
-	// Whichever launch ran first wins; the second is dropped rather than
-	// silently overriding it.
 	if (scene->miniGame == nullptr && inputSystem->IsActionPressed(ACTION_USE_ARTIFACT))
 	{
 		scene->SetMiniGame(player->artifactMode);
@@ -162,10 +155,6 @@ void Player::update2D(float deltaTime, bool canMove)
 
 	auto speed = inputSystem->IsActionDown(ACTION_MOVE_SPRINT) ? baseSpeed * 2 : baseSpeed;
 
-	// moveDirection/speed used to be computed here and then thrown away — this
-	// left is2DActive mode (toggled with TAB) with movement keys that read
-	// input but never moved the player. Applied the same way SetMoveDirection
-	// does for the 3D player, scaled by deltaTime so it isn't tied to frame rate.
 	if (canMove)
 	{
 		rigidBody2D.translation += Vector3(moveDirection.x, moveDirection.y) * speed * 60.0f * deltaTime;
@@ -175,11 +164,6 @@ void Player::update2D(float deltaTime, bool canMove)
 }
 
 // Footsteps, the player's loudest routine emission.
-//
-// Cadence and loudness both key off gait, which is what makes crouch-walking a
-// real tactic rather than a cosmetic one: it is quieter per step *and* emits
-// fewer steps. Loudness values match the plan's table (crouch .15 / walk .5 /
-// sprint 1.0).
 static void EmitFootsteps(Player* player, float deltaTime)
 {
 	auto scene = SceneManager::getInstance().currentScene;

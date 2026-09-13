@@ -352,7 +352,7 @@ bool AudioManager::PlayEvent3D(const std::string& eventPath, Vector3 position, A
 		return false;
 	}
 
-	FMOD::Studio::EventInstance* soundInstance;
+	FMOD::Studio::EventInstance* soundInstance{};
 
 	// Stop the previous event on this object before starting a new one
 	if (soundInstance != nullptr) {

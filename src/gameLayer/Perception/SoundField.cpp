@@ -10,13 +10,6 @@ void SoundField::Update(float deltaTime)
 {
 	clock += deltaTime;
 
-	// Once the ring has overwritten a slot in place (Emit's full-buffer path),
-	// index 0 is no longer guaranteed to hold the oldest event — a front()
-	// check as a "has anything expired" guard silently stopped compacting for
-	// long stretches after the first wrap, letting events outlive kEventTTL by
-	// up to a full lap of the buffer. kCapacity is small, so scanning it every
-	// frame is cheap; just always compact rather than trying to detect the
-	// wrapped case first.
 	const float cutoff = clock - kEventTTL;
 	const std::size_t before = events.size();
 	events.erase(std::remove_if(events.begin(), events.end(),
@@ -125,12 +118,7 @@ float SoundField::AudibleLoudnessAt(Vector3 listener, const SoundEvent& event, c
 	return heard;
 }
 
-bool SoundField::LoudestAudible(Vector3 listener,
-                                float threshold,
-                                std::uint64_t ignoreSourceId,
-                                const GameMap* map,
-                                SoundEvent& outEvent,
-                                float& outLoudness) const
+bool SoundField::LoudestAudible(Vector3 listener, float threshold, std::uint64_t ignoreSourceId, const GameMap* map, SoundEvent& outEvent, float& outLoudness) const
 {
 	bool found = false;
 	float bestLoudness = threshold;
