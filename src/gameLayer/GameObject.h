@@ -131,6 +131,17 @@ struct GameObject
 	virtual void Destroy();
 	virtual void onDestroy(Scene* scene);
 
+	// Collision & Trigger Events — fired by RigidBody3D::resolveConstrains and
+	// DispatchTriggerEvents on the `self` side of a pair only (never on
+	// `other`), on the first frame of a contact/overlap. onCollision fires for
+	// a trigger pair too, so switching an object to a trigger does not
+	// silently stop whatever already reacted to it; onTriggerEnter/Exit are
+	// the additional, trigger-only signal. Default is a no-op; override for
+	// type-specific reactions (e.g. projectile damage, objective triggers).
+	virtual void onCollision(const GameObject* other);
+	virtual void onTriggerEnter(GameObject* other);
+	virtual void onTriggerExit(GameObject* other);
+
 	// Save Data
 	virtual Json formatToJson();
 	virtual bool loadFromJson(Json& j);
