@@ -309,6 +309,10 @@ void GameObject::onDestroy(Scene* scene)
 	onDisable();
 }
 
+void GameObject::onCollision(const GameObject* other) { (void)other; }
+void GameObject::onTriggerEnter(GameObject* other) { (void)other; }
+void GameObject::onTriggerExit(GameObject* other) { (void)other; }
+
 // FMOD requires forward and up to be normalized and perpendicular
 FMOD_3D_ATTRIBUTES GameObject::get3DAttributes() const
 {

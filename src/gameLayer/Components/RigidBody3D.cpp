@@ -216,6 +216,7 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 				// onTriggerEnter is the additional signal, not a replacement.
 				if (isTriggerPair) { self->rigidBody3D.collider.onTriggerEnter(other->rigidBody3D.collider); }
 				self->rigidBody3D.collider.onCollisionEnter(other->rigidBody3D.collider);
+				self->onCollision(other);
 				EmitImpactNoise(self, other, contact);
 			}
 			contactsThisFrame.push_back(other);
@@ -234,6 +235,7 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 				== triggerContactsLastFrame.end())
 			{
 				self->rigidBody3D.collider.onTriggerEnter(other->rigidBody3D.collider);
+				self->onTriggerEnter(other);
 			}
 		}
 
@@ -510,6 +512,7 @@ void RigidBody3D::DispatchTriggerEvents(GameObject* self, GameMap* map)
 		if (GameObject* other = map->FindWorldObject(id))
 		{
 			self->rigidBody3D.collider.onTriggerExit(other->rigidBody3D.collider);
+			self->onTriggerExit(other);
 		}
 	}
 
