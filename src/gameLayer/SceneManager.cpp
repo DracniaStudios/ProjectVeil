@@ -3,11 +3,6 @@
 #include <LightingSystem.h>
 #include <WorldEditor.h>
 
-SceneManager* SceneManager_new() {
-	SceneManager* manager = (SceneManager*)malloc(sizeof(SceneManager));
-	return manager;
-}
-
 void SceneManager::SetCamera(Camera3D* camera) { camera3D = *camera; }
 
 void SceneManager_init(SceneManager* manager) {

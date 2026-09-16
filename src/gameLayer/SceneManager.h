@@ -37,12 +37,6 @@ public:
 } SceneManager;
 
 /**
- * Create a SceneManager and return the pointer
- * @return A pointer to the SceneManager
- */
-SceneManager* SceneManager_new();
-
-/**
  * Initialize a SceneManager with all Scene availables
  * @param manager The SceneManager to initialize
  */

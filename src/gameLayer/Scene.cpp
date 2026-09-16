@@ -195,6 +195,8 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 					if (player->rigidBody3D.OverlapsBroadPhase(obj.rigidBody3D))
 					{
 						player->rigidBody3D.resolveConstrains(player, &obj);
+						refreshBroadPhaseBox(player->rigidBody3D);
+						refreshBroadPhaseBox(obj.rigidBody3D);
 					}
 				});
 		}
