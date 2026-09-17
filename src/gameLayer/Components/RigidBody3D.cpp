@@ -213,8 +213,9 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 			{
 				// onCollision fires for triggers too, so switching an object to a
 				// trigger does not silently stop whatever already listened to it.
-				// onTriggerEnter is the additional signal, not a replacement.
-				if (isTriggerPair) { self->rigidBody3D.collider.onTriggerEnter(other->rigidBody3D.collider); }
+				// onTriggerEnter is the additional signal, dispatched below off the
+				// id-based trigger lists — not here too, or a trigger pair's first
+				// contact double-fires onTriggerEnter every time.
 				self->rigidBody3D.collider.onCollisionEnter(other->rigidBody3D.collider);
 				EmitImpactNoise(self, other, contact);
 			}
