@@ -21,7 +21,7 @@ void WorldEditor::ShowStalkerData()
 	if (scene == nullptr) { ImGui::Text("No active scene."); ImGui::End(); return; }
 
 	// --- Sound field ------------------------------------------------------
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Sound Field");
+	ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Sound Field");
 	ImGui::Text("Clock: %.2fs", scene->soundField.Now());
 	ImGui::Text("Live events: %d / %d",
 		static_cast<int>(scene->soundField.Events().size()),
@@ -166,7 +166,7 @@ void WorldEditor::ShowStalkerData()
 	if (found == 0) { ImGui::Text("No stalker in the scene."); }
 
 	// --- Director ---------------------------------------------------------
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Director");
+	ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Director");
 	ImGui::Text("Clock: %.1fs   Cooldown: %.1fs",
 		scene->director.Now(), scene->director.CooldownRemaining());
 

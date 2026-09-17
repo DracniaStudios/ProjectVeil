@@ -19,7 +19,7 @@ void WorldEditor::ShowAssetData()
 			if (ImGui::BeginTabItem("Textures", nullptr, ImGuiTabItemFlags_None)) {
 
 				Asset* activeTexture = getActiveTexture();
-				ImGui::TextColored(ImVec4(0, 255, 0, 255), "Active: %s", activeTexture != nullptr ? activeTexture->name.c_str() : "None");
+				ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Active: %s", activeTexture != nullptr ? activeTexture->name.c_str() : "None");
 				ImGui::Separator();
 
 				/// Thumbnail Grid
@@ -56,7 +56,7 @@ void WorldEditor::ShowAssetData()
 			if (ImGui::BeginTabItem("Models", nullptr, ImGuiTabItemFlags_None)) {
 
 				Asset* activeModel = getActiveModel();
-				ImGui::TextColored(ImVec4(0, 255, 0, 255), "Active: %s", activeModel != nullptr ? activeModel->name.c_str() : "None");
+				ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Active: %s", activeModel != nullptr ? activeModel->name.c_str() : "None");
 				ImGui::Separator();
 
 				/// Thumbnail Grid
@@ -99,7 +99,7 @@ void WorldEditor::ShowAssetData()
 				if (ImGui::BeginTabItem(folder.c_str(), nullptr, ImGuiTabItemFlags_None)) {
 
 				Asset* activeAsset = getActiveAsset();
-				ImGui::TextColored(ImVec4(0, 255, 0, 255), "Active: %s", activeAsset != nullptr ? activeAsset->name.c_str() : "None");
+				ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Active: %s", activeAsset != nullptr ? activeAsset->name.c_str() : "None");
 				ImGui::Separator();
 
 				/// Thumbnail Grid

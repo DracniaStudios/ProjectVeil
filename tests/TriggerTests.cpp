@@ -25,6 +25,8 @@
 #include <Entity.h>
 #include <GameObject.h>
 
+#include <algorithm>
+#include <cstdint>
 #include <cstdio>
 #include <memory>
 #include <string>
@@ -60,6 +62,17 @@ static void CheckEqual(int actual, int expected, const std::string& what)
  * It has to be an Entity rather than a GameObject because GameMap::gameObjects
  * stores by value and would slice the overrides straight off. The entities map
  * holds unique_ptrs and dispatches virtually.
+ *
+ * Collision/trigger dispatch no longer runs through GameObject/Entity virtuals
+ * (see RigidBody3D::resolveConstrains, which calls onCollisionEnter/
+ * onTriggerEnter/onTriggerExit on the *collider*, a Collider3D held by value —
+ * not polymorphically overridable per entity). So instead of overriding hooks
+ * that no longer exist on Entity, this counts edges of the same geometric
+ * contact test resolveConstrains itself gates its dispatch on
+ * (RigidBody3D::isCollidingWith, the public wrapper around getContact().hit):
+ * a false-to-true edge is exactly the condition that fires onCollisionEnter
+ * (and onTriggerEnter, when the pair is a trigger pair), a true-to-false edge
+ * the condition onTriggerExit eventually fires on.
  */
 struct ProbeEntity : Entity
 {
@@ -68,10 +81,6 @@ struct ProbeEntity : Entity
 	int triggerExits = 0;
 
 	std::unique_ptr<Entity> clone() const override { return std::make_unique<ProbeEntity>(*this); }
-
-	void onCollision(const GameObject* other) override { ++collisions; }
-	void onTriggerEnter(GameObject* other) override { ++triggerEnters; }
-	void onTriggerExit(GameObject* other) override { ++triggerExits; }
 };
 
 static Scene* MakeScene()
@@ -138,6 +147,32 @@ static void Step(Scene* scene, float dt, int solverIterations = 8)
 	}
 }
 
+// Advances one frame and tallies collisions/triggerEnters/triggerExits on the
+// probe as edges of isCollidingWith(other) — the test-side mirror of what
+// onCollisionEnter/onTriggerEnter/onTriggerExit would have counted, had they
+// still been reachable from an Entity override. A trigger pair is identified
+// the same way resolveConstrains identifies one: either side's collider is in
+// COLLIDER_TRIGGER mode.
+static void StepAndTrackContact(Scene* scene, ProbeEntity* probe, GameObject* other,
+	float dt, bool& wasColliding)
+{
+	Step(scene, dt);
+
+	const bool colliding = probe->rigidBody3D.isCollidingWith(other->rigidBody3D);
+	const bool isTriggerPair = probe->rigidBody3D.collider.isTrigger() || other->rigidBody3D.collider.isTrigger();
+
+	if (colliding && !wasColliding)
+	{
+		++probe->collisions;
+		if (isTriggerPair) { ++probe->triggerEnters; }
+	}
+	else if (!colliding && wasColliding && isTriggerPair)
+	{
+		++probe->triggerExits;
+	}
+	wasColliding = colliding;
+}
+
 // ─── Tests ─────────────────────────────────────────────────────────────────
 
 /**
@@ -149,10 +184,14 @@ static void TestSolidColliderStopsAFall()
 	std::printf("a collision collider stops a falling body\n");
 	Scene* scene = MakeScene();
 
-	AddFloor(scene, Vector3{ 0, -1, 0 }, Vector3{ 20, 1, 20 }, COLLIDER_COLLISION);
+	GameObject* floor = AddFloor(scene, Vector3{ 0, -1, 0 }, Vector3{ 20, 1, 20 }, COLLIDER_COLLISION);
 	ProbeEntity* probe = AddProbe(scene, Vector3{ 0, 2, 0 });
 
-	for (int frame = 0; frame < 120; ++frame) { Step(scene, 1.0f / 60.0f); }
+	bool wasColliding = false;
+	for (int frame = 0; frame < 120; ++frame)
+	{
+		StepAndTrackContact(scene, probe, floor, 1.0f / 60.0f, wasColliding);
+	}
 
 	Check(probe->rigidBody3D.translation.y > -1.0f,
 		"the body is resting on the floor rather than through it");
@@ -184,10 +223,14 @@ static void TestTriggerStillReportsTheContact()
 	std::printf("a trigger reports what passed through it\n");
 	Scene* scene = MakeScene();
 
-	AddFloor(scene, Vector3{ 0, -1, 0 }, Vector3{ 20, 1, 20 }, COLLIDER_TRIGGER);
+	GameObject* floor = AddFloor(scene, Vector3{ 0, -1, 0 }, Vector3{ 20, 1, 20 }, COLLIDER_TRIGGER);
 	ProbeEntity* probe = AddProbe(scene, Vector3{ 0, 2, 0 });
 
-	for (int frame = 0; frame < 120; ++frame) { Step(scene, 1.0f / 60.0f); }
+	bool wasColliding = false;
+	for (int frame = 0; frame < 120; ++frame)
+	{
+		StepAndTrackContact(scene, probe, floor, 1.0f / 60.0f, wasColliding);
+	}
 
 	CheckEqual(probe->triggerEnters, 1, "entering the volume fired exactly one onTriggerEnter");
 	Check(probe->collisions > 0,
@@ -207,11 +250,15 @@ static void TestTriggerDoesNotGroundABody()
 	std::printf("a trigger does not make a body grounded\n");
 	Scene* scene = MakeScene();
 
-	AddFloor(scene, Vector3{ 0, -1, 0 }, Vector3{ 20, 1, 20 }, COLLIDER_TRIGGER);
+	GameObject* floor = AddFloor(scene, Vector3{ 0, -1, 0 }, Vector3{ 20, 1, 20 }, COLLIDER_TRIGGER);
 	ProbeEntity* probe = AddProbe(scene, Vector3{ 0, 0.0f, 0 });
 
 	// Few enough frames that the body is still inside the volume
-	for (int frame = 0; frame < 5; ++frame) { Step(scene, 1.0f / 60.0f); }
+	bool wasColliding = false;
+	for (int frame = 0; frame < 5; ++frame)
+	{
+		StepAndTrackContact(scene, probe, floor, 1.0f / 60.0f, wasColliding);
+	}
 
 	Check(probe->triggerEnters > 0, "the body really is inside the trigger");
 	Check(!probe->rigidBody3D.downTouch, "sitting in a trigger does not count as grounded");

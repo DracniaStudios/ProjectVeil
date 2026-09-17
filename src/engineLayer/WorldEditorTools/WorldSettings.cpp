@@ -75,7 +75,7 @@ void WorldEditor::ShowWorldSettings()
 	/// World Save Data
 	ImGui::BeginChild("World Saves");
 	{
-		ImGui::TextColored(ImVec4(255, 0, 255, 255), "World Data");
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "World Data");
 
 		char nameBuffer[128] = {};
 		std::snprintf(nameBuffer, sizeof(nameBuffer), "%s", worldName.c_str());
@@ -110,7 +110,7 @@ void WorldEditor::ShowWorldSettings()
 		for (auto& file : SaveSystem::GetSaveFiles()) {
 			std::string save = "Save " + file;
 			std::string load = "Load " + file;
-			ImGui::PushID(file.length());
+			ImGui::PushID(file.c_str());
 			if (ImGui::Button(save.c_str())) {
 				if (SaveSystem::SaveWorld(file, scene)) {
 					statusMessage = "Saved " + file;

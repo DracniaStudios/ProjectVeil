@@ -15,7 +15,7 @@ void WorldEditor::ShowPlacementPanel()
 	ImGui::Begin("Placement");
 
 	/** Spawn Kind **/
-	ImGui::TextColored(ImVec4(0, 255, 0, 255), "New Object");
+	ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "New Object");
 	ImGui::RadioButton("Game Object", &placementKind, PLACE_GAME_OBJECT);
 	ImGui::SameLine();
 	ImGui::RadioButton("Entity", &placementKind, PLACE_ENTITY);
@@ -64,7 +64,7 @@ void WorldEditor::ShowPlacementPanel()
 	ImGui::Spacing();
 
 	// Active Texture from the Palette
-	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Texture");
+	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Texture");
 	Asset* activeTexture = getActiveTexture();
 	if (activeTexture != nullptr)
 	{
@@ -79,7 +79,7 @@ void WorldEditor::ShowPlacementPanel()
 	ImGui::Spacing();
 
 	// Active Model from the Palette
-	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Model");
+	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Model");
 	Asset* activeModel = getActiveModel();
 	if (activeModel != nullptr)
 	{
@@ -93,7 +93,7 @@ void WorldEditor::ShowPlacementPanel()
 	ImGui::Spacing();
 
 	// Object Flags
-	ImGui::TextColored(ImVec4(100, 0, 0, 255), "Flags");
+	ImGui::TextColored(ImVec4(0.392f, 0.0f, 0.0f, 1.0f), "Flags");
 	ImGui::Checkbox("isEnabled", &stagingObject.rigidBody3D.isEnabled);
 	ImGui::Checkbox("isStatic", &stagingObject.rigidBody3D.isStatic);
 	ImGui::Checkbox("isVisible", &stagingObject.display3DModel);
@@ -103,7 +103,7 @@ void WorldEditor::ShowPlacementPanel()
 
 	// Collider — staged here so a trigger volume can be dropped in directly
 	// rather than placed solid and then converted in the Object Browser.
-	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Collider");
+	ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Collider");
 	const char* shapeLabels[COLLIDER_SHAPE_COUNT] = {};
 	for (int i = 0; i < COLLIDER_SHAPE_COUNT; ++i) { shapeLabels[i] = colliderShapeToString(i); }
 	const char* modeLabels[COLLIDER_MODE_COUNT] = {};
@@ -126,14 +126,14 @@ void WorldEditor::ShowPlacementPanel()
 	/** Kind Specific Data **/
 	if (placementKind == PLACE_ENTITY)
 	{
-		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Entity");
+		ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Entity");
 		// Order matches the EntityKind enum. Player is offered because the enum
 		// carries it, but spawning one here is not meaningful — the scene owns
 		// exactly one player, constructed in Scene_new.
 		ImGui::Combo("Entity Kind", &stagingEntityKind, "Entity\0Player\0Stalker\0");
 		if (stagingEntityKind == ENTITYKIND_PLAYER)
 		{
-			ImGui::TextColored(ImVec4(255, 255, 0, 255),
+			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
 				"Scene::player is the only player; this spawns an inert duplicate.");
 		}
 		ImGui::InputFloat("Max Health", &stagingMaxHealth);
@@ -143,7 +143,7 @@ void WorldEditor::ShowPlacementPanel()
 	}
 	else if (placementKind == PLACE_INTERACTABLE)
 	{
-		ImGui::TextColored(ImVec4(0, 255, 255, 255), "Interactable");
+		ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Interactable");
 		ImGui::Combo("Interact Type", &stagingInteractType, "None\0Mini Game\0Unlock\0Item\0");
 
 		if (stagingInteractType == INTERACT_MINIGAME)
@@ -169,7 +169,7 @@ void WorldEditor::ShowPlacementPanel()
 	}
 
 	/** Point & Place **/
-	ImGui::TextColored(ImVec4(0, 255, 0, 255), "Point & Place");
+	ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Point & Place");
 	ImGui::Checkbox("Armed (P)", &placementMode);
 	if (placementMode)
 	{
@@ -284,8 +284,13 @@ GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 		{
 			entity->baseDamage = kindDamage;
 			// Only reclaim the name when the staging object was never renamed,
-			// so an explicit name from the panel still wins.
-			if (entity->name == "GameObject") { entity->name = kindName; }
+			// so an explicit name from the panel still wins. The Name field's
+			// own default is "New Block" (WorldEditor::inputName), not
+			// GameObject's "GameObject" — comparing against the latter meant
+			// this branch could never fire, and every entity spawned with the
+			// name field untouched kept the generic placeholder instead of its
+			// kind's name (e.g. "Stalker").
+			if (entity->name == "New Block") { entity->name = kindName; }
 		}
 
 		spawned = scene->gameMap.SpawnEntity(*entity);

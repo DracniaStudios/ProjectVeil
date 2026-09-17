@@ -55,10 +55,10 @@ void WorldEditor::ShowLightingData()
 	ImGui::Begin("Lighting");
 
 	/// Diagnostics — the first thing to check when the scene renders unlit
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Status");
+	ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Status");
 	if (!lighting->IsReady())
 	{
-		ImGui::TextColored(ImVec4(255, 0, 0, 255), "Shader failed to load - scene is unlit");
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Shader failed to load - scene is unlit");
 		ImGui::Text("Expected: resources/shaders/glsl330/lighting.vs + .fs");
 		ImGui::End();
 		return;
@@ -74,7 +74,7 @@ void WorldEditor::ShowLightingData()
 	ImGui::Separator();
 
 	/// Gizmos — the in-world position and direction indicators
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Gizmos");
+	ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Gizmos");
 	ImGui::Checkbox("Show Light Gizmos", &lighting->showGizmos);
 	ImGui::Checkbox("X-Ray Ranges And Cones", &lighting->gizmoXray);
 	ImGui::TextDisabled("Markers and arrows always draw on top.");
@@ -83,7 +83,7 @@ void WorldEditor::ShowLightingData()
 	ImGui::Separator();
 
 	/// Atmosphere
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Atmosphere");
+	ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Atmosphere");
 	EditColor("Ambient Color", lighting->ambientColor);
 	ImGui::SliderFloat("Ambient Strength", &lighting->ambientStrength, 0.0f, 1.0f);
 
@@ -99,7 +99,7 @@ void WorldEditor::ShowLightingData()
 	ImGui::Separator();
 
 	/// Shadows
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Shadows");
+	ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Shadows");
 	ImGui::Checkbox("Shadows Enabled", &lighting->shadowsEnabled);
 
 	int resolutionIndex = ResolutionToIndex(lighting->GetShadowMapResolution());
@@ -123,7 +123,7 @@ void WorldEditor::ShowLightingData()
 	ImGui::Separator();
 
 	/// Flashlight
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Flashlight");
+	ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Flashlight");
 	bool flashlightOn = lighting->IsFlashlightEnabled();
 	if (ImGui::Checkbox("Flashlight On (L)", &flashlightOn)) { lighting->SetFlashlightEnabled(flashlightOn); }
 
@@ -136,7 +136,7 @@ void WorldEditor::ShowLightingData()
 	ImGui::Separator();
 
 	/// World Light List
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "World Lights");
+	ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "World Lights");
 
 	if (ImGui::Button("Add Point Light At Camera"))
 	{
@@ -191,7 +191,7 @@ void WorldEditor::ShowLightingData()
 
 	if (static_cast<int>(lights.size()) > LIGHT_LIMIT)
 	{
-		ImGui::TextColored(ImVec4(255, 255, 0, 255),
+		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
 			"%d lights defined - only the first %d enabled ones are uploaded",
 			static_cast<int>(lights.size()), LIGHT_LIMIT);
 	}
@@ -225,7 +225,7 @@ void WorldEditor::ShowLightingData()
 	/// Selected Light
 	Light& light = lights[selectedLightIndex];
 	ImGui::PushID(selectedLightIndex);
-	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Selected Light");
+	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Selected Light");
 
 	char nameBuffer[128] = {};
 	std::snprintf(nameBuffer, sizeof(nameBuffer), "%s", light.name.c_str());
