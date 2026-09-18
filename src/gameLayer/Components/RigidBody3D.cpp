@@ -171,6 +171,26 @@ namespace
 		AudioManager::getInstance().Play3D(groundImpactSound, striker->getPosition(), AUDIO_GAMEPLAY_SFX, loudness);
 		scene->soundField.Emit(striker->getPosition(), loudness, SOUND_IMPACT, striker->id);
 	}
+
+	// Contact damage from the Stalker catching the player. This lived in
+	// Player::onCollision until collision dispatch moved onto Collider3D
+	// (Collider3D.cpp), which deliberately cannot see the owning GameObject —
+	// its own comment points a rule that needs the real GameObjects at this
+	// caller. Gated the same way as EmitImpactNoise above: once per first
+	// contact, not once per solver iteration.
+	void ApplyStalkerContactDamage(GameObject* self, GameObject* other)
+	{
+		GameObject* player = nullptr;
+		GameObject* stalker = nullptr;
+		if (self->type == OBJECT_PLAYER) { player = self; stalker = other; }
+		else if (other->type == OBJECT_PLAYER) { player = other; stalker = self; }
+		else { return; }
+
+		if (stalker->type != OBJECT_ENTITY
+			|| static_cast<Entity*>(stalker)->kind != ENTITYKIND_STALKER) { return; }
+
+		static_cast<Entity*>(player)->applyHealthValue(stalker->baseDamage, true);
+	}
 }
 
 void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
@@ -218,6 +238,7 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 				// contact double-fires onTriggerEnter every time.
 				self->rigidBody3D.collider.onCollisionEnter(other->rigidBody3D.collider);
 				EmitImpactNoise(self, other, contact);
+				ApplyStalkerContactDamage(self, other);
 			}
 			contactsThisFrame.push_back(other);
 		}
