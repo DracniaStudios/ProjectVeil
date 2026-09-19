@@ -619,7 +619,6 @@ namespace SaveSystem
 	}
 
 	std::vector<std::string> GetSaveFiles() {
-		//std::cout << "[Save System] Get Save Files reads All File Names. !!!BUG PRONED CODE!!! \n";
 		std::error_code errorCode;
 		std::vector<std::string> fileNames;
 		

@@ -165,8 +165,10 @@ void GameMap::DestroyInteractable(uint64_t id)
 	object->releaseGeneratedModel();
 	auto scene = SceneManager::getInstance().currentScene;
 
+	// currentScene is null between the OUT and IN halves of a scene
+	// transition (see RigidBody3D.cpp for the same hazard).
 	// Player Inventory can hold references to InteractableObjects
-	if (scene->player) {
+	if (scene && scene->player) {
 		std::erase(scene->player->inventory, object);
 		if (scene->player->interactObjectId == object->id) {
 			scene->player->interactObjectId = 0;

@@ -282,7 +282,6 @@ namespace
 // through the caller if a future rule needs the actual GameObjects.
 bool Collider3D::onCollisionEnter(Collider3D& other) const {
 	(void)other;
-	std::cout << "Add Collison Rules. Check Player vs Stalkers. \n";
 	return true;
 }
 bool Collider3D::onCollisionExit(Collider3D& other) const {

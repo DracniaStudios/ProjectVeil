@@ -110,7 +110,7 @@ void WorldEditor::ShowWorldSettings()
 		for (auto& file : SaveSystem::GetSaveFiles()) {
 			std::string save = "Save " + file;
 			std::string load = "Load " + file;
-			ImGui::PushID(file.length());
+			ImGui::PushID(file.c_str());
 			if (ImGui::Button(save.c_str())) {
 				if (SaveSystem::SaveWorld(file, scene)) {
 					statusMessage = "Saved " + file;
