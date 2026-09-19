@@ -169,6 +169,11 @@ void FlappyBird::update(Scene* scene_ptr, float deltaTime)
 
 	if (!CheckCollisionRecs(player->rigidBody2D.getRectCentered(), generateScaleRect(screen, Rectangle{ 1.05f, 1.05f,0.95f, 0.95f }))) {
 		scene_ptr->ResetMiniGame();
+		// ResetMiniGame() frees the MiniGameData `data` points to (and, for a
+		// replay, allocates a fresh one at scene_ptr->miniGame->data). Everything
+		// below reads `data`, so continuing would be a use-after-free — same
+		// reasoning as the out-of-screen lose path's early return further down.
+		return;
 	}
 	/*
 	if (player->rigidBody2D.getPosition().x < screen.x) scene->miniGame->data->isReset = true;
@@ -219,7 +224,14 @@ void FlappyBird::update(Scene* scene_ptr, float deltaTime)
 
 			Rectangle obstacle = generateScaleRect(screen, newSize);
 
-			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obstacle)) scene_ptr->ResetMiniGame();
+			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obstacle))
+			{
+				scene_ptr->ResetMiniGame();
+				// ResetMiniGame() just freed the MiniGameData that `data->obstacles`
+				// (and `obj`, a reference into it) live in. Continuing to iterate a
+				// container whose backing store is gone is a use-after-free.
+				return;
+			}
 		}
 	}
 }

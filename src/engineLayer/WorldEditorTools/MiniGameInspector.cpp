@@ -35,7 +35,7 @@ void WorldEditor::ShowMiniGameData(Player* player)
 	ImGui::Separator();
 
 	/// Show Mini Game Data
-	ImGui::TextColored(ImVec4(0, 0, 255, 255), "Mini Game Data");
+	ImGui::TextColored(ImVec4(0.0f, 0.0f, 1.0f, 1.0f), "Mini Game Data");
 
 	if (scene->miniGame != nullptr)
 	{

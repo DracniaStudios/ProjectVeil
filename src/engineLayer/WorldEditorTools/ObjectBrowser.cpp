@@ -86,10 +86,10 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 void WorldEditor::showEntity(Entity* object) {
 	ImGui::PushID(object);
 	ImGui::Separator();
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Entity");
+	ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Entity");
 
 	// Status
-	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Status");
+	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Status");
 	ImGui::Text("Health: %f", object->health);
 	ImGui::Text("Max Health: %f", object->maxHealth);
 
@@ -101,7 +101,7 @@ void WorldEditor::showEntity(Entity* object) {
 	ImGui::Spacing();
 
 	// Flags
-	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Flags");
+	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Flags");
 	ImGui::Checkbox("IsSprinting", &object->isSprinting);
 	ImGui::Checkbox("IsCrouching", &object->isCrouching);
 	ImGui::Checkbox("IsFiring", &object->isFiring);
@@ -110,10 +110,10 @@ void WorldEditor::showEntity(Entity* object) {
 	ImGui::Spacing();
 
 	// List Of Buffs
-	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Buffs");
+	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Buffs");
 	for (auto& buff : object->buffTimers) {
 		ImGui::PushID(&buff);
-		ImGui::TextColored(ImVec4(255, 0, 255, 255), "%s", buffTypeToString(buff.cooldownID));
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "%s", buffTypeToString(buff.cooldownID));
 		ImGui::Text("Duration: %f", buff.remaining_time());
 		ImGui::SameLine();
 		if (ImGui::Button("Use Buff")) { buff.use(); }
@@ -140,7 +140,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 
 	std::string dataString = objectTypeToString(object->type);
 	dataString += " Data";
-	ImGui::TextColored(ImVec4(255, 255, 0, 255), "%s", dataString.c_str());
+	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", dataString.c_str());
 	
 	char nameBuffer[128] = {};
 	std::snprintf(nameBuffer, sizeof(nameBuffer), "%s", object->name.c_str());
@@ -153,7 +153,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 
 
 	// Transform (Teleport keeps the collision box in sync with the new position)
-	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Transform");
+	ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Transform");
 	Vector3 position = object->getPosition();
 	if (ImGui::DragFloat3("Position: ", &position.x))
 	{
@@ -198,7 +198,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::Spacing();
 
 	// RigidBody
-	ImGui::TextColored(ImVec4(0, 255, 255, 255), "RigidBody");
+	ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "RigidBody");
 	Vector3 velocity = object->rigidBody3D.GetVelocity();
 	if (ImGui::InputFloat3("Velocity: ", &velocity.x))
 	{
@@ -228,7 +228,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::Spacing();
 
 	// Collider — the collision volume, which is deliberately not the render scale
-	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Collider");
+	ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Collider");
 	Collider3D& collider = object->rigidBody3D.collider;
 
 	// Label arrays sized by the enum's own _COUNT, following LightingInspector,
@@ -318,7 +318,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 		);
 	}
 	// Texture
-	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Texture");
+	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Texture");
 	// A model whose load failed can carry materialCount == 0 with a null
 	// materials array (see LightingSystem::ApplyToModel's same guard) —
 	// indexing materials[0] unconditionally would crash the inspector on it.
@@ -335,7 +335,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::Spacing();
 
 	// Model
-	ImGui::TextColored(ImVec4(255, 255, 0, 255), "Model");
+	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Model");
 	ImGui::Text("Model: %s", object->modelName.empty() ? "Cube" : object->modelName.c_str());
 	Asset* activeModel = getActiveModel();
 	if (activeModel != nullptr && ImGui::Button("Apply Active Model"))
@@ -363,7 +363,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::Spacing();
 
 	// Object Flags
-	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Flags");
+	ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Flags");
 	ImGui::Checkbox("isEnabled", &object->rigidBody3D.isEnabled);
 	ImGui::Checkbox("isStatic", &object->rigidBody3D.isStatic);
 	ImGui::Checkbox("isVisible", &object->display3DModel);
@@ -371,7 +371,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::Checkbox("Can Collide", &object->rigidBody3D.collider.canCollide);
 
 	ImGui::Separator();
-	ImGui::TextColored(ImVec4(0, 255, 255, 255), "Debug");
+	ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Debug");
 	ImGui::Checkbox("Show Collider", &object->displayCollider);
 	ImGui::Checkbox("Show Direction", &object->displayDirection);
 

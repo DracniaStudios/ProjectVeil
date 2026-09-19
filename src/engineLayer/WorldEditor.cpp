@@ -43,7 +43,7 @@ void WorldEditor::ShowEditorHub()
 
 	showTransformTools();
 
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Panels");
+	ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Panels");
 	ImGui::Checkbox("World Settings (Ctrl+1)", &isWorldSettingsActive);
 	ImGui::Checkbox("Object Browser (Ctrl+2)", &isObjectBrowserActive);
 	ImGui::Checkbox("Placement (Ctrl+3)", &isPlacementActive);
@@ -71,7 +71,7 @@ void WorldEditor::ShowEditorHub()
 /** Tool bar for the viewport manipulators — the front end for EditorGizmo. */
 void WorldEditor::showTransformTools()
 {
-	ImGui::TextColored(ImVec4(255, 0, 255, 255), "Transform Tools");
+	ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Transform Tools");
 
 	int mode = static_cast<int>(gizmo.mode);
 	if (ImGui::RadioButton("Select (1)", &mode, GIZMO_SELECT)) { gizmo.mode = GIZMO_SELECT; }
@@ -105,7 +105,7 @@ void WorldEditor::showTransformTools()
 	ImGui::Checkbox("Pause Simulation", &simulationPaused);
 	if (!simulationPaused)
 	{
-		ImGui::TextColored(ImVec4(255, 200, 0, 255), "Physics live: objects will move while edited");
+		ImGui::TextColored(ImVec4(1.0f, 0.784f, 0.0f, 1.0f), "Physics live: objects will move while edited");
 	}
 
 	if (ImGui::Button("Undo (Ctrl+Z)")) { Undo(); }

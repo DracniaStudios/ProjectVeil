@@ -225,8 +225,9 @@ struct Transform3D : public Transform
 	Rectangle getAABB() const { return { translation.x - scale.x * 0.5f, translation.y - scale.y * 0.5f, scale.x, scale.y }; }
 	
 	// Z+ is Forward
-	// X+ is Right
-	
+	// X- is Right (right = cross(forward, up); PlayerCamera/EditorCamera
+	// recompute right/left from facing direction using this same convention)
+
 	Vector3 forward = Vector3(0, 0, 1); 
 	Vector3 back = Vector3(0, 0, -1); 
 	Vector3 right = Vector3(-1, 0, 0); 

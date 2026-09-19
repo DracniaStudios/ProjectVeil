@@ -75,7 +75,7 @@ void WorldEditor::ShowWorldSettings()
 	/// World Save Data
 	ImGui::BeginChild("World Saves");
 	{
-		ImGui::TextColored(ImVec4(255, 0, 255, 255), "World Data");
+		ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "World Data");
 
 		char nameBuffer[128] = {};
 		std::snprintf(nameBuffer, sizeof(nameBuffer), "%s", worldName.c_str());
