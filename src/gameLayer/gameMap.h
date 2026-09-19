@@ -130,10 +130,33 @@ struct GameMap {
 		}
 	}
 
+	// const overload — same need as ForEachGameObject's: callers that only
+	// hold a `const GameMap*` (Stalker::DistanceToObstruction,
+	// SoundField::AudibleLoudnessAt) still need to see entities as
+	// obstructions, not just plain GameObjects.
+	template <class F>
+	void ForEachEntity(F&& fn) const
+	{
+		for (const auto& [id, object] : entities)
+		{
+			if (!GameMapDetail::InvokeVisitor(fn, *object)) return;
+		}
+	}
+
 	template <class F>
 	void ForEachInteractable(F&& fn)
 	{
 		for (auto& [id, object] : interactables)
+		{
+			if (!GameMapDetail::InvokeVisitor(fn, *object)) return;
+		}
+	}
+
+	// const overload — see ForEachEntity's above.
+	template <class F>
+	void ForEachInteractable(F&& fn) const
+	{
+		for (const auto& [id, object] : interactables)
 		{
 			if (!GameMapDetail::InvokeVisitor(fn, *object)) return;
 		}

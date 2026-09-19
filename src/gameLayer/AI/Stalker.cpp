@@ -93,8 +93,15 @@ float Stalker::DistanceToObstruction(Vector3 direction, float maxDistance, const
 
 	float nearest = maxDistance;
 
-	map->ForEachGameObject([&](const GameObject& object)
+	// Plain GameObjects are not the only solid geometry: minigame stations,
+	// doors, and other level dressing are stored as InteractableObjects, and
+	// other Entities (e.g. another Stalker) can block sight too. Checking
+	// ForEachGameObject alone left every Interactable and Entity — including
+	// large, static, CanCollide-true props like the Crane station — invisible
+	// to line of sight.
+	const auto considerObstruction = [&](const GameObject& object)
 	{
+		if (object.id == id) { return; } // don't raycast against self
 		if (!object.isEnabled) { return; }
 		// Anything the solver will not stop the stalker against should not stop
 		// it here either, or the AI flinches away from things it can walk through.
@@ -112,7 +119,11 @@ float Stalker::DistanceToObstruction(Vector3 direction, float maxDistance, const
 		{
 			nearest = distance;
 		}
-	});
+	};
+
+	map->ForEachGameObject(considerObstruction);
+	map->ForEachEntity(considerObstruction);
+	map->ForEachInteractable(considerObstruction);
 
 	return nearest;
 }

@@ -54,7 +54,15 @@ void Unlock(InteractableObject* interactable)
 	}
 
 	interactable->isInteractable = false;
-	interactable->Destroy();
+
+	// Destroy() only sets pendingDestroy, which is swept for GameObjects
+	// (Scene.cpp's end-of-frame EraseGameObjectsIf); InteractableObjects live
+	// in GameMap's separate interactables map, which has no such sweep, so
+	// the flag was simply left set forever and the station never actually
+	// left the world. DestroyInteractable() is the real removal path for
+	// this container.
+	auto scene = SceneManager::getInstance().currentScene;
+	if (scene) { scene->gameMap.DestroyInteractable(interactable->id); }
 }
 
 void AddItemToInventory(InteractableObject* interactable)
