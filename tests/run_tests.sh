@@ -40,6 +40,27 @@ FMOD_CORE_INC="$(dirname "$(find thirdparty -name fmod.hpp -print -quit)")"
 
 OUT_DIR="$BUILD_DIR/tests"
 mkdir -p "$OUT_DIR"
+
+# ---------------------------------------------------------------------------
+# Allocator tests
+#
+# Cheaper than the SoundField tier: ArenaAllocator.h and PoolAllocator.h are
+# header-only and depend on nothing, so this links no library at all -- not even
+# raylib. If this block ever needs one, an allocator has grown a dependency it
+# should not have.
+# ---------------------------------------------------------------------------
+ALLOCATOR_BIN="$OUT_DIR/allocator_tests"
+
+echo "building $ALLOCATOR_BIN"
+g++ -std=c++23 -Wall \
+	-I src/engineLayer \
+	tests/AllocatorTests.cpp \
+	-o "$ALLOCATOR_BIN"
+
+echo
+"$ALLOCATOR_BIN"
+ALLOCATOR_STATUS=$?
+
 BIN="$OUT_DIR/soundfield_tests"
 
 echo "building $BIN"
@@ -224,4 +245,4 @@ else
 fi
 TRIGGER_STATUS=$?
 
-if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
+if [[ $ALLOCATOR_STATUS -ne 0 || $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
