@@ -80,8 +80,16 @@ float SoundField::AudibleLoudnessAt(Vector3 listener, const SoundEvent& event, c
 	ray.direction = Vector3Scale(toListener, 1.0f / span);
 
 	int occluders = 0;
-	map->ForEachGameObject([&](const GameObject& object)
+	// Plain GameObjects are not the only solid geometry: minigame stations,
+	// doors, and other level dressing are stored as InteractableObjects, and
+	// Entities (the player, stalkers) can stand between a noise and a
+	// listener too. Checking ForEachGameObject alone left every Interactable
+	// and Entity unable to muffle sound. occluders is checked against the cap
+	// up front (rather than only after incrementing) so it still stops
+	// correctly once the three containers are visited in sequence.
+	const auto considerOcclusion = [&](const GameObject& object) -> bool
 	{
+		if (occluders >= kMaxOccluders) { return false; }
 		if (!object.isEnabled) { return true; }
 		if (object.id == event.sourceId) { return true; }
 		// A trigger volume is not geometry and must not muffle anything. A damage
@@ -96,10 +104,14 @@ float SoundField::AudibleLoudnessAt(Vector3 listener, const SoundEvent& event, c
 		// listener still reports a hit on an infinite ray.
 		if (object.rigidBody3D.Raycast(ray, distance, normal) && distance > 0.0f && distance < span)
 		{
-			if (++occluders >= kMaxOccluders) { return false; }
+			++occluders;
 		}
 		return true;
-	});
+	};
+
+	map->ForEachGameObject(considerOcclusion);
+	map->ForEachEntity(considerOcclusion);
+	map->ForEachInteractable(considerOcclusion);
 
 	for (int i = 0; i < occluders; ++i) { heard *= kOcclusionPerBody; }
 

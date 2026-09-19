@@ -191,6 +191,27 @@ namespace
 
 		static_cast<Entity*>(player)->applyHealthValue(stalker->baseDamage, true);
 	}
+
+	// Entity::Attack() spawns a physical OBJECT_PROJECTILE that flies, collides,
+	// and decays after 3s, but nothing ever applied its damage: Entity::onHit()
+	// — the only code that ever read a collider's baseDamage — became dead when
+	// GameObject-level onCollision/onHit virtual dispatch was removed in favor
+	// of Collider3D (a4c90d7), and no ApplyProjectileDamage equivalent to
+	// ApplyStalkerContactDamage was added to replace it. Gated the same way:
+	// once per first contact, not once per solver iteration.
+	void ApplyProjectileDamage(GameObject* self, GameObject* other)
+	{
+		GameObject* projectile = nullptr;
+		GameObject* target = nullptr;
+		if (self->type == OBJECT_PROJECTILE) { projectile = self; target = other; }
+		else if (other->type == OBJECT_PROJECTILE) { projectile = other; target = self; }
+		else { return; }
+
+		if (target->type != OBJECT_PLAYER && target->type != OBJECT_ENTITY) { return; }
+
+		static_cast<Entity*>(target)->applyHealthValue(projectile->baseDamage, true);
+		projectile->Destroy();
+	}
 }
 
 void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
@@ -239,6 +260,7 @@ void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
 				self->rigidBody3D.collider.onCollisionEnter(other->rigidBody3D.collider);
 				EmitImpactNoise(self, other, contact);
 				ApplyStalkerContactDamage(self, other);
+				ApplyProjectileDamage(self, other);
 			}
 			contactsThisFrame.push_back(other);
 		}
