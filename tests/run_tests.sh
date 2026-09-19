@@ -164,7 +164,8 @@ FMOD_STUDIO_LIB="$(find "thirdparty/fmod-2.3.14/studio/lib/$FMOD_ARCH_DIR" -name
 # engine-linked suite is a line here rather than another copy of the g++ call.
 ENGINE_STATUS=0
 for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
-             "TaskStationTests:task_station_tests" "GameMapTests:game_map_tests"; do
+             "TaskStationTests:task_station_tests" "GameMapTests:game_map_tests" \
+             "BroadPhaseViewTests:broad_phase_view_tests"; do
 	SRC="tests/${suite%%:*}.cpp"
 	TEST_BIN="$OUT_DIR/${suite##*:}"
 

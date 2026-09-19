@@ -1,6 +1,8 @@
 #include "Scene.h"
 
 #include <SceneManager.h>
+#include <ArenaAllocator.h>
+#include <BroadPhaseView.h>
 #include <WorldEditor.h>
 #include <AudioManager.h>
 
@@ -114,13 +116,42 @@ static bool skipCollisionPair(const RigidBody3D& a, const RigidBody3D& b)
 	return a.isStatic && b.isStatic;
 }
 
+/**
+ * Scratch for the collision solver, reused every frame.
+ *
+ * Function-local rather than a Scene member so its lifetime is obvious and the
+ * header stays free of the allocator.
+ *
+ * Sized from a reading, not a guess: chunk_1's 232 bodies use 9,280 bytes, so
+ * about 40 per body once the record and its owner pointer are counted. 128 KB
+ * is roughly 3,200 bodies, an order of magnitude of headroom on the current
+ * world for a quarter of the memory a single GameObject's model costs. Read
+ * Arena::highWaterMark() before changing it.
+ *
+ * Exhaustion is not fatal: Build() returns false and the solver walks the
+ * containers instead.
+ */
+static Arena& solverArena()
+{
+	static Arena arena(128 * 1024);
+	return arena;
+}
+
+// Set by the developer tools to force the container walk, so the two paths can
+// be compared on the same save at runtime rather than by rebuilding.
+bool g_disableBroadPhaseView = false;
+
 // Collision runs in two phases. The OverlapsBroadPhase tests below are the
 // BROAD phase: each body's broadPhaseBox is the axis-aligned box enclosing its
 // collider, so if two of those miss, the colliders inside them cannot touch.
 // Only pairs that survive reach resolveConstrains, which runs the exact
 // separating-axis test. Keeping the cheap gate matters — the narrow phase walks
 // 15 axes per pair and this loop is O(n^2) per iteration.
-static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
+// The original traversal: walk the three containers directly. Kept as the
+// fallback for when the arena cannot hold the view, and as the reference the
+// view is tested against -- BroadPhaseViewTests asserts the two produce the
+// same pair set, which is only checkable while both exist.
+static void solveCollisionByContainers(Scene* scene, float delta, int solverIterations)
 {
 	solverIterations = static_cast<int>(Clamp(static_cast<float>(solverIterations), 4, 8));
 
@@ -269,6 +300,109 @@ static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
 		}
 	}
 }
+
+// The same nine passes, over the packed view instead of the containers.
+//
+// Each pass is an index range rather than a ForEach lambda, and the scan reads
+// 32-byte records instead of chasing unordered_map nodes to 896-byte objects.
+// The owner is only dereferenced once a pair survives both the gate and the box
+// test -- that is where the win comes from, not from the arena being fast.
+static void solveCollisionViaView(Scene* scene, float delta, int solverIterations,
+                                  BroadPhaseView& view)
+{
+	const std::size_t objBegin = view.groupBegin(BPG_OBJECT),  objEnd = view.groupEnd(BPG_OBJECT);
+	const std::size_t entBegin = view.groupBegin(BPG_ENTITY),  entEnd = view.groupEnd(BPG_ENTITY);
+	const std::size_t intBegin = view.groupBegin(BPG_INTERACTABLE), intEnd = view.groupEnd(BPG_INTERACTABLE);
+
+	// Resolve one pair and write both boxes back, so later iterations see the
+	// positions this one produced rather than the stale ones.
+	auto resolve = [&](std::size_t i, std::size_t j)
+	{
+		GameObject* a = view.owner(i);
+		GameObject* b = view.owner(j);
+		a->rigidBody3D.resolveConstrains(a, b);
+		refreshBroadPhaseBox(a->rigidBody3D);
+		refreshBroadPhaseBox(b->rigidBody3D);
+		view.RefreshBox(i);
+		view.RefreshBox(j);
+	};
+
+	// Every unordered pair within one group, once.
+	auto pairsWithin = [&](std::size_t begin, std::size_t end)
+	{
+		for (std::size_t i = begin; i < end; ++i)
+			for (std::size_t j = i + 1; j < end; ++j)
+			{
+				if (BroadPhaseView::SkipPair(view.rec(i), view.rec(j))) { continue; }
+				if (BroadPhaseView::Overlaps(view.rec(i), view.rec(j))) { resolve(i, j); }
+			}
+	};
+
+	// Every pair across two groups.
+	auto pairsAcross = [&](std::size_t aBegin, std::size_t aEnd, std::size_t bBegin, std::size_t bEnd)
+	{
+		for (std::size_t i = aBegin; i < aEnd; ++i)
+			for (std::size_t j = bBegin; j < bEnd; ++j)
+			{
+				if (BroadPhaseView::SkipPair(view.rec(i), view.rec(j))) { continue; }
+				if (BroadPhaseView::Overlaps(view.rec(i), view.rec(j))) { resolve(i, j); }
+			}
+	};
+
+	// The player lives outside the map, so it is tested against records directly.
+	auto playerAgainst = [&](std::size_t begin, std::size_t end)
+	{
+		Player* player = scene->player;
+		if (player == nullptr) { return; }
+		BroadPhaseRec self{};
+		for (std::size_t j = begin; j < end; ++j)
+		{
+			GameObject* other = view.owner(j);
+			if (other == player) { continue; }
+			self.box = player->rigidBody3D.broadPhaseBox;
+			self.flags = BroadPhaseView::FlagsFor(*player);
+			if (BroadPhaseView::SkipPair(self, view.rec(j))) { continue; }
+			if (!BroadPhaseView::Overlaps(self, view.rec(j))) { continue; }
+			player->rigidBody3D.resolveConstrains(player, other);
+			refreshBroadPhaseBox(player->rigidBody3D);
+			refreshBroadPhaseBox(other->rigidBody3D);
+			view.RefreshBox(j);
+		}
+	};
+
+	for (int iter = 0; iter < solverIterations; ++iter)
+	{
+		pairsWithin(objBegin, objEnd);                       // objects x objects
+		pairsAcross(entBegin, entEnd, objBegin, objEnd);     // entities x objects
+		pairsWithin(entBegin, entEnd);                       // entities x entities
+		pairsAcross(intBegin, intEnd, objBegin, objEnd);     // interactables x objects
+		pairsAcross(intBegin, intEnd, entBegin, entEnd);     // interactables x entities
+		pairsWithin(intBegin, intEnd);                       // interactables x interactables
+		playerAgainst(objBegin, objEnd);                     // player x objects
+		playerAgainst(entBegin, entEnd);                     // player x entities
+		playerAgainst(intBegin, intEnd);                     // player x interactables
+	}
+}
+
+static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
+{
+	solverIterations = static_cast<int>(Clamp(static_cast<float>(solverIterations), 4, 8));
+
+	Arena& arena = solverArena();
+	arena.reset();
+
+	BroadPhaseView view;
+	if (!g_disableBroadPhaseView && view.Build(scene->gameMap, arena) && view.valid())
+	{
+		solveCollisionViaView(scene, delta, solverIterations, view);
+		return;
+	}
+
+	// Arena exhausted, view disabled, or an empty world: the containers are still
+	// the source of truth and still produce the identical result.
+	solveCollisionByContainers(scene, delta, solverIterations);
+}
+
 
 /** Scene Functions **/
 void Scene_updateScene(float delta) {
