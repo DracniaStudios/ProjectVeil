@@ -11,6 +11,7 @@ void SceneManager_init(SceneManager* manager) {
 
 	// ... Initialize other scenes as needed
 	manager->scenes[0] = Scene_MainMenuConstruct();
+	manager->scenes[1] = Scene_TutorialConstruct();
 
 	manager->transition = Transition_new();
 

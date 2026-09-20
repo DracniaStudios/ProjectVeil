@@ -151,5 +151,7 @@ inline constexpr int SCENE_COUNT = 1;
 
 inline constexpr int SCENE_MAIN_MENU = 0;
 Scene* Scene_MainMenuConstruct();
+inline constexpr int SCENE_Tutorial = 1;
+Scene* Scene_TutorialConstruct();
 
 #endif 

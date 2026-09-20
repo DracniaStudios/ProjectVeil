@@ -12,9 +12,9 @@
 [Conecpt] AssetManager Adds Items from Item Folder To "Asset Manager" (Similar to Models and Textures)
 [Notice] Save Rigidbody Locks if locked;
 
-1. Create Maze Game
-6. Check for lose condition on minigames. (Create CooldownTimer for Timed Minigames)
-8. Check game sorting for each object ( Should only activate on enabling Object Inspector or sort with object inspector.
+1. Create a player goal to load into the next scene and save current data
+2. Create a full UI Engine to make the PLayerUI and Main Menu
+3. Create a real main menu for the player to load into the game
 
 [ Issues ]
 
@@ -22,17 +22,13 @@
 
 [ Added ]
 
-- Added DrawGizmos() to GameObject.
+- Added new PlayerUI Header
+- Added new Tutorial Scene
 
 [ Updated ]
 
-- Updated the Stalker's BaseSpeed to 5.
-
+- Updated "UI" header to "UIEngine"
 
 [ Fixed ]
 
-
-
 [ Removed ]
-
-- Tons of yapping comments.

@@ -24,13 +24,14 @@ Rectangle placeRectangleCenterBottom(Rectangle r, float w, float h);
 
 Rectangle placeRectangleCenterLeft(Rectangle r, float h);
 
-Rectangle plateRectangleCenterRight(Rectangle r, float w, float h);
+Rectangle placeRectangleCenterRight(Rectangle r, float w, float h);
 
 Rectangle enlargeRectanglePixels(Rectangle r, float pixelX, float pixelY);
 
 Rectangle shrinkRectanglePercentage(Rectangle r, float percentageX, float percentageY);
 
-struct UIEngine
+// Scale All My Percentage
+class UIEngine
 {
 public:
 
@@ -46,13 +47,12 @@ public:
 		return instance;
 	}
 
-	int widgetId;
 
 	enum Type
 	{
-		none,
-		title,
-		button,
+		NONE,
+		TITLE,
+		BUTTON,
 	};
 
 	struct Widget
@@ -69,8 +69,11 @@ public:
 	int getID(){return widgetId++;}
 
 	std::vector<Widget> widgets;
+	int widgetId;
 
 	void updateAndRender();
+	Vector2 GetScreenSize() const { return Vector2(GetScreenWidth(), GetScreenHeight()); }
+
 private:
 	UIEngine() = default;
 };

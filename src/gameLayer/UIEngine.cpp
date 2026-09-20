@@ -1,7 +1,6 @@
-#include "ui.h"
+#include "UIEngine.h"
 
 // Position
-
 Rectangle placeRectangleTopRightCorner(Rectangle r, float w)
 {
 	r.x = w - r.width;
@@ -118,13 +117,13 @@ Rectangle enlargeRectanglePercentage(Rectangle r, float percentageX, float perce
 
 void UIEngine::updateAndRender()
 {
-	/*
+	
 	for (size_t i = 0; i < widgets.size(); i++)
 	{
 		auto w = widgets[i];
 		w.id = i;
 	}
-	*/
+	
 	widgets.clear();
 	widgetId = 0;
 }
@@ -149,7 +148,7 @@ void drawText(std::string text, Rectangle smallerRect, float yOffset)
 bool addButton(std::string text, UIEngine &ui)
 {
 	UIEngine::Widget widget;
-	widget.type = UIEngine::button;
+	widget.type = UIEngine::BUTTON;
 	widget.text = text;
 	widget.id = ui.getID();
 	ui.widgets.push_back(widget);
@@ -215,7 +214,7 @@ bool addButton(std::string text, UIEngine &ui)
 void addTitle(std::string text, UIEngine &ui)
 {
 	UIEngine::Widget widget;
-	widget.type = UIEngine::title;
+	widget.type = UIEngine::TITLE;
 	widget.text = text;
 	widget.id = ui.getID();
 	ui.widgets.push_back(widget);
