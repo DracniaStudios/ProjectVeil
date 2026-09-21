@@ -37,5 +37,7 @@ Scene* Scene_MainMenuConstruct()
 	scene->player->setSpawnPoint(Vector3(20, 2, 0));
 	scene->player->rigidBody3D.Teleport(Vector3(20, 2, 0));
 
+	SaveSystem::LoadWorld("chunk_1", *scene);
+
 	return scene;
 }

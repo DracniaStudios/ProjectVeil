@@ -1,4 +1,4 @@
-#include "Tutorial.h"
+#include "tutorial.h"
 
 void Scene_TutorialUpdate(float deltaTime)
 {
