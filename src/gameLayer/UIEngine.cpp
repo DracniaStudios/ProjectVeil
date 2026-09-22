@@ -117,13 +117,6 @@ Rectangle enlargeRectanglePercentage(Rectangle r, float percentageX, float perce
 
 void UIEngine::updateAndRender()
 {
-	
-	for (size_t i = 0; i < widgets.size(); i++)
-	{
-		auto& w = widgets[i];
-		w.id = i;
-	}
-	
 	widgets.clear();
 	widgetId = 0;
 }
@@ -167,8 +160,6 @@ bool addButton(std::string text, UIEngine &ui)
 	oneButtonRectangle = placeRectangleCenterTop(oneButtonRectangle, w);
 	oneButtonRectangle.y += oneButtonRectangle.height / 2.f;
 
-	int fontSize = static_cast<int>(oneButtonRectangle.height * 0.5f);
-
 	Rectangle smallerRect = shrinkRectanglePercentage(oneButtonRectangle, 0.01f, 0.01f);
 	smallerRect.y += smallerRect.height * widget.id;
 
@@ -182,6 +173,13 @@ bool addButton(std::string text, UIEngine &ui)
 	bool isHovered = CheckCollisionPointRec(GetMousePosition(), smallerRect);
 	bool isBeingClicked = isHovered && IsMouseButtonDown(MOUSE_LEFT_BUTTON);
 	bool isReleased = isHovered && IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
+
+	// widget was already pushed above (its id determines this button's slot),
+	// so the state just computed is written back onto that same entry rather
+	// than a copy that goes out of scope when this function returns.
+	ui.widgets.back().isHovered = isHovered;
+	ui.widgets.back().isBeingClicked = isBeingClicked;
+	ui.widgets.back().isReleased = isReleased;
 
 	if (isBeingClicked)
 	{
@@ -202,13 +200,16 @@ bool addButton(std::string text, UIEngine &ui)
 	if (isBeingClicked)
 	{
 		drawText(text, smallerRect, smallerRect.height * clickOffset);
-		return true;
 	}
 	else
 	{
 		drawText(text, smallerRect);
-		return false;
 	}
+
+	// Fires once, on release, rather than every frame the mouse stays down —
+	// isBeingClicked here would re-trigger the caller's action each frame a
+	// button is held instead of once per click.
+	return isReleased;
 }
 
 void addTitle(std::string text, UIEngine &ui)
@@ -231,8 +232,6 @@ void addTitle(std::string text, UIEngine &ui)
 
 	oneButtonRectangle = placeRectangleCenterTop(oneButtonRectangle, w);
 	oneButtonRectangle.y += oneButtonRectangle.height / 2.f;
-
-	int fontSize = static_cast<int>(oneButtonRectangle.height * 0.5f);
 
 	Rectangle smallerRect = shrinkRectanglePercentage(oneButtonRectangle, 0.01f, 0.01f);
 	smallerRect.y += smallerRect.height * widget.id;
