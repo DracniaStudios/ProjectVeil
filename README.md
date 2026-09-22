@@ -71,7 +71,19 @@ CI builds are run via GitHub Actions across Linux and Windows using both GCC/Cla
   - Mini-Game Inspector
   - Asset Inspector
   - Game (world) Inspector
-- **Memory Utilities** — arena and pool allocators for hot paths that don't need general-purpose heap allocation.
+- **Memory Utilities** — a set of allocators for hot paths that don't want general-purpose heap allocation, each for a
+  different lifetime shape:
+  - `Arena` / `VirtualArena` — bump allocation for data with one lifetime, freed all at once. The virtual form reserves
+    address space up front and commits pages as it grows, so it can start near zero and expand without ever moving what
+    it already handed out.
+  - `FrameAllocator` — two arenas swapped each frame, so this frame can still read last frame's results.
+  - `PoolAllocator` / `ArenaPool` — fixed-size slots with an intrusive free list, for objects that spawn and die
+    constantly (particles, projectiles, audio voices). The arena-backed form puts those slots inside arena memory.
+  - `SlotMap` — packed storage addressed by generational handles, so a reference to a destroyed object resolves to
+    nothing instead of silently naming whatever reused its slot.
+  - `ArenaResource` — a `std::pmr::memory_resource` bridge, so ordinary STL containers can build into an arena.
+  - `MemoryTracker` / `MemoryDebug` — per-subsystem budgets, plus 0xCD/0xDD fill patterns and AddressSanitizer
+    poisoning so use-after-free and use-after-reset surface where they happen.
 - **Audio Integration** — FMOD wired in for sound playback.
 
 ### Planned
@@ -94,18 +106,20 @@ Tracked informally via `Changelog.txt` as the project moves toward its next mile
 ProjectVeil/
 ├── src/
 │   ├── platform/         # Entry point, platform bootstrapping, asserts
+│   ├── engineLayer/       # Allocators, lighting, audio, physics, save system, world editor
 │   └── gameLayer/
+│       ├── AI/               # Stalker FSM and director
 │       ├── Components/       # RigidBody2D/3D implementations
-│       ├── DeveloperTools/   # ImGui inspector windows
 │       ├── MiniGames/        # Mini-game implementations
 │       ├── Objects/
 │       │   └── Interactable/ # Interactable world objects (e.g. LockedBox)
-│       ├── Utility/          # Arena/Pool allocators
+│       ├── Perception/       # Sound field and perception queries
 │       └── scenes/           # Scene constructors (e.g. Main Menu)
 ├── docs/                 # Development plans (e.g. LightingSystemPlan.md)
 ├── resources/            # Textures, models, icons, and shaders
 │   └── shaders/glsl330/  # Forward lighting vertex/fragment shaders
 ├── saves/                # Serialized world save data
+├── tests/                 # Standalone suites (tests/run_tests.sh)
 └── thirdparty/           # Vendored dependencies (raylib, imgui, FastNoise2, json, FMOD, rlImgui)
 ```
 

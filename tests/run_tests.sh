@@ -44,10 +44,14 @@ mkdir -p "$OUT_DIR"
 # ---------------------------------------------------------------------------
 # Allocator tests
 #
-# Cheaper than the SoundField tier: ArenaAllocator.h and PoolAllocator.h are
-# header-only and depend on nothing, so this links no library at all -- not even
-# raylib. If this block ever needs one, an allocator has grown a dependency it
-# should not have.
+# Cheaper than the SoundField tier: every allocator header depends on nothing,
+# so this links no library at all -- not even raylib. If this block ever needs
+# one, an allocator has grown a dependency it should not have.
+#
+# VirtualMemory.cpp is the exception that proves the rule, and is not a
+# dependency in that sense: it is the mmap/VirtualAlloc shim behind
+# VirtualArena, kept in a .cpp so <windows.h> never lands in a header next to
+# <raylib.h>. It needs OS headers, not a library.
 # ---------------------------------------------------------------------------
 ALLOCATOR_BIN="$OUT_DIR/allocator_tests"
 
@@ -55,6 +59,7 @@ echo "building $ALLOCATOR_BIN"
 g++ -std=c++23 -Wall \
 	-I src/engineLayer \
 	tests/AllocatorTests.cpp \
+	src/engineLayer/VirtualMemory.cpp \
 	-o "$ALLOCATOR_BIN"
 
 echo

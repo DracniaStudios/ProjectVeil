@@ -23,6 +23,19 @@
 [ Added ]
 
 - Added DrawGizmos() to GameObject.
+- Added VirtualArena: an arena that reserves address space up front and commits pages as it grows,
+  so it can size itself to a level's real contents without ever moving what it handed out.
+- Added FrameAllocator: two arenas swapped each frame, so this frame can read last frame's results.
+- Added SlotMap: packed storage addressed by generational handles. A handle to a destroyed object
+  resolves to nothing instead of silently naming whatever reused its slot.
+- Added ArenaPool: a runtime-sized pool whose slots live inside arena memory.
+- Added ArenaResource: a std::pmr bridge, so ordinary STL containers can build into an arena.
+- Added MemoryTracker: per-subsystem byte totals, peaks and budgets.
+- Added MemoryDebug: 0xCD/0xDD fill patterns and AddressSanitizer poisoning, shared by every allocator.
+- Added mark()/rewind()/Scope to Arena, for nested LIFO scratch.
+- Added create<T>()/createArray<T>() to Arena, which refuse non-trivially-destructible types at
+  compile time rather than leaving the rule to a comment.
+- Added try_construct() and occupancy reporting to PoolAllocator.
 
 [ Updated ]
 
