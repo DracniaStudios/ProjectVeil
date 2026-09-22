@@ -147,11 +147,11 @@ void Scene_drawScene3D();
  * Define an construction method for all Scene
  */
 
-inline constexpr int SCENE_COUNT = 1;
+inline constexpr int SCENE_COUNT = 2;
 
 inline constexpr int SCENE_MAIN_MENU = 0;
 Scene* Scene_MainMenuConstruct();
-inline constexpr int SCENE_Tutorial = 1;
+inline constexpr int SCENE_TUTORIAL = 1;
 Scene* Scene_TutorialConstruct();
 
 #endif 

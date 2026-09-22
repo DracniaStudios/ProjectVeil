@@ -120,7 +120,7 @@ void UIEngine::updateAndRender()
 	
 	for (size_t i = 0; i < widgets.size(); i++)
 	{
-		auto w = widgets[i];
+		auto& w = widgets[i];
 		w.id = i;
 	}
 	

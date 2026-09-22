@@ -11,4 +11,4 @@ struct PlayerUI {
 
 };
 
-#endif PLAYERUI_H
+#endif // PLAYERUI_H
