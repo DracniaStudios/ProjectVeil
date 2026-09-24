@@ -109,9 +109,14 @@ void InteractableObject::onInteract()
 		soundInstance->setParameterByName(soundParameterName.c_str(), soundParameterValue);
 	}
 
-	if (interactType == INTERACT_MINIGAME) { ActivateMiniGame(this); }
-	if (interactType == INTERACT_UNLOCK) { Unlock(this); }
-	if (interactType == INTERACT_ITEM) { AddItemToInventory(this); }
+	// Unlock() destroys this object (GameMap::DestroyInteractable erases the
+	// owning unique_ptr immediately, no deferred sweep), so the type has to be
+	// captured before dispatch and the branches kept mutually exclusive —
+	// nothing below may touch `this` after the branch that can free it.
+	const InteractionType type = interactType;
+	if (type == INTERACT_MINIGAME) { ActivateMiniGame(this); }
+	else if (type == INTERACT_UNLOCK) { Unlock(this); }
+	else if (type == INTERACT_ITEM) { AddItemToInventory(this); }
 
 }
 
