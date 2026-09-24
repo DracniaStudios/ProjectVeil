@@ -69,7 +69,7 @@ public:
 	int getID(){return widgetId++;}
 
 	std::vector<Widget> widgets;
-	int widgetId;
+	int widgetId = 0;
 
 	void updateAndRender();
 	Vector2 GetScreenSize() const { return Vector2(GetScreenWidth(), GetScreenHeight()); }
