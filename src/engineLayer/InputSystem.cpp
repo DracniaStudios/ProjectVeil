@@ -82,9 +82,16 @@ void InputSystem::SetDefaultActions() {
 	CreateAction(ACTION_MOVE_JUMP, "Jump", KEY_SPACE, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
 
 	// Artifact Actions
-	CreateAction(ACTION_USE_ARTIFACT, "Artifact_Interact", KEY_E, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
-	CreateAction(ACTION_USE_ARTIFACT_RIGHT, "Artifact_Right", KEY_R, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
-	CreateAction(ACTION_USE_ARTIFACT_LEFT, "Artifact_Left", KEY_Q, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
+	// Gamepad buttons here used to duplicate ACTION_MOVE_INTERACT/RIGHT/LEFT's
+	// (RIGHT_FACE_LEFT, LEFT_FACE_RIGHT, LEFT_FACE_LEFT) — the same
+	// same-button-two-actions bug fixed for the keyboard keys below in scan
+	// "Bug Fixes" (4a4ebd7), but left in place on the gamepad side, so
+	// pressing X on a controller fired Interact and opened the artifact
+	// simultaneously (and the left/right D-pad doubled as artifact cycling).
+	// Moved to the three buttons nothing else binds.
+	CreateAction(ACTION_USE_ARTIFACT, "Artifact_Interact", KEY_E, GAMEPAD_BUTTON_MIDDLE_LEFT);
+	CreateAction(ACTION_USE_ARTIFACT_RIGHT, "Artifact_Right", KEY_R, GAMEPAD_BUTTON_RIGHT_THUMB);
+	CreateAction(ACTION_USE_ARTIFACT_LEFT, "Artifact_Left", KEY_Q, GAMEPAD_BUTTON_MIDDLE);
 
 	// Item Actions
 	CreateAction(ACTION_USE_ITEM, "Item_Left", KEY_T, GAMEPAD_BUTTON_LEFT_TRIGGER_2);
