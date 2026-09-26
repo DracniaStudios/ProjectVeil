@@ -13,6 +13,13 @@ void SceneManager_init(SceneManager* manager) {
 	manager->scenes[0] = Scene_MainMenuConstruct();
 	manager->scenes[1] = Scene_TutorialConstruct();
 
+	// Scene_new() (called by both constructors above) sets currentScene as a
+	// side effect, so after constructing every scene it points at whichever
+	// one was built last (the Tutorial scene) rather than staying null. Reset
+	// it here so the invariant the comment below relies on actually holds
+	// regardless of how many scenes get constructed.
+	manager->currentScene = nullptr;
+
 	manager->transition = Transition_new();
 
 	// Not pushed here: gameMain.cpp's init_game() does the initial
