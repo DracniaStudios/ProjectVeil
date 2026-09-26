@@ -97,6 +97,42 @@ static void TestFindPointerSurvivesFurtherSpawns()
 	delete scene;
 }
 
+static void TestSpawnEntityKeysByNewIdAndDoesNotClobberSiblings()
+{
+	std::printf("SpawnEntity keys the map by the id it assigns, and a second spawn "
+		"does not destroy the first (regression: both defaulted to id 0 before "
+		"their real id was assigned, so the second spawn's map insert under the "
+		"stale key overwrote and destroyed the first entity)\n");
+	Scene* scene = MakeScene();
+	GameMap& map = scene->gameMap;
+
+	Entity first{};
+	Entity* spawnedFirst = map.SpawnEntity(first);
+	const std::uint64_t firstId = spawnedFirst->id;
+
+	Entity second{};
+	Entity* spawnedSecond = map.SpawnEntity(second);
+	const std::uint64_t secondId = spawnedSecond->id;
+
+	Check(firstId != secondId, "the two entities got distinct ids");
+	Check(map.FindEntity(firstId) == spawnedFirst,
+		"the first entity is still alive and reachable by its own id");
+	Check(map.FindEntity(secondId) == spawnedSecond,
+		"the second entity is reachable by its own id");
+
+	// Also exercises the DuplicateSelection path: cloning an entity that
+	// already carries a real (non-zero) id and spawning the clone must not
+	// destroy the original the id was copied from.
+	Entity* duplicate = map.SpawnEntity(*spawnedFirst);
+	Check(duplicate->id != firstId, "duplicating an already-spawned entity gets its own new id");
+	Check(map.FindEntity(firstId) == spawnedFirst,
+		"the original entity survives being duplicated");
+	Check(map.FindEntity(duplicate->id) == duplicate,
+		"the duplicate is reachable by its own id");
+
+	delete scene;
+}
+
 static void TestDestroyInteractableScrubsPlayerInventory()
 {
 	std::printf("destroying an interactable scrubs the player's inventory and interactObjectId\n");
@@ -185,6 +221,7 @@ int main()
 
 	TestIdsUniqueAcrossKinds();
 	TestFindPointerSurvivesFurtherSpawns();
+	TestSpawnEntityKeysByNewIdAndDoesNotClobberSiblings();
 	TestDestroyInteractableScrubsPlayerInventory();
 	TestForEachGameObjectVisitsAllAndHonoursEarlyExit();
 	TestForEachObjectPairVisitsEveryUnorderedPairOnce();
