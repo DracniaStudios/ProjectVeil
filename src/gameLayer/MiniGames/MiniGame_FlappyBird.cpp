@@ -185,6 +185,10 @@ void FlappyBird::update(Scene* scene_ptr, float deltaTime)
 	// Win Condition
 	if (CompleteMiniGame(*data, *player, scene_ptr->gameMap, BUFF_MOVEMENT)) {
 		scene_ptr->ReleaseMiniGame();
+		// ReleaseMiniGame() deleted `data` and nulled scene_ptr->miniGame, same as
+		// the lose path below. Missing this return let execution fall through into
+		// the Entity Logic loop and iterate a vector living in freed memory.
+		return;
 	}
 
 	// Lose Condition

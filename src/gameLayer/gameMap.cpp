@@ -71,13 +71,18 @@ Entity* GameMap::SpawnEntity(Entity& entity)
 		std::cout << "Added Object \n";
 	}
 	
+	// Assign the real id before inserting, same as SpawnGameObject/SpawnInteractable.
+	// Assigning it afterward left the map keyed on the caller-supplied id (always 0
+	// for a fresh entity, or the original's own id when duplicating) while only the
+	// object's own id field got the new value, so the key could never be found again
+	// by FindEntity/DestroyEntity, and a second spawn at the same stale key clobbered
+	// the first entity's unique_ptr outright.
+	entity.id = instanceHolder.getIdAndIncrement();
+
 	// Use clone() to preserve the dynamic type of the passed-in entity (e.g., Stalker)
 	entities[entity.id] = entity.clone();
-	
-	// Sets Object ID and Adds To Scene
 	auto ent = entities[entity.id].get();
-	ent->id = instanceHolder.getIdAndIncrement();
-	
+
 	ent->onEnable();
 
 	/// Set RigidBody3D Data

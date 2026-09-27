@@ -265,34 +265,6 @@ void Stalker::render3D()
 	if (hasLastKnown) { DrawSphereWires(lastKnownPosition, 0.6f, 6, 6, MAROON); }
 }
 
-// Use Player Position as Target
-bool Stalker::CheckIfTargetInRadius(Vector3 target) {
-	const auto currentPosition = rigidBody3D.getPosition();
-	const float radius = EffectiveSearchRadius();
-
-	if (!CheckCollisionSpheres(currentPosition, radius, target, 1)) {
-		return false;
-	}
-
-	/// Check If Stalker Can See Target
-	// Stalker Line Of Sight To Target Position
-	const Vector3 ToTarget = Vector3(target - currentPosition); // Ray-Like Pointer
-	const float distance = Vector3Length(ToTarget); // Length of Ray
-
-	if (distance <= 0.0001f) { return true; }
-	const auto direction = Vector3Scale(ToTarget, 1.0f / distance); // Create the Correct Ray Direction
-	
-	GameMap* map = &SceneManager::getInstance().currentScene->gameMap;
-	if (DistanceToObstruction(direction, distance, map) < distance) {
-		return false;
-	}
-	
-	TransitionTo(STALKER_HUNT);
-	MoveToward(target, currentSpeed, GetFrameTime(), map);
-
-	return true;
-}
-
 void Stalker::update(Scene* scene, float deltaTime)
 {
 	// Entity::update owns the stamina economy and recomputes currentSpeed from
@@ -322,8 +294,6 @@ void Stalker::update(Scene* scene, float deltaTime)
 		lastHeardLoudness = heardLoudness;
 		lastHeardKind = heard.kind;
 	}
-
-	if (scene->player != nullptr) { CheckIfTargetInRadius(scene->player->getPosition()); }
 
 	const float stimulusAge = scene->soundField.Now() - lastStimulusTime;
 
