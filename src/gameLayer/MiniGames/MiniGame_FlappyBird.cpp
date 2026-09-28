@@ -185,6 +185,10 @@ void FlappyBird::update(Scene* scene_ptr, float deltaTime)
 	// Win Condition
 	if (CompleteMiniGame(*data, *player, scene_ptr->gameMap, BUFF_MOVEMENT)) {
 		scene_ptr->ReleaseMiniGame();
+		// ReleaseMiniGame() deleted `data` and nulled scene_ptr->miniGame, same as
+		// the lose path below. Everything past this point reads `data`, so this
+		// return is what keeps the win path from being a use-after-free.
+		return;
 	}
 
 	// Lose Condition
