@@ -346,10 +346,16 @@ void WorldEditor::DuplicateSelection()
 	// model of the object that was just duplicated.
 	if (object->type == OBJECT_ENTITY)
 	{
-		Entity copy = *static_cast<Entity*>(object);
-		copy.disownModel();
-		copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), offset));
-		spawned = scene->gameMap.SpawnEntity(copy);
+		// Copy-constructing through the static Entity type here would slice off
+		// a subclass's own fields (e.g. Stalker's waypoints/state) while leaving
+		// `kind` still claiming that subclass, so SpawnEntity's clone() would
+		// hand back an undersized Entity that callers still cast to Stalker*.
+		// Cloning through the object's own virtual clone() preserves both the
+		// dynamic type and its data.
+		std::unique_ptr<Entity> copy = static_cast<Entity*>(object)->clone();
+		copy->disownModel();
+		copy->rigidBody3D.Teleport(Vector3Add(copy->getPosition(), offset));
+		spawned = scene->gameMap.SpawnEntity(*copy);
 	}
 	else if (object->type == OBJECT_INTERACTABLE)
 	{
