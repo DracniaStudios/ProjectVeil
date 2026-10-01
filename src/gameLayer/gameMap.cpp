@@ -71,17 +71,22 @@ Entity* GameMap::SpawnEntity(Entity& entity)
 		std::cout << "Added Object \n";
 	}
 	
-	// Assign the real id before inserting, same as SpawnGameObject/SpawnInteractable.
-	// Assigning it afterward left the map keyed on the caller-supplied id (always 0
-	// for a fresh entity, or the original's own id when duplicating) while only the
-	// object's own id field got the new value, so the key could never be found again
-	// by FindEntity/DestroyEntity, and a second spawn at the same stale key clobbered
-	// the first entity's unique_ptr outright.
-	entity.id = instanceHolder.getIdAndIncrement();
+	// Assigned before insertion (as SpawnGameObject/SpawnInteractable do) so the
+	// map key always matches the stored entity's own id field. Assigning it
+	// after inserting under the old id left every entity's map key permanently
+	// out of sync with entity->id, breaking FindEntity/DestroyEntity for it —
+	// and when the caller passed in an entity that already had a real id (e.g.
+	// EditorViewport::DuplicateSelection, which copies the selected entity by
+	// value), inserting under that id clobbered the live entity already stored
+	// there, destroying it via unique_ptr's assignment before the "duplicate"
+	// ever got its own id.
+	const std::uint64_t newId = instanceHolder.getIdAndIncrement();
 
 	// Use clone() to preserve the dynamic type of the passed-in entity (e.g., Stalker)
-	entities[entity.id] = entity.clone();
-	auto ent = entities[entity.id].get();
+	std::unique_ptr<Entity> cloned = entity.clone();
+	cloned->id = newId;
+	auto ent = cloned.get();
+	entities[newId] = std::move(cloned);
 
 	ent->onEnable();
 
@@ -95,7 +100,7 @@ Entity* GameMap::SpawnEntity(Entity& entity)
 	ent->rigidBody3D.Teleport(ent->getSpawnPoint());
 
 	std::cout << "Added Entity \n";
-	return entities[entity.id].get();
+	return ent;
 }
 
 InteractableObject* GameMap::SpawnInteractable(InteractableObject& object)
