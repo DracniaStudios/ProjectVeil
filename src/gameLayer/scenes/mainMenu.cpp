@@ -1,5 +1,7 @@
 #include "mainMenu.h"
 
+#include <SaveSystem.h>
+
 void Scene_MainMenuUpdate(float deltaTime)
 {
 	auto manager = &SceneManager::getInstance();
@@ -34,8 +36,11 @@ Scene* Scene_MainMenuConstruct()
 	scene->draw2D = Scene_MainMenuDraw2D;
 	scene->draw3D = Scene_MainMenuDraw3D;
    
+	SaveSystem::LoadWorld("mainMenu.json", *scene);
+
 	scene->player->setSpawnPoint(Vector3(20, 2, 0));
 	scene->player->rigidBody3D.Teleport(Vector3(20, 2, 0));
+
 
 	return scene;
 }

@@ -373,6 +373,8 @@ namespace SaveSystem
 		}
 		scene.gameMap.instanceHolder.idCounter = 0;
 
+
+
 		if (!ApplyJsonToScene(j, scene)) { return false; }
 
 		std::cout << "[Save System] Loaded Game: " << path.string() << "\n";
