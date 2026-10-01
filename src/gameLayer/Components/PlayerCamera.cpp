@@ -9,7 +9,6 @@ void PlayerCamera::UpdateCameraFPS(Camera3D* camera)
 {
 	auto player = SceneManager::getInstance().currentScene->player;
 
-	auto up = Vector3(0.0f, 1.0f, 0.0f);
 	offset = Vector3(0, player->rigidBody3D.scale.y / 2, 0); // Camera offset to be at player's head
 
 	if (InputSystem::getInstance().IsActionDown(ACTION_MOVE_CROUCH)) { offset.y /= 2; }

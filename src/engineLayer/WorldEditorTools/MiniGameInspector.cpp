@@ -48,6 +48,16 @@ void WorldEditor::ShowMiniGameData(Player* player)
 		if (ImGui::Button("Release")) { scene->ReleaseMiniGame(); }
 		ImGui::Separator();
 
+		// Reset()/Release() above can null scene->miniGame in this same frame
+		// (Release always does; Reset does too when there is no valid previous
+		// game to replay), so the outer null check taken before those buttons ran
+		// no longer guarantees anything below is safe without re-checking here.
+		if (scene->miniGame == nullptr)
+		{
+			ImGui::End();
+			return;
+		}
+
 		auto& obstacles = scene->miniGame->data->obstacles;
 		ImGui::Text("Obstacles: %d", static_cast<int>(obstacles.size()));
 		for (int i = 0; i < static_cast<int>(obstacles.size()); i++)
