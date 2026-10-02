@@ -125,35 +125,18 @@ void UIEngine::update()
 
 void UIEngine::render()
 {
-	for (const auto& widget : widgets)
-	{
-		switch (widget.type)
-		{
-		case UIEngine::BUTTON:
-			addButton(widget.text, *this);
-			break;
-		case UIEngine::TITLE:
-			addTitle(widget.text, *this);
-			break;
-		default:
-			break;
-		}
-	}
+	// Widgets are drawn immediately by addButton/addTitle during the scene's
+	// draw2D, which also records them in `widgets`. Replaying that list here
+	// would call addButton/addTitle again while iterating the vector they
+	// push_back into (iterator invalidation) and draw every widget twice.
 }
 
 
 // UIEngine Helper Functions
 
-void drawText(std::string text, Rectangle scaleRect, float yOffset)
+// Draws centred text inside a rectangle given in pixels.
+static void drawTextPixels(const std::string& text, Rectangle pixelSize, float yOffset)
 {
-
-	Rectangle pixelSize = {
-		GetScreenWidth() * scaleRect.x,
-		GetScreenHeight() * scaleRect.y,
-		GetScreenWidth() * scaleRect.width,
-		GetScreenHeight() * scaleRect.height 
-	};
-
 	int fontSize = static_cast<int>(pixelSize.height * 0.5f);
 
 	int textWidth = MeasureText(text.c_str(), fontSize);
@@ -167,6 +150,18 @@ void drawText(std::string text, Rectangle scaleRect, float yOffset)
 
 	DrawText(text.c_str(), textX, textY + yOffset, fontSize, WHITE);
 	
+}
+
+// Draws centred text inside a rectangle given as fractions of the screen (0..1).
+void drawText(std::string text, Rectangle scaleRect, float yOffset)
+{
+	Rectangle pixelSize = {
+		GetScreenWidth() * scaleRect.x,
+		GetScreenHeight() * scaleRect.y,
+		GetScreenWidth() * scaleRect.width,
+		GetScreenHeight() * scaleRect.height
+	};
+	drawTextPixels(text, pixelSize, yOffset);
 }
 
 bool addButton(std::string text, UIEngine &ui)
@@ -230,11 +225,11 @@ bool addButton(std::string text, UIEngine &ui)
 
 	if (isBeingClicked)
 	{
-		drawText(text, smallerRect, smallerRect.height * clickOffset);
+		drawTextPixels(text, smallerRect, smallerRect.height * clickOffset);
 	}
 	else
 	{
-		drawText(text, smallerRect);
+		drawTextPixels(text, smallerRect, 0);
 	}
 
 	// Fires once, on release, rather than every frame the mouse stays down —
@@ -266,5 +261,5 @@ void addTitle(std::string text, UIEngine &ui)
 
 	Rectangle smallerRect = shrinkRectanglePercentage(oneButtonRectangle, 0.01f, 0.01f);
 	smallerRect.y += smallerRect.height * widget.id;
-	drawText(text, smallerRect);
+	drawTextPixels(text, smallerRect, 0);
 }
