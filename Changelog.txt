@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
-// Version: 0.4.17
-// Due: 2026-09-13 
-// Date: 2026-09-10 (Current Development Date)
+// Version: 0.4.18
+// Due: 2026-10-9 
+// Date: 2026-10-16 (Current Development Date)
 
 [Notice] World Editor doesn't use new InputSystem.
 [Notice] Create Maze Minigame
@@ -22,12 +22,12 @@
 
 [ Added ]
 
-- Added new PlayerUI Header
-- Added new Tutorial Scene
+- Added Main Menu Text and Transition Button to Main Menu Scene.
 
 [ Updated ]
 
-- Updated "UI" header to "UIEngine"
+- Updated Scenes to update and Render UIEngine and PLayerUI
+- Split the UIEngine update and render functions.
 
 [ Fixed ]
 

@@ -66,12 +66,23 @@ public:
 		bool isReleased = false;
 	};
 
+	struct Text : Widget
+	{
+		std::string text = {};
+		int textSize = 20;
+	};
+
+	struct Button : Widget {
+		std::string text = {};
+	};
+
 	int getID(){return widgetId++;}
 
 	std::vector<Widget> widgets;
 	int widgetId = 0;
 
-	void updateAndRender();
+	void update();
+	void render();
 	Vector2 GetScreenSize() const { return Vector2(GetScreenWidth(), GetScreenHeight()); }
 
 private:

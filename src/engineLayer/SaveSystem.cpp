@@ -588,21 +588,9 @@ namespace SaveSystem
 		}
 
 		// Avoid id collisions with objects created after the load.
-		//
-		// The stored IdCounter alone is not enough: a world file hand-authored
-		// or written by an older build may not carry the key at all, in which
-		// case this fell back to the counter zeroed above and the very next
-		// object placed in the editor was handed an id another object already
-		// answered to. FindWorldObject returns the first match, so the
-		// duplicate would shadow the original for picking, activator lookup and
-		// save/load alike. Deriving the floor from the ids actually present
-		// makes the file's own contents authoritative.
 		std::uint64_t highestId = 0;
 		scene.gameMap.ForEachGameObject([&](GameObject& obj) { highestId = std::max(highestId, obj.id); });
 		scene.gameMap.ForEachInteractable([&](InteractableObject& interactable) { highestId = std::max(highestId, interactable.id); });
-		// Entities count toward the floor now that a world file carries them;
-		// leaving them out would hand a freshly placed object an id a loaded
-		// entity already answers to.
 		scene.gameMap.ForEachEntity([&](Entity& entity) { highestId = std::max(highestId, entity.id); });
 
 		scene.gameMap.instanceHolder.idCounter = std::max({

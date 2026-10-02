@@ -11,6 +11,7 @@
 #include <gameMap.h>
 #include <InputSystem.h>
 #include <Player.h>
+#include <PlayerUI.h>
 #include <Perception/SoundField.h>
 #include <AI/Director.h>
 #include <AssetManager.h>

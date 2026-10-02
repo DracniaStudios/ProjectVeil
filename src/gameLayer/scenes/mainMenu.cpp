@@ -1,6 +1,7 @@
 #include "mainMenu.h"
 
 #include <SaveSystem.h>
+#include <UIEngine.h>
 
 void Scene_MainMenuUpdate(float deltaTime)
 {
@@ -14,6 +15,17 @@ void Scene_MainMenuDraw2D()
 {
 	auto manager = &SceneManager::getInstance();
 	auto scene = manager->currentScene;
+
+	// Draw Main Menu
+	{
+		drawText("Main Menu", Rectangle{ 0.1f, 0.8f, 0.1f, 0.1f});;
+
+		if (addButton("Play", UIEngine::getInstance()))
+		{
+			std::cout << "Play Button Clicked\n";
+			SceneManager_push(&SceneManager::getInstance(), 1);
+		}
+	}
 
 };
 
@@ -36,11 +48,11 @@ Scene* Scene_MainMenuConstruct()
 	scene->draw2D = Scene_MainMenuDraw2D;
 	scene->draw3D = Scene_MainMenuDraw3D;
    
-	SaveSystem::LoadWorld("mainMenu.json", *scene);
 
-	scene->player->setSpawnPoint(Vector3(20, 2, 0));
-	scene->player->rigidBody3D.Teleport(Vector3(20, 2, 0));
+	scene->player->setSpawnPoint(Vector3(0, 2, 0));
+	scene->player->rigidBody3D.Teleport(Vector3(0, 2, 0));
 
+	SaveSystem::LoadWorld("mainMenu", *scene);
 
 	return scene;
 }

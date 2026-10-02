@@ -115,21 +115,52 @@ Rectangle enlargeRectanglePercentage(Rectangle r, float percentageX, float perce
 	return r;
 }
 
-void UIEngine::updateAndRender()
+// UIEngine Implementation
+
+void UIEngine::update()
 {
 	widgets.clear();
 	widgetId = 0;
 }
 
-void drawText(std::string text, Rectangle smallerRect, float yOffset)
+void UIEngine::render()
 {
-	int fontSize = static_cast<int>(smallerRect.height * 0.5f);
+	for (const auto& widget : widgets)
+	{
+		switch (widget.type)
+		{
+		case UIEngine::BUTTON:
+			addButton(widget.text, *this);
+			break;
+		case UIEngine::TITLE:
+			addTitle(widget.text, *this);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+
+// UIEngine Helper Functions
+
+void drawText(std::string text, Rectangle scaleRect, float yOffset)
+{
+
+	Rectangle pixelSize = {
+		GetScreenWidth() * scaleRect.x,
+		GetScreenHeight() * scaleRect.y,
+		GetScreenWidth() * scaleRect.width,
+		GetScreenHeight() * scaleRect.height 
+	};
+
+	int fontSize = static_cast<int>(pixelSize.height * 0.5f);
 
 	int textWidth = MeasureText(text.c_str(), fontSize);
 	int textHeight = fontSize;
 
-	float textX = smallerRect.x + (smallerRect.width - textWidth) / 2.f;
-	float textY = smallerRect.y + (smallerRect.height - textHeight) / 2.f;
+	float textX = pixelSize.x + (pixelSize.width - textWidth) / 2.f;
+	float textY = pixelSize.y + (pixelSize.height - textHeight) / 2.f;
 
 	Color shadowColor = { 0, 0, 0, 200 };
 	DrawText(text.c_str(), textX - fontSize * 0.08f, textY + fontSize * 0.08f + yOffset, fontSize, shadowColor);
