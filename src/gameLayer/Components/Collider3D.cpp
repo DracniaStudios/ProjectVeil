@@ -9,7 +9,7 @@
  * Deliberately free of every engine dependency.
  */
 
-namespace
+namespace Physics3D
 {
 	// Below this, a cross product of two box edges is degenerate: the edges are
 	// parallel, so the axis carries nothing the face axes have not already
@@ -269,325 +269,327 @@ namespace
 		contact.normal = Vector3Scale(toSphere, -1.0f / distance);
 		return contact;
 	}
-}
+
 
 #pragma region Collision
 
-// Deliberately do not look up the owning GameObjects here (e.g. through
-// SceneManager::getInstance().currentScene->gameMap) — doing so once before
-// pulled in SceneManager.h/Scene.h/imgui.h, breaking the "no engine
-// dependency" contract this file documents at the top and, with it, the
-// standalone SoundField/Collider unit tests that link this translation unit
-// against raylib alone (see tests/run_tests.sh). Resolve `other.GetObjectID()`
-// through the caller if a future rule needs the actual GameObjects.
-bool Collider3D::onCollisionEnter(Collider3D& other) const {
-	(void)other;
-	return true;
-}
-bool Collider3D::onCollisionExit(Collider3D& other) const {
-	(void)other;
-	return true;
-}
-bool Collider3D::onTriggerEnter(Collider3D& other) const {
-	(void)other;
-	return true;
-}
-bool Collider3D::onTriggerExit(Collider3D& other) const {
-	(void)other;
-	return true;
-}
+	// Deliberately do not look up the owning GameObjects here (e.g. through
+	// SceneManager::getInstance().currentScene->gameMap) — doing so once before
+	// pulled in SceneManager.h/Scene.h/imgui.h, breaking the "no engine
+	// dependency" contract this file documents at the top and, with it, the
+	// standalone SoundField/Collider unit tests that link this translation unit
+	// against raylib alone (see tests/run_tests.sh). Resolve `other.GetObjectID()`
+	// through the caller if a future rule needs the actual GameObjects.
+	bool Collider3D::onCollisionEnter(Collider3D& other) const {
+		(void)other;
+		return true;
+	}
+	bool Collider3D::onCollisionExit(Collider3D& other) const {
+		(void)other;
+		return true;
+	}
+	bool Collider3D::onTriggerEnter(Collider3D& other) const {
+		(void)other;
+		return true;
+	}
+	bool Collider3D::onTriggerExit(Collider3D& other) const {
+		(void)other;
+		return true;
+	}
 #pragma endregion
 
 
 
 #pragma region Volume
-Quaternion SafeOrientation(Quaternion rotation)
-{
-	const float lengthSquared = rotation.x * rotation.x + rotation.y * rotation.y
-		+ rotation.z * rotation.z + rotation.w * rotation.w;
-	if (lengthSquared < 1.0e-8f) { return QuaternionIdentity(); }
-	return QuaternionNormalize(rotation);
-}
-
-ColliderVolume MakeColliderVolume(const Collider3D& collider, Vector3 translation,
-	Quaternion rotation, Vector3 scale)
-{
-	const Quaternion orientation = SafeOrientation(rotation);
-
-	ColliderVolume volume = {};
-	volume.shape = collider.shape;
-
-	// Rotation preserves length, so these come out unit length — which the
-	// projection maths in the narrow phase relies on. Written through
-	// Vector3RotateByQuaternion rather than a matrix so it cannot disagree with
-	// the QuaternionToMatrix path render3D draws through, and so it does not
-	// depend on raylib's matrix storage order.
-	volume.axes[0] = Vector3RotateByQuaternion(Vector3{ 1.0f, 0.0f, 0.0f }, orientation);
-	volume.axes[1] = Vector3RotateByQuaternion(Vector3{ 0.0f, 1.0f, 0.0f }, orientation);
-	volume.axes[2] = Vector3RotateByQuaternion(Vector3{ 0.0f, 0.0f, 1.0f }, orientation);
-
-	// Scale first, then rotate, then translate — the same order render3D bakes
-	// into model.transform, so a collider offset lands where the art does.
-	volume.center = Vector3Add(translation,
-		Vector3RotateByQuaternion(collider.GetLocalOffset(scale), orientation));
-
-	volume.halfExtents = collider.GetLocalHalfExtents(scale);
-	volume.radius = collider.GetWorldRadius(scale);
-	return volume;
-}
-
-Vector3 ColliderWorldHalfExtents(const ColliderVolume& volume)
-{
-	if (volume.shape == COLLIDER_SPHERE)
+	Quaternion SafeOrientation(Quaternion rotation)
 	{
-		return { volume.radius, volume.radius, volume.radius };
+		const float lengthSquared = rotation.x * rotation.x + rotation.y * rotation.y
+			+ rotation.z * rotation.z + rotation.w * rotation.w;
+		if (lengthSquared < 1.0e-8f) { return QuaternionIdentity(); }
+		return QuaternionNormalize(rotation);
 	}
 
-	// Sum the absolute contribution of each rotated local axis to each world
-	// axis: the standard |R| * halfExtents construction.
-	const Vector3 half = volume.halfExtents;
-	return {
-		fabsf(volume.axes[0].x) * half.x + fabsf(volume.axes[1].x) * half.y + fabsf(volume.axes[2].x) * half.z,
-		fabsf(volume.axes[0].y) * half.x + fabsf(volume.axes[1].y) * half.y + fabsf(volume.axes[2].y) * half.z,
-		fabsf(volume.axes[0].z) * half.x + fabsf(volume.axes[1].z) * half.y + fabsf(volume.axes[2].z) * half.z
-	};
-}
+	ColliderVolume MakeColliderVolume(const Collider3D& collider, Vector3 translation,
+		Quaternion rotation, Vector3 scale)
+	{
+		const Quaternion orientation = SafeOrientation(rotation);
+
+		ColliderVolume volume = {};
+		volume.shape = collider.shape;
+
+		// Rotation preserves length, so these come out unit length — which the
+		// projection maths in the narrow phase relies on. Written through
+		// Vector3RotateByQuaternion rather than a matrix so it cannot disagree with
+		// the QuaternionToMatrix path render3D draws through, and so it does not
+		// depend on raylib's matrix storage order.
+		volume.axes[0] = Vector3RotateByQuaternion(Vector3{ 1.0f, 0.0f, 0.0f }, orientation);
+		volume.axes[1] = Vector3RotateByQuaternion(Vector3{ 0.0f, 1.0f, 0.0f }, orientation);
+		volume.axes[2] = Vector3RotateByQuaternion(Vector3{ 0.0f, 0.0f, 1.0f }, orientation);
+
+		// Scale first, then rotate, then translate — the same order render3D bakes
+		// into model.transform, so a collider offset lands where the art does.
+		volume.center = Vector3Add(translation,
+			Vector3RotateByQuaternion(collider.GetLocalOffset(scale), orientation));
+
+		volume.halfExtents = collider.GetLocalHalfExtents(scale);
+		volume.radius = collider.GetWorldRadius(scale);
+		return volume;
+	}
+
+	Vector3 ColliderWorldHalfExtents(const ColliderVolume& volume)
+	{
+		if (volume.shape == COLLIDER_SPHERE)
+		{
+			return { volume.radius, volume.radius, volume.radius };
+		}
+
+		// Sum the absolute contribution of each rotated local axis to each world
+		// axis: the standard |R| * halfExtents construction.
+		const Vector3 half = volume.halfExtents;
+		return {
+			fabsf(volume.axes[0].x) * half.x + fabsf(volume.axes[1].x) * half.y + fabsf(volume.axes[2].x) * half.z,
+			fabsf(volume.axes[0].y) * half.x + fabsf(volume.axes[1].y) * half.y + fabsf(volume.axes[2].y) * half.z,
+			fabsf(volume.axes[0].z) * half.x + fabsf(volume.axes[1].z) * half.y + fabsf(volume.axes[2].z) * half.z
+		};
+	}
 #pragma endregion
 
 #pragma region Contact
-ContactInfo ColliderContact(const ColliderVolume& a, const ColliderVolume& b)
-{
-	const bool sphereA = (a.shape == COLLIDER_SPHERE);
-	const bool sphereB = (b.shape == COLLIDER_SPHERE);
-
-	if (sphereA && sphereB) { return SphereSphereContact(a, b); }
-	if (sphereA) { return SphereBoxContact(a, b); }
-
-	if (sphereB)
+	ContactInfo ColliderContact(const ColliderVolume& a, const ColliderVolume& b)
 	{
-		// Same test with the roles swapped, so the normal comes back pointing
-		// from the sphere toward the box and has to be flipped to honour the
-		// "from a toward b" contract every caller relies on.
-		ContactInfo contact = SphereBoxContact(b, a);
-		if (contact.hit) { contact.normal = Vector3Negate(contact.normal); }
-		return contact;
-	}
+		const bool sphereA = (a.shape == COLLIDER_SPHERE);
+		const bool sphereB = (b.shape == COLLIDER_SPHERE);
 
-	// COLLIDER_MESH is an ordinary box once FitToModel has sized it
-	return BoxBoxContact(a, b);
-}
+		if (sphereA && sphereB) { return SphereSphereContact(a, b); }
+		if (sphereA) { return SphereBoxContact(a, b); }
+
+		if (sphereB)
+		{
+			// Same test with the roles swapped, so the normal comes back pointing
+			// from the sphere toward the box and has to be flipped to honour the
+			// "from a toward b" contract every caller relies on.
+			ContactInfo contact = SphereBoxContact(b, a);
+			if (contact.hit) { contact.normal = Vector3Negate(contact.normal); }
+			return contact;
+		}
+
+		// COLLIDER_MESH is an ordinary box once FitToModel has sized it
+		return BoxBoxContact(a, b);
+	}
 #pragma endregion
 
 #pragma region Raycast
-bool ColliderRaycast(const ColliderVolume& volume, Ray ray, float& outDistance, Vector3& outNormal)
-{
-	if (Vector3LengthSqr(ray.direction) < kParallelEpsilon) { return false; }
-	const Vector3 direction = Vector3Normalize(ray.direction);
-
-	if (volume.shape == COLLIDER_SPHERE)
+	bool ColliderRaycast(const ColliderVolume& volume, Ray ray, float& outDistance, Vector3& outNormal)
 	{
-		// Ray/sphere with a unit direction, so the quadratic's leading coefficient
-		// is 1 and it reduces to a projection and a chord half-length.
-		const Vector3 toCenter = Vector3Subtract(volume.center, ray.position);
-		const float alongRay = Vector3DotProduct(toCenter, direction);
-		const float radiusSquared = volume.radius * volume.radius;
+		if (Vector3LengthSqr(ray.direction) < kParallelEpsilon) { return false; }
+		const Vector3 direction = Vector3Normalize(ray.direction);
 
-		// Squared distance from the sphere's centre to the ray's infinite line
-		const float missDistanceSquared = Vector3LengthSqr(toCenter) - alongRay * alongRay;
-		if (missDistanceSquared > radiusSquared) { return false; }
+		if (volume.shape == COLLIDER_SPHERE)
+		{
+			// Ray/sphere with a unit direction, so the quadratic's leading coefficient
+			// is 1 and it reduces to a projection and a chord half-length.
+			const Vector3 toCenter = Vector3Subtract(volume.center, ray.position);
+			const float alongRay = Vector3DotProduct(toCenter, direction);
+			const float radiusSquared = volume.radius * volume.radius;
 
-		const float halfChord = sqrtf(fmaxf(radiusSquared - missDistanceSquared, 0.0f));
-		const float entry = alongRay - halfChord;
-		const float exit = alongRay + halfChord;
+			// Squared distance from the sphere's centre to the ray's infinite line
+			const float missDistanceSquared = Vector3LengthSqr(toCenter) - alongRay * alongRay;
+			if (missDistanceSquared > radiusSquared) { return false; }
 
-		if (exit < 0.0f) { return false; } // the whole sphere is behind the ray
+			const float halfChord = sqrtf(fmaxf(radiusSquared - missDistanceSquared, 0.0f));
+			const float entry = alongRay - halfChord;
+			const float exit = alongRay + halfChord;
 
-		// Starting inside returns the exit, matching the box path above so a
-		// listener or camera inside a volume behaves the same for either shape.
-		const bool inside = entry < 0.0f;
-		outDistance = inside ? exit : entry;
+			if (exit < 0.0f) { return false; } // the whole sphere is behind the ray
 
-		const Vector3 surface = Vector3Add(ray.position, Vector3Scale(direction, outDistance));
-		const Vector3 outward = Vector3Subtract(surface, volume.center);
-		const float length = Vector3Length(outward);
+			// Starting inside returns the exit, matching the box path above so a
+			// listener or camera inside a volume behaves the same for either shape.
+			const bool inside = entry < 0.0f;
+			outDistance = inside ? exit : entry;
 
-		// A collapsed sphere has no surface to take a normal from; face the ray.
-		Vector3 normal = (length > kParallelEpsilon)
-			? Vector3Scale(outward, 1.0f / length)
-			: Vector3Negate(direction);
+			const Vector3 surface = Vector3Add(ray.position, Vector3Scale(direction, outDistance));
+			const Vector3 outward = Vector3Subtract(surface, volume.center);
+			const float length = Vector3Length(outward);
 
-		// Same convention as the slab test: face the ray from either side.
-		outNormal = inside ? Vector3Negate(normal) : normal;
+			// A collapsed sphere has no surface to take a normal from; face the ray.
+			Vector3 normal = (length > kParallelEpsilon)
+				? Vector3Scale(outward, 1.0f / length)
+				: Vector3Negate(direction);
+
+			// Same convention as the slab test: face the ray from either side.
+			outNormal = inside ? Vector3Negate(normal) : normal;
+			return true;
+		}
+
+		// Box and mesh. Push the ray into the volume's own frame and slab-test there.
+		// ColliderVolume already carries unit axes, so this is three dot products
+		// rather than a quaternion inverse.
+		const Vector3 delta = Vector3Subtract(ray.position, volume.center);
+		const Vector3 localOrigin = {
+			Vector3DotProduct(delta, volume.axes[0]),
+			Vector3DotProduct(delta, volume.axes[1]),
+			Vector3DotProduct(delta, volume.axes[2])
+		};
+		const Vector3 localDirection = {
+			Vector3DotProduct(direction, volume.axes[0]),
+			Vector3DotProduct(direction, volume.axes[1]),
+			Vector3DotProduct(direction, volume.axes[2])
+		};
+
+		Vector3 localNormal = {};
+		if (!SlabTest(localOrigin, localDirection, volume.halfExtents, outDistance, localNormal))
+		{
+			return false;
+		}
+
+		// Back out to world space along the same axes
+		outNormal = Vector3Add(Vector3Add(
+			Vector3Scale(volume.axes[0], localNormal.x),
+			Vector3Scale(volume.axes[1], localNormal.y)),
+			Vector3Scale(volume.axes[2], localNormal.z));
 		return true;
 	}
-
-	// Box and mesh. Push the ray into the volume's own frame and slab-test there.
-	// ColliderVolume already carries unit axes, so this is three dot products
-	// rather than a quaternion inverse.
-	const Vector3 delta = Vector3Subtract(ray.position, volume.center);
-	const Vector3 localOrigin = {
-		Vector3DotProduct(delta, volume.axes[0]),
-		Vector3DotProduct(delta, volume.axes[1]),
-		Vector3DotProduct(delta, volume.axes[2])
-	};
-	const Vector3 localDirection = {
-		Vector3DotProduct(direction, volume.axes[0]),
-		Vector3DotProduct(direction, volume.axes[1]),
-		Vector3DotProduct(direction, volume.axes[2])
-	};
-
-	Vector3 localNormal = {};
-	if (!SlabTest(localOrigin, localDirection, volume.halfExtents, outDistance, localNormal))
-	{
-		return false;
-	}
-
-	// Back out to world space along the same axes
-	outNormal = Vector3Add(Vector3Add(
-		Vector3Scale(volume.axes[0], localNormal.x),
-		Vector3Scale(volume.axes[1], localNormal.y)),
-		Vector3Scale(volume.axes[2], localNormal.z));
-	return true;
-}
 #pragma endregion
 
 #pragma region Extents
-Vector3 SanitizeColliderSize(Vector3 size)
-{
-	return {
-		fmaxf(size.x, MINIMUM_COLLIDER_EXTENT),
-		fmaxf(size.y, MINIMUM_COLLIDER_EXTENT),
-		fmaxf(size.z, MINIMUM_COLLIDER_EXTENT)
-	};
-}
+	Vector3 SanitizeColliderSize(Vector3 size)
+	{
+		return {
+			fmaxf(size.x, MINIMUM_COLLIDER_EXTENT),
+			fmaxf(size.y, MINIMUM_COLLIDER_EXTENT),
+			fmaxf(size.z, MINIMUM_COLLIDER_EXTENT)
+		};
+	}
 
-Vector3 Collider3D::GetLocalHalfExtents(Vector3 bodyScale) const
-{
-	// size * bodyScale * 0.5 — with the default size of {1,1,1} this is exactly
-	// `bodyScale * 0.5f`, the expression the body used before colliders existed.
-	// That identity is what keeps every pre-existing save behaving the same.
-	const Vector3 extent = Vector3Multiply(size, bodyScale);
-	return {
-		RepairExtent(extent.x) * 0.5f,
-		RepairExtent(extent.y) * 0.5f,
-		RepairExtent(extent.z) * 0.5f
-	};
-}
+	Vector3 Collider3D::GetLocalHalfExtents(Vector3 bodyScale) const
+	{
+		// size * bodyScale * 0.5 — with the default size of {1,1,1} this is exactly
+		// `bodyScale * 0.5f`, the expression the body used before colliders existed.
+		// That identity is what keeps every pre-existing save behaving the same.
+		const Vector3 extent = Vector3Multiply(size, bodyScale);
+		return {
+			RepairExtent(extent.x) * 0.5f,
+			RepairExtent(extent.y) * 0.5f,
+			RepairExtent(extent.z) * 0.5f
+		};
+	}
 
-Vector3 Collider3D::GetLocalOffset(Vector3 bodyScale) const
-{
-	// Scaled but not rotated: the body applies its own rotation, exactly as
-	// render3D scales a mesh before rotating it.
-	return Vector3Multiply(offset, bodyScale);
-}
+	Vector3 Collider3D::GetLocalOffset(Vector3 bodyScale) const
+	{
+		// Scaled but not rotated: the body applies its own rotation, exactly as
+		// render3D scales a mesh before rotating it.
+		return Vector3Multiply(offset, bodyScale);
+	}
 
-float Collider3D::GetWorldRadius(Vector3 bodyScale) const
-{
-	const float largest = fmaxf(fabsf(bodyScale.x), fmaxf(fabsf(bodyScale.y), fabsf(bodyScale.z)));
-	return fmaxf(radius * largest, MINIMUM_COLLIDER_EXTENT);
-}
+	float Collider3D::GetWorldRadius(Vector3 bodyScale) const
+	{
+		const float largest = fmaxf(fabsf(bodyScale.x), fmaxf(fabsf(bodyScale.y), fabsf(bodyScale.z)));
+		return fmaxf(radius * largest, MINIMUM_COLLIDER_EXTENT);
+	}
 #pragma endregion
 
 #pragma region Mesh Fitting
-void Collider3D::FitToBounds(BoundingBox bounds)
-{
-	size = SanitizeColliderSize(Vector3Subtract(bounds.max, bounds.min));
-	offset = Vector3Scale(Vector3Add(bounds.max, bounds.min), 0.5f);
-
-	// A sphere collider fitted to the same bounds should still enclose them, so
-	// take the largest half extent rather than the smallest.
-	const Vector3 half = Vector3Scale(size, 0.5f);
-	radius = fmaxf(half.x, fmaxf(half.y, half.z));
-}
-
-void Collider3D::FitToModel(const Model& model)
-{
-	if (model.meshCount <= 0 || model.meshes == nullptr) { return; }
-
-	// model.transform is deliberately ignored: GameObject::render3D overwrites it
-	// every frame with the body's own scale and rotation, so the mesh's untouched
-	// local bounds are what that transform is applied to — and local units are
-	// precisely the frame `size` and `offset` live in.
-	BoundingBox bounds = {};
-	bool haveBounds = false;
-
-	for (int i = 0; i < model.meshCount; ++i)
+	void Collider3D::FitToBounds(BoundingBox bounds)
 	{
-		const Mesh& mesh = model.meshes[i];
-		if (mesh.vertexCount <= 0 || mesh.vertices == nullptr) { continue; }
+		size = SanitizeColliderSize(Vector3Subtract(bounds.max, bounds.min));
+		offset = Vector3Scale(Vector3Add(bounds.max, bounds.min), 0.5f);
 
-		const BoundingBox meshBounds = GetMeshBoundingBox(mesh);
-		if (!haveBounds)
-		{
-			bounds = meshBounds;
-			haveBounds = true;
-			continue;
-		}
-
-		bounds.min = Vector3Min(bounds.min, meshBounds.min);
-		bounds.max = Vector3Max(bounds.max, meshBounds.max);
+		// A sphere collider fitted to the same bounds should still enclose them, so
+		// take the largest half extent rather than the smallest.
+		const Vector3 half = Vector3Scale(size, 0.5f);
+		radius = fmaxf(half.x, fmaxf(half.y, half.z));
 	}
 
-	// Nothing to measure. Leaving the collider as it was beats collapsing it to
-	// a point, which would make the object fall through the world.
-	if (!haveBounds) { return; }
+	void Collider3D::FitToModel(const Model& model)
+	{
+		if (model.meshCount <= 0 || model.meshes == nullptr) { return; }
 
-	FitToBounds(bounds);
-}
+		// model.transform is deliberately ignored: GameObject::render3D overwrites it
+		// every frame with the body's own scale and rotation, so the mesh's untouched
+		// local bounds are what that transform is applied to — and local units are
+		// precisely the frame `size` and `offset` live in.
+		BoundingBox bounds = {};
+		bool haveBounds = false;
+
+		for (int i = 0; i < model.meshCount; ++i)
+		{
+			const Mesh& mesh = model.meshes[i];
+			if (mesh.vertexCount <= 0 || mesh.vertices == nullptr) { continue; }
+
+			const BoundingBox meshBounds = GetMeshBoundingBox(mesh);
+			if (!haveBounds)
+			{
+				bounds = meshBounds;
+				haveBounds = true;
+				continue;
+			}
+
+			bounds.min = Vector3Min(bounds.min, meshBounds.min);
+			bounds.max = Vector3Max(bounds.max, meshBounds.max);
+		}
+
+		// Nothing to measure. Leaving the collider as it was beats collapsing it to
+		// a point, which would make the object fall through the world.
+		if (!haveBounds) { return; }
+
+		FitToBounds(bounds);
+	}
 #pragma endregion
 
 #pragma region SaveData
-Json Collider3D::formatToJson() const
-{
-	Json j;
+	Json Collider3D::formatToJson() const
+	{
+		Json j;
 
-	j["Shape"] = static_cast<int>(shape);
-	j["Mode"] = static_cast<int>(mode);
+		j["Shape"] = static_cast<int>(shape);
+		j["Mode"] = static_cast<int>(mode);
 
-	j["SizeX"] = size.x;
-	j["SizeY"] = size.y;
-	j["SizeZ"] = size.z;
+		j["SizeX"] = size.x;
+		j["SizeY"] = size.y;
+		j["SizeZ"] = size.z;
 
-	j["OffsetX"] = offset.x;
-	j["OffsetY"] = offset.y;
-	j["OffsetZ"] = offset.z;
+		j["OffsetX"] = offset.x;
+		j["OffsetY"] = offset.y;
+		j["OffsetZ"] = offset.z;
 
-	j["Radius"] = radius;
+		j["Radius"] = radius;
 
-	return j;
-}
+		return j;
+	}
 
-bool Collider3D::loadFromJson(const Json& j)
-{
-	*this = {};
+	bool Collider3D::loadFromJson(const Json& j)
+	{
+		*this = {};
 
-	if (!j.is_object()) { return false; }
+		if (!j.is_object()) { return false; }
 
-	// Out-of-range values fall back to the default rather than being cast into a
-	// shape or mode that does not exist — a save from a future build that added
-	// a shape must not index off the end of the dispatch.
-	const int loadedShape = j.value("Shape", static_cast<int>(COLLIDER_BOX));
-	const int loadedMode = j.value("Mode", static_cast<int>(COLLIDER_COLLISION));
+		// Out-of-range values fall back to the default rather than being cast into a
+		// shape or mode that does not exist — a save from a future build that added
+		// a shape must not index off the end of the dispatch.
+		const int loadedShape = j.value("Shape", static_cast<int>(COLLIDER_BOX));
+		const int loadedMode = j.value("Mode", static_cast<int>(COLLIDER_COLLISION));
 
-	shape = (loadedShape >= 0 && loadedShape < COLLIDER_SHAPE_COUNT)
-		? static_cast<ColliderShape>(loadedShape)
-		: COLLIDER_BOX;
-	mode = (loadedMode >= 0 && loadedMode < COLLIDER_MODE_COUNT)
-		? static_cast<ColliderMode>(loadedMode)
-		: COLLIDER_COLLISION;
+		shape = (loadedShape >= 0 && loadedShape < COLLIDER_SHAPE_COUNT)
+			? static_cast<ColliderShape>(loadedShape)
+			: COLLIDER_BOX;
+		mode = (loadedMode >= 0 && loadedMode < COLLIDER_MODE_COUNT)
+			? static_cast<ColliderMode>(loadedMode)
+			: COLLIDER_COLLISION;
 
-	size = SanitizeColliderSize({
-		j.value("SizeX", 1.0f),
-		j.value("SizeY", 1.0f),
-		j.value("SizeZ", 1.0f) });
+		size = SanitizeColliderSize({
+			j.value("SizeX", 1.0f),
+			j.value("SizeY", 1.0f),
+			j.value("SizeZ", 1.0f) });
 
-	offset = {
-		j.value("OffsetX", 0.0f),
-		j.value("OffsetY", 0.0f),
-		j.value("OffsetZ", 0.0f) };
+		offset = {
+			j.value("OffsetX", 0.0f),
+			j.value("OffsetY", 0.0f),
+			j.value("OffsetZ", 0.0f) };
 
-	radius = fmaxf(j.value("Radius", 0.5f), MINIMUM_COLLIDER_EXTENT);
+		radius = fmaxf(j.value("Radius", 0.5f), MINIMUM_COLLIDER_EXTENT);
 
-	return true;
+		return true;
+	}
+
 }
 #pragma endregion

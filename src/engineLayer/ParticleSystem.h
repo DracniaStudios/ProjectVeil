@@ -3,25 +3,28 @@
 #include <raylib.h>
 #include <vector>
 
-typedef struct Particle {
-	float x, y;
-	float speedX, speedY;
-	float size;
-	float life;
-	Color color;
-} Particle;
+namespace ParticleSystem {
 
-class ParticleSystem {
+	typedef struct Particle {
+		float x, y;
+		float speedX, speedY;
+		float size;
+		float life;
+		Color color;
+	} Particle;
 
-public:
-	bool isLoop = true;
-	void Update();
-	void Draw();
-	void Emit(int count);
-private:
-	ParticleSystem();
-	~ParticleSystem();
+	class ParticleSystem {
 
-	// Change To Pool Allocator
-	std::vector<Particle> particles;
-};
+	public:
+		bool isLoop = true;
+		void Update();
+		void Draw();
+		void Emit(int count);
+	private:
+		ParticleSystem();
+		~ParticleSystem();
+
+		// Change To Pool Allocator
+		std::vector<Particle> particles;
+	};
+}

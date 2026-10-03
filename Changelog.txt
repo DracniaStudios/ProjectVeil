@@ -32,8 +32,7 @@
 
 [ Updated ]
 
-- Updated Scenes to update and Render UIEngine and PLayerUI
-- Split the UIEngine update and render functions.
+- Assigned new Namespaces To Engine Layer
 
 [ Fixed ]
 

@@ -152,9 +152,8 @@ static void drawTextPixels(const std::string& text, Rectangle pixelSize, float y
 	
 }
 
-bool addButton(std::string text, Rectangle scaleRect, UIEngine &ui){}
 // Draws centred text inside a rectangle given as fractions of the screen (0..1).
-void drawText(std::string text, Rectangle scaleRect, float yOffset)
+void drawTextScaled(std::string text, Rectangle scaleRect, float yOffset)
 {
 	Rectangle pixelSize = {
 		GetScreenWidth() * scaleRect.x,
@@ -165,30 +164,36 @@ void drawText(std::string text, Rectangle scaleRect, float yOffset)
 	drawTextPixels(text, pixelSize, yOffset);
 }
 
-bool addButton(std::string text, UIEngine &ui)
+bool addButton(std::string text, Rectangle pixelRect,Rectangle scaleRect, UIEngine &ui)
 {
 	UIEngine::Widget widget;
 	widget.type = UIEngine::BUTTON;
 	widget.text = text;
 	widget.id = ui.getID();
-	ui.widgets.push_back(widget);
 
-	float w = GetScreenWidth();
-	float h = GetScreenHeight();
+	float w = GetScreenSize().x;
+	float h = GetScreenSize().y;
 
 	// Get Base Rectangle
-	Rectangle oneButtonRectangle{};
-	oneButtonRectangle.width = w * 0.8f;
-	oneButtonRectangle.height = h / (ui.widgets.size() + 1);
+	Rectangle sourceRect = {
+		(w * scaleRect.x) + pixelRect.x,
+		(h * scaleRect.y) + pixelRect.y,
+		(w * scaleRect.width) + pixelRect.width,
+		(h * scaleRect.height) + pixelRect.height
+	};
 
-	oneButtonRectangle.height = std::min(oneButtonRectangle.height, oneButtonRectangle.width / 8.f);
+	//sourceRect.width = std::min(sourceRect.width, sourceRect.height * 8.f);
+	//sourceRect.height = std::min(sourceRect.height, sourceRect.width / 8.f);
+	
+	widget.anchorRect = scaleRect;
+	widget.pixelRect = pixelRect;
 
-	oneButtonRectangle = placeRectangleCenterTop(oneButtonRectangle, w);
-	oneButtonRectangle.y += oneButtonRectangle.height / 2.f;
+	ui.widgets.push_back(widget);
 
-	Rectangle smallerRect = shrinkRectanglePercentage(oneButtonRectangle, 0.01f, 0.01f);
+	
+	// Shrink the rectangle slightly to avoid drawing over the edges of the button
+	Rectangle smallerRect = shrinkRectanglePercentage(sourceRect, 0.01f, 0.01f);
 	smallerRect.y += smallerRect.height * widget.id;
-
 
 	// Button Style
 	const float clickOffset = 0.05f;
@@ -203,6 +208,7 @@ bool addButton(std::string text, UIEngine &ui)
 	// widget was already pushed above (its id determines this button's slot),
 	// so the state just computed is written back onto that same entry rather
 	// than a copy that goes out of scope when this function returns.
+
 	ui.widgets.back().isHovered = isHovered;
 	ui.widgets.back().isBeingClicked = isBeingClicked;
 	ui.widgets.back().isReleased = isReleased;

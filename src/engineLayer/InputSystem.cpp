@@ -3,110 +3,105 @@
 #include <algorithm>
 #include <iostream>
 
-InputSystem::InputSystem() {
-	inputActions.resize(MAX_ACTION); // One slot per ActionType, indexed by action id
+namespace InputSystem {
 
-	// Load From File else Set Default
-	SetDefaultActions();
-}
+	InputSystem::InputSystem() {
+		inputActions.resize(MAX_ACTION); // One slot per ActionType, indexed by action id
 
-void InputSystem::Update() {
-	pressedKeys.clear();
-
-	// Drain raylib's key queue to get every key pressed this frame
-	for (int key = GetKeyPressed(); key != KEY_NULL; key = GetKeyPressed()) {
-		pressedKeys.push_back(key);
-		if (std::find(heldKeys.begin(), heldKeys.end(), key) == heldKeys.end()) {
-			heldKeys.push_back(key);
-		}
+		// Load From File else Set Default
+		SetDefaultActions();
 	}
 
-	std::erase_if(heldKeys, [](int key) { return !IsKeyDown(key); });
-}
+	void InputSystem::Update() {
+		pressedKeys.clear();
 
-InputAction* InputSystem::GetAction(int action) {
-	if (action <= NO_ACTION || action >= MAX_ACTION) { return nullptr; }
-	return &inputActions[action];
-}
+		// Drain raylib's key queue to get every key pressed this frame
+		for (int key = GetKeyPressed(); key != KEY_NULL; key = GetKeyPressed()) {
+			pressedKeys.push_back(key);
+			if (std::find(heldKeys.begin(), heldKeys.end(), key) == heldKeys.end()) {
+				heldKeys.push_back(key);
+			}
+		}
 
-bool InputSystem::IsActionDown(int action) {
-	const auto input = GetAction(action);
-	if (!input || !input->isEnabled) { return false; }
-	return IsKeyDown(input->key) || (input->button >= 0 && IsGamepadButtonDown(gamepadIndex, input->button));
-}
+		std::erase_if(heldKeys, [](int key) { return !IsKeyDown(key); });
+	}
 
-bool InputSystem::IsActionPressed(int action) {
-	const auto input = GetAction(action);
-	if (!input || !input->isEnabled) { return false; }
-	return IsKeyPressed(input->key) || (input->button >= 0 && IsGamepadButtonPressed(gamepadIndex, input->button));
-}
+	InputAction* InputSystem::GetAction(int action) {
+		if (action <= NO_ACTION || action >= MAX_ACTION) { return nullptr; }
+		return &inputActions[action];
+	}
 
-bool InputSystem::IsActionReleased(int action) {
-	const auto input = GetAction(action);
-	if (!input || !input->isEnabled) { return false; }
-	return IsKeyReleased(input->key) || (input->button >= 0 && IsGamepadButtonReleased(gamepadIndex, input->button));
-}
+	bool InputSystem::IsActionDown(int action) {
+		const auto input = GetAction(action);
+		if (!input || !input->isEnabled) { return false; }
+		return IsKeyDown(input->key) || (input->button >= 0 && IsGamepadButtonDown(gamepadIndex, input->button));
+	}
 
-void InputSystem::SetAction(int action, int key, int button) {
-	const auto input = GetAction(action);
-	if (!input) { std::cout << "Unknown Action: " << action << "\n"; return; }
-	input->key = key;
-	input->button = button;
-}
+	bool InputSystem::IsActionPressed(int action) {
+		const auto input = GetAction(action);
+		if (!input || !input->isEnabled) { return false; }
+		return IsKeyPressed(input->key) || (input->button >= 0 && IsGamepadButtonPressed(gamepadIndex, input->button));
+	}
 
-void InputSystem::CreateAction(int action, const std::string& name, int key, int button) {
-	const auto input = GetAction(action);
-	if (!input) { std::cout << "Invalid Action: " << action << "\n"; return; }
-	if (input->id != NO_ACTION) { std::cout << "Existing Action: " << input->name << "\n"; return; }
+	bool InputSystem::IsActionReleased(int action) {
+		const auto input = GetAction(action);
+		if (!input || !input->isEnabled) { return false; }
+		return IsKeyReleased(input->key) || (input->button >= 0 && IsGamepadButtonReleased(gamepadIndex, input->button));
+	}
 
-	input->id = action;
-	input->name = name;
-	input->key = key;
-	input->button = button;
-}
+	void InputSystem::SetAction(int action, int key, int button) {
+		const auto input = GetAction(action);
+		if (!input) { std::cout << "Unknown Action: " << action << "\n"; return; }
+		input->key = key;
+		input->button = button;
+	}
 
-void InputSystem::SetDefaultActions() {
+	void InputSystem::CreateAction(int action, const std::string& name, int key, int button) {
+		const auto input = GetAction(action);
+		if (!input) { std::cout << "Invalid Action: " << action << "\n"; return; }
+		if (input->id != NO_ACTION) { std::cout << "Existing Action: " << input->name << "\n"; return; }
 
-	// Future Game Pad Errors
-	// Implement Axis Movement
+		input->id = action;
+		input->name = name;
+		input->key = key;
+		input->button = button;
+	}
 
-	// Move Action
-	CreateAction(ACTION_MOVE_FORWARD, "Move Forward", KEY_W, GAMEPAD_BUTTON_LEFT_FACE_UP);
-	CreateAction(ACTION_MOVE_BACKWARD, "Move Backward", KEY_S, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
-	CreateAction(ACTION_MOVE_RIGHT, "Move Right", KEY_D, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
-	CreateAction(ACTION_MOVE_LEFT, "Move Left", KEY_A, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
+	void InputSystem::SetDefaultActions() {
 
-	CreateAction(ACTION_MOVE_CROUCH, "Crouch", KEY_LEFT_CONTROL, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
-	CreateAction(ACTION_MOVE_SPRINT, "Sprint", KEY_LEFT_SHIFT, GAMEPAD_BUTTON_LEFT_THUMB);
-	CreateAction(ACTION_MOVE_INTERACT, "Interact", KEY_F, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
-	CreateAction(ACTION_MOVE_JUMP, "Jump", KEY_SPACE, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
+		// Future Game Pad Errors
+		// Implement Axis Movement
 
-	// Artifact Actions
-	// Gamepad buttons here used to duplicate ACTION_MOVE_INTERACT/RIGHT/LEFT's
-	// (RIGHT_FACE_LEFT, LEFT_FACE_RIGHT, LEFT_FACE_LEFT) — the same
-	// same-button-two-actions bug fixed for the keyboard keys below in scan
-	// "Bug Fixes" (4a4ebd7), but left in place on the gamepad side, so
-	// pressing X on a controller fired Interact and opened the artifact
-	// simultaneously (and the left/right D-pad doubled as artifact cycling).
-	// Moved to the three buttons nothing else binds.
-	CreateAction(ACTION_USE_ARTIFACT, "Artifact_Interact", KEY_E, GAMEPAD_BUTTON_MIDDLE_LEFT);
-	CreateAction(ACTION_USE_ARTIFACT_RIGHT, "Artifact_Right", KEY_R, GAMEPAD_BUTTON_RIGHT_THUMB);
-	CreateAction(ACTION_USE_ARTIFACT_LEFT, "Artifact_Left", KEY_Q, GAMEPAD_BUTTON_MIDDLE);
+		// Move Action
+		CreateAction(ACTION_MOVE_FORWARD, "Move Forward", KEY_W, GAMEPAD_BUTTON_LEFT_FACE_UP);
+		CreateAction(ACTION_MOVE_BACKWARD, "Move Backward", KEY_S, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
+		CreateAction(ACTION_MOVE_RIGHT, "Move Right", KEY_D, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
+		CreateAction(ACTION_MOVE_LEFT, "Move Left", KEY_A, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
 
-	// Item Actions
-	CreateAction(ACTION_USE_ITEM, "Item_Left", KEY_T, GAMEPAD_BUTTON_LEFT_TRIGGER_2);
-	CreateAction(ACTION_USE_ITEM2, "Item_Right", KEY_G, GAMEPAD_BUTTON_RIGHT_TRIGGER_2);
-	CreateAction(ACTION_USE_FLASHLIGHT, "Flashlight", KEY_L, GAMEPAD_BUTTON_RIGHT_FACE_UP);
-	
-	// Editor Actions
-	// KEY_LEFT_CONTROL is also the modifier every Ctrl+ editor hotkey reads
-	// directly via IsKeyDown (panel toggles, undo, duplicate — see
-	// WorldEditor::UpdateHotkeys); binding it here too meant holding Ctrl for
-	// any of those also flew the camera upward for as long as it was held.
-	CreateAction(ACTION_EDITOR_UP, "Editor_Up", KEY_SPACE, GAMEPAD_BUTTON_RIGHT_TRIGGER_1);
-	CreateAction(ACTION_EDITOR_DOWN, "Editor_Down", KEY_LEFT_ALT, GAMEPAD_BUTTON_LEFT_TRIGGER_1);
-	
-	// UI Action
-	CreateAction(ACTION_UI_PAUSE, "Pause", KEY_TAB, GAMEPAD_BUTTON_MIDDLE_RIGHT);
+		CreateAction(ACTION_MOVE_CROUCH, "Crouch", KEY_LEFT_CONTROL, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
+		CreateAction(ACTION_MOVE_SPRINT, "Sprint", KEY_LEFT_SHIFT, GAMEPAD_BUTTON_LEFT_THUMB);
+		CreateAction(ACTION_MOVE_INTERACT, "Interact", KEY_F, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
+		CreateAction(ACTION_MOVE_JUMP, "Jump", KEY_SPACE, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
 
+		CreateAction(ACTION_USE_ARTIFACT, "Artifact_Interact", KEY_E, GAMEPAD_BUTTON_MIDDLE_LEFT);
+		CreateAction(ACTION_USE_ARTIFACT_RIGHT, "Artifact_Right", KEY_R, GAMEPAD_BUTTON_RIGHT_THUMB);
+		CreateAction(ACTION_USE_ARTIFACT_LEFT, "Artifact_Left", KEY_Q, GAMEPAD_BUTTON_MIDDLE);
+
+		// Item Actions
+		CreateAction(ACTION_USE_ITEM, "Item_Left", KEY_T, GAMEPAD_BUTTON_LEFT_TRIGGER_2);
+		CreateAction(ACTION_USE_ITEM2, "Item_Right", KEY_G, GAMEPAD_BUTTON_RIGHT_TRIGGER_2);
+		CreateAction(ACTION_USE_FLASHLIGHT, "Flashlight", KEY_L, GAMEPAD_BUTTON_RIGHT_FACE_UP);
+
+		// Editor Actions
+		// KEY_LEFT_CONTROL is also the modifier every Ctrl+ editor hotkey reads
+		// directly via IsKeyDown (panel toggles, undo, duplicate — see
+		// WorldEditor::UpdateHotkeys); binding it here too meant holding Ctrl for
+		// any of those also flew the camera upward for as long as it was held.
+		CreateAction(ACTION_EDITOR_UP, "Editor_Up", KEY_SPACE, GAMEPAD_BUTTON_RIGHT_TRIGGER_1);
+		CreateAction(ACTION_EDITOR_DOWN, "Editor_Down", KEY_LEFT_ALT, GAMEPAD_BUTTON_LEFT_TRIGGER_1);
+
+		// UI Action
+		CreateAction(ACTION_UI_PAUSE, "Pause", KEY_TAB, GAMEPAD_BUTTON_MIDDLE_RIGHT);
+
+	}
 }

@@ -7,86 +7,88 @@
 #include <vector>
 #include <string>
 
-enum ActionType : uint8_t {
-	NO_ACTION = 0,
+namespace InputSystem {
 
-	// Move Actions
-	ACTION_MOVE_FORWARD,
-	ACTION_MOVE_BACKWARD,
-	ACTION_MOVE_RIGHT,
-	ACTION_MOVE_LEFT,
+	enum ActionType : uint8_t {
+		NO_ACTION = 0,
 
-	ACTION_MOVE_CROUCH,
-	ACTION_MOVE_SPRINT,
-	ACTION_MOVE_INTERACT,
-	ACTION_MOVE_JUMP,
+		// Move Actions
+		ACTION_MOVE_FORWARD,
+		ACTION_MOVE_BACKWARD,
+		ACTION_MOVE_RIGHT,
+		ACTION_MOVE_LEFT,
 
-	// Artifact Actions
-	ACTION_USE_ARTIFACT,
-	ACTION_USE_ARTIFACT_RIGHT,
-	ACTION_USE_ARTIFACT_LEFT,
+		ACTION_MOVE_CROUCH,
+		ACTION_MOVE_SPRINT,
+		ACTION_MOVE_INTERACT,
+		ACTION_MOVE_JUMP,
 
-	// Item Actions
-	ACTION_USE_ITEM,
-	ACTION_USE_ITEM2,
-	ACTION_USE_FLASHLIGHT,
+		// Artifact Actions
+		ACTION_USE_ARTIFACT,
+		ACTION_USE_ARTIFACT_RIGHT,
+		ACTION_USE_ARTIFACT_LEFT,
 
-	// Editor Actions
-	ACTION_EDITOR_UP,
-	ACTION_EDITOR_DOWN,
+		// Item Actions
+		ACTION_USE_ITEM,
+		ACTION_USE_ITEM2,
+		ACTION_USE_FLASHLIGHT,
 
-	// Menu Actions
-	ACTION_UI_PAUSE,
+		// Editor Actions
+		ACTION_EDITOR_UP,
+		ACTION_EDITOR_DOWN,
 
-	MAX_ACTION
-};
+		// Menu Actions
+		ACTION_UI_PAUSE,
 
-struct InputAction {
-	std::string name = "";
-	bool isEnabled = true;
-	int id = NO_ACTION;
-	int key = KEY_NULL;
-	int button = -1; // -1 = no gamepad binding
-};
+		MAX_ACTION
+	};
 
-class InputSystem
-{
-private:
-	InputSystem();
+	struct InputAction {
+		std::string name = "";
+		bool isEnabled = true;
+		int id = NO_ACTION;
+		int key = KEY_NULL;
+		int button = -1; // -1 = no gamepad binding
+	};
 
-	std::vector<int> pressedKeys; // Keys pressed this frame, in press order
-	std::vector<int> heldKeys;    // Keys currently held down
-public:
-	InputSystem(const InputSystem&) = delete;
-	InputSystem& operator=(const InputSystem&) = delete;
-	InputSystem(InputSystem&&) = delete;
-	InputSystem& operator=(InputSystem&&) = delete;
+	class InputSystem
+	{
+	private:
+		InputSystem();
 
-	static InputSystem& getInstance() {
-		static InputSystem instance;
-		return instance;
-	}
-	std::vector<InputAction> inputActions; // Indexed by ActionType
-	int gamepadIndex = 0;
+		std::vector<int> pressedKeys; // Keys pressed this frame, in press order
+		std::vector<int> heldKeys;    // Keys currently held down
+	public:
+		InputSystem(const InputSystem&) = delete;
+		InputSystem& operator=(const InputSystem&) = delete;
+		InputSystem(InputSystem&&) = delete;
+		InputSystem& operator=(InputSystem&&) = delete;
 
-	// Call once per frame, before the scene update
-	void Update();
+		static InputSystem& getInstance() {
+			static InputSystem instance;
+			return instance;
+		}
+		std::vector<InputAction> inputActions; // Indexed by ActionType
+		int gamepadIndex = 0;
 
-	// Action Functions
-	bool IsActionDown(int action);
-	bool IsActionPressed(int action);
-	bool IsActionReleased(int action);
+		// Call once per frame, before the scene update
+		void Update();
 
-	InputAction* GetAction(int action);
+		// Action Functions
+		bool IsActionDown(int action);
+		bool IsActionPressed(int action);
+		bool IsActionReleased(int action);
 
-	void SetDefaultActions(void);
-	void SetAction(int action, int key, int button);
-	void CreateAction(int action, const std::string& name, int key, int button);
+		InputAction* GetAction(int action);
 
-	// Key Functions
-	const std::vector<int>& GetPressedKeys() const { return pressedKeys; } // Keys pressed this frame
-	const std::vector<int>& GetHeldKeys() const { return heldKeys; }       // Keys currently held down
-	int GetLastPressedKey() const { return pressedKeys.empty() ? KEY_NULL : pressedKeys.back(); } // KEY_NULL if none this frame
-};
+		void SetDefaultActions(void);
+		void SetAction(int action, int key, int button);
+		void CreateAction(int action, const std::string& name, int key, int button);
 
+		// Key Functions
+		const std::vector<int>& GetPressedKeys() const { return pressedKeys; } // Keys pressed this frame
+		const std::vector<int>& GetHeldKeys() const { return heldKeys; }       // Keys currently held down
+		int GetLastPressedKey() const { return pressedKeys.empty() ? KEY_NULL : pressedKeys.back(); } // KEY_NULL if none this frame
+	};
+}
 #endif

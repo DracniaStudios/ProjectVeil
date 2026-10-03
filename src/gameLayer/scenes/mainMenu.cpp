@@ -18,9 +18,9 @@ void Scene_MainMenuDraw2D()
 
 	// Draw Main Menu
 	{
-		drawText("Main Menu", Rectangle{ 0.4f, 0.1f, 0.1f, 0.1f});;
+		drawTextScaled("Main Menu", Rectangle{ 0.4f, 0.1f, 0.1f, 0.1f});;
 
-		if (addButton("Play", UIEngine::getInstance()))
+		if (addButton("Play", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
 		{
 			std::cout << "Play Button Clicked\n";
 			SceneManager_push(&SceneManager::getInstance(), 1);

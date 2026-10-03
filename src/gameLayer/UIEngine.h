@@ -57,13 +57,24 @@ public:
 
 	struct Widget
 	{
+		// Widget Info
 		std::string text = {};
 		int type = 0;
 		int id = 0;
-
+		
+		// State
 		bool isHovered = false;
 		bool isBeingClicked = false;
 		bool isReleased = false;
+
+		// Screen Data
+		Rectangle anchorRect = {};
+		Rectangle pixelRect = {};
+
+		// Style
+		Color color1 = { 255, 255, 255, 255 };
+		Color color2 = { 100, 100, 100, 255 };
+		Color color3 = { 10, 10, 10, 255 };
 	};
 
 	struct Text : Widget
@@ -76,21 +87,25 @@ public:
 		std::string text = {};
 	};
 
-	int getID(){return widgetId++;}
-
+	/** Get Widget Info **/
 	std::vector<Widget> widgets;
 	int widgetId = 0;
+	int getID(){return widgetId++;}
 
+	/** Update and Render */
 	void update();
 	void render();
-	Vector2 GetScreenSize() const { return Vector2(GetScreenWidth(), GetScreenHeight()); }
 
 private:
 	UIEngine() = default;
 };
 
-void drawText(std::string text, Rectangle scaleRect, float yOffset = 0);
-bool addButton(std::string text, Rectangle scaleRect, UIEngine &ui);
+Vector2 GetScreenSize() { return Vector2(GetScreenWidth(), GetScreenHeight()); }
+void drawTextScaled(std::string text, Rectangle scaleRect, float yOffset = 0);
+static void drawTextPixels(const std::string& text, Rectangle pixelRect, float yOffset = 0);
+
+
+bool addButton(std::string text, Rectangle pixelRect, Rectangle scaleRect, UIEngine &ui);
 void addTitle(std::string text, UIEngine &ui);
 
 #endif
