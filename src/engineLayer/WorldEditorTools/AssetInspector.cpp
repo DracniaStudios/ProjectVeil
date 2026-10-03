@@ -20,7 +20,7 @@ void WorldEditor::ShowAssetData()
 			/// Create a Tab for Textures
 			if (ImGui::BeginTabItem("Textures", nullptr, ImGuiTabItemFlags_None)) {
 
-				Asset* activeTexture = getActiveTexture();
+				AssetManager::Asset* activeTexture = getActiveTexture();
 				ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Active: %s", activeTexture != nullptr ? activeTexture->name.c_str() : "None");
 				ImGui::Separator();
 
@@ -30,7 +30,7 @@ void WorldEditor::ShowAssetData()
 
 				for (int i = 0; i < static_cast<int>(assets.size()); i++)
 				{
-					if (assets[i].type != ASSET_TEXTURE) continue;
+					if (assets[i].type != AssetManager::ASSET_TEXTURE) continue;
 					ImGui::PushID(i);
 
 					bool isSelected = (i == activeTextureIndex);
@@ -40,7 +40,7 @@ void WorldEditor::ShowAssetData()
 					bool clicked = ImGui::ImageButton("##texture", (ImTextureRef)(intptr_t)assets[i].texture.id, ImVec2(thumbSize, thumbSize));
 					if (clicked)
 					{
-						if (assets[i].type == ASSET_TEXTURE) activeTextureIndex = i;
+						if (assets[i].type == AssetManager::ASSET_TEXTURE) activeTextureIndex = i;
 					}
 
 					if (isSelected) { ImGui::PopStyleColor(); }
@@ -57,7 +57,7 @@ void WorldEditor::ShowAssetData()
 			/// Create a Tab for Models
 			if (ImGui::BeginTabItem("Models", nullptr, ImGuiTabItemFlags_None)) {
 
-				Asset* activeModel = getActiveModel();
+				AssetManager::Asset* activeModel = getActiveModel();
 				ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Active: %s", activeModel != nullptr ? activeModel->name.c_str() : "None");
 				ImGui::Separator();
 
@@ -67,7 +67,7 @@ void WorldEditor::ShowAssetData()
 
 				for (int i = 0; i < static_cast<int>(assets.size()); i++)
 				{
-					if (assets[i].type != ASSET_MODEL) continue;
+					if (assets[i].type != AssetManager::ASSET_MODEL) continue;
 					ImGui::PushID(i);
 
 					bool isSelected = (i == activeModelIndex);
@@ -78,7 +78,7 @@ void WorldEditor::ShowAssetData()
 					bool clicked = ImGui::Button(assets[i].name.c_str(), ImVec2(thumbSize, thumbSize));
 					if (clicked)
 					{
-						if (assets[i].type == ASSET_MODEL) activeModelIndex = i;
+						if (assets[i].type == AssetManager::ASSET_MODEL) activeModelIndex = i;
 					}
 
 					if (isSelected) { ImGui::PopStyleColor(); }
@@ -100,7 +100,7 @@ void WorldEditor::ShowAssetData()
 				// inactive tabs, corrupting ImGui's ID stack for the rest of the frame.
 				if (ImGui::BeginTabItem(folder.c_str(), nullptr, ImGuiTabItemFlags_None)) {
 
-				Asset* activeAsset = getActiveAsset();
+				AssetManager::Asset* activeAsset = getActiveAsset();
 				ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Active: %s", activeAsset != nullptr ? activeAsset->name.c_str() : "None");
 				ImGui::Separator();
 
@@ -114,7 +114,7 @@ void WorldEditor::ShowAssetData()
 					const auto& asset = assets[i];
 					if (asset.folder != folder) { continue; }
 					ImGui::PushID(i);
-					ImGui::Text("%s (%s)", asset.name.c_str(), asset.type == ASSET_MODEL ? "Model" : "Texture");
+					ImGui::Text("%s (%s)", asset.name.c_str(), asset.type == AssetManager::ASSET_MODEL ? "Model" : "Texture");
 
 					bool isSelected = (i == activeAssetIndex); /// Disabled for now, as we don't have a way to select assets in this view yet
 					if (isSelected) { ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f)); }

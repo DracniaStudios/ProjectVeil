@@ -358,7 +358,7 @@ namespace Lighting
 		int applied = 0;
 		for (auto& asset : AssetManager::AssetManager::getInstance().assets)
 		{
-			if (asset.type != ASSET_MODEL) { continue; }
+			if (asset.type != AssetManager::ASSET_MODEL) { continue; }
 			if (asset.model.meshCount == 0) { continue; }
 
 			ApplyToModel(asset.model);

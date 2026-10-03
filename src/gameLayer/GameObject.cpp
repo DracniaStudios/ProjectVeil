@@ -80,7 +80,7 @@ void GameObject::loadVisuals()
 	releaseGeneratedModel();
 
 	// Model: shared AssetManager handle when one is named, else a unit cube
-	Asset* modelAsset = modelName.empty() ? nullptr : GetAssetPtrByName(modelName, ASSET_MODEL);
+	AssetManager::Asset* modelAsset = modelName.empty() ? nullptr : AssetManager::GetAssetPtrByName(modelName, AssetManager::ASSET_MODEL);
 	if (modelAsset != nullptr && modelAsset->model.meshCount > 0)
 	{
 		model = modelAsset->model;
@@ -98,7 +98,7 @@ void GameObject::loadVisuals()
 
 	// Texture: only applied to owned primitives — an asset model's materials
 	// are shared by every object using it, and it brings its own .mtl textures
-	Asset* textureAsset = textureName.empty() ? nullptr : GetAssetPtrByName(textureName, ASSET_TEXTURE);
+	AssetManager::Asset* textureAsset = textureName.empty() ? nullptr : AssetManager::GetAssetPtrByName(textureName, AssetManager::ASSET_TEXTURE);
 	if (textureAsset != nullptr)
 	{
 		texture = textureAsset->texture;
@@ -140,7 +140,7 @@ void GameObject::setTexture(const std::string& assetName)
 	textureName = assetName;
 
 	// Bind without regenerating the model — safe to call every frame
-	if (Asset* asset = GetAssetPtrByName(assetName, ASSET_TEXTURE))
+	if (AssetManager::Asset* asset = AssetManager::GetAssetPtrByName(assetName, AssetManager::ASSET_TEXTURE))
 	{
 		texture = asset->texture;
 		if (ownsModel && texture.id != 0)

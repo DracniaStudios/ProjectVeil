@@ -329,7 +329,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 		ImGui::Image((ImTextureRef)(intptr_t)object->model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture.id, ImVec2(64, 64));
 	}
 	ImGui::Text("Texture: %s", object->textureName.empty() ? "None" : object->textureName.c_str());
-	Asset* activeTexture = getActiveTexture();
+	AssetManager::Asset* activeTexture = getActiveTexture();
 	if (activeTexture != nullptr && ImGui::Button("Apply Active Texture"))
 	{
 		object->setTexture(activeTexture->name);
@@ -339,7 +339,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 	// Model
 	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Model");
 	ImGui::Text("Model: %s", object->modelName.empty() ? "Cube" : object->modelName.c_str());
-	Asset* activeModel = getActiveModel();
+	AssetManager::Asset* activeModel = getActiveModel();
 	if (activeModel != nullptr && ImGui::Button("Apply Active Model"))
 	{
 		object->setModel(activeModel->name);
