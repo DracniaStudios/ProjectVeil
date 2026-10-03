@@ -29,7 +29,7 @@ MiniGame* MiniGame_SimonSays(Player* player)
 }
 
 
-void SimonSays::render(Scene* scene_ptr)
+void SimonSays::render(SceneManagement::Scene* scene_ptr)
 {
 	auto data = scene_ptr->miniGame->data;
 	for (size_t i = 0; i < data->obstacles.size(); i++)
@@ -45,7 +45,7 @@ void SimonSays::render(Scene* scene_ptr)
 
 }
 
-void SimonSays::update(Scene* scene_ptr, float delta)
+void SimonSays::update(SceneManagement::Scene* scene_ptr, float delta)
 {
 	auto inputSystem = &InputSystem::getInstance();
 	auto data = scene_ptr->miniGame->data;

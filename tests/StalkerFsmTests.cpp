@@ -58,14 +58,14 @@ static void CheckState(const Stalker& s, StalkerState expected, const std::strin
 // A scene with no geometry: the sound field's occlusion pass walks
 // gameMap.gameObjects, and leaving it empty keeps every case about the FSM
 // rather than about level layout.
-static Scene* MakeScene()
+static SceneManagement::Scene* MakeScene()
 {
-	Scene* scene = new Scene();
+	SceneManagement::Scene* scene = new SceneManagement::Scene();
 	SceneManager::getInstance().currentScene = scene;
 	return scene;
 }
 
-static Stalker* AddStalker(Scene* scene, Vector3 at, std::uint64_t id = 500)
+static Stalker* AddStalker(SceneManagement::Scene* scene, Vector3 at, std::uint64_t id = 500)
 {
 	auto owned = std::make_unique<Stalker>();
 	owned->id = id;
@@ -80,7 +80,7 @@ static Stalker* AddStalker(Scene* scene, Vector3 at, std::uint64_t id = 500)
 
 // One simulated frame: age the field first, exactly as Scene_updateScene does,
 // so an event emitted this step is audible on this step.
-static void Step(Scene* scene, Stalker* stalker, float dt)
+static void Step(SceneManagement::Scene* scene, Stalker* stalker, float dt)
 {
 	scene->soundField.Update(dt);
 	stalker->update(scene, dt);
@@ -88,7 +88,7 @@ static void Step(Scene* scene, Stalker* stalker, float dt)
 
 // Solid world geometry for the avoidance cases. Only GameMap::gameObjects are
 // probed, which is where level geometry lives.
-static BoundingBox AddBlock(Scene* scene, Vector3 centre, Vector3 size)
+static BoundingBox AddBlock(SceneManagement::Scene* scene, Vector3 centre, Vector3 size)
 {
 	GameObject block = {};
 	block.name = "TestBlock";
@@ -112,7 +112,7 @@ static bool InsideBox(Vector3 p, const BoundingBox& box)
 static void TestPatrolToInvestigateOnQuietNoise()
 {
 	std::printf("patrol -> investigate on a quiet noise\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
 
 	CheckState(*s, STALKER_PATROL, "starts in patrol");
@@ -129,7 +129,7 @@ static void TestPatrolToInvestigateOnQuietNoise()
 static void TestPatrolToHuntOnLoudNoise()
 {
 	std::printf("patrol -> hunt on a loud noise\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
 
 	scene->soundField.Emit(Vector3{ 1, 0, 0 }, 1.0f, SOUND_TAMPER, 999);
@@ -142,7 +142,7 @@ static void TestPatrolToHuntOnLoudNoise()
 static void TestBeliefIsASnapshotNotATrack()
 {
 	std::printf("belief is a snapshot, not a position feed\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
 
 	const Vector3 noiseAt = Vector3{ 5, 0, 5 };
@@ -168,7 +168,7 @@ static void TestBeliefIsASnapshotNotATrack()
 static void TestIgnoresItsOwnNoise()
 {
 	std::printf("stalker ignores its own emissions\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	constexpr std::uint64_t kId = 77;
 	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 }, kId);
 
@@ -185,7 +185,7 @@ static void TestIgnoresItsOwnNoise()
 static void TestInvestigateToSearchOnArrival()
 {
 	std::printf("investigate -> search on arrival\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
 
 	scene->soundField.Emit(Vector3{ 3, 0, 0 }, 0.2f, SOUND_FOOTSTEP, 999);
@@ -212,7 +212,7 @@ static void TestInvestigateToSearchOnArrival()
 static void TestHuntDecaysToSearchOnStimulusAge()
 {
 	std::printf("hunt -> search when the trail goes cold\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
 
 	scene->soundField.Emit(Vector3{ 1, 0, 0 }, 1.0f, SOUND_TAMPER, 999);
@@ -238,7 +238,7 @@ static void TestHuntDecaysToSearchOnStimulusAge()
 static void TestSearchGivesUpToPatrol()
 {
 	std::printf("search -> patrol on giving up\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
 
 	scene->soundField.Emit(Vector3{ 1, 0, 0 }, 1.0f, SOUND_TAMPER, 999);
@@ -260,7 +260,7 @@ static void TestSearchGivesUpToPatrol()
 static void TestWaypointAdvanceIsHeightIndependent()
 {
 	std::printf("patrol advances waypoints regardless of height\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
 
 	// Route authored well above the body, as "Add Waypoint At Player" produces
@@ -289,7 +289,7 @@ static void TestWaypointAdvanceIsHeightIndependent()
 static void TestClearPathIsNotDeflected()
 {
 	std::printf("a clear path is steered straight\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
 	s->waypoints = { Vector3{ 10, 0, 0 } };
 	s->currentWaypoint = 0;
@@ -305,7 +305,7 @@ static void TestClearPathIsNotDeflected()
 static void TestSteersAsideForAnObstacle()
 {
 	std::printf("an obstacle ahead deflects the heading\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
 	s->waypoints = { Vector3{ 10, 0, 0 } };
 	s->currentWaypoint = 0;
@@ -324,7 +324,7 @@ static void TestSteersAsideForAnObstacle()
 static void TestRoutesAroundAnObstacleWithoutEnteringIt()
 {
 	std::printf("routes around an obstacle rather than through it\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
 	const Vector3 goal = Vector3{ 12, 0, 0 };
 	s->waypoints = { goal };
@@ -362,7 +362,7 @@ static void TestRoutesAroundAnObstacleWithoutEnteringIt()
 static void TestAvoidanceIsSkippedWithoutAWorld()
 {
 	std::printf("no world means no avoidance\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
 
 	// A block that would deflect the heading if the map were consulted. Passing

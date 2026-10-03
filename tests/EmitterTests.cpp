@@ -47,16 +47,16 @@ static void CheckNear(float actual, float expected, float tolerance, const std::
 	}
 }
 
-static Scene* MakeScene()
+static SceneManagement::Scene* MakeScene()
 {
-	Scene* scene = new Scene();
+	SceneManagement::Scene* scene = new SceneManagement::Scene();
 	SceneManager::getInstance().currentScene = scene;
 	return scene;
 }
 
 // A task station at a known position. Registered directly rather than through
 // SpawnInteractable so the id is predictable and the assertions can name it.
-static InteractableObject* AddStation(Scene* scene, Vector3 at, std::uint64_t id = 700)
+static InteractableObject* AddStation(SceneManagement::Scene* scene, Vector3 at, std::uint64_t id = 700)
 {
 	auto owned = std::make_unique<InteractableObject>(INTERACT_MINIGAME, MINI_GAME_FLAPPY_BIRD_ID, 0);
 	owned->id = id;
@@ -71,7 +71,7 @@ static InteractableObject* AddStation(Scene* scene, Vector3 at, std::uint64_t id
 
 // Counts only events of one kind, so a case is never accidentally satisfied by
 // a different emitter's noise.
-static int CountOfKind(const Scene* scene, SoundKind kind)
+static int CountOfKind(const SceneManagement::Scene* scene, SoundKind kind)
 {
 	int count = 0;
 	for (const auto& event : scene->soundField.Events())
@@ -81,7 +81,7 @@ static int CountOfKind(const Scene* scene, SoundKind kind)
 	return count;
 }
 
-static const SoundEvent* FirstOfKind(const Scene* scene, SoundKind kind)
+static const SoundEvent* FirstOfKind(const SceneManagement::Scene* scene, SoundKind kind)
 {
 	for (const auto& event : scene->soundField.Events())
 	{
@@ -95,7 +95,7 @@ static const SoundEvent* FirstOfKind(const Scene* scene, SoundKind kind)
 static void TestIdleStationIsSilent()
 {
 	std::printf("an idle station makes no noise\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	AddStation(scene, Vector3{ 5, 0, 5 });
 
 	for (int i = 0; i < 120; ++i) { scene->EmitStationNoise(0.016f); }
@@ -108,7 +108,7 @@ static void TestIdleStationIsSilent()
 static void TestRunningStationEmitsAtTheStation()
 {
 	std::printf("a running station emits at its own position\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 5, 0, 5 });
 	station->isRunningMiniGame = true;
 
@@ -131,7 +131,7 @@ static void TestRunningStationEmitsAtTheStation()
 static void TestStationNoiseIsPeriodicNotPerFrame()
 {
 	std::printf("station noise is periodic, not per-frame\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 });
 	station->isRunningMiniGame = true;
 
@@ -152,7 +152,7 @@ static void TestStationNoiseIsPeriodicNotPerFrame()
 static void TestReleasingTheMiniGameStopsTheHum()
 {
 	std::printf("releasing the minigame frees the station\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 });
 	station->isRunningMiniGame = true;
 
@@ -175,7 +175,7 @@ static void TestReleasingTheMiniGameStopsTheHum()
 static void TestDisabledStationIsSilent()
 {
 	std::printf("a disabled station makes no noise\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 });
 	station->isRunningMiniGame = true;
 	station->isEnabled = false;
@@ -192,7 +192,7 @@ static void TestDisabledStationIsSilent()
 static void TestInteractingWithAStationIsTampering()
 {
 	std::printf("working a station emits a tamper noise\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	scene->player = new Player();
 	scene->player->id = PLAYER_ID;
 	scene->player->artifactUnlocked = MINI_GAME_RO_SHAM_BOO_ID;   // everything unlocked
@@ -215,7 +215,7 @@ static void TestInteractingWithAStationIsTampering()
 static void TestLockedStationStillMakesNoise()
 {
 	std::printf("a failed attempt is still audible\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	scene->player = new Player();
 	scene->player->id = PLAYER_ID;
 	scene->player->artifactUnlocked = MINI_GAME_FLAPPY_BIRD_ID;
@@ -236,7 +236,7 @@ static void TestLockedStationStillMakesNoise()
 
 // Two bodies overlapping along X, closing at `closingSpeed`. Returns the
 // striker so the caller can check attribution.
-static GameObject* AddCrate(Scene* scene, Vector3 at, Vector3 velocity,
+static GameObject* AddCrate(SceneManagement::Scene* scene, Vector3 at, Vector3 velocity,
                             bool isStatic, std::uint64_t id)
 {
 	GameObject crate = {};
@@ -255,7 +255,7 @@ static GameObject* AddCrate(Scene* scene, Vector3 at, Vector3 velocity,
 static void TestFastImpactIsAudible()
 {
 	std::printf("a fast impact is audible\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 
 	// Overlapping boxes, the second driving into the first hard.
 	GameObject* wall = AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 800);
@@ -279,7 +279,7 @@ static void TestFastImpactIsAudible()
 static void TestRestingContactIsSilent()
 {
 	std::printf("a resting contact is silent\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 
 	// Overlapping but barely closing — a body settled against another. This is
 	// the case that decides whether walking a room floods the sound field.
@@ -298,7 +298,7 @@ static void TestImpactScalesWithClosingSpeed()
 	std::printf("impact loudness scales with closing speed\n");
 
 	const auto loudnessAtSpeed = [](float speed) -> float {
-		Scene* scene = MakeScene();
+		SceneManagement::Scene* scene = MakeScene();
 		GameObject* wall = AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 820);
 		GameObject* crate = AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -speed, 0, 0 }, false, 821);
 		wall->rigidBody3D.resolveConstrains(wall, crate);
@@ -319,7 +319,7 @@ static void TestImpactScalesWithClosingSpeed()
 static void TestImpactIsOncePerContact()
 {
 	std::printf("one collision is one noise\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 
 	GameObject* wall = AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 830);
 	GameObject* crate = AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -10, 0, 0 }, false, 831);

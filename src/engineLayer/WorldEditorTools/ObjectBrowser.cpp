@@ -16,7 +16,7 @@ namespace
 	 * row's ID does not move when the world changes underneath it.
 	 */
 	template <class Set>
-	void ApplyAllRow(Scene* scene, const char* label, Set set)
+	void ApplyAllRow(SceneManagement::Scene* scene, const char* label, Set set)
 	{
 		ImGui::PushID(label);
 		ImGui::TextUnformatted(label);
@@ -382,7 +382,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::PopID();
 }
 
-static void ShowStateButtons(Scene* scene)
+static void ShowStateButtons(SceneManagement::Scene* scene)
 {
 	ApplyAllRow(scene, "Enabled",        [](GameObject& o, bool v) { o.isEnabled = v; });
 	ApplyAllRow(scene, "Selectable",     [](GameObject& o, bool v) { o.isSelectable = v; });
@@ -431,7 +431,7 @@ namespace
 	}
 }
 
-static void ShowObjectList(Scene* scene, std::uint64_t& selectID, bool& objects, bool& entities, bool& interactable)
+static void ShowObjectList(SceneManagement::Scene* scene, std::uint64_t& selectID, bool& objects, bool& entities, bool& interactable)
 {
 	// Display order is this panel's own concern — GameMap's storage is
 	// unordered and owes none (see ForEachGameObject). Sorted by id descending
@@ -453,7 +453,7 @@ static void ShowObjectList(Scene* scene, std::uint64_t& selectID, bool& objects,
 	ObjectList("Interactables", interactableList, interactable, selectID);
 }
 
-void WorldEditor::showSelectedObject(Scene* scene) {
+void WorldEditor::showSelectedObject(SceneManagement::Scene* scene) {
 	GameObject* object = getSelectedObject();
 	if (object == nullptr)
 	{

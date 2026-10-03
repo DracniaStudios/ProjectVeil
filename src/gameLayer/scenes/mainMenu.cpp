@@ -38,9 +38,9 @@ void Scene_MainMenuDraw3D()
 
 }
 
-Scene* Scene_MainMenuConstruct()
+SceneManagement::Scene* Scene_MainMenuConstruct()
 {
-	Scene* scene = Scene_new();
+	SceneManagement::Scene* scene = Scene_new();
 
 	// Load Main Menu World
 	scene->name = "Main Menu";

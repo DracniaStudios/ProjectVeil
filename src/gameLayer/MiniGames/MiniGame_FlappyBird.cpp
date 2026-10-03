@@ -72,7 +72,7 @@ MiniGame* MiniGame_FlappyBird(Player* player)
 	return game;
 }
 
-void FlappyBird::render(Scene* scene_ptr)
+void FlappyBird::render(SceneManagement::Scene* scene_ptr)
 {
 	auto data = scene_ptr->miniGame->data;
 	using namespace FlappyBirdSpace;
@@ -108,7 +108,7 @@ void FlappyBird::render(Scene* scene_ptr)
 
 }
 
-void FlappyBird::update(Scene* scene_ptr, float deltaTime)
+void FlappyBird::update(SceneManagement::Scene* scene_ptr, float deltaTime)
 {
 	auto inputSystem = &InputSystem::getInstance();
 	auto data = scene_ptr->miniGame->data;

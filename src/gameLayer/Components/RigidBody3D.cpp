@@ -473,7 +473,7 @@ namespace Physics3D {
 
 		// currentScene is null between the OUT and IN halves of a scene transition,
 		// and Player::update() reaches this without Scene_updateScene's null guard.
-		Scene* scene = SceneManager::getInstance().currentScene;
+		SceneManagement::Scene* scene = SceneManager::getInstance().currentScene;
 		if (scene == nullptr) { return; }
 
 		scene->gameMap.ForEachGameObject([&](GameObject& obj)

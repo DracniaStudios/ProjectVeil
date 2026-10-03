@@ -9,7 +9,7 @@
 #include <AssetManager.h>
 #include <AudioManager.h>
 
-struct Scene;
+namespace SceneManagement { struct Scene; }
 
 enum ObjectType
 {
@@ -121,7 +121,7 @@ struct GameObject
 	Vector3 getSize() const { return rigidBody3D.scale; }
 	ObjectType getType() const { return type; }
 
-	virtual void update(Scene* scene, float deltaTime);
+	virtual void update(SceneManagement::Scene* scene, float deltaTime);
 	virtual void render2D();
 	virtual void render3D();
 	virtual void onEnable();
@@ -129,7 +129,7 @@ struct GameObject
 
 	// Update State
 	virtual void Destroy();
-	virtual void onDestroy(Scene* scene);
+	virtual void onDestroy(SceneManagement::Scene* scene);
 
 	// Save Data
 	virtual Json formatToJson();
@@ -174,7 +174,7 @@ public:
 	virtual void render3D() override {
 		GameObject::render3D();
 	};
-	virtual void update(Scene* scene, float deltaTime) override
+	virtual void update(SceneManagement::Scene* scene, float deltaTime) override
 	{
 		GameObject::update(scene, deltaTime);
 	};

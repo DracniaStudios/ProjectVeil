@@ -14,7 +14,7 @@ namespace
 	const Color kPlacementColor = Color{ 90, 220, 160, 255 };
 
 	/** Removes by id from whichever container actually owns the object. */
-	bool RemoveById(Scene* scene, std::uint64_t id)
+	bool RemoveById(SceneManagement::Scene* scene, std::uint64_t id)
 	{
 		if (scene == nullptr || id == 0) { return false; }
 
@@ -56,7 +56,7 @@ namespace
 void WorldEditor::UpdateViewportInput()
 {
 	const auto manager = &SceneManager::getInstance();
-	Scene* scene = manager->currentScene;
+	SceneManagement::Scene* scene = manager->currentScene;
 	if (scene == nullptr) { return; }
 
 	const Camera3D& camera = manager->camera3D;
@@ -201,7 +201,7 @@ void WorldEditor::UpdateHotkeys()
  * common thing to drop an object onto. Using the selection filter here makes the
  * ground invisible to placement and every object lands on the fallback plane.
  */
-void WorldEditor::UpdatePlacementPreview(Scene* scene, const Camera3D& camera, bool canPlace)
+void WorldEditor::UpdatePlacementPreview(SceneManagement::Scene* scene, const Camera3D& camera, bool canPlace)
 {
 	placementPreviewValid = false;
 
@@ -286,7 +286,7 @@ void WorldEditor::UpdatePlacementPreview(Scene* scene, const Camera3D& camera, b
 
 #pragma region Selection Commands
 
-void WorldEditor::SelectUnderMouse(Scene* scene, const Camera3D& camera)
+void WorldEditor::SelectUnderMouse(SceneManagement::Scene* scene, const Camera3D& camera)
 {
 	const PickResult result = PickSceneObject(scene, GetEditorMouseRay(camera), PICK_SELECTABLE);
 
@@ -304,7 +304,7 @@ void WorldEditor::SelectUnderMouse(Scene* scene, const Camera3D& camera)
 
 void WorldEditor::DeleteSelection()
 {
-	Scene* scene = SceneManager::getInstance().currentScene;
+	SceneManagement::Scene* scene = SceneManager::getInstance().currentScene;
 	GameObject* object = getSelectedObject();
 	if (scene == nullptr || object == nullptr) { statusMessage = "Nothing selected"; return; }
 
@@ -325,7 +325,7 @@ void WorldEditor::DeleteSelection()
 
 void WorldEditor::DuplicateSelection()
 {
-	Scene* scene = SceneManager::getInstance().currentScene;
+	SceneManagement::Scene* scene = SceneManager::getInstance().currentScene;
 	GameObject* object = getSelectedObject();
 	if (scene == nullptr || object == nullptr) { statusMessage = "Nothing selected"; return; }
 
@@ -463,7 +463,7 @@ void WorldEditor::PushEdit(const EditorEdit& edit)
 
 void WorldEditor::Undo()
 {
-	Scene* scene = SceneManager::getInstance().currentScene;
+	SceneManagement::Scene* scene = SceneManager::getInstance().currentScene;
 	if (scene == nullptr) { return; }
 
 	// Entries can go stale — the object may have been deleted by hand since.

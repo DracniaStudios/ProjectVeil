@@ -3,7 +3,7 @@
 
 #include <SceneManager.h>
 
-struct MainMenu : Scene
+struct MainMenu : SceneManagement::Scene
 {
 	
 };

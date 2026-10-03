@@ -21,7 +21,7 @@ MiniGame* MiniGame_RoShamBoo(Player* player)
 	return game;
 }
 
-void RoShamBoo::render(Scene* scene_ptr)
+void RoShamBoo::render(SceneManagement::Scene* scene_ptr)
 {
 	auto inputSystem = &InputSystem::getInstance();
 
@@ -40,7 +40,7 @@ void RoShamBoo::render(Scene* scene_ptr)
 
 }
 
-void RoShamBoo::update(Scene* scene_ptr, float delta)
+void RoShamBoo::update(SceneManagement::Scene* scene_ptr, float delta)
 {
 	auto inputSystem = &InputSystem::getInstance();
 	auto data = scene_ptr->miniGame->data;

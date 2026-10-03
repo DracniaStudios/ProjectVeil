@@ -7,12 +7,13 @@
 
 #include <string>
 #include <vector>
-namespace Lighting {
-	// Scene is only forward-declared: Scene.h pulls in GameObject.h, and
-	// GameObject.cpp includes this header to inject the shader on model rebind.
-	// Including Scene.h here would close that cycle.
-	struct Scene;
 
+// Scene is only forward-declared: Scene.h pulls in GameObject.h, and
+// GameObject.cpp includes this header to inject the shader on model rebind.
+// Including Scene.h here would close that cycle.
+namespace SceneManagement { struct Scene; }
+
+namespace Lighting {
 	/**
 	 * Maximum lights uploaded to the shader in one pass.
 	 * MUST stay equal to MAX_LIGHTS in resources/shaders/glsl330/lighting.fs.
@@ -112,7 +113,7 @@ namespace Lighting {
 
 		/** Per-Frame **/
 		void Update(const Camera3D& camera, float deltaTime);
-		void RenderShadowPass(Scene* scene);
+		void RenderShadowPass(SceneManagement::Scene* scene);
 		void BindShadowMap();
 
 		/** Editor Gizmos **/
@@ -133,7 +134,7 @@ namespace Lighting {
 		/** Material Injection **/
 		void ApplyToModel(Model& model) const;
 		void ApplyToLoadedAssets() const;
-		void ApplyToScene(Scene* scene) const;
+		void ApplyToScene(SceneManagement::Scene* scene) const;
 
 		/** Light Management **/
 		std::vector<Light>& GetLights() { return lights; }
@@ -221,7 +222,7 @@ namespace Lighting {
 		void SelectShadowLight();
 		void UploadLights();
 		void UploadAtmosphere();
-		void DrawShadowCasters(Scene* scene) const;
+		void DrawShadowCasters(SceneManagement::Scene* scene) const;
 
 		// Gizmos are drawn in two layers so a light buried inside geometry can still
 		// be found and aimed: InfluenceShapes is depth-tested, Markers is not.

@@ -64,7 +64,7 @@ MiniGame* MiniGame_Crane(Player* player)
 	return game;
 }
 
-void Crane::render(Scene* scene_ptr)
+void Crane::render(SceneManagement::Scene* scene_ptr)
 {
 	auto data = scene_ptr->miniGame->data;
 	// An unused std::random_device + generator used to be constructed here, once
@@ -82,7 +82,7 @@ void Crane::render(Scene* scene_ptr)
 
 }
 
-void Crane::update(Scene* scene_ptr, float deltaTime)
+void Crane::update(SceneManagement::Scene* scene_ptr, float deltaTime)
 {
 	auto inputSystem = &InputSystem::getInstance();
 	auto data = scene_ptr->miniGame->data;

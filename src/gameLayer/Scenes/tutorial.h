@@ -3,7 +3,7 @@
 
 #include <SceneManager.h>
 
-struct Tutorial : Scene
+struct Tutorial : SceneManagement::Scene
 {
 
 };

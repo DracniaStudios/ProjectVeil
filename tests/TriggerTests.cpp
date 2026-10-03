@@ -83,14 +83,14 @@ struct ProbeEntity : Entity
 	std::unique_ptr<Entity> clone() const override { return std::make_unique<ProbeEntity>(*this); }
 };
 
-static Scene* MakeScene()
+static SceneManagement::Scene* MakeScene()
 {
-	Scene* scene = new Scene();
+	SceneManagement::Scene* scene = new SceneManagement::Scene();
 	SceneManager::getInstance().currentScene = scene;
 	return scene;
 }
 
-static ProbeEntity* AddProbe(Scene* scene, Vector3 at, std::uint64_t id = 700)
+static ProbeEntity* AddProbe(SceneManagement::Scene* scene, Vector3 at, std::uint64_t id = 700)
 {
 	auto owned = std::make_unique<ProbeEntity>();
 	owned->id = id;
@@ -106,7 +106,7 @@ static ProbeEntity* AddProbe(Scene* scene, Vector3 at, std::uint64_t id = 700)
 // y in [-1.5, -0.5] and a resting 1-unit body settles at y ~ 0. "Fell through"
 // is therefore y < -2: clear underneath with margin, and independent of how
 // fast the engine's drag lets things fall.
-static GameObject* AddFloor(Scene* scene, Vector3 centre, Vector3 size, ColliderMode mode,
+static GameObject* AddFloor(SceneManagement::Scene* scene, Vector3 centre, Vector3 size, ColliderMode mode,
 	std::uint64_t id = 800)
 {
 	GameObject floor = {};
@@ -124,7 +124,7 @@ static GameObject* AddFloor(Scene* scene, Vector3 centre, Vector3 size, Collider
 
 // One frame, mirroring Scene_updateScene's order: bodies integrate, then the
 // solver runs its iterations over every overlapping pair.
-static void Step(Scene* scene, float dt, int solverIterations = 8)
+static void Step(SceneManagement::Scene* scene, float dt, int solverIterations = 8)
 {
 	scene->gameMap.ForEachGameObject([&](GameObject& object) { object.update(scene, dt); });
 	scene->gameMap.ForEachEntity([&](Entity& entity) { entity.update(scene, dt); });
@@ -153,7 +153,7 @@ static void Step(Scene* scene, float dt, int solverIterations = 8)
 // still been reachable from an Entity override. A trigger pair is identified
 // the same way resolveConstrains identifies one: either side's collider is in
 // COLLIDER_TRIGGER mode.
-static void StepAndTrackContact(Scene* scene, ProbeEntity* probe, GameObject* other,
+static void StepAndTrackContact(SceneManagement::Scene* scene, ProbeEntity* probe, GameObject* other,
 	float dt, bool& wasColliding)
 {
 	Step(scene, dt);
@@ -182,7 +182,7 @@ static void StepAndTrackContact(Scene* scene, ProbeEntity* probe, GameObject* ot
 static void TestSolidColliderStopsAFall()
 {
 	std::printf("a collision collider stops a falling body\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 
 	GameObject* floor = AddFloor(scene, Vector3{ 0, -1, 0 }, Vector3{ 20, 1, 20 }, COLLIDER_COLLISION);
 	ProbeEntity* probe = AddProbe(scene, Vector3{ 0, 2, 0 });
@@ -204,7 +204,7 @@ static void TestSolidColliderStopsAFall()
 static void TestTriggerColliderDoesNotStopAFall()
 {
 	std::printf("a trigger collider does not stop a falling body\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 
 	// Same floor, same fall, one field different.
 	AddFloor(scene, Vector3{ 0, -1, 0 }, Vector3{ 20, 1, 20 }, COLLIDER_TRIGGER);
@@ -221,7 +221,7 @@ static void TestTriggerColliderDoesNotStopAFall()
 static void TestTriggerStillReportsTheContact()
 {
 	std::printf("a trigger reports what passed through it\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 
 	GameObject* floor = AddFloor(scene, Vector3{ 0, -1, 0 }, Vector3{ 20, 1, 20 }, COLLIDER_TRIGGER);
 	ProbeEntity* probe = AddProbe(scene, Vector3{ 0, 2, 0 });
@@ -248,7 +248,7 @@ static void TestTriggerStillReportsTheContact()
 static void TestTriggerDoesNotGroundABody()
 {
 	std::printf("a trigger does not make a body grounded\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 
 	GameObject* floor = AddFloor(scene, Vector3{ 0, -1, 0 }, Vector3{ 20, 1, 20 }, COLLIDER_TRIGGER);
 	ProbeEntity* probe = AddProbe(scene, Vector3{ 0, 0.0f, 0 });
@@ -276,14 +276,14 @@ static void TestColliderSizeChangesWhatCollides()
 
 	// Wide floor, body dropped onto its edge. At full size the body's collider
 	// overlaps the floor's; shrunk to a fifth it clears it entirely.
-	Scene* wide = MakeScene();
+	SceneManagement::Scene* wide = MakeScene();
 	AddFloor(wide, Vector3{ 0, -1, 0 }, Vector3{ 4, 1, 4 }, COLLIDER_COLLISION);
 	ProbeEntity* onEdge = AddProbe(wide, Vector3{ 2.4f, 2, 0 });
 	for (int frame = 0; frame < 120; ++frame) { Step(wide, 1.0f / 60.0f); }
 	Check(onEdge->rigidBody3D.translation.y > -1.0f, "the body lands on the floor's edge");
 	delete wide;
 
-	Scene* narrow = MakeScene();
+	SceneManagement::Scene* narrow = MakeScene();
 	GameObject* floor = AddFloor(narrow, Vector3{ 0, -1, 0 }, Vector3{ 4, 1, 4 }, COLLIDER_COLLISION);
 	// The model still spans 4 units; only its collider shrinks.
 	floor->rigidBody3D.collider.size = Vector3{ 0.2f, 1.0f, 0.2f };

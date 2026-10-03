@@ -244,7 +244,7 @@ void GameObject::render3D()
 	}
 }
 
-void GameObject::update(Scene* scene, float deltaTime)
+void GameObject::update(SceneManagement::Scene* scene, float deltaTime)
 {
 	// Before the enabled check on purpose: an object that has just been disabled
 	// stops colliding, and anything sitting in its trigger volumes has therefore
@@ -297,7 +297,7 @@ void GameObject::Destroy()
 	pendingDestroy = true;
 }
 
-void GameObject::onDestroy(Scene* scene)
+void GameObject::onDestroy(SceneManagement::Scene* scene)
 {
 	// Removal happens in the scene's pendingDestroy sweep (Scene_updateScene);
 	// erasing here would invalidate the update loop's iterators

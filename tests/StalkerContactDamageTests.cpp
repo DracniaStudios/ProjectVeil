@@ -39,9 +39,9 @@ static void CheckNear(float actual, float expected, float tolerance, const std::
 	}
 }
 
-static Scene* MakeScene()
+static SceneManagement::Scene* MakeScene()
 {
-	Scene* scene = new Scene();
+	SceneManagement::Scene* scene = new SceneManagement::Scene();
 	scene->player = new Player();
 	scene->player->type = OBJECT_PLAYER;
 	scene->player->id = PLAYER_ID;
@@ -50,7 +50,7 @@ static Scene* MakeScene()
 	return scene;
 }
 
-static Stalker* AddStalker(Scene* scene, Vector3 at, std::uint64_t id = 500)
+static Stalker* AddStalker(SceneManagement::Scene* scene, Vector3 at, std::uint64_t id = 500)
 {
 	auto owned = std::make_unique<Stalker>();
 	owned->id = id;
@@ -66,7 +66,7 @@ static Stalker* AddStalker(Scene* scene, Vector3 at, std::uint64_t id = 500)
 static void TestStalkerContactDamagesThePlayerOnce()
 {
 	std::printf("touching a stalker costs the player its baseDamage, once\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 
 	scene->player->rigidBody3D.Teleport(Vector3{ 0, 0, 0 });
 	scene->player->rigidBody3D.SyncBroadPhaseBox();
@@ -93,7 +93,7 @@ static void TestStalkerContactDamagesThePlayerOnce()
 static void TestNonStalkerContactDoesNotDamageThePlayer()
 {
 	std::printf("touching an ordinary entity does not cost the player health\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 
 	scene->player->rigidBody3D.Teleport(Vector3{ 10, 0, 0 });
 	scene->player->rigidBody3D.SyncBroadPhaseBox();

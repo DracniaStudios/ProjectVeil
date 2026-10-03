@@ -210,7 +210,7 @@ void Player::update3D(float deltaTime)
 	// The player ticks its own body rather than going through GameObject::update,
 	// so it needs its own trigger dispatch or it would never report leaving one.
 	// currentScene is null between the two halves of a scene transition.
-	if (Scene* scene = SceneManager::getInstance().currentScene)
+	if (SceneManagement::Scene* scene = SceneManager::getInstance().currentScene)
 	{
 		rigidBody3D.DispatchTriggerEvents(this, &scene->gameMap);
 	}

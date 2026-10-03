@@ -74,7 +74,7 @@ void Entity::render3D()
 	GameObject::render3D();
 }
 
-void Entity::update(Scene* scene, float deltaTime)
+void Entity::update(SceneManagement::Scene* scene, float deltaTime)
 {
 	GameObject::update(scene, deltaTime);
 

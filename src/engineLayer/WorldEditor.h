@@ -182,7 +182,7 @@ namespace Editor {
 		// implementation for why each step has to come where it does.
 		void UpdateViewportInput();
 		void UpdateHotkeys();
-		void UpdatePlacementPreview(Scene* scene, const Camera3D& camera, bool canPlace);
+		void UpdatePlacementPreview(SceneManagement::Scene* scene, const Camera3D& camera, bool canPlace);
 
 		// Writes a manipulated transform back onto a body, keeping every derived
 		// value (collision box, lastPosition, velocities) consistent with it
@@ -192,7 +192,7 @@ namespace Editor {
 		void Undo();
 
 		/** Selection Commands **/
-		void SelectUnderMouse(Scene* scene, const Camera3D& camera);
+		void SelectUnderMouse(SceneManagement::Scene* scene, const Camera3D& camera);
 		void DeleteSelection();
 		void DuplicateSelection();
 		void FocusOnSelection();
@@ -216,7 +216,7 @@ namespace Editor {
 		void showEntity(Entity* object);
 		void showInteractableObject(InteractableObject* object);
 		void showTransformTools();
-		void showSelectedObject(Scene* scene);
+		void showSelectedObject(SceneManagement::Scene* scene);
 
 	public:
 		// Singleton Pattern Implementation

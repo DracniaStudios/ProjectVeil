@@ -155,8 +155,8 @@ namespace SceneManagement {
 inline constexpr int SCENE_COUNT = 2;
 
 inline constexpr int SCENE_MAIN_MENU = 0;
-Scene* Scene_MainMenuConstruct();
+SceneManagement::Scene* Scene_MainMenuConstruct();
 inline constexpr int SCENE_TUTORIAL = 1;
-Scene* Scene_TutorialConstruct();
+SceneManagement::Scene* Scene_TutorialConstruct();
 
 #endif 

@@ -6,8 +6,8 @@
 
 struct Maze : MiniGame
 {
-	static void render(Scene* scene_ptr);
-	static void update(Scene* scene_ptr, float deltaTime);
+	static void render(SceneManagement::Scene* scene_ptr);
+	static void update(SceneManagement::Scene* scene_ptr, float deltaTime);
 };
 
 #endif

@@ -2,7 +2,7 @@
 
 #include <SaveSystem.h>
 
-static void NewWorld(Scene& scene) {
+static void NewWorld(SceneManagement::Scene& scene) {
 
 	// DestroyEntity/DestroyInteractable each already release a generated
 	// fallback model before erasing (see GameMap::DestroyGameObject()) — snapshot

@@ -368,7 +368,7 @@ namespace Lighting
 		std::cout << "[Lighting] Applied lighting shader to " << applied << " asset models\n";
 	}
 
-	void LightingSystem::ApplyToScene(Scene* scene) const
+	void LightingSystem::ApplyToScene(SceneManagement::Scene* scene) const
 	{
 		if (!isReady || scene == nullptr) { return; }
 
@@ -602,7 +602,7 @@ namespace Lighting
 #pragma endregion
 
 #pragma region Shadow Pass
-	void LightingSystem::DrawShadowCasters(Scene* scene) const
+	void LightingSystem::DrawShadowCasters(SceneManagement::Scene* scene) const
 	{
 		// Geometry only. Scene_drawScene3D() also runs scene->draw3D() (DrawGrid),
 		// DrawModelWires, DrawBoundingBox and the direction-debug spheres — all of
@@ -655,7 +655,7 @@ namespace Lighting
 		}
 	}
 
-	void LightingSystem::RenderShadowPass(Scene* scene)
+	void LightingSystem::RenderShadowPass(SceneManagement::Scene* scene)
 	{
 		if (!isReady || scene == nullptr) { return; }
 

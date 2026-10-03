@@ -97,7 +97,7 @@ namespace SaveSystem
 		return true;
 	}
 
-	static Json SceneToJson(Scene* scene)
+	static Json SceneToJson(SceneManagement::Scene* scene)
 	{
 		Json j;
 
@@ -156,7 +156,7 @@ namespace SaveSystem
 		return j;
 	}
 
-	static bool ApplyJsonToScene(Json& j, Scene& scene)
+	static bool ApplyJsonToScene(Json& j, SceneManagement::Scene& scene)
 	{
 		if (j.value("Version", 0) > VERSION)
 		{
@@ -323,7 +323,7 @@ namespace SaveSystem
 		return true;
 	}
 
-	bool SaveGame(const char* fileName, Scene* scene)
+	bool SaveGame(const char* fileName, SceneManagement::Scene* scene)
 	{
 		if (scene == nullptr) { return false; }
 
@@ -339,7 +339,7 @@ namespace SaveSystem
 		return true;
 	}
 
-	bool LoadGame(const char* fileName, Scene& scene)
+	bool LoadGame(const char* fileName, SceneManagement::Scene& scene)
 	{
 		Json j;
 
@@ -382,7 +382,7 @@ namespace SaveSystem
 		return true;
 	}
 
-	bool SaveWorld(std::string fileName, Scene* scene)
+	bool SaveWorld(std::string fileName, SceneManagement::Scene* scene)
 	{
 		if (scene == nullptr) { return false; }
 
@@ -447,7 +447,7 @@ namespace SaveSystem
 		return true;
 	}
 
-	bool LoadWorld(std::string fileName, Scene& scene)
+	bool LoadWorld(std::string fileName, SceneManagement::Scene& scene)
 	{
 
 		Json j;

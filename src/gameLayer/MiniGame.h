@@ -26,8 +26,8 @@ struct MiniGameData
 };
 
 // Update Game Method
-typedef void (*updateGameMethod)(Scene* scene_ptr, float deltaTime);
-typedef void (*drawGameMethod)(Scene* scene_ptr);
+typedef void (*updateGameMethod)(SceneManagement::Scene* scene_ptr, float deltaTime);
+typedef void (*drawGameMethod)(SceneManagement::Scene* scene_ptr);
 
 struct MiniGame
 {

@@ -54,7 +54,7 @@ MiniGame* MiniGame_Doctor(Player* player)
 	return game;
 }
 
-void Doctor::render(Scene* scene_ptr)
+void Doctor::render(SceneManagement::Scene* scene_ptr)
 {
 	auto data = scene_ptr->miniGame->data;
 	auto player = scene_ptr->player;
@@ -80,7 +80,7 @@ void Doctor::render(Scene* scene_ptr)
 	}
 }
 
-void Doctor::update(Scene* scene_ptr, float delta)
+void Doctor::update(SceneManagement::Scene* scene_ptr, float delta)
 {
 	auto data = scene_ptr->miniGame->data;
 	auto player = scene_ptr->player;

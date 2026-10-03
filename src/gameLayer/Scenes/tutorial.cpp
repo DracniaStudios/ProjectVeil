@@ -24,9 +24,9 @@ void Scene_TutorialDraw3D()
 
 }
 
-Scene* Scene_TutorialConstruct()
+SceneManagement::Scene* Scene_TutorialConstruct()
 {
-	Scene* scene = Scene_new();
+	SceneManagement::Scene* scene = Scene_new();
 
 	// Load Main Menu World
 	scene->name = "Tutorial";

@@ -40,7 +40,7 @@ static void Check(bool condition, const std::string& what)
 
 // Scene_new() (rather than a bare `new Scene`) so scene->player exists —
 // DestroyInteractable reaches SceneManager::currentScene->player directly.
-static Scene* MakeScene()
+static SceneManagement::Scene* MakeScene()
 {
 	return Scene_new();
 }
@@ -48,7 +48,7 @@ static Scene* MakeScene()
 static void TestIdsUniqueAcrossKinds()
 {
 	std::printf("ids stay unique across GameObject/Entity/Interactable, sharing one counter\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	GameMap& map = scene->gameMap;
 
 	std::vector<std::uint64_t> ids;
@@ -74,7 +74,7 @@ static void TestIdsUniqueAcrossKinds()
 static void TestFindPointerSurvivesFurtherSpawns()
 {
 	std::printf("a Find pointer survives further spawns (regression: gameObjects was a reallocating vector)\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	GameMap& map = scene->gameMap;
 
 	GameObject first{};
@@ -103,7 +103,7 @@ static void TestSpawnEntityKeysByNewIdAndDoesNotClobberSiblings()
 		"does not destroy the first (regression: both defaulted to id 0 before "
 		"their real id was assigned, so the second spawn's map insert under the "
 		"stale key overwrote and destroyed the first entity)\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	GameMap& map = scene->gameMap;
 
 	Entity first{};
@@ -136,7 +136,7 @@ static void TestSpawnEntityKeysByNewIdAndDoesNotClobberSiblings()
 static void TestDestroyInteractableScrubsPlayerInventory()
 {
 	std::printf("destroying an interactable scrubs the player's inventory and interactObjectId\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	GameMap& map = scene->gameMap;
 
 	InteractableObject item(INTERACT_ITEM, 0);
@@ -160,7 +160,7 @@ static void TestDestroyInteractableScrubsPlayerInventory()
 static void TestForEachGameObjectVisitsAllAndHonoursEarlyExit()
 {
 	std::printf("ForEachGameObject visits every live object and stops early on a false return\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	GameMap& map = scene->gameMap;
 
 	for (int i = 0; i < 5; ++i)
@@ -186,7 +186,7 @@ static void TestForEachGameObjectVisitsAllAndHonoursEarlyExit()
 static void TestForEachObjectPairVisitsEveryUnorderedPairOnce()
 {
 	std::printf("ForEachObjectPair visits every unordered pair of live objects exactly once\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	GameMap& map = scene->gameMap;
 
 	constexpr int kCount = 4;

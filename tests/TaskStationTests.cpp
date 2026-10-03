@@ -36,9 +36,9 @@ static void Check(bool condition, const std::string& what)
 	}
 }
 
-static Scene* MakeScene()
+static SceneManagement::Scene* MakeScene()
 {
-	Scene* scene = new Scene();
+	SceneManagement::Scene* scene = new SceneManagement::Scene();
 	SceneManager::getInstance().currentScene = scene;
 	scene->player = new Player();
 	scene->player->id = PLAYER_ID;
@@ -48,7 +48,7 @@ static Scene* MakeScene()
 	return scene;
 }
 
-static InteractableObject* AddStation(Scene* scene, Vector3 at, int miniGameId,
+static InteractableObject* AddStation(SceneManagement::Scene* scene, Vector3 at, int miniGameId,
                                       std::uint64_t id)
 {
 	auto owned = std::make_unique<InteractableObject>(INTERACT_MINIGAME, miniGameId, 0);
@@ -67,7 +67,7 @@ static InteractableObject* AddStation(Scene* scene, Vector3 at, int miniGameId,
 static void TestStationStartsIncomplete()
 {
 	std::printf("a fresh station is not complete\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 900);
 
 	Check(!station->isCompleted, "a placed station starts outstanding");
@@ -77,7 +77,7 @@ static void TestStationStartsIncomplete()
 static void TestCompletingMarksTheRunningStation()
 {
 	std::printf("finishing a minigame completes its station\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 901);
 	station->onInteract();
 
@@ -95,7 +95,7 @@ static void TestCompletingMarksTheRunningStation()
 static void TestUnfinishedWorkDoesNotComplete()
 {
 	std::printf("falling short leaves the station outstanding\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 902);
 	station->onInteract();
 
@@ -111,7 +111,7 @@ static void TestUnfinishedWorkDoesNotComplete()
 static void TestCompletionSurvivesRelease()
 {
 	std::printf("completion outlives the minigame that earned it\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 903);
 	station->onInteract();
 
@@ -131,7 +131,7 @@ static void TestCompletionSurvivesRelease()
 static void TestCompletionRoundTripsThroughJson()
 {
 	std::printf("completion survives a save/load round trip\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 2, 0, 3 }, MINI_GAME_CRANE_ID, 904);
 	station->isCompleted = true;
 	station->isRunningMiniGame = true;
@@ -152,7 +152,7 @@ static void TestCompletionRoundTripsThroughJson()
 static void TestDirectorSkipsCompletedStations()
 {
 	std::printf("the Director stops hinting at finished work\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 
 	// Two stations. The Director hints toward the farthest outstanding one, so
 	// completing the far station should move hinting to the near one — and
@@ -200,7 +200,7 @@ static void TestDirectorSkipsCompletedStations()
 static void TestNoHistoryBeforeAnythingRuns()
 {
 	std::printf("a fresh scene has no minigame history\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 
 	// A default MiniGameData reads as a genuine score of zero, which is why the
 	// flags exist at all.
@@ -212,7 +212,7 @@ static void TestNoHistoryBeforeAnythingRuns()
 static void TestProgressIsRecordedOnRelease()
 {
 	std::printf("progress is captured before the data is freed\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 	scene->SetMiniGame(MINI_GAME_CRANE_ID);
 
 	Check(scene->miniGame != nullptr, "a minigame started");
@@ -231,7 +231,7 @@ static void TestProgressIsRecordedOnRelease()
 static void TestSetMiniGameRollsTheHistory()
 {
 	std::printf("starting a new minigame displaces the old one\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 
 	scene->SetMiniGame(MINI_GAME_CRANE_ID);
 	scene->miniGame->data->score = 4;
@@ -249,7 +249,7 @@ static void TestSetMiniGameRollsTheHistory()
 static void TestHistoryIsTwoDeep()
 {
 	std::printf("the history is two deep\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 
 	scene->SetMiniGame(MINI_GAME_CRANE_ID);
 	scene->miniGame->data->score = 1;
@@ -266,7 +266,7 @@ static void TestHistoryIsTwoDeep()
 static void TestRejectedSetMiniGameLeavesHistoryAlone()
 {
 	std::printf("an unknown minigame id does not disturb the history\n");
-	Scene* scene = MakeScene();
+	SceneManagement::Scene* scene = MakeScene();
 
 	scene->SetMiniGame(MINI_GAME_CRANE_ID);
 	scene->miniGame->data->score = 3;
