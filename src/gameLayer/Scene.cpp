@@ -516,8 +516,8 @@ void Scene_drawScene2D() {
 			if (scene->isMiniActive && scene->miniGame != nullptr)
 			{
 				scene->miniGame->draw(scene);
-				scene->player->render2D();
 			}
+			scene->player->render2D();
 
 			PlayerUI::getInstance().render();
 
