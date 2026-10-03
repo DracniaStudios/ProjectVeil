@@ -18,7 +18,7 @@ void Scene_MainMenuDraw2D()
 
 	// Draw Main Menu
 	{
-		drawText("Main Menu", Rectangle{ 0.1f, 0.8f, 0.1f, 0.1f});;
+		drawText("Main Menu", Rectangle{ 0.4f, 0.1f, 0.1f, 0.1f});;
 
 		if (addButton("Play", UIEngine::getInstance()))
 		{

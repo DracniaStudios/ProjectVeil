@@ -89,8 +89,8 @@ private:
 	UIEngine() = default;
 };
 
-void drawText(std::string text, Rectangle smallerRect, float yOffset = 0);
-bool addButton(std::string text, UIEngine &ui);
+void drawText(std::string text, Rectangle scaleRect, float yOffset = 0);
+bool addButton(std::string text, Rectangle scaleRect, UIEngine &ui);
 void addTitle(std::string text, UIEngine &ui);
 
 #endif
