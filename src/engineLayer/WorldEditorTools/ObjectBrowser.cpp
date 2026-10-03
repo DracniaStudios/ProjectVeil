@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <vector>
 
+namespace Editor {
+
 namespace
 {
 	constexpr ImVec4 kHeaderColour = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
@@ -508,4 +510,5 @@ void WorldEditor::ShowObjectBrowser()
 	ImGui::EndChild();
 
 	ImGui::End();
+}
 }

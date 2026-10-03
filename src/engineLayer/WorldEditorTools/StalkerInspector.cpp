@@ -3,6 +3,8 @@
 #include <AI/Stalker.h>
 #include <Perception/SoundField.h>
 
+namespace Editor {
+
 /**
  * Stalker AI inspector.
  *
@@ -188,4 +190,5 @@ void WorldEditor::ShowStalkerData()
 	}
 
 	ImGui::End();
+}
 }

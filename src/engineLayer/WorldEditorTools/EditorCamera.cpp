@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+namespace Editor {
+
 namespace
 {
 	// Look angles are clamped just short of straight up/down. At exactly +/-pi/2
@@ -127,4 +129,5 @@ void EditorCamera::Update(Camera3D* camera)
 	// WorldEditor::UpdateViewportInput, where it can be ordered against the
 	// gizmo and the placement tool — clicking a gizmo handle used to also
 	// reselect whatever object happened to be behind it.
+}
 }

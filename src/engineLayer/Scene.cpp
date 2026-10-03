@@ -336,7 +336,7 @@ namespace SceneManagement {
 	void Scene_updateScene(float delta) {
 
 		auto manager = &SceneManager::getInstance();
-		auto worldEditor = &WorldEditor::getInstance();
+		auto worldEditor = &Editor::WorldEditor::getInstance();
 		auto inputSystem = &InputSystem::InputSystem::getInstance();
 		auto scene = manager->currentScene;
 		if (scene->update) { scene->update(delta); }
@@ -497,7 +497,7 @@ namespace SceneManagement {
 		UIEngine::getInstance().update();
 
 		// World Editor (includes the developer tool windows)
-		WorldEditor::getInstance().update(scene->player);
+		Editor::WorldEditor::getInstance().update(scene->player);
 	}
 
 	void Scene_drawScene2D() {
@@ -533,7 +533,7 @@ namespace SceneManagement {
 	void Scene_drawScene3D() {
 		auto manager = &SceneManager::getInstance();
 		if (auto scene = manager->currentScene) {
-			if (WorldEditor::getInstance().IsEnabled()) { DrawGrid(100.0f, 1.0f); }
+			if (Editor::WorldEditor::getInstance().IsEnabled()) { DrawGrid(100.0f, 1.0f); }
 
 			if (scene->draw3D) { scene->draw3D(); }
 

@@ -1,5 +1,7 @@
 #include "WorldEditor.h"
 
+namespace Editor {
+
 void WorldEditor::ShowCameraData(Player* player)
 {
 	const auto camera = &SceneManagement::SceneManager::getInstance().camera3D;
@@ -18,4 +20,5 @@ void WorldEditor::ShowCameraData(Player* player)
 	ImGui::Separator();
 
 	ImGui::End();
+}
 }

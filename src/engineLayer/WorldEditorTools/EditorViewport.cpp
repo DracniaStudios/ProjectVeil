@@ -5,6 +5,8 @@
 #include <cmath>
 #include <string>
 
+namespace Editor {
+
 namespace
 {
 	// Selection outline, drawn slightly larger than the object so it does not
@@ -569,3 +571,4 @@ void WorldEditor::DrawViewport3D()
 }
 
 #pragma endregion
+}

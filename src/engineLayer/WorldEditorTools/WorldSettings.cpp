@@ -2,6 +2,8 @@
 
 #include <SaveSystem.h>
 
+namespace Editor {
+
 static void NewWorld(SceneManagement::Scene& scene) {
 
 	// DestroyEntity/DestroyInteractable each already release a generated
@@ -136,4 +138,5 @@ void WorldEditor::ShowWorldSettings()
 	if (!statusMessage.empty()) { ImGui::Text("%s", statusMessage.c_str()); }
 
 	ImGui::End();
+}
 }

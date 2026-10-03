@@ -1,5 +1,7 @@
 #include "WorldEditor.h"
 
+namespace Editor {
+
 // Object types a plain Game Object placement may use. Entity and Interactable
 // spawn through their own placement kinds; Player is unique and never spawned here.
 static constexpr ObjectType kGameObjectTypes[] = {
@@ -330,4 +332,5 @@ GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 	selectedObjectId = spawned->id;
 	statusMessage = "Spawned: " + spawned->name;
 	return spawned;
+}
 }

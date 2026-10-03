@@ -1,5 +1,7 @@
 #include <WorldEditor.h>
 
+namespace Editor {
+
 void WorldEditor::ShowMiniGameData(Player* player)
 {
 	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
@@ -85,4 +87,5 @@ void WorldEditor::ShowMiniGameData(Player* player)
 	}
 
 	ImGui::End();
+}
 }

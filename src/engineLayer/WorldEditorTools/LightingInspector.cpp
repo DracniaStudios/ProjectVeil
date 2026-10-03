@@ -4,6 +4,8 @@
 
 #include <cstdio>
 
+namespace Editor {
+
 namespace
 {
 	// ImGui edits colours as normalized floats; every authored colour in Veil is
@@ -328,4 +330,5 @@ void WorldEditor::ShowLightingData()
 
 	if (!statusMessage.empty()) { ImGui::Text("%s", statusMessage.c_str()); }
 	ImGui::End();
+}
 }

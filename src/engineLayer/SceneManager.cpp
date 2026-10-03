@@ -70,10 +70,10 @@ namespace SceneManagement {
 		lighting->BindShadowMap();
 		if (manager->currentScene) Scene_drawScene3D();
 
-		if (WorldEditor::getInstance().IsEnabled())
+		if (Editor::WorldEditor::getInstance().IsEnabled())
 		{
 			lighting->DrawGizmos();
-			WorldEditor::getInstance().DrawViewport3D();
+			Editor::WorldEditor::getInstance().DrawViewport3D();
 		}
 		EndMode3D();
 

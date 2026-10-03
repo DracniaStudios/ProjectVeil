@@ -1,5 +1,7 @@
 #include <WorldEditor.h>
 
+namespace Editor {
+
 void WorldEditor::ShowAssetData()
 {
 	auto& assetManager = AssetManager::AssetManager::getInstance();
@@ -145,4 +147,5 @@ void WorldEditor::ShowAssetData()
 		}
 	}
 	ImGui::End();
+}
 }

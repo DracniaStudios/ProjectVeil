@@ -56,7 +56,7 @@ void UpdateActions(Player* player) {
 	player->isFiring = inputSystem->IsActionPressed(ACTION_USE_ITEM)
 		|| inputSystem->IsActionDown(ACTION_USE_ITEM2);
 
-	if (!WorldEditor::getInstance().IsEnabled()) {
+	if (!Editor::WorldEditor::getInstance().IsEnabled()) {
 		if (inputSystem->IsActionPressed(ACTION_MOVE_INTERACT)) { player->Interact(); }
 		if (inputSystem->IsActionPressed(ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(20);
 

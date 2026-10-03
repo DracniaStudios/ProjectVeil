@@ -1,5 +1,7 @@
 #include "WorldEditor.h"
 
+namespace Editor {
+
 void WorldEditor::ShowPlayerData(Player* player)
 {
 	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
@@ -113,4 +115,5 @@ void WorldEditor::ShowPlayerData(Player* player)
 	ImGui::EndChild();
 	ImGui::End();
 
+}
 }
