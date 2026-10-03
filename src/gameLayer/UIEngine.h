@@ -100,7 +100,7 @@ private:
 	UIEngine() = default;
 };
 
-Vector2 GetScreenSize() { return Vector2(GetScreenWidth(), GetScreenHeight()); }
+inline Vector2 GetScreenSize() { return Vector2(GetScreenWidth(), GetScreenHeight()); }
 void drawTextScaled(std::string text, Rectangle scaleRect, float yOffset = 0);
 static void drawTextPixels(const std::string& text, Rectangle pixelRect, float yOffset = 0);
 
