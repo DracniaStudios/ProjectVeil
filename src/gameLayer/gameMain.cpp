@@ -17,7 +17,7 @@ bool init_game()
 	// constructs the Main Menu scene and loads its save file. Objects created
 	// while the system was still down would keep raylib's unlit shader and
 	// render half-lit with no error anywhere.
-	LightingSystem::getInstance().Init();
+	Lighting::LightingSystem::getInstance().Init();
 
 	SceneManagement::SceneManager_init(&SceneManagement::SceneManager::getInstance());
 
@@ -47,7 +47,7 @@ bool update_game()
 	// Nothing draws a sky, so the clear colour *is* the horizon. Clearing to the
 	// fog colour lets distant geometry dissolve into the background instead of
 	// fading toward a bright wall.
-	ClearBackground(LightingSystem::getInstance().fogColor);
+	ClearBackground(Lighting::LightingSystem::getInstance().fogColor);
 
 	// Update Input System
 	InputSystem::InputSystem::getInstance().Update();
@@ -79,5 +79,5 @@ void close_game()
 	// Materials only hold a copy of the Shader struct, so every model's shader
 	// id dangles once this runs — it has to be the last engine call. ProjectVeil.cpp
 	// invokes close_game() before CloseWindow(), while the GL context is alive.
-	LightingSystem::getInstance().Shutdown();
+	Lighting::LightingSystem::getInstance().Shutdown();
 }

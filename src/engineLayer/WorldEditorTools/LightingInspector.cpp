@@ -51,7 +51,7 @@ namespace
 
 void WorldEditor::ShowLightingData()
 {
-	auto lighting = &LightingSystem::getInstance();
+	auto lighting = &Lighting::LightingSystem::getInstance();
 	auto& lights = lighting->GetLights();
 
 	ImGui::Begin("Lighting");
@@ -66,7 +66,7 @@ void WorldEditor::ShowLightingData()
 		return;
 	}
 	ImGui::Text("Shader ID: %u", lighting->GetShader().id);
-	ImGui::Text("Active Lights: %d / %d", lighting->GetActiveLightCount(), LIGHT_LIMIT);
+	ImGui::Text("Active Lights: %d / %d", lighting->GetActiveLightCount(), Lighting::LIGHT_LIMIT);
 	ImGui::Text("Shadow Map: %dx%d", lighting->GetShadowMapResolution(), lighting->GetShadowMapResolution());
 	const int shadowOwner = lighting->GetShadowLightIndex();
 	ImGui::Text("Shadow Caster: %s",
@@ -129,7 +129,7 @@ void WorldEditor::ShowLightingData()
 	bool flashlightOn = lighting->IsFlashlightEnabled();
 	if (ImGui::Checkbox("Flashlight On (L)", &flashlightOn)) { lighting->SetFlashlightEnabled(flashlightOn); }
 
-	Light& flashlight = lighting->GetFlashlight();
+	Lighting::Light& flashlight = lighting->GetFlashlight();
 	EditColor("Beam Color", flashlight.color);
 	ImGui::SliderFloat("Beam Intensity", &flashlight.intensity, 0.0f, 5.0f);
 	ImGui::SliderFloat("Beam Range", &flashlight.range, 1.0f, 120.0f);
@@ -142,15 +142,15 @@ void WorldEditor::ShowLightingData()
 
 	if (ImGui::Button("Add Point Light At Camera"))
 	{
-		if (static_cast<int>(lights.size()) >= LIGHT_LIMIT)
+		if (static_cast<int>(lights.size()) >= Lighting::LIGHT_LIMIT)
 		{
-			statusMessage = "Light limit reached (" + std::to_string(LIGHT_LIMIT) + ")";
+			statusMessage = "Light limit reached (" + std::to_string(Lighting::LIGHT_LIMIT) + ")";
 		}
 		else
 		{
-			Light light = {};
+			Lighting::Light light = {};
 			light.name = "Point Light " + std::to_string(lights.size() + 1);
-			light.type = LIGHT_POINT;
+			light.type = Lighting::LIGHT_POINT;
 			light.position = SceneManagement::SceneManager::getInstance().camera3D.position;
 			lighting->AddLight(light);
 			selectedLightIndex = static_cast<int>(lights.size()) - 1;
@@ -160,15 +160,15 @@ void WorldEditor::ShowLightingData()
 	ImGui::SameLine();
 	if (ImGui::Button("Add Directional"))
 	{
-		if (static_cast<int>(lights.size()) >= LIGHT_LIMIT)
+		if (static_cast<int>(lights.size()) >= Lighting::LIGHT_LIMIT)
 		{
-			statusMessage = "Light limit reached (" + std::to_string(LIGHT_LIMIT) + ")";
+			statusMessage = "Light limit reached (" + std::to_string(Lighting::LIGHT_LIMIT) + ")";
 		}
 		else
 		{
-			Light light = {};
+			Lighting::Light light = {};
 			light.name = "Directional Light " + std::to_string(lights.size() + 1);
-			light.type = LIGHT_DIRECTIONAL;
+			light.type = Lighting::LIGHT_DIRECTIONAL;
 			light.intensity = 0.6f;
 			lighting->AddLight(light);
 			selectedLightIndex = static_cast<int>(lights.size()) - 1;
@@ -191,18 +191,18 @@ void WorldEditor::ShowLightingData()
 		statusMessage = "Reapplied the lighting shader";
 	}
 
-	if (static_cast<int>(lights.size()) > LIGHT_LIMIT)
+	if (static_cast<int>(lights.size()) > Lighting::LIGHT_LIMIT)
 	{
 		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
 			"%d lights defined - only the first %d enabled ones are uploaded",
-			static_cast<int>(lights.size()), LIGHT_LIMIT);
+			static_cast<int>(lights.size()), Lighting::LIGHT_LIMIT);
 	}
 
 	ImGui::BeginChild("Light List", ImVec2(ImGui::GetContentRegionAvail().x, 140.0f));
 	for (int i = 0; i < static_cast<int>(lights.size()); i++)
 	{
 		ImGui::PushID(i);
-		std::string label = lights[i].name + " [" + lightTypeToString(lights[i].type) + "]";
+		std::string label = lights[i].name + " [" + Lighting::lightTypeToString(lights[i].type) + "]";
 		if (!lights[i].isEnabled) { label += " (off)"; }
 		if (ImGui::Selectable(label.c_str(), i == selectedLightIndex)) { selectedLightIndex = i; }
 		ImGui::PopID();
@@ -225,7 +225,7 @@ void WorldEditor::ShowLightingData()
 	}
 
 	/// Selected Light
-	Light& light = lights[selectedLightIndex];
+	Lighting::Light& light = lights[selectedLightIndex];
 	ImGui::PushID(selectedLightIndex);
 	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Selected Light");
 
@@ -234,10 +234,10 @@ void WorldEditor::ShowLightingData()
 	if (ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer))) { light.name = nameBuffer; }
 
 	int typeIndex = static_cast<int>(light.type);
-	const char* typeLabels[LIGHT_TYPE_COUNT] = { "Directional", "Point", "Spot" };
-	if (ImGui::Combo("Type", &typeIndex, typeLabels, LIGHT_TYPE_COUNT))
+	const char* typeLabels[Lighting::LIGHT_TYPE_COUNT] = { "Directional", "Point", "Spot" };
+	if (ImGui::Combo("Type", &typeIndex, typeLabels, Lighting::LIGHT_TYPE_COUNT))
 	{
-		light.type = static_cast<LightType>(typeIndex);
+		light.type = static_cast<Lighting::LightType>(typeIndex);
 	}
 
 	ImGui::Checkbox("Enabled", &light.isEnabled);
@@ -251,7 +251,7 @@ void WorldEditor::ShowLightingData()
 	if (ImGui::Checkbox("Casts Shadow (directional only)", &castsShadow))
 	{
 		light.castsShadow = castsShadow;
-		if (castsShadow && light.type == LIGHT_DIRECTIONAL)
+		if (castsShadow && light.type == Lighting::LIGHT_DIRECTIONAL)
 		{
 			for (int i = 0; i < static_cast<int>(lights.size()); i++)
 			{
@@ -268,11 +268,11 @@ void WorldEditor::ShowLightingData()
 	// A directional light is at infinity, so the shader ignores its position —
 	// but the gizmo has to be anchored somewhere visible, so the field stays
 	// editable under a name that says what it actually does.
-	if (light.type == LIGHT_DIRECTIONAL) { ImGui::InputFloat3("Gizmo Anchor", &light.position.x); }
+	if (light.type == Lighting::LIGHT_DIRECTIONAL) { ImGui::InputFloat3("Gizmo Anchor", &light.position.x); }
 	else { ImGui::DragFloat3("Position", &light.position.x); }
 
 	// Direction is meaningless for a point light
-	if (light.type != LIGHT_POINT) { ImGui::DragFloat3("Direction", &light.direction.x); }
+	if (light.type != Lighting::LIGHT_POINT) { ImGui::DragFloat3("Direction", &light.direction.x); }
 
 	if (ImGui::Button("Move To Camera"))
 	{
@@ -284,14 +284,14 @@ void WorldEditor::ShowLightingData()
 	EditColor("Color", light.color);
 	ImGui::SliderFloat("Intensity", &light.intensity, 0.0f, 5.0f);
 
-	if (light.type != LIGHT_DIRECTIONAL)
+	if (light.type != Lighting::LIGHT_DIRECTIONAL)
 	{
 		// Attenuation reaches exactly zero at `range`, so this is a real
 		// authoring number rather than a physical falloff constant
 		ImGui::SliderFloat("Range", &light.range, 0.5f, 200.0f);
 	}
 
-	if (light.type == LIGHT_SPOT)
+	if (light.type == Lighting::LIGHT_SPOT)
 	{
 		ImGui::SliderFloat("Inner Cone", &light.innerConeDegrees, 0.0f, 89.0f);
 		ImGui::SliderFloat("Outer Cone", &light.outerConeDegrees, 0.0f, 89.9f);
@@ -303,14 +303,14 @@ void WorldEditor::ShowLightingData()
 
 	if (ImGui::Button("Duplicate Light"))
 	{
-		if (static_cast<int>(lights.size()) >= LIGHT_LIMIT)
+		if (static_cast<int>(lights.size()) >= Lighting::LIGHT_LIMIT)
 		{
-			statusMessage = "Light limit reached (" + std::to_string(LIGHT_LIMIT) + ")";
+			statusMessage = "Light limit reached (" + std::to_string(Lighting::LIGHT_LIMIT) + ")";
 		}
 		else
 		{
 			// Copy by value first for the same reason
-			Light copy = light;
+			Lighting::Light copy = light;
 			copy.name += " Copy";
 			copy.castsShadow = false; // Only one light may own the shadow map
 			lighting->AddLight(copy);

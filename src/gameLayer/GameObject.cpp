@@ -34,7 +34,7 @@ GameObject::GameObject()
 	// would leave models unlit. loadVisuals() repeats this on every rebind;
 	// this call covers an object drawn before its first bind. It is a no-op
 	// until LightingSystem::Init() has run.
-	LightingSystem::getInstance().ApplyToModel(model);
+	Lighting::LightingSystem::getInstance().ApplyToModel(model);
 
 	// The collision box is not seeded here. It used to be assigned
 	// GetMeshBoundingBox(model.meshes[0]) — a MODEL-LOCAL box written into a
@@ -116,7 +116,7 @@ void GameObject::loadVisuals()
 	// Every runtime model binding funnels through here — editor placement,
 	// duplication, setModel(), onEnable() and loadCommonFromJson() — which makes
 	// this the one place that guarantees new geometry is lit.
-	LightingSystem::getInstance().ApplyToModel(model);
+	Lighting::LightingSystem::getInstance().ApplyToModel(model);
 
 	// ...and the one place a mesh collider can be kept honest. Its whole point is
 	// to match the art, so it has to be refitted whenever the art changes rather

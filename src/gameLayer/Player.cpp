@@ -64,7 +64,7 @@ void UpdateActions(Player* player) {
 		// is active, so the player only owns the toggle. Sitting inside this
 		// block keeps it suppressed while the World Editor has focus, matching
 		// fire/interact/jump.
-		if (inputSystem->IsActionPressed(ACTION_USE_FLASHLIGHT)) { LightingSystem::getInstance().ToggleFlashlight(); }
+		if (inputSystem->IsActionPressed(ACTION_USE_FLASHLIGHT)) { Lighting::LightingSystem::getInstance().ToggleFlashlight(); }
 	}
 }
 

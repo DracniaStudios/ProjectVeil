@@ -54,7 +54,7 @@ namespace SceneManagement {
 
 	void SceneManager_draw(SceneManager* manager) {
 
-		auto lighting = &LightingSystem::getInstance();
+		auto lighting = &Lighting::LightingSystem::getInstance();
 
 		// Lighting runs in three ordered stages, all before the camera pass:
 		//   1. Update  - picks the shadow-casting light, drives the flashlight from
