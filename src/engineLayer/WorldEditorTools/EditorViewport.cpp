@@ -55,7 +55,7 @@ namespace
  */
 void WorldEditor::UpdateViewportInput()
 {
-	const auto manager = &SceneManager::getInstance();
+	const auto manager = &SceneManagement::SceneManager::getInstance();
 	SceneManagement::Scene* scene = manager->currentScene;
 	if (scene == nullptr) { return; }
 
@@ -304,7 +304,7 @@ void WorldEditor::SelectUnderMouse(SceneManagement::Scene* scene, const Camera3D
 
 void WorldEditor::DeleteSelection()
 {
-	SceneManagement::Scene* scene = SceneManager::getInstance().currentScene;
+	SceneManagement::Scene* scene = SceneManagement::SceneManager::getInstance().currentScene;
 	GameObject* object = getSelectedObject();
 	if (scene == nullptr || object == nullptr) { statusMessage = "Nothing selected"; return; }
 
@@ -325,7 +325,7 @@ void WorldEditor::DeleteSelection()
 
 void WorldEditor::DuplicateSelection()
 {
-	SceneManagement::Scene* scene = SceneManager::getInstance().currentScene;
+	SceneManagement::Scene* scene = SceneManagement::SceneManager::getInstance().currentScene;
 	GameObject* object = getSelectedObject();
 	if (scene == nullptr || object == nullptr) { statusMessage = "Nothing selected"; return; }
 
@@ -463,7 +463,7 @@ void WorldEditor::PushEdit(const EditorEdit& edit)
 
 void WorldEditor::Undo()
 {
-	SceneManagement::Scene* scene = SceneManager::getInstance().currentScene;
+	SceneManagement::Scene* scene = SceneManagement::SceneManager::getInstance().currentScene;
 	if (scene == nullptr) { return; }
 
 	// Entries can go stale — the object may have been deleted by hand since.
@@ -529,9 +529,9 @@ void WorldEditor::DrawViewport3D()
 	// getSelectedObject() walks the scene's containers unguarded, and this runs
 	// outside SceneManager_draw's own currentScene check — a scene swap with the
 	// editor open would otherwise dereference null here.
-	if (SceneManager::getInstance().currentScene == nullptr) { return; }
+	if (SceneManagement::SceneManager::getInstance().currentScene == nullptr) { return; }
 
-	const Camera3D& camera = SceneManager::getInstance().camera3D;
+	const Camera3D& camera = SceneManagement::SceneManager::getInstance().camera3D;
 
 	rlDrawRenderBatchActive();
 	rlDisableDepthTest();

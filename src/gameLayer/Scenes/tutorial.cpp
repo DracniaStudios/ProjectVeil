@@ -2,7 +2,7 @@
 
 void Scene_TutorialUpdate(float deltaTime)
 {
-	auto manager = &SceneManager::getInstance();
+	auto manager = &SceneManagement::SceneManager::getInstance();
 	auto scene = manager->currentScene;
 	auto player = scene->player;
 
@@ -10,14 +10,14 @@ void Scene_TutorialUpdate(float deltaTime)
 
 void Scene_TutorialDraw2D()
 {
-	auto manager = &SceneManager::getInstance();
+	auto manager = &SceneManagement::SceneManager::getInstance();
 	auto scene = manager->currentScene;
 
 };
 
 void Scene_TutorialDraw3D()
 {
-	auto manager = &SceneManager::getInstance();
+	auto manager = &SceneManagement::SceneManager::getInstance();
 	auto scene = manager->currentScene;
 
 	// Weird Interaction Between Rendering Ray and layer Objects
@@ -26,7 +26,7 @@ void Scene_TutorialDraw3D()
 
 SceneManagement::Scene* Scene_TutorialConstruct()
 {
-	SceneManagement::Scene* scene = Scene_new();
+	SceneManagement::Scene* scene = SceneManagement::Scene_new();
 
 	// Load Main Menu World
 	scene->name = "Tutorial";

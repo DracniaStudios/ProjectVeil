@@ -156,7 +156,7 @@ namespace Physics3D {
 			// the overwhelmingly common case and should cost a dot product, no more.
 			if (closingSpeed <= kQuietImpact) { return; }
 
-			auto scene = SceneManager::getInstance().currentScene;
+			auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 			if (scene == nullptr) { return; }
 
 			const float loudness = Clamp(
@@ -473,7 +473,7 @@ namespace Physics3D {
 
 		// currentScene is null between the OUT and IN halves of a scene transition,
 		// and Player::update() reaches this without Scene_updateScene's null guard.
-		SceneManagement::Scene* scene = SceneManager::getInstance().currentScene;
+		SceneManagement::Scene* scene = SceneManagement::SceneManager::getInstance().currentScene;
 		if (scene == nullptr) { return; }
 
 		scene->gameMap.ForEachGameObject([&](GameObject& obj)

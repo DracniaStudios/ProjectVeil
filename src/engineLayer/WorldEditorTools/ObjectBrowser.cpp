@@ -70,7 +70,7 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 			// target" — FindWorldObject returns nullptr for that, and
 			// dereferencing it here crashed the editor on the common
 			// self-activating case (see PlacementPanel's "Activator ID" field).
-			if (GameObject* activatorObject = SceneManager::getInstance().currentScene->gameMap.FindWorldObject(object->activator)) {
+			if (GameObject* activatorObject = SceneManagement::SceneManager::getInstance().currentScene->gameMap.FindWorldObject(object->activator)) {
 				ImGui::TextDisabled("%s", activatorObject->name.c_str());
 			}
 			else {
@@ -121,10 +121,10 @@ void WorldEditor::showEntity(Entity* object) {
 	}
 
 	if (ImGui::Button("Teleport To Player")) {
-		object->rigidBody3D.Teleport(SceneManager::getInstance().currentScene->player->getPosition());
+		object->rigidBody3D.Teleport(SceneManagement::SceneManager::getInstance().currentScene->player->getPosition());
 	}
 	if (ImGui::Button("Teleport To Camera")) {
-		object->rigidBody3D.Teleport(SceneManager::getInstance().camera3D.position);
+		object->rigidBody3D.Teleport(SceneManagement::SceneManager::getInstance().camera3D.position);
 	}
 
 	auto spawnPoint = object->getSpawnPoint();
@@ -484,7 +484,7 @@ void WorldEditor::showSelectedObject(SceneManagement::Scene* scene) {
 
 void WorldEditor::ShowObjectBrowser()
 {
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	/// Show Object Browser Window
 	ImGui::Begin("Object Browser");

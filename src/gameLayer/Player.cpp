@@ -71,7 +71,7 @@ void UpdateActions(Player* player) {
 void updateArtifact(Player* player, float deltaTime) {
 
 	auto inputSystem = &InputSystem::getInstance();
-	const auto scene = SceneManager::getInstance().currentScene;
+	const auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	// Artifact Actions
 	player->artifactMode += inputSystem->IsActionPressed(ACTION_USE_ARTIFACT_RIGHT) ? 1
@@ -87,7 +87,7 @@ void updateArtifact(Player* player, float deltaTime) {
 	const auto camera = player->camera;
 	const auto offset = Vector3Add(camera.forward, player->rigidBody3D.left);//camera->left / 2);
 
-	player->artifact->rigidBody3D.translation = Vector3Add(SceneManager::getInstance().camera3D.position, offset);
+	player->artifact->rigidBody3D.translation = Vector3Add(SceneManagement::SceneManager::getInstance().camera3D.position, offset);
 	player->artifact->update(scene, deltaTime);
 }
 
@@ -118,7 +118,7 @@ void Player::render2D()
 {
 	if (!this->isEnabled) return;
 	auto inputSystem = &InputSystem::getInstance();
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	if (scene->isMiniActive && scene->miniGame != nullptr)
 	{
@@ -144,7 +144,7 @@ void Player::render3D()
 void Player::update2D(float deltaTime, bool canMove)
 {
 	if (!this->isEnabled) return;
-	if (!SceneManager::getInstance().currentScene->is2DActive) return;
+	if (!SceneManagement::SceneManager::getInstance().currentScene->is2DActive) return;
 
 	auto inputSystem = &InputSystem::getInstance();
 
@@ -166,7 +166,7 @@ void Player::update2D(float deltaTime, bool canMove)
 // Footsteps, the player's loudest routine emission.
 static void EmitFootsteps(Player* player, float deltaTime)
 {
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 	if (scene == nullptr) { return; }
 
 	// Vertical motion is jumping and falling, not walking; only horizontal
@@ -198,7 +198,7 @@ static void EmitFootsteps(Player* player, float deltaTime)
 void Player::update3D(float deltaTime)
 {
 	if (!isEnabled) return;
-	if (SceneManager::getInstance().currentScene->is2DActive) { return; }
+	if (SceneManagement::SceneManager::getInstance().currentScene->is2DActive) { return; }
 
 	/// Player Scale
 	rigidBody3D.scale = Vector3(1, 2, 1);
@@ -210,7 +210,7 @@ void Player::update3D(float deltaTime)
 	// The player ticks its own body rather than going through GameObject::update,
 	// so it needs its own trigger dispatch or it would never report leaving one.
 	// currentScene is null between the two halves of a scene transition.
-	if (SceneManagement::Scene* scene = SceneManager::getInstance().currentScene)
+	if (SceneManagement::Scene* scene = SceneManagement::SceneManager::getInstance().currentScene)
 	{
 		rigidBody3D.DispatchTriggerEvents(this, &scene->gameMap);
 	}
@@ -229,7 +229,7 @@ void Player::update3D(float deltaTime)
 }
 
 FMOD_3D_ATTRIBUTES Player::getListener() {
-	const auto camera = &SceneManager::getInstance().currentScene->player->camera;
+	const auto camera = &SceneManagement::SceneManager::getInstance().currentScene->player->camera;
 
 	// FMOD requires forward and up to be normalized and perpendicular
 	Vector3 forward = Vector3Normalize(camera->forward);
@@ -239,7 +239,7 @@ FMOD_3D_ATTRIBUTES Player::getListener() {
 	Vector3 up = Vector3Normalize(Vector3CrossProduct(forward, right));
 
 	FMOD_3D_ATTRIBUTES listenerAttributes = {};
-	listenerAttributes.position = Vector3ToFMOD(SceneManager::getInstance().camera3D.position);
+	listenerAttributes.position = Vector3ToFMOD(SceneManagement::SceneManager::getInstance().camera3D.position);
 	listenerAttributes.velocity = Vector3ToFMOD(getVelocity());
 	listenerAttributes.forward = Vector3ToFMOD(forward);
 	listenerAttributes.up = Vector3ToFMOD(up);

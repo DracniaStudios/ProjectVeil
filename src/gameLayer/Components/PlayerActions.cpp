@@ -4,8 +4,8 @@
 
 void Player::Interact()
 {
-	const auto scene = SceneManager::getInstance().currentScene;
-	const auto camera = &SceneManager::getInstance().camera3D;
+	const auto scene = SceneManagement::SceneManager::getInstance().currentScene;
+	const auto camera = &SceneManagement::SceneManager::getInstance().camera3D;
 
 	if (scene->is2DActive) { return; }
 

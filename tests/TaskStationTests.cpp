@@ -39,7 +39,7 @@ static void Check(bool condition, const std::string& what)
 static SceneManagement::Scene* MakeScene()
 {
 	SceneManagement::Scene* scene = new SceneManagement::Scene();
-	SceneManager::getInstance().currentScene = scene;
+	SceneManagement::SceneManager::getInstance().currentScene = scene;
 	scene->player = new Player();
 	scene->player->id = PLAYER_ID;
 	// Everything unlocked, so ActivateMiniGame never bails at the unlock gate

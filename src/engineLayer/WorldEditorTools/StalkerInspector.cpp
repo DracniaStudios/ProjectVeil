@@ -14,7 +14,7 @@
  */
 void WorldEditor::ShowStalkerData()
 {
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	ImGui::Begin("Stalker AI");
 
@@ -117,7 +117,7 @@ void WorldEditor::ShowStalkerData()
 		}
 		if (ImGui::Button("Add Waypoint At Camera"))
 		{
-			stalker->waypoints.push_back(SceneManager::getInstance().camera3D.position);
+			stalker->waypoints.push_back(SceneManagement::SceneManager::getInstance().camera3D.position);
 			stalker->displayRoute = true;
 		}
 

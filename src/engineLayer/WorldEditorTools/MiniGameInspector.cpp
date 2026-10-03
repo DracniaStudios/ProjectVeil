@@ -2,7 +2,7 @@
 
 void WorldEditor::ShowMiniGameData(Player* player)
 {
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	/// Begin Mini Game Data Window
 	ImGui::Begin("Mini Game Data");

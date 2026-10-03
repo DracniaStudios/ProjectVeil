@@ -32,7 +32,7 @@ static void NewWorld(SceneManagement::Scene& scene) {
 
 void WorldEditor::ShowWorldSettings()
 {
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	/// Show World Settings Window
 	ImGui::Begin("World Settings");

@@ -19,22 +19,22 @@ bool init_game()
 	// render half-lit with no error anywhere.
 	LightingSystem::getInstance().Init();
 
-	SceneManager_init(&SceneManager::getInstance());
+	SceneManagement::SceneManager_init(&SceneManagement::SceneManager::getInstance());
 
 	// Camera
-	SceneManager::getInstance().camera3D.position = Vector3{ 0, 10, 10 };
-	SceneManager::getInstance().camera3D.target = Vector3{ 0, 0, 0 };
-	SceneManager::getInstance().camera3D.up = Vector3(0.0f, 1.0f, 0.0f);
-	SceneManager::getInstance().camera3D.fovy = 90;
-	SceneManager::getInstance().camera3D.projection = CAMERA_PERSPECTIVE;
+	SceneManagement::SceneManager::getInstance().camera3D.position = Vector3{ 0, 10, 10 };
+	SceneManagement::SceneManager::getInstance().camera3D.target = Vector3{ 0, 0, 0 };
+	SceneManagement::SceneManager::getInstance().camera3D.up = Vector3(0.0f, 1.0f, 0.0f);
+	SceneManagement::SceneManager::getInstance().camera3D.fovy = 90;
+	SceneManagement::SceneManager::getInstance().camera3D.projection = CAMERA_PERSPECTIVE;
 
-	SceneManager::getInstance().camera2D.zoom = 1.0f;// Scale Screen To World (1 pixel = 1 unit)
-	SceneManager::getInstance().camera2D.rotation = 0.0f;
-	SceneManager::getInstance().camera2D.offset = Vector2{ 0, 0 };
-	SceneManager::getInstance().camera2D.target = Vector2{ 0, 0 };
+	SceneManagement::SceneManager::getInstance().camera2D.zoom = 1.0f;// Scale Screen To World (1 pixel = 1 unit)
+	SceneManagement::SceneManager::getInstance().camera2D.rotation = 0.0f;
+	SceneManagement::SceneManager::getInstance().camera2D.offset = Vector2{ 0, 0 };
+	SceneManagement::SceneManager::getInstance().camera2D.target = Vector2{ 0, 0 };
 
 	// Go To Main Menu
-	SceneManager_push(&SceneManager::getInstance(), SCENE_MAIN_MENU);
+	SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), SCENE_MAIN_MENU);
 	
 	return true;
 }
@@ -53,9 +53,9 @@ bool update_game()
 	InputSystem::getInstance().Update();
 
 	/// Update and Draw Scene
-	SceneManager_update(&SceneManager::getInstance(), deltaTime);
+	SceneManagement::SceneManager_update(&SceneManagement::SceneManager::getInstance(), deltaTime);
 
-	SceneManager_draw(&SceneManager::getInstance());
+	SceneManagement::SceneManager_draw(&SceneManagement::SceneManager::getInstance());
 	
 	DrawFPS(10, 10);
 	return true;
@@ -70,7 +70,7 @@ void close_game()
 	auto now = std::chrono::system_clock::now();
 	std::string date_str = "backup/" + std::format("{:%Y-%m-%d}", now) + "_backup";
 
-	SaveSystem::SaveGame(date_str.c_str(), SceneManager::getInstance().currentScene);
+	SaveSystem::SaveGame(date_str.c_str(), SceneManagement::SceneManager::getInstance().currentScene);
 	
 	
 	f << "\n CLOSED\n";

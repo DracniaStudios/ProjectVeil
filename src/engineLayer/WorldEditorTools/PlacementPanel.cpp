@@ -8,7 +8,7 @@ static constexpr ObjectType kGameObjectTypes[] = {
 
 void WorldEditor::ShowPlacementPanel()
 {
-	const auto manager = &SceneManager::getInstance();
+	const auto manager = &SceneManagement::SceneManager::getInstance();
 	const auto scene = manager->currentScene;
 
 	/// Show Placement Window
@@ -224,7 +224,7 @@ void WorldEditor::ShowPlacementPanel()
  */
 GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 {
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 	if (scene == nullptr) { statusMessage = "No scene loaded"; return nullptr; }
 
 	GameObject object = stagingObject;

@@ -14,7 +14,7 @@ namespace Editor {
 			// from Camera3D and default-constructs its own position at the origin,
 			// so without this the first F1 teleports the view to {0,0,0} and points
 			// it at whatever the stale target happened to be.
-			if (isEditorActive) { editorCamera.SyncFrom(SceneManager::getInstance().camera3D); }
+			if (isEditorActive) { editorCamera.SyncFrom(SceneManagement::SceneManager::getInstance().camera3D); }
 			else { gizmo.Cancel(); placementMode = false; }
 		}
 		if (!isEditorActive) { return; } // Panel flags are remembered while hidden
@@ -141,10 +141,10 @@ namespace Editor {
 		// This is now called from the render pass and from the hub every frame, not
 		// only from panels that had already established a scene, so the guard lives
 		// here rather than at each call site.
-		if (SceneManager::getInstance().currentScene == nullptr) { return nullptr; }
+		if (SceneManagement::SceneManager::getInstance().currentScene == nullptr) { return nullptr; }
 		if (selectedObjectId == 0) { return nullptr; }
 
-		return SceneManager::getInstance().currentScene->gameMap.FindWorldObject(selectedObjectId);
+		return SceneManagement::SceneManager::getInstance().currentScene->gameMap.FindWorldObject(selectedObjectId);
 	}
 
 

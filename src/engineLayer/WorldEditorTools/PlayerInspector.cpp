@@ -2,7 +2,7 @@
 
 void WorldEditor::ShowPlayerData(Player* player)
 {
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	/// Begin Player Window
 	ImGui::Begin("Player Data");

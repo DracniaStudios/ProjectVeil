@@ -5,7 +5,7 @@
 
 void Scene_MainMenuUpdate(float deltaTime)
 {
-	auto manager = &SceneManager::getInstance();
+	auto manager = &SceneManagement::SceneManager::getInstance();
 	auto scene = manager->currentScene;
 	auto player = scene->player;
 
@@ -13,7 +13,7 @@ void Scene_MainMenuUpdate(float deltaTime)
 
 void Scene_MainMenuDraw2D()
 {
-	auto manager = &SceneManager::getInstance();
+	auto manager = &SceneManagement::SceneManager::getInstance();
 	auto scene = manager->currentScene;
 
 	// Draw Main Menu
@@ -23,7 +23,7 @@ void Scene_MainMenuDraw2D()
 		if (addButton("Play", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
 		{
 			std::cout << "Play Button Clicked\n";
-			SceneManager_push(&SceneManager::getInstance(), 1);
+			SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), 1);
 		}
 	}
 
@@ -31,7 +31,7 @@ void Scene_MainMenuDraw2D()
 
 void Scene_MainMenuDraw3D()
 {
-	auto manager = &SceneManager::getInstance();
+	auto manager = &SceneManagement::SceneManager::getInstance();
 	auto scene = manager->currentScene;
 
 	// Weird Interaction Between Rendering Ray and layer Objects
@@ -40,7 +40,7 @@ void Scene_MainMenuDraw3D()
 
 SceneManagement::Scene* Scene_MainMenuConstruct()
 {
-	SceneManagement::Scene* scene = Scene_new();
+	SceneManagement::Scene* scene = SceneManagement::Scene_new();
 
 	// Load Main Menu World
 	scene->name = "Main Menu";

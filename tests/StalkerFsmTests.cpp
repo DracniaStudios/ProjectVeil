@@ -61,7 +61,7 @@ static void CheckState(const Stalker& s, StalkerState expected, const std::strin
 static SceneManagement::Scene* MakeScene()
 {
 	SceneManagement::Scene* scene = new SceneManagement::Scene();
-	SceneManager::getInstance().currentScene = scene;
+	SceneManagement::SceneManager::getInstance().currentScene = scene;
 	return scene;
 }
 

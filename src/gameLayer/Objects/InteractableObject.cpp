@@ -7,7 +7,7 @@
 void ActivateMiniGame(InteractableObject* interactable, bool bypass = false)
 {
 	std::cout << "[InteractableObject] Activating MiniGame: " << interactable->variation << "\n";
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	scene->soundField.Emit(interactable->getPosition(), 0.8f, SOUND_TAMPER, interactable->id);
 
@@ -25,7 +25,7 @@ void ActivateMiniGame(InteractableObject* interactable, bool bypass = false)
 void Unlock(InteractableObject* interactable)
 {
 	std::cout << "[InteractableObject] Unlocking MiniGame: " << interactable->variation << "\n";
-	auto player = SceneManager::getInstance().currentScene->player;
+	auto player = SceneManagement::SceneManager::getInstance().currentScene->player;
 	player->artifactUnlocked = std::max(player->artifactUnlocked, interactable->variation);
 	player->artifactUnlocked = Clamp(player->artifactUnlocked, MINI_GAME_FLAPPY_BIRD_ID, MINI_GAME_RO_SHAM_BOO_ID);
 
@@ -61,14 +61,14 @@ void Unlock(InteractableObject* interactable)
 	// the flag was simply left set forever and the station never actually
 	// left the world. DestroyInteractable() is the real removal path for
 	// this container.
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 	if (scene) { scene->gameMap.DestroyInteractable(interactable->id); }
 }
 
 void AddItemToInventory(InteractableObject* interactable)
 {
 	std::cout << "[InteractableObject] Adding Item to Inventory: " << interactable->activator << "\n";
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	// Search in vector
 	auto it = std::ranges::find(scene->player->inventory, interactable);

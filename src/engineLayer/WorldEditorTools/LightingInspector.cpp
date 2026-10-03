@@ -149,7 +149,7 @@ void WorldEditor::ShowLightingData()
 			Light light = {};
 			light.name = "Point Light " + std::to_string(lights.size() + 1);
 			light.type = LIGHT_POINT;
-			light.position = SceneManager::getInstance().camera3D.position;
+			light.position = SceneManagement::SceneManager::getInstance().camera3D.position;
 			lighting->AddLight(light);
 			selectedLightIndex = static_cast<int>(lights.size()) - 1;
 			statusMessage = "Added " + lights.back().name;
@@ -185,7 +185,7 @@ void WorldEditor::ShowLightingData()
 	{
 		// Safety net: rebinds the lighting shader onto every material in the
 		// live scene, for objects created while the system was still down
-		lighting->ApplyToScene(SceneManager::getInstance().currentScene);
+		lighting->ApplyToScene(SceneManagement::SceneManager::getInstance().currentScene);
 		statusMessage = "Reapplied the lighting shader";
 	}
 
@@ -274,7 +274,7 @@ void WorldEditor::ShowLightingData()
 
 	if (ImGui::Button("Move To Camera"))
 	{
-		const auto camera = &SceneManager::getInstance().camera3D;
+		const auto camera = &SceneManagement::SceneManager::getInstance().camera3D;
 		light.position = camera->position;
 		light.direction = Vector3Subtract(camera->target, camera->position);
 	}

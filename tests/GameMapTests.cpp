@@ -42,7 +42,7 @@ static void Check(bool condition, const std::string& what)
 // DestroyInteractable reaches SceneManager::currentScene->player directly.
 static SceneManagement::Scene* MakeScene()
 {
-	return Scene_new();
+	return SceneManagement::Scene_new();
 }
 
 static void TestIdsUniqueAcrossKinds()
