@@ -7,8 +7,6 @@
 #include <cfloat>
 #include <cmath>
 
-namespace Physics3D {
-
 #pragma region Extents
 	void DrawOrientedBoxWires(Vector3 center, Vector3 size, Quaternion rotation, Color color)
 	{
@@ -41,6 +39,8 @@ namespace Physics3D {
 		}
 	}
 #pragma endregion
+
+namespace Physics3D {
 
 #pragma region Collision
 	void RigidBody3D::checkRayCollision(const RigidBody3D& other)
