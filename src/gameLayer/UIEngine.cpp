@@ -169,7 +169,7 @@ void drawText(std::string text, Rectangle scaleRect, float yOffset)
 	
 }
 
-bool addButton(std::string text, UIEngine &ui)
+bool addButton(std::string text, Rectangle scaleRect, UIEngine &ui)
 {
 	UIEngine::Widget widget;
 	widget.type = UIEngine::BUTTON;
@@ -177,12 +177,11 @@ bool addButton(std::string text, UIEngine &ui)
 	widget.id = ui.getID();
 	ui.widgets.push_back(widget);
 
-
 	float w = GetScreenWidth();
 	float h = GetScreenHeight();
 
 	// Get Base Rectangle
-	Rectangle oneButtonRectangle;
+	Rectangle oneButtonRectangle{};
 	oneButtonRectangle.width = w * 0.8f;
 	oneButtonRectangle.height = h / (ui.widgets.size() + 1);
 
@@ -255,7 +254,7 @@ void addTitle(std::string text, UIEngine &ui)
 	float h = GetScreenHeight();
 
 	// Get Base Rectangle
-	Rectangle oneButtonRectangle;
+	Rectangle oneButtonRectangle{};
 	oneButtonRectangle.width = w * 0.8f;
 	oneButtonRectangle.height = h / (ui.widgets.size() + 1);
 

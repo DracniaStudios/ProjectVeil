@@ -13,7 +13,13 @@
 [Notice] Save Rigidbody Locks if locked;
 
 1. Create a player goal to load into the next scene and save current data
-2. Create a full UI Engine to make the PLayerUI and Main Menu
+
+2. Create a full UI Engine to make the PlayerUI and Main Menu
+	2.1. Create a UIEngine to handle all UI elements and render them to the screen
+	2.2. Create a PlayerUI to handle all UI elements for the player and render them to the screen 
+	2.3. Create multiple Widget Types to handle different UI elements and render them to the screen
+	2.4. Render all UI elements to the screen and update positions based on percent scale.
+
 3. Create a real main menu for the player to load into the game
 
 [ Issues ]
