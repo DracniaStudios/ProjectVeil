@@ -61,7 +61,7 @@ namespace
 
 	void UpdateMovement(EditorCamera* editor)
 	{
-		auto inputSystem = &InputSystem::getInstance();
+		auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 		float speed = kBaseSpeed * 0.1f * FrameStep();
 		if (inputSystem->IsActionDown(ACTION_MOVE_SPRINT)) { speed *= kSprintMultiplier; }

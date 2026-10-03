@@ -8,7 +8,7 @@
 /* Static Functions */
 #pragma region Static Functions
 void SetMoveDirection(Player* player, float deltaTime) {
-	auto inputSystem = &InputSystem::getInstance();
+	auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 	/// Player Movement
 	auto& speed = player->currentSpeed;
@@ -48,7 +48,7 @@ void SetMoveDirection(Player* player, float deltaTime) {
 }
 
 void UpdateActions(Player* player) {
-	auto inputSystem = &InputSystem::getInstance();
+	auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 	/// Player Flags
 	player->isCrouching = inputSystem->IsActionDown(ACTION_MOVE_CROUCH);
@@ -70,7 +70,7 @@ void UpdateActions(Player* player) {
 
 void updateArtifact(Player* player, float deltaTime) {
 
-	auto inputSystem = &InputSystem::getInstance();
+	auto inputSystem = &InputSystem::InputSystem::getInstance();
 	const auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	// Artifact Actions
@@ -117,7 +117,7 @@ void Player::onDisable()
 void Player::render2D()
 {
 	if (!this->isEnabled) return;
-	auto inputSystem = &InputSystem::getInstance();
+	auto inputSystem = &InputSystem::InputSystem::getInstance();
 	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	if (scene->isMiniActive && scene->miniGame != nullptr)
@@ -146,7 +146,7 @@ void Player::update2D(float deltaTime, bool canMove)
 	if (!this->isEnabled) return;
 	if (!SceneManagement::SceneManager::getInstance().currentScene->is2DActive) return;
 
-	auto inputSystem = &InputSystem::getInstance();
+	auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 	// Player2D Function
 	moveDirection = Vector2Zero();

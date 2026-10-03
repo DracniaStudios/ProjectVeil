@@ -23,7 +23,7 @@ MiniGame* MiniGame_RoShamBoo(Player* player)
 
 void RoShamBoo::render(SceneManagement::Scene* scene_ptr)
 {
-	auto inputSystem = &InputSystem::getInstance();
+	auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 	// Display 3 Cards
 	auto leftCard = getScreenScale(Rectangle{ 0.1f, 0.3f, 0.2f, 0.5f });
@@ -42,7 +42,7 @@ void RoShamBoo::render(SceneManagement::Scene* scene_ptr)
 
 void RoShamBoo::update(SceneManagement::Scene* scene_ptr, float delta)
 {
-	auto inputSystem = &InputSystem::getInstance();
+	auto inputSystem = &InputSystem::InputSystem::getInstance();
 	auto data = scene_ptr->miniGame->data;
 
 	// Select Left

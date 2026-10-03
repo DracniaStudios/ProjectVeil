@@ -356,7 +356,7 @@ namespace Lighting
 		if (!isReady) { return; }
 
 		int applied = 0;
-		for (auto& asset : AssetManager::getInstance().assets)
+		for (auto& asset : AssetManager::AssetManager::getInstance().assets)
 		{
 			if (asset.type != ASSET_MODEL) { continue; }
 			if (asset.model.meshCount == 0) { continue; }
@@ -890,7 +890,7 @@ namespace Lighting
 #pragma region Settings & Save Data
 	void LightingSystem::ApplySettings()
 	{
-		auto& settings = Settings::getInstance();
+		auto& settings = Settings::Settings::getInstance();
 
 		// Video > Shadows is authored 0-4 like every other quality selection.
 		// 0 turns shadows off; 1-4 pick a shadow map resolution.

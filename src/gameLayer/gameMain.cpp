@@ -6,11 +6,11 @@ constexpr float maxDeltaTime = 1.0f / 30.0f; // 30 FPS
 
 bool init_game()
 {
-	Settings::getInstance().Init();
-	AudioManager::getInstance().loadAll();
+	Settings::Settings::getInstance().Init();
+	AudioManager::AudioManager::getInstance().loadAll();
 	InitAudioDevice();
 
-	AssetManager::getInstance().loadAll();
+	AssetManager::AssetManager::getInstance().loadAll();
 
 	// Lighting must come up AFTER AssetManager (so the shader can be written
 	// into every shared asset model) but BEFORE SceneManager_init, which
@@ -50,7 +50,7 @@ bool update_game()
 	ClearBackground(LightingSystem::getInstance().fogColor);
 
 	// Update Input System
-	InputSystem::getInstance().Update();
+	InputSystem::InputSystem::getInstance().Update();
 
 	/// Update and Draw Scene
 	SceneManagement::SceneManager_update(&SceneManagement::SceneManager::getInstance(), deltaTime);

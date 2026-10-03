@@ -337,7 +337,7 @@ namespace SceneManagement {
 
 		auto manager = &SceneManager::getInstance();
 		auto worldEditor = &WorldEditor::getInstance();
-		auto inputSystem = &InputSystem::getInstance();
+		auto inputSystem = &InputSystem::InputSystem::getInstance();
 		auto scene = manager->currentScene;
 		if (scene->update) { scene->update(delta); }
 

@@ -85,7 +85,7 @@ void Doctor::update(SceneManagement::Scene* scene_ptr, float delta)
 	auto data = scene_ptr->miniGame->data;
 	auto player = scene_ptr->player;
 	auto screen = data->screen;
-	auto inputSystem = &InputSystem::getInstance();
+	auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 	// doctor_playerSpeed is a per-frame drift amount (its sign flips at the
 	// screen edges below), so applying it directly made the "hold a direction

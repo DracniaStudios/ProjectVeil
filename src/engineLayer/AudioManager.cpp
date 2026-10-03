@@ -19,7 +19,7 @@ namespace AudioManager {
 
 	void updateVolume(float& currentVolume, AudioType type) {
 
-		auto settings = &Settings::getInstance();
+		auto settings = &Settings::Settings::getInstance();
 
 		currentVolume *= settings->masterVolume.value;
 		switch (type) {

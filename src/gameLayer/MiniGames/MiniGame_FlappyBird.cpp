@@ -110,7 +110,7 @@ void FlappyBird::render(SceneManagement::Scene* scene_ptr)
 
 void FlappyBird::update(SceneManagement::Scene* scene_ptr, float deltaTime)
 {
-	auto inputSystem = &InputSystem::getInstance();
+	auto inputSystem = &InputSystem::InputSystem::getInstance();
 	auto data = scene_ptr->miniGame->data;
 	auto player = scene_ptr->player;
 	using namespace FlappyBirdSpace;

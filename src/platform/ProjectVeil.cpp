@@ -37,7 +37,7 @@ int main()
 
 #pragma region FMOD
 
-	AudioManager::getInstance().init();
+	AudioManager::AudioManager::getInstance().init();
 
 #pragma endregion
 
@@ -77,7 +77,7 @@ int main()
 				EnableCursor();
 			}
 		}
-		AudioManager::getInstance().update();
+		AudioManager::AudioManager::getInstance().update();
 
 		bool gameRunning = update_game();
 
@@ -90,7 +90,7 @@ int main()
 		if (!gameRunning) { break; }
 	}
 
-	AudioManager::getInstance().shutdown();
+	AudioManager::AudioManager::getInstance().shutdown();
 
 	//ImGui_ImplRaylib_Shutdown();
 	rlImGuiShutdown();

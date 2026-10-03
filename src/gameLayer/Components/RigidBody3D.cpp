@@ -169,7 +169,7 @@ namespace Physics3D {
 			// SoundField only records the AI-perception event; playing it back for
 			// the player is a separate, explicit step here (SoundField itself has
 			// no AudioManager/FMOD dependency by design).
-			AudioManager::getInstance().Play3D(groundImpactSound, striker->getPosition(), AUDIO_GAMEPLAY_SFX, loudness);
+			AudioManager::AudioManager::getInstance().Play3D(groundImpactSound, striker->getPosition(), AUDIO_GAMEPLAY_SFX, loudness);
 			scene->soundField.Emit(striker->getPosition(), loudness, SOUND_IMPACT, striker->id);
 		}
 

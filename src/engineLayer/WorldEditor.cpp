@@ -150,7 +150,7 @@ namespace Editor {
 
 	AssetManager::Asset* WorldEditor::getActiveTexture()
 	{
-		auto& assets = AssetManager::getInstance().assets;
+		auto& assets = AssetManager::AssetManager::getInstance().assets;
 		if (activeTextureIndex < 0 || activeTextureIndex >= static_cast<int>(assets.size())) { return nullptr; }
 		return &assets[activeTextureIndex];
 	}

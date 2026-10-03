@@ -2,7 +2,7 @@
 
 void WorldEditor::ShowAssetData()
 {
-	auto& assetManager = AssetManager::getInstance();
+	auto& assetManager = AssetManager::AssetManager::getInstance();
 	auto& assets = assetManager.assets;
 	ImGui::SetNextWindowSize({ 640, 480 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSizeConstraints({ 0, 0 }, { FLT_MAX, FLT_MAX });
