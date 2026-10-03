@@ -313,10 +313,10 @@ void GameObject::onDestroy(SceneManagement::Scene* scene)
 FMOD_3D_ATTRIBUTES GameObject::get3DAttributes() const
 {
 	FMOD_3D_ATTRIBUTES attributes = {};
-	attributes.position = Vector3ToFMOD(getPosition());
-	attributes.velocity = Vector3ToFMOD(getVelocity());
-	attributes.forward = Vector3ToFMOD(Vector3Normalize(rigidBody3D.forward));
-	attributes.up = Vector3ToFMOD(Vector3Normalize(rigidBody3D.up));
+	attributes.position = AudioManager::Vector3ToFMOD(getPosition());
+	attributes.velocity = AudioManager::Vector3ToFMOD(getVelocity());
+	attributes.forward = AudioManager::Vector3ToFMOD(Vector3Normalize(rigidBody3D.forward));
+	attributes.up = AudioManager::Vector3ToFMOD(Vector3Normalize(rigidBody3D.up));
 	return attributes;
 }
 #pragma endregion

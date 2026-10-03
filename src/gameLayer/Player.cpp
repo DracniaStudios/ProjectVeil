@@ -239,9 +239,9 @@ FMOD_3D_ATTRIBUTES Player::getListener() {
 	Vector3 up = Vector3Normalize(Vector3CrossProduct(forward, right));
 
 	FMOD_3D_ATTRIBUTES listenerAttributes = {};
-	listenerAttributes.position = Vector3ToFMOD(SceneManagement::SceneManager::getInstance().camera3D.position);
-	listenerAttributes.velocity = Vector3ToFMOD(getVelocity());
-	listenerAttributes.forward = Vector3ToFMOD(forward);
-	listenerAttributes.up = Vector3ToFMOD(up);
+	listenerAttributes.position = AudioManager::Vector3ToFMOD(SceneManagement::SceneManager::getInstance().camera3D.position);
+	listenerAttributes.velocity = AudioManager::Vector3ToFMOD(getVelocity());
+	listenerAttributes.forward = AudioManager::Vector3ToFMOD(forward);
+	listenerAttributes.up = AudioManager::Vector3ToFMOD(up);
 	return listenerAttributes;
 }
