@@ -9,7 +9,7 @@
  * Deliberately free of every engine dependency.
  */
 
-namespace Physics3D
+namespace
 {
 	// Below this, a cross product of two box edges is degenerate: the edges are
 	// parallel, so the axis carries nothing the face axes have not already
@@ -269,7 +269,7 @@ namespace Physics3D
 		contact.normal = Vector3Scale(toSphere, -1.0f / distance);
 		return contact;
 	}
-
+}
 
 #pragma region Collision
 
@@ -590,6 +590,4 @@ namespace Physics3D
 
 		return true;
 	}
-
-}
 #pragma endregion
