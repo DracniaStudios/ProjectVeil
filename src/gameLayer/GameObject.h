@@ -65,7 +65,7 @@ struct GameObject
 	float baseDamage = 1.0f;
 
 	/// Physics
-	RigidBody3D rigidBody3D = {};
+	Physics3D::RigidBody3D rigidBody3D = {};
 
 	/// Renderer
 	// Assets are referenced by AssetManager name so they can be saved and

@@ -33,7 +33,7 @@ struct Player : Entity
 	std::unique_ptr<Entity> clone() const override { return std::make_unique<Player>(*this); }
 
 	// Game Mechanics
-	RigidBody2D rigidBody2D = {};
+	Physics2D::RigidBody2D rigidBody2D = {};
 	Vector2 moveDirection = {};
 	PlayerCamera camera = {};
 	GameObject* artifact = nullptr;

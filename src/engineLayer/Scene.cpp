@@ -39,7 +39,7 @@ namespace SceneManagement {
 #pragma region Physics Management
 
 	/** Physics Solutions **/
-	static void refreshBroadPhaseBox(RigidBody3D& body)
+	static void refreshBroadPhaseBox(Physics3D::RigidBody3D& body)
 	{
 		body.SyncBroadPhaseBox();
 	}
