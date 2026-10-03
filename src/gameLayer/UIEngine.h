@@ -90,6 +90,7 @@ private:
 };
 
 void drawText(std::string text, Rectangle scaleRect, float yOffset = 0);
+bool addButton(std::string text, UIEngine &ui);
 bool addButton(std::string text, Rectangle scaleRect, UIEngine &ui);
 void addTitle(std::string text, UIEngine &ui);
 

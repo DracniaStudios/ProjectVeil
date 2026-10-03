@@ -152,7 +152,6 @@ static void drawTextPixels(const std::string& text, Rectangle pixelSize, float y
 	
 }
 
-bool addButton(std::string text, Rectangle scaleRect, UIEngine &ui){}
 // Draws centred text inside a rectangle given as fractions of the screen (0..1).
 void drawText(std::string text, Rectangle scaleRect, float yOffset)
 {
@@ -165,31 +164,9 @@ void drawText(std::string text, Rectangle scaleRect, float yOffset)
 	drawTextPixels(text, pixelSize, yOffset);
 }
 
-bool addButton(std::string text, UIEngine &ui)
+// Registers a button widget and draws it inside smallerRect (pixels).
+static bool drawButtonWidget(const std::string& text, Rectangle smallerRect, UIEngine &ui)
 {
-	UIEngine::Widget widget;
-	widget.type = UIEngine::BUTTON;
-	widget.text = text;
-	widget.id = ui.getID();
-	ui.widgets.push_back(widget);
-
-	float w = GetScreenWidth();
-	float h = GetScreenHeight();
-
-	// Get Base Rectangle
-	Rectangle oneButtonRectangle{};
-	oneButtonRectangle.width = w * 0.8f;
-	oneButtonRectangle.height = h / (ui.widgets.size() + 1);
-
-	oneButtonRectangle.height = std::min(oneButtonRectangle.height, oneButtonRectangle.width / 8.f);
-
-	oneButtonRectangle = placeRectangleCenterTop(oneButtonRectangle, w);
-	oneButtonRectangle.y += oneButtonRectangle.height / 2.f;
-
-	Rectangle smallerRect = shrinkRectanglePercentage(oneButtonRectangle, 0.01f, 0.01f);
-	smallerRect.y += smallerRect.height * widget.id;
-
-
 	// Button Style
 	const float clickOffset = 0.05f;
 	Color clickColor = { 120, 120, 134, 205 };
@@ -236,6 +213,51 @@ bool addButton(std::string text, UIEngine &ui)
 	// isBeingClicked here would re-trigger the caller's action each frame a
 	// button is held instead of once per click.
 	return isReleased;
+}
+
+bool addButton(std::string text, UIEngine &ui)
+{
+	UIEngine::Widget widget;
+	widget.type = UIEngine::BUTTON;
+	widget.text = text;
+	widget.id = ui.getID();
+	ui.widgets.push_back(widget);
+
+	float w = GetScreenWidth();
+	float h = GetScreenHeight();
+
+	// Get Base Rectangle
+	Rectangle oneButtonRectangle{};
+	oneButtonRectangle.width = w * 0.8f;
+	oneButtonRectangle.height = h / (ui.widgets.size() + 1);
+
+	oneButtonRectangle.height = std::min(oneButtonRectangle.height, oneButtonRectangle.width / 8.f);
+
+	oneButtonRectangle = placeRectangleCenterTop(oneButtonRectangle, w);
+	oneButtonRectangle.y += oneButtonRectangle.height / 2.f;
+
+	Rectangle smallerRect = shrinkRectanglePercentage(oneButtonRectangle, 0.01f, 0.01f);
+	smallerRect.y += smallerRect.height * widget.id;
+
+	return drawButtonWidget(text, smallerRect, ui);
+}
+
+// Button placed in a rectangle given as fractions of the screen (0..1).
+bool addButton(std::string text, Rectangle scaleRect, UIEngine &ui)
+{
+	UIEngine::Widget widget;
+	widget.type = UIEngine::BUTTON;
+	widget.text = text;
+	widget.id = ui.getID();
+	ui.widgets.push_back(widget);
+
+	Rectangle pixelRect = {
+		GetScreenWidth() * scaleRect.x,
+		GetScreenHeight() * scaleRect.y,
+		GetScreenWidth() * scaleRect.width,
+		GetScreenHeight() * scaleRect.height
+	};
+	return drawButtonWidget(text, pixelRect, ui);
 }
 
 void addTitle(std::string text, UIEngine &ui)
