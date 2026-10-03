@@ -100,9 +100,9 @@ void Crane::update(SceneManagement::Scene* scene_ptr, float deltaTime)
 		// by 60 the same way Player::update2D/SetMoveDirection already are.
 		const float step = speed * 60.0f * deltaTime;
 
-		if (inputSystem->IsActionDown(ACTION_MOVE_JUMP)) { player->rigidBody2D.jump(-200); }
-		if (inputSystem->IsActionDown(ACTION_MOVE_LEFT)) { player->rigidBody2D.translation += Vector3(-step, 0); }
-		if (inputSystem->IsActionDown(ACTION_MOVE_RIGHT)) { player->rigidBody2D.translation += Vector3(step, 0); }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_JUMP)) { player->rigidBody2D.jump(-200); }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_LEFT)) { player->rigidBody2D.translation += Vector3(-step, 0); }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_RIGHT)) { player->rigidBody2D.translation += Vector3(step, 0); }
 
 		if (player->rigidBody2D.getPosition().y < data->screen.y)
 		{

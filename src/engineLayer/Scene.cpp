@@ -483,7 +483,7 @@ namespace SceneManagement {
 		// Pause To Inventory
 		// Gated on isMiniActive so TAB can't be used to regain 3D player control
 		// while a minigame is still running in the background.
-		if (inputSystem->IsActionPressed(ACTION_UI_PAUSE)) {
+		if (inputSystem->IsActionPressed(InputSystem::ACTION_UI_PAUSE)) {
 			if (scene->isMiniActive) {
 				scene->is2DActive = false;
 				scene->ReleaseMiniGame();

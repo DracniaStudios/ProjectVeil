@@ -95,11 +95,11 @@ void Doctor::update(SceneManagement::Scene* scene_ptr, float delta)
 	const float driftScale = 60.0f * delta;
 
 	// Stop Movement When Key is Pressed
-	if (!inputSystem->IsActionDown(ACTION_MOVE_LEFT))
+	if (!inputSystem->IsActionDown(InputSystem::ACTION_MOVE_LEFT))
 	{
 		player->rigidBody2D.translation.x += doctor_playerSpeed.x * driftScale;
 	}
-	if (!inputSystem->IsActionDown(ACTION_MOVE_FORWARD))
+	if (!inputSystem->IsActionDown(InputSystem::ACTION_MOVE_FORWARD))
 	{
 		player->rigidBody2D.translation.y += doctor_playerSpeed.y * driftScale;
 	}
@@ -113,7 +113,7 @@ void Doctor::update(SceneManagement::Scene* scene_ptr, float delta)
 
 	// Complete Game
 	auto playerRect = Rectangle{player->getPosition2D().x, player->getPosition2D().y, player->getSize2D().x, player->getSize2D().y};
-	bool isMoving = !(inputSystem->IsActionDown(ACTION_MOVE_FORWARD) && inputSystem->IsActionDown(ACTION_MOVE_LEFT));
+	bool isMoving = !(inputSystem->IsActionDown(InputSystem::ACTION_MOVE_FORWARD) && inputSystem->IsActionDown(InputSystem::ACTION_MOVE_LEFT));
 
 	if (CheckCollisionRecs(data->goal, playerRect) && isMoving == false)
 	{

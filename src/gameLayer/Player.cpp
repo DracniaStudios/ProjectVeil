@@ -28,10 +28,10 @@ void SetMoveDirection(Player* player, float deltaTime) {
 
 	// Player Movement Input
 	player->moveDirection = Vector2Zero();
-	player->moveDirection.x = inputSystem->IsActionDown(ACTION_MOVE_LEFT) ? -1.0 :
-		inputSystem->IsActionDown(ACTION_MOVE_RIGHT) ? 1.0f : 0;
-	player->moveDirection.y = inputSystem->IsActionDown(ACTION_MOVE_FORWARD) ? 1.0 :
-		inputSystem->IsActionDown(ACTION_MOVE_BACKWARD) ? -1.0f : 0;
+	player->moveDirection.x = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_LEFT) ? -1.0 :
+		inputSystem->IsActionDown(InputSystem::ACTION_MOVE_RIGHT) ? 1.0f : 0;
+	player->moveDirection.y = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_FORWARD) ? 1.0 :
+		inputSystem->IsActionDown(InputSystem::ACTION_MOVE_BACKWARD) ? -1.0f : 0;
 
 	// Movement was applied as a flat `speed * 0.1f` per frame, so how fast the
 	// player walked was decided by the monitor: identical inputs covered 2.4x
@@ -51,20 +51,20 @@ void UpdateActions(Player* player) {
 	auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 	/// Player Flags
-	player->isCrouching = inputSystem->IsActionDown(ACTION_MOVE_CROUCH);
-	player->isSprinting = inputSystem->IsActionDown(ACTION_MOVE_SPRINT);
-	player->isFiring = inputSystem->IsActionPressed(ACTION_USE_ITEM)
-		|| inputSystem->IsActionDown(ACTION_USE_ITEM2);
+	player->isCrouching = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_CROUCH);
+	player->isSprinting = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_SPRINT);
+	player->isFiring = inputSystem->IsActionPressed(InputSystem::ACTION_USE_ITEM)
+		|| inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2);
 
 	if (!Editor::WorldEditor::getInstance().IsEnabled()) {
-		if (inputSystem->IsActionPressed(ACTION_MOVE_INTERACT)) { player->Interact(); }
-		if (inputSystem->IsActionPressed(ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(20);
+		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_INTERACT)) { player->Interact(); }
+		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(20);
 
 		// The flashlight is owned by LightingSystem and follows whichever camera
 		// is active, so the player only owns the toggle. Sitting inside this
 		// block keeps it suppressed while the World Editor has focus, matching
 		// fire/interact/jump.
-		if (inputSystem->IsActionPressed(ACTION_USE_FLASHLIGHT)) { Lighting::LightingSystem::getInstance().ToggleFlashlight(); }
+		if (inputSystem->IsActionPressed(InputSystem::ACTION_USE_FLASHLIGHT)) { Lighting::LightingSystem::getInstance().ToggleFlashlight(); }
 	}
 }
 
@@ -74,11 +74,11 @@ void updateArtifact(Player* player, float deltaTime) {
 	const auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	// Artifact Actions
-	player->artifactMode += inputSystem->IsActionPressed(ACTION_USE_ARTIFACT_RIGHT) ? 1
-		: inputSystem->IsActionPressed(ACTION_USE_ARTIFACT_LEFT) ? -1
+	player->artifactMode += inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT_RIGHT) ? 1
+		: inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT_LEFT) ? -1
 		: 0;
 	player->artifactMode = static_cast<int>(Clamp(static_cast<float>(player->artifactMode), -1, player->artifactUnlocked));
-	if (scene->miniGame == nullptr && inputSystem->IsActionPressed(ACTION_USE_ARTIFACT))
+	if (scene->miniGame == nullptr && inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT))
 	{
 		scene->SetMiniGame(player->artifactMode);
 	}
@@ -128,8 +128,8 @@ void Player::render2D()
 	/// Reticle
 	if (!scene->is2DActive) {
 		DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 10,
-			inputSystem->IsActionDown(ACTION_USE_ITEM) ? RED
-			: inputSystem->IsActionDown(ACTION_USE_ITEM2) ? RED
+			inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM) ? RED
+			: inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2) ? RED
 			: WHITE);
 	}
 }
@@ -150,10 +150,10 @@ void Player::update2D(float deltaTime, bool canMove)
 
 	// Player2D Function
 	moveDirection = Vector2Zero();
-	moveDirection.x = inputSystem->IsActionDown(ACTION_MOVE_LEFT) ? -1.0 : inputSystem->IsActionDown(ACTION_MOVE_RIGHT) ? 1.0f : 0;
-	moveDirection.y = inputSystem->IsActionDown(ACTION_MOVE_FORWARD) ? 1.0 : inputSystem->IsActionDown(ACTION_MOVE_BACKWARD) ? -1.0f : 0;
+	moveDirection.x = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_LEFT) ? -1.0 : inputSystem->IsActionDown(InputSystem::ACTION_MOVE_RIGHT) ? 1.0f : 0;
+	moveDirection.y = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_FORWARD) ? 1.0 : inputSystem->IsActionDown(InputSystem::ACTION_MOVE_BACKWARD) ? -1.0f : 0;
 
-	auto speed = inputSystem->IsActionDown(ACTION_MOVE_SPRINT) ? baseSpeed * 2 : baseSpeed;
+	auto speed = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_SPRINT) ? baseSpeed * 2 : baseSpeed;
 
 	if (canMove)
 	{

@@ -66,15 +66,15 @@ namespace
 		auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 		float speed = kBaseSpeed * 0.1f * FrameStep();
-		if (inputSystem->IsActionDown(ACTION_MOVE_SPRINT)) { speed *= kSprintMultiplier; }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_SPRINT)) { speed *= kSprintMultiplier; }
 
-		if (inputSystem->IsActionDown(ACTION_EDITOR_UP)) { editor->position.y += speed; }
-		if (inputSystem->IsActionDown(ACTION_EDITOR_DOWN)) { editor->position.y -= speed; }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_EDITOR_UP)) { editor->position.y += speed; }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_EDITOR_DOWN)) { editor->position.y -= speed; }
 
-		if (inputSystem->IsActionDown(ACTION_MOVE_FORWARD)) { editor->position += editor->forward * speed; }
-		if (inputSystem->IsActionDown(ACTION_MOVE_BACKWARD)) { editor->position += editor->back * speed; }
-		if (inputSystem->IsActionDown(ACTION_MOVE_LEFT)) { editor->position += editor->left * speed; }
-		if (inputSystem->IsActionDown(ACTION_MOVE_RIGHT)) { editor->position += editor->right * speed; }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_FORWARD)) { editor->position += editor->forward * speed; }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_BACKWARD)) { editor->position += editor->back * speed; }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_LEFT)) { editor->position += editor->left * speed; }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_RIGHT)) { editor->position += editor->right * speed; }
 	}
 }
 

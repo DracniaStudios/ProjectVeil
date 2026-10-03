@@ -210,7 +210,7 @@ void FlappyBird::update(SceneManagement::Scene* scene_ptr, float deltaTime)
 		// added an extra, unintended (0, 20) on top of the tuned (0, 200) every
 		// frame — a leftover duplicate, not a second intentional force.
 		player->rigidBody2D.applyGravity(Vector2(0, 200));
-		if (inputSystem->IsActionPressed(ACTION_MOVE_JUMP)) { player->rigidBody2D.jump(200); }
+		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_JUMP)) { player->rigidBody2D.jump(200); }
 
 		if (isLeftGoalActive) { player->rigidBody2D.applyForce(Vector2(-speed, 0)); }
 		if (isRightGoalActive) { player->rigidBody2D.applyForce(Vector2(speed, 0)); }

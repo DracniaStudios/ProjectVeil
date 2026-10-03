@@ -54,10 +54,10 @@ void SimonSays::update(SceneManagement::Scene* scene_ptr, float delta)
 	// index, so chain them with else-if to avoid indexing obstacles[] once score reaches
 	// scoreGoal (out-of-bounds) or awarding more than one point per frame.
 	if (data->score < static_cast<int>(data->obstacles.size())) {
-		if (inputSystem->IsActionPressed(ACTION_MOVE_FORWARD) && data->obstacles[data->score].y == 0) { data->score++; }
-		else if (inputSystem->IsActionPressed(ACTION_MOVE_LEFT) && data->obstacles[data->score].y == 1) { data->score++; }
-		else if (inputSystem->IsActionPressed(ACTION_MOVE_BACKWARD) && data->obstacles[data->score].y == 2) { data->score++; }
-		else if (inputSystem->IsActionPressed(ACTION_MOVE_RIGHT) && data->obstacles[data->score].y == 3) { data->score++; }
+		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_FORWARD) && data->obstacles[data->score].y == 0) { data->score++; }
+		else if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_LEFT) && data->obstacles[data->score].y == 1) { data->score++; }
+		else if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_BACKWARD) && data->obstacles[data->score].y == 2) { data->score++; }
+		else if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_RIGHT) && data->obstacles[data->score].y == 3) { data->score++; }
 	}
 
 	if (CompleteMiniGame(*data, *scene_ptr->player, scene_ptr->gameMap, BUFF_HEARING)) {
