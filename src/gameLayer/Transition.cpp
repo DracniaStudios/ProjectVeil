@@ -13,6 +13,7 @@
 
 Transition * Transition_new() {
 	Transition * transition = (Transition*)malloc(sizeof(Transition));
+	if (transition == NULL) { return NULL; }
 	transition->direction = NONE;
 	transition->opacity = -1;
 	return transition;
