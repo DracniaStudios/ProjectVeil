@@ -6,33 +6,49 @@
 namespace SceneManagement {
 	void SceneManager::SetCamera(Camera3D* camera) { camera3D = *camera; }
 
-	static void ConstructScene(SceneManager* manager, unsigned int sceneIndex) {
+	// Builds one fresh instance of a scene. Every case returns: the cases used to
+	// fall through, so building the main menu rebuilt the tutorial as well.
+	static Scene* ConstructScene(int sceneIndex) {
 		switch (sceneIndex) {
-			case 0: manager->scenes[0] = Scene_MainMenuConstruct();
-			case 1: manager->scenes[1] = Scene_TutorialConstruct();
+			case SCENE_MAIN_MENU: return Scene_MainMenuConstruct();
+			case SCENE_TUTORIAL: return Scene_TutorialConstruct();
+			default: return nullptr;
 		}
+	}
+
+	// Builds the scene requested by the last push and makes it current. Runs only
+	// while nothing of the outgoing scene is on screen: at the fully faded-out
+	// midpoint of a transition, or at start-up before any scene exists. Building
+	// here rather than in SceneManager_push keeps the outgoing scene running for
+	// its whole fade-out, and builds the incoming scene exactly once.
+	static void LoadNextScene(SceneManager* manager) {
+		const int sceneID = manager->nextSceneID;
+		manager->nextSceneID = -1;
+		if (sceneID < 0 || sceneID >= SCENE_COUNT) { return; }
+
+		Scene* previous = manager->currentScene;
+
+		// Scene_new() points currentScene at the scene under construction (the
+		// world loader relies on it), so currentScene is the new scene from here.
+		Scene* loaded = ConstructScene(sceneID);
+		manager->currentScene = loaded;
+
+		for (int i = 0; i < SCENE_COUNT; i++) {
+			if (manager->scenes[i] == previous) { manager->scenes[i] = nullptr; }
+		}
+		manager->scenes[sceneID] = loaded;
 	}
 
 	void SceneManager_init(SceneManager* manager) {
 		manager->currentScene = nullptr;
-		manager->nextScene = nullptr;
-
-		/*
-		// ... Initialize other scenes as needed
-		manager->scenes[0] = Scene_MainMenuConstruct();
-		manager->scenes[1] = Scene_TutorialConstruct();
-		*/
-		for (int i = SCENE_COUNT - 1; i >= 0; i--) {
-			ConstructScene(manager, i);
-		}
-
-		// Resets to not load last constructed Scene
-		manager->currentScene = nullptr;
+		manager->nextSceneID = -1;
+		for (int i = 0; i < SCENE_COUNT; i++) { manager->scenes[i] = nullptr; }
 
 		manager->transition = Transition_new();
 
+		// Scenes are built on demand, one per push, so start-up builds only the
+		// main menu.
 		SceneManager_push(manager, SCENE_MAIN_MENU);
-
 	}
 
 	void SceneManager_update(SceneManager* manager, float delta) {
@@ -93,18 +109,18 @@ namespace SceneManagement {
 
 	void SceneManager_push(SceneManager* manager, int sceneID) {
 		if (sceneID >= 0 && sceneID < SCENE_COUNT) {
-			ConstructScene(manager, sceneID);
+			// Only record the request. Pushes come from button handlers inside a
+			// scene's draw2D, so building or swapping scenes here would happen
+			// mid-frame, before the fade-out has even started.
+			manager->nextSceneID = sceneID;
 
-			manager->nextScene = manager->scenes[sceneID];
-			
 			SceneManager_transition(manager, manager->currentScene ? OUT : IN);
 		}
 	}
 
 	void SceneManager_transition(SceneManager* manager, TransitionDirection direction) {
 		if (direction == IN) {
-			manager->currentScene = manager->nextScene;
-			manager->nextScene = nullptr;
+			LoadNextScene(manager);
 		}
 
 		manager->transition->direction = direction;

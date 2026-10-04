@@ -26,9 +26,9 @@ namespace SceneManagement {
 		}
 
 		/** Scene Manager Data **/
-		Scene* scenes[255]; /**< The Scene list */
+		Scene* scenes[255]; /**< The Scene list; only the active Scene's slot is filled */
 		Scene* currentScene; /**< The current Scene active */
-		Scene* nextScene; /**< The next Scene to activate */
+		int nextSceneID = -1; /**< The Scene to build once the screen has faded out (-1 for none) */
 		Transition* transition; /**< The Transition between two Scene */
 
 		Camera3D camera3D; // cast Editor/Player -> SceneManager.Camera
