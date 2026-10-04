@@ -27,7 +27,7 @@ enum ObjectType
 struct GameObject 
 {
 	GameObject();
-	~GameObject() = default;
+	virtual ~GameObject() = default; // Entities and interactables are destroyed through base pointers
 
 	/// Data
 	std::string name = "GameObject";
