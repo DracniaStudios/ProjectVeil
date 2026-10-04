@@ -54,22 +54,14 @@ struct GameObject
 	/// Status
 	float lifeSpan = 0;
 	float deathSpan = 1;
-	// Sets how long, in seconds, the object lingers after isAlive is cleared
-	// before GameObject::update() destroys it. Must be called after the object
-	// is registered with GameMap, since onEnable() resets deathSpan to its
-	// default.
 	void Decay(float time = 1) { deathSpan = time; }
 
-	// Lives on GameObject (not Entity) so projectiles stored by value in
-	// GameMap::gameObjects keep their damage after slicing to GameObject
 	float baseDamage = 1.0f;
 
 	/// Physics
 	Physics3D::RigidBody3D rigidBody3D = {};
 
 	/// Renderer
-	// Assets are referenced by AssetManager name so they can be saved and
-	// reloaded; the raylib handles below are rebound from them at runtime
 	std::string modelName = "";   // empty = generated unit cube
 	std::string textureName = ""; // empty = material default
 	Model model = {};
