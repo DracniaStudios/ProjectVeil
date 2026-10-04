@@ -37,6 +37,11 @@ namespace SceneManagement {
 			if (manager->scenes[i] == previous) { manager->scenes[i] = nullptr; }
 		}
 		manager->scenes[sceneID] = loaded;
+
+		// Every push builds a fresh scene, so the one it replaces is freed rather
+		// than leaked. It is no longer current, and this runs from
+		// SceneManager_update before any scene update, so nothing is iterating it.
+		if (previous != nullptr && previous != loaded) { Scene_delete(previous); }
 	}
 
 	void SceneManager_init(SceneManager* manager) {

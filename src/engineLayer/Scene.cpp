@@ -28,6 +28,32 @@ namespace SceneManagement {
 		return scene;
 	}
 
+	void Scene_delete(Scene* scene) {
+		if (scene == nullptr) { return; }
+
+		scene->ReleaseMiniGame();
+
+		// ~GameObject() never frees GPU resources, so each generated fallback model
+		// is released first, as GameMap::Destroy* does. Destroy* itself is not used:
+		// DestroyInteractable edits currentScene's player, and by the time a scene is
+		// freed currentScene is the scene that replaced it.
+		scene->gameMap.ForEachGameObject([](GameObject& object) { object.releaseGeneratedModel(); });
+		scene->gameMap.ForEachEntity([](Entity& entity) { entity.releaseGeneratedModel(); });
+		scene->gameMap.ForEachInteractable([](InteractableObject& interactable) { interactable.releaseGeneratedModel(); });
+
+		if (scene->player) {
+			// The artifact is created on first use (InteractableObject.cpp) and owned by the player.
+			if (scene->player->artifact) {
+				scene->player->artifact->releaseGeneratedModel();
+				delete scene->player->artifact;
+			}
+			scene->player->releaseGeneratedModel();
+			delete scene->player;
+		}
+
+		delete scene;
+	}
+
 
 
 	// Renumbers every object sequentially from the first assignable id.

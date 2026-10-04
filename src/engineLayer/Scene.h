@@ -134,6 +134,12 @@ namespace SceneManagement {
 	Scene* Scene_new();
 
 	/**
+	 * Free a Scene built by Scene_new, with everything it owns
+	 * @param scene The Scene to free; must no longer be the current Scene
+	 */
+	void Scene_delete(Scene* scene);
+
+	/**
 	 * Update the current Scene active
 	 * @param scene The Scene to update
 	 * @param delta The current deltaTime
