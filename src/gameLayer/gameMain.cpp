@@ -4,6 +4,16 @@
 
 constexpr float maxDeltaTime = 1.0f / 30.0f; // 30 FPS
 
+// Set by request_exit(). update_game() reports it at the end of the frame, so
+// the main loop in ProjectVeil.cpp ends normally and close_game() runs once, in
+// its usual place, instead of mid-frame from inside a button handler.
+static bool exitRequested = false;
+
+void request_exit()
+{
+	exitRequested = true;
+}
+
 bool init_game()
 {
 	Settings::Settings::getInstance().Init();
@@ -58,7 +68,7 @@ bool update_game()
 	SceneManagement::SceneManager_draw(&SceneManagement::SceneManager::getInstance());
 	
 	DrawFPS(10, 10);
-	return true;
+	return !exitRequested;
 }
 
 void close_game()

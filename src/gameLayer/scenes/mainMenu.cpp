@@ -34,7 +34,7 @@ void Scene_MainMenuDraw2D()
 		if (addButton("Exit", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
 		{
 			std::cout << "Exit Button Clicked\n";
-			close_game();
+			request_exit();
 		}
 	}
 
