@@ -34,7 +34,7 @@ bool init_game()
 	SceneManagement::SceneManager::getInstance().camera2D.target = Vector2{ 0, 0 };
 
 	// Go To Main Menu
-	SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), SCENE_MAIN_MENU);
+	//SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), SCENE_MAIN_MENU);
 	
 	return true;
 }

@@ -2,6 +2,7 @@
 
 #include <SaveSystem.h>
 #include <UIEngine.h>
+#include <gameMain.h>
 
 void Scene_MainMenuUpdate(float deltaTime)
 {
@@ -24,6 +25,16 @@ void Scene_MainMenuDraw2D()
 		{
 			std::cout << "Play Button Clicked\n";
 			SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), 1);
+		}
+		if (addButton("Settings", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
+		{
+			std::cout << "Settings Button Clicked\n";
+			// Enable Settings Menu
+		}
+		if (addButton("Exit", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
+		{
+			std::cout << "Exit Button Clicked\n";
+			close_game();
 		}
 	}
 

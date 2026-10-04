@@ -6,29 +6,33 @@
 namespace SceneManagement {
 	void SceneManager::SetCamera(Camera3D* camera) { camera3D = *camera; }
 
+	static void ConstructScene(SceneManager* manager, unsigned int sceneIndex) {
+		switch (sceneIndex) {
+			case 0: manager->scenes[0] = Scene_MainMenuConstruct();
+			case 1: manager->scenes[1] = Scene_TutorialConstruct();
+		}
+	}
+
 	void SceneManager_init(SceneManager* manager) {
 		manager->currentScene = nullptr;
 		manager->nextScene = nullptr;
 
+		/*
 		// ... Initialize other scenes as needed
 		manager->scenes[0] = Scene_MainMenuConstruct();
 		manager->scenes[1] = Scene_TutorialConstruct();
+		*/
+		for (int i = SCENE_COUNT - 1; i >= 0; i--) {
+			ConstructScene(manager, i);
+		}
 
-		// Scene_new() (called by both constructors above) sets currentScene as a
-		// side effect, so after constructing every scene it points at whichever
-		// one was built last (the Tutorial scene) rather than staying null. Reset
-		// it here so the invariant the comment below relies on actually holds
-		// regardless of how many scenes get constructed.
+		// Resets to not load last constructed Scene
 		manager->currentScene = nullptr;
 
 		manager->transition = Transition_new();
 
-		// Not pushed here: gameMain.cpp's init_game() does the initial
-		// SceneManager_push once its own setup (camera, etc.) is done. Pushing here
-		// too used to set currentScene immediately (transitioning IN from a null
-		// scene), so that second push then saw a non-null currentScene and started
-		// a spurious OUT transition — a fade-to-black-and-back playing over the
-		// main menu right after launch for no reason.
+		SceneManager_push(manager, SCENE_MAIN_MENU);
+
 	}
 
 	void SceneManager_update(SceneManager* manager, float delta) {
@@ -89,7 +93,10 @@ namespace SceneManagement {
 
 	void SceneManager_push(SceneManager* manager, int sceneID) {
 		if (sceneID >= 0 && sceneID < SCENE_COUNT) {
+			ConstructScene(manager, sceneID);
+
 			manager->nextScene = manager->scenes[sceneID];
+			
 			SceneManager_transition(manager, manager->currentScene ? OUT : IN);
 		}
 	}
