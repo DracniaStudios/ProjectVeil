@@ -3,6 +3,7 @@
 #define UI_H
 
 #include <raylib.h>
+#include <algorithm>
 #include <string>
 #include <vector>
 
