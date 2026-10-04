@@ -144,7 +144,8 @@ FMOD_STUDIO_LIB="$(find "thirdparty/fmod-2.3.14/studio/lib/$FMOD_ARCH_DIR" -name
 ENGINE_STATUS=0
 for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
              "TaskStationTests:task_station_tests" "GameMapTests:game_map_tests" \
-             "StalkerContactDamageTests:stalker_contact_damage_tests"; do
+             "StalkerContactDamageTests:stalker_contact_damage_tests" \
+             "SceneTransitionTests:scene_transition_tests"; do
 	SRC="tests/${suite%%:*}.cpp"
 	TEST_BIN="$OUT_DIR/${suite##*:}"
 
