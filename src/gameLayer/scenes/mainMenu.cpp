@@ -19,19 +19,19 @@ void Scene_MainMenuDraw2D()
 
 	// Draw Main Menu
 	{
-		drawTextScaled("Main Menu", Rectangle{ 0.4f, 0.1f, 0.1f, 0.1f});;
+		UI::UIEngine::getInstance().drawText("Main Menu", Rectangle{ 0, 0.0f, 100.0f, 50.0f }, Rectangle{0.4f, 0.1f, 0.6f, 0.2f});;
 
-		if (addButton("Play", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
+		if (UI::UIEngine::getInstance().drawButton("Play", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.1f, 0.2f, 0.2f }))
 		{
 			std::cout << "Play Button Clicked\n";
 			SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), 1);
 		}
-		if (addButton("Settings", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
+		if (UI::UIEngine::getInstance().drawButton("Settings", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.1f, 0.2f, 0.2f }))
 		{
 			std::cout << "Settings Button Clicked\n";
 			// Enable Settings Menu
 		}
-		if (addButton("Exit", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
+		if (UI::UIEngine::getInstance().drawButton("Exit", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.1f, 0.2f, 0.2f }))
 		{
 			std::cout << "Exit Button Clicked\n";
 			request_exit();
