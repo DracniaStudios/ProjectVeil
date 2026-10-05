@@ -37,7 +37,9 @@ Scene* Scene_TutorialConstruct()
 	scene->player->setSpawnPoint(Vector3(20, 2, 0));
 	scene->player->rigidBody3D.Teleport(Vector3(20, 2, 0));
 
-	SaveSystem::LoadWorld("chunk_1", *scene);
+	if (!SaveSystem::LoadWorld("chunk_1", *scene)) {
+		std::cerr << "[Tutorial] Failed to load world \"chunk_1\"\n";
+	}
 
 	return scene;
 }
