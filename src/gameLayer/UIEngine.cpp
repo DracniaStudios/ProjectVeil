@@ -1,5 +1,8 @@
 #include "UIEngine.h"
 
+#include <Settings.h>
+
+#pragma region UIEngine Helper Functions
 // Position
 Rectangle placeRectangleTopRightCorner(Rectangle r, float w)
 {
@@ -114,9 +117,27 @@ Rectangle enlargeRectanglePercentage(Rectangle r, float percentageX, float perce
 	
 	return r;
 }
+#pragma endregion
+
+
+#pragma region Settings Menu
+void drawSettings() {
+
+	Settings::Settings* settings = &Settings::Settings::getInstance();
+
+	drawPanel("Settings", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.9f, 0.9f, 0.1f, 0.1f }, UIEngine::getInstance());
+
+	if (drawButton("VSync", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance())) {
+		// Handle Audio Settings
+
+		settings->vsync.value = !settings->vsync.value;
+
+	}
+};
+#pragma endregion
 
 // UIEngine Implementation
-
+#pragma region UIEngine Implementation
 void UIEngine::update()
 {
 	widgets.clear();
@@ -129,8 +150,11 @@ void UIEngine::render()
 	// draw2D, which also records them in `widgets`. Replaying that list here
 	// would call addButton/addTitle again while iterating the vector they
 	// push_back into (iterator invalidation) and draw every widget twice.
-}
 
+	if (isSettingsEnabled) { drawSettings(); }
+
+}
+#pragma endregion
 
 // UIEngine Helper Functions
 
@@ -164,7 +188,7 @@ void drawTextScaled(std::string text, Rectangle scaleRect, float yOffset)
 	drawTextPixels(text, pixelSize, yOffset);
 }
 
-bool addButton(std::string text, Rectangle pixelRect,Rectangle scaleRect, UIEngine &ui)
+bool drawButton(std::string text, Rectangle pixelRect, Rectangle scaleRect, UIEngine& ui)
 {
 	UIEngine::Widget widget;
 	widget.type = UIEngine::BUTTON;
@@ -184,13 +208,13 @@ bool addButton(std::string text, Rectangle pixelRect,Rectangle scaleRect, UIEngi
 
 	//sourceRect.width = std::min(sourceRect.width, sourceRect.height * 8.f);
 	//sourceRect.height = std::min(sourceRect.height, sourceRect.width / 8.f);
-	
+
 	widget.anchorRect = scaleRect;
 	widget.pixelRect = pixelRect;
 
 	ui.widgets.push_back(widget);
 
-	
+
 	// Shrink the rectangle slightly to avoid drawing over the edges of the button
 	Rectangle smallerRect = shrinkRectanglePercentage(sourceRect, 0.01f, 0.01f);
 	smallerRect.y += smallerRect.height * widget.id;
@@ -244,7 +268,7 @@ bool addButton(std::string text, Rectangle pixelRect,Rectangle scaleRect, UIEngi
 	return isReleased;
 }
 
-void addTitle(std::string text, UIEngine &ui)
+void drawTitle(std::string text, UIEngine& ui)
 {
 	UIEngine::Widget widget;
 	widget.type = UIEngine::TITLE;
@@ -268,4 +292,29 @@ void addTitle(std::string text, UIEngine &ui)
 	Rectangle smallerRect = shrinkRectanglePercentage(oneButtonRectangle, 0.01f, 0.01f);
 	smallerRect.y += smallerRect.height * widget.id;
 	drawTextPixels(text, smallerRect, 0);
-}
+};
+
+void drawPanel(std::string text, Rectangle pixelRect, Rectangle scaleRect, UIEngine& ui)
+{
+	UIEngine::Widget widget;
+	widget.type = UIEngine::PANEL;
+	widget.text = text;
+	widget.id = ui.getID();
+	ui.widgets.push_back(widget);
+
+	// Get Base Rectangle
+	float w = GetScreenSize().x;
+	float h = GetScreenSize().y;
+	Rectangle sourceRect = {
+		(w * scaleRect.x) + pixelRect.x,
+		(h * scaleRect.y) + pixelRect.y,
+		(w * scaleRect.width) + pixelRect.width,
+		(h * scaleRect.height) + pixelRect.height
+	};
+	// Shrink the rectangle slightly to avoid drawing over the edges of the button
+	Rectangle smallerRect = shrinkRectanglePercentage(sourceRect, 0.01f, 0.01f);
+	smallerRect.y += smallerRect.height * widget.id;
+	Color panelColor = { 50, 50, 50, 200 };
+	DrawRectangle(smallerRect.x, smallerRect.y, smallerRect.width, smallerRect.height, panelColor);
+	drawTextPixels(text, smallerRect, 0);
+};

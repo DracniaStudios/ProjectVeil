@@ -549,9 +549,9 @@ namespace SceneManagement {
 
 				PlayerUI::getInstance().render();
 
+				UIEngine::getInstance().render();
 			}
 
-			UIEngine::getInstance().render();
 
 		}
 	}

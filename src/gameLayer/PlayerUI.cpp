@@ -11,7 +11,7 @@ void PlayerUI::render() {
 
 	// Render the UI elements on the screen
 
-	if (addButton("Return", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.0f, 0.0f, 0.05f, 0.05f }, UIEngine::getInstance())) {
+	if (drawButton("Return", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.0f, 0.0f, 0.05f, 0.05f }, UIEngine::getInstance())) {
 		SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), 0);
 	}
 

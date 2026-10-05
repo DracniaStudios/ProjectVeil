@@ -21,17 +21,19 @@ void Scene_MainMenuDraw2D()
 	{
 		drawTextScaled("Main Menu", Rectangle{ 0.4f, 0.1f, 0.1f, 0.1f});;
 
-		if (addButton("Play", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
+		if (drawButton("Play", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
 		{
 			std::cout << "Play Button Clicked\n";
 			SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), 1);
 		}
-		if (addButton("Settings", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
+		if (drawButton("Settings", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
 		{
 			std::cout << "Settings Button Clicked\n";
 			// Enable Settings Menu
+			scene->is2DActive = !scene->is2DActive;
+			UIEngine::getInstance().isSettingsEnabled = !UIEngine::getInstance().isSettingsEnabled;
 		}
-		if (addButton("Exit", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
+		if (drawButton("Exit", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
 		{
 			std::cout << "Exit Button Clicked\n";
 			request_exit();

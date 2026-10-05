@@ -53,6 +53,7 @@ public:
 		NONE,
 		TITLE,
 		BUTTON,
+		PANEL,
 	};
 
 	struct Widget
@@ -87,6 +88,10 @@ public:
 		std::string text = {};
 	};
 
+	struct Panel : Widget {
+		std::string text = {};
+	};
+
 	/** Get Widget Info **/
 	std::vector<Widget> widgets;
 	int widgetId = 0;
@@ -96,6 +101,8 @@ public:
 	void update();
 	void render();
 
+	/** Menus **/
+	bool isSettingsEnabled = false;
 private:
 	UIEngine() = default;
 };
@@ -105,7 +112,8 @@ void drawTextScaled(std::string text, Rectangle scaleRect, float yOffset = 0);
 static void drawTextPixels(const std::string& text, Rectangle pixelRect, float yOffset = 0);
 
 
-bool addButton(std::string text, Rectangle pixelRect, Rectangle scaleRect, UIEngine &ui);
-void addTitle(std::string text, UIEngine &ui);
+bool drawButton(std::string text, Rectangle pixelRect, Rectangle scaleRect, UIEngine &ui);
+void drawTitle(std::string text, UIEngine &ui);
+void drawPanel(std::string text, Rectangle pixelRect, Rectangle scaleRect, UIEngine& ui);
 
 #endif
