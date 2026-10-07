@@ -8,7 +8,7 @@ Rectangle placeRectangleTopRightCorner(Rectangle r, float w)
 	return r;
 }
 
-Rectangle placeRectangleTopLeftCorner(Rectangle r, float w)
+Rectangle placeRectangleTopLeftCorner(Rectangle r, float /*w*/)
 {
 	r.x = 0;
 	r.y = 0;
@@ -22,7 +22,7 @@ Rectangle placeRectangleBottomRightCorner(Rectangle r, float w, float h)
 	return r;
 }
 
-Rectangle placeRectangleBottomLeftCorner(Rectangle r, float w, float h)
+Rectangle placeRectangleBottomLeftCorner(Rectangle r, float /*w*/, float h)
 {
 	r.x = 0;
 	r.y = h - r.height;
