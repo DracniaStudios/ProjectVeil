@@ -24,10 +24,11 @@ void SceneManager_init(SceneManager* manager) {
 	manager->currentScene = nullptr;
 
 	manager->transition = Transition_new();
-	if (manager->transition == nullptr) {
+	if (manager->transition == nullptr)
+	{
 		// Transition_new() returns NULL on allocation failure; update/draw
-		// dereference the transition unconditionally every frame.
-		std::cerr << "[SceneManager] Failed to allocate Transition\n";
+		// dereference the transition every frame, so there is no way to continue.
+		std::cerr << "[SceneManager] Failed to allocate transition.\n";
 		std::abort();
 	}
 

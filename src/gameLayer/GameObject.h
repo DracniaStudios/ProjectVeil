@@ -27,7 +27,7 @@ enum ObjectType
 struct GameObject 
 {
 	GameObject();
-	~GameObject() = default;
+	virtual ~GameObject() = default;
 
 	/// Data
 	std::string name = "GameObject";
