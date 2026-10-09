@@ -24,16 +24,15 @@
 
 [ Issues ]
 
-** Additional Changed Made In Pull Request **
 
 [ Added ]
 
-- Added new Settings Menu to the Main Menu
-- Added new Panel Widget to the UIEngine
 
 [ Updated ]
 
-- Updated UIEngine to use "draw" instead of "add" for UI Elements
+- Updated Ui Engine to use new functions
+	that takes in a scaleRect and pixelRect to draw text to the screen.
+	This allows for more flexibility in positioning and scaling text on the screen.
 
 
 [ Fixed ]

@@ -10,6 +10,8 @@ void Scene_MainMenuUpdate(float deltaTime)
 	auto scene = manager->currentScene;
 	auto player = scene->player;
 
+
+
 }
 
 void Scene_MainMenuDraw2D()
@@ -19,21 +21,21 @@ void Scene_MainMenuDraw2D()
 
 	// Draw Main Menu
 	{
-		drawTextScaled("Main Menu", Rectangle{ 0.4f, 0.1f, 0.1f, 0.1f});;
+		UI::drawText("Main Menu", Rectangle{ 0, 0, 100, 50 }, Rectangle{});;
 
-		if (drawButton("Play", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
+		if (UI::drawButton("Play", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UI::UIEngine::getInstance()))
 		{
 			std::cout << "Play Button Clicked\n";
 			SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), 1);
 		}
-		if (drawButton("Settings", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
+		if (UI::drawButton("Settings", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UI::UIEngine::getInstance()))
 		{
 			std::cout << "Settings Button Clicked\n";
 			// Enable Settings Menu
 			scene->is2DActive = !scene->is2DActive;
-			UIEngine::getInstance().isSettingsEnabled = !UIEngine::getInstance().isSettingsEnabled;
+			UI::UIEngine::getInstance().isSettingsEnabled = !UI::UIEngine::getInstance().isSettingsEnabled;
 		}
-		if (drawButton("Exit", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UIEngine::getInstance()))
+		if (UI::drawButton("Exit", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UI::UIEngine::getInstance()))
 		{
 			std::cout << "Exit Button Clicked\n";
 			request_exit();
@@ -66,6 +68,9 @@ SceneManagement::Scene* Scene_MainMenuConstruct()
 	scene->player->rigidBody3D.Teleport(Vector3(0, 2, 0));
 
 	SaveSystem::LoadWorld("mainMenu", *scene);
+
+
+	AudioManager::AudioManager::getInstance().Play("Emotion_2", AudioManager::AUDIO_MUSIC);
 
 	return scene;
 }

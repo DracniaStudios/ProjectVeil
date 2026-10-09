@@ -8,50 +8,34 @@
 
 // 115
 
-Rectangle placeRectangleTopRightCorner(Rectangle r, float w);
+namespace UI {
 
-Rectangle placeRectangleTopLeftCorner(Rectangle r, float w);
+	Rectangle placeRectangleTopRightCorner(Rectangle r, float w);
 
-Rectangle placeRectangleBottomRightCorner(Rectangle r, float w, float h);
+	Rectangle placeRectangleTopLeftCorner(Rectangle r, float w);
 
-Rectangle placeRectangleBottomLeftCorner(Rectangle r, float w, float h);
+	Rectangle placeRectangleBottomRightCorner(Rectangle r, float w, float h);
 
-Rectangle placeRectangleCenter(Rectangle r, float w, float h);
+	Rectangle placeRectangleBottomLeftCorner(Rectangle r, float w, float h);
 
-Rectangle placeRectangleCenterTop(Rectangle r, float w);
+	Rectangle placeRectangleCenter(Rectangle r, float w, float h);
 
-Rectangle placeRectangleCenterBottom(Rectangle r, float w, float h);
+	Rectangle placeRectangleCenterTop(Rectangle r, float w);
 
-Rectangle placeRectangleCenterLeft(Rectangle r, float h);
+	Rectangle placeRectangleCenterBottom(Rectangle r, float w, float h);
 
-Rectangle placeRectangleCenterRight(Rectangle r, float w, float h);
+	Rectangle placeRectangleCenterLeft(Rectangle r, float h);
 
-Rectangle enlargeRectanglePixels(Rectangle r, float pixelX, float pixelY);
+	Rectangle placeRectangleCenterRight(Rectangle r, float w, float h);
 
-Rectangle shrinkRectanglePercentage(Rectangle r, float percentageX, float percentageY);
+	Rectangle enlargeRectanglePixels(Rectangle r, float pixelX, float pixelY);
 
-// Scale All My Percentage
-class UIEngine
-{
-public:
+	Rectangle shrinkRectanglePercentage(Rectangle r, float percentageX, float percentageY);
 
-	// Delete, copy, and move functions to prevent duplication
-	UIEngine(const UIEngine&) = delete;
-	UIEngine& operator=(const UIEngine&) = delete;
-	UIEngine(UIEngine&&) = delete;
-	UIEngine& operator=(UIEngine&&) = delete;
-
-	// Global Access point to the UIEngine instance
-	static UIEngine& getInstance() {
-		static UIEngine instance; // Guaranteed to be destroyed and instantiated on first use
-		return instance;
-	}
-
-
-	enum Type
+	enum WidgetType
 	{
 		NONE,
-		TITLE,
+		TEXT,
 		BUTTON,
 		PANEL,
 	};
@@ -59,11 +43,11 @@ public:
 	struct Widget
 	{
 		// Widget Info
-		std::string text = {};
 		int type = 0;
 		int id = 0;
-		
+
 		// State
+		bool isVisible = true;
 		bool isHovered = false;
 		bool isBeingClicked = false;
 		bool isReleased = false;
@@ -73,9 +57,7 @@ public:
 		Rectangle pixelRect = {};
 
 		// Style
-		Color color1 = { 255, 255, 255, 255 };
-		Color color2 = { 100, 100, 100, 255 };
-		Color color3 = { 10, 10, 10, 255 };
+		Color defaultColor = { 255, 255, 255, 255 };
 	};
 
 	struct Text : Widget
@@ -86,34 +68,62 @@ public:
 
 	struct Button : Widget {
 		std::string text = {};
+		int textSize = 20;
+		Color clickColor = { 100, 100, 100, 255 };
+		Color highlightedColor = { 10, 10, 10, 255 };
 	};
 
 	struct Panel : Widget {
-		std::string text = {};
+		
 	};
 
-	/** Get Widget Info **/
-	std::vector<Widget> widgets;
-	int widgetId = 0;
-	int getID(){return widgetId++;}
+	// Scale All My Percentage
+	class UIEngine
+	{
+	public:
 
-	/** Update and Render */
-	void update();
-	void render();
+		// Delete, copy, and move functions to prevent duplication
+		UIEngine(const UIEngine&) = delete;
+		UIEngine& operator=(const UIEngine&) = delete;
+		UIEngine(UIEngine&&) = delete;
+		UIEngine& operator=(UIEngine&&) = delete;
 
-	/** Menus **/
-	bool isSettingsEnabled = false;
-private:
-	UIEngine() = default;
-};
+		// Global Access point to the UIEngine instance
+		static UIEngine& getInstance() {
+			static UIEngine instance; // Guaranteed to be destroyed and instantiated on first use
+			return instance;
+		}
+
+
+		
+
+		/** Get Widget Info **/
+		std::vector<Widget> widgets;
+		int widgetId = 0;
+		int getID() { return widgetId++; }
+
+		/** Update and Render */
+		void update();
+		void render();
+
+		/** Menus **/
+		bool isSettingsEnabled = false;
+	private:
+		UIEngine() = default;
+	};
+
+	// Creates a UI Button
+	bool drawButton(const std::string& text, Rectangle pixelRect, Rectangle scaleRect = {0, 0, 1, 1});
+	
+	// Creates Text for UI Elements
+	static void drawText(const std::string& text, Rectangle pixelRect, Rectangle scaleRect = {0, 0, 1, 1}, float yOffset = 0);
+	
+	// Creates a UI Title
+	static void drawTitle(const std::string& text, Rectangle pixelRect, Rectangle scaleRect = {0, 0, 1, 1}, float yOffset = 0);
+	
+	// Creates a UI Panel
+	static void drawPanel(const std::string& text, Rectangle pixelRect, Rectangle scaleRect = {0, 0, 1, 1});
+}
 
 inline Vector2 GetScreenSize() { return Vector2(GetScreenWidth(), GetScreenHeight()); }
-void drawTextScaled(std::string text, Rectangle scaleRect, float yOffset = 0);
-static void drawTextPixels(const std::string& text, Rectangle pixelRect, float yOffset = 0);
-
-
-bool drawButton(std::string text, Rectangle pixelRect, Rectangle scaleRect, UIEngine &ui);
-void drawTitle(std::string text, UIEngine &ui);
-void drawPanel(std::string text, Rectangle pixelRect, Rectangle scaleRect, UIEngine& ui);
-
 #endif
