@@ -52,7 +52,9 @@ Scene* Scene_MainMenuConstruct()
 	scene->player->setSpawnPoint(Vector3(0, 2, 0));
 	scene->player->rigidBody3D.Teleport(Vector3(0, 2, 0));
 
-	SaveSystem::LoadWorld("mainMenu", *scene);
+	if (!SaveSystem::LoadWorld("mainMenu", *scene)) {
+		std::cerr << "[MainMenu] Failed to load world \"mainMenu\"\n";
+	}
 
 	return scene;
 }

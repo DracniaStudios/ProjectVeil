@@ -1,5 +1,8 @@
 #include "SceneManager.h"
 
+#include <cstdlib>
+#include <iostream>
+
 #include <LightingSystem.h>
 #include <WorldEditor.h>
 
@@ -21,6 +24,12 @@ void SceneManager_init(SceneManager* manager) {
 	manager->currentScene = nullptr;
 
 	manager->transition = Transition_new();
+	if (manager->transition == nullptr) {
+		// Transition_new() returns NULL on allocation failure; update/draw
+		// dereference the transition unconditionally every frame.
+		std::cerr << "[SceneManager] Failed to allocate Transition\n";
+		std::abort();
+	}
 
 	// Not pushed here: gameMain.cpp's init_game() does the initial
 	// SceneManager_push once its own setup (camera, etc.) is done. Pushing here
