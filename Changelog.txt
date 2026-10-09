@@ -27,14 +27,27 @@
 
 [ Added ]
 
+- Added beginPanel/endPanel to the UIEngine. drawButton(text) and drawText(text)
+	stack top to bottom inside the open panel, so a new menu button is one line.
+- Added a shared UI Style (colours, padding, row height) on the UIEngine
+- Added the UI Inspector (World Editor > UI Data): every widget drawn last frame,
+	its rects, state and colours, with an in-game outline on hover and an editable Style.
 
 [ Updated ]
 
 - Updated Ui Engine to use new functions
 	that takes in a scaleRect and pixelRect to draw text to the screen.
 	This allows for more flexibility in positioning and scaling text on the screen.
-
+- Updated every widget to place itself the same way: scaleRect is a fraction of its parent,
+	pixelRect is in 1920x1080 reference pixels multiplied by the UI scale.
+- Updated the widget list to clear at the start of the 2D draw instead of during update
 
 [ Fixed ]
 
+- Fixed Button and Text losing their text and colours when stored (object slicing)
+- Fixed buttons being offset by their widget id, which pushed every later widget down the screen
+- Fixed clicks landing on a button underneath a panel, or behind an open editor window
+
 [ Removed ]
+
+- Removed drawTitle and drawPanel (use drawText and beginPanel/endPanel)

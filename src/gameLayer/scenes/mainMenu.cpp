@@ -20,27 +20,30 @@ void Scene_MainMenuDraw2D()
 	auto scene = manager->currentScene;
 
 	// Draw Main Menu
+	// Each row stacks under the last inside the panel, so a new button is one more call here.
+	UI::beginPanel("Main Menu", Rectangle{}, Rectangle{ 0.4f, 0.3f, 0.2f, 0.28f });
 	{
-		UI::drawText("Main Menu", Rectangle{ 0, 0, 100, 50 }, Rectangle{});;
+		UI::drawText("Main Menu");
 
-		if (UI::drawButton("Play", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UI::UIEngine::getInstance()))
+		if (UI::drawButton("Play"))
 		{
 			std::cout << "Play Button Clicked\n";
 			SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), 1);
 		}
-		if (UI::drawButton("Settings", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UI::UIEngine::getInstance()))
+		if (UI::drawButton("Settings"))
 		{
 			std::cout << "Settings Button Clicked\n";
 			// Enable Settings Menu
 			scene->is2DActive = !scene->is2DActive;
 			UI::UIEngine::getInstance().isSettingsEnabled = !UI::UIEngine::getInstance().isSettingsEnabled;
 		}
-		if (UI::drawButton("Exit", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.3f, 0.2f, 0.1f }, UI::UIEngine::getInstance()))
+		if (UI::drawButton("Exit"))
 		{
 			std::cout << "Exit Button Clicked\n";
 			request_exit();
 		}
 	}
+	UI::endPanel();
 
 };
 

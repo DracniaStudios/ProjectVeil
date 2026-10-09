@@ -520,7 +520,6 @@ namespace SceneManagement {
 		}
 
 		PlayerUI::getInstance().update();
-		UI::UIEngine::getInstance().update();
 
 		// World Editor (includes the developer tool windows)
 		Editor::WorldEditor::getInstance().update(scene->player);
@@ -530,6 +529,12 @@ namespace SceneManagement {
 		auto manager = &SceneManager::getInstance();
 
 		if (auto scene = manager->currentScene) {
+			// Brackets every widget drawn this frame. The list is cleared here rather
+			// than during update so the UI Inspector, which runs in update, sees the
+			// whole of last frame's UI instead of an empty list.
+			auto& ui = UI::UIEngine::getInstance();
+			ui.beginFrame();
+
 			if (scene->draw2D) { scene->draw2D(); }
 
 			if (scene->is2DActive)
@@ -549,10 +554,10 @@ namespace SceneManagement {
 
 				PlayerUI::getInstance().render();
 
-				UI::UIEngine::getInstance().render();
+				ui.render();
 			}
 
-
+			ui.endFrame();
 		}
 	}
 
