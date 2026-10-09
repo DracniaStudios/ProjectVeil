@@ -1,5 +1,8 @@
 #include "SceneManager.h"
 
+#include <cstdlib>
+#include <iostream>
+
 #include <LightingSystem.h>
 #include <WorldEditor.h>
 
