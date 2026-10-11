@@ -97,15 +97,14 @@ void SceneManager_draw(SceneManager* manager) {
 }
 
 void SceneManager_push(SceneManager* manager, int sceneID) {
-	std::cout << "Loading Scene: " << sceneID << "\n";
 	if (sceneID >= 0 && sceneID < SCENE_COUNT) {
+		std::cout << "Loading Scene: " << sceneID << "\n";
 		manager->nextScene = manager->scenes[sceneID];
 		SceneManager_transition(manager, manager->currentScene ? OUT : IN);
 	}
 }
 
 void SceneManager_transition(SceneManager* manager, TransitionDirection direction) {
-	
 	if (direction == IN) {
 		manager->currentScene = manager->nextScene;
 		manager->nextScene = nullptr;
