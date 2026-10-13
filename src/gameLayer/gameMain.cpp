@@ -4,37 +4,47 @@
 
 constexpr float maxDeltaTime = 1.0f / 30.0f; // 30 FPS
 
+// Set by request_exit(). update_game() reports it at the end of the frame, so
+// the main loop in ProjectVeil.cpp ends normally and close_game() runs once, in
+// its usual place, instead of mid-frame from inside a button handler.
+static bool exitRequested = false;
+
+void request_exit()
+{
+	exitRequested = true;
+}
+
 bool init_game()
 {
-	Settings::getInstance().Init();
-	AudioManager::getInstance().loadAll();
+	Settings::Settings::getInstance().Init();
+	AudioManager::AudioManager::getInstance().loadAll();
 	InitAudioDevice();
 
-	AssetManager::getInstance().loadAll();
+	AssetManager::AssetManager::getInstance().loadAll();
 
 	// Lighting must come up AFTER AssetManager (so the shader can be written
 	// into every shared asset model) but BEFORE SceneManager_init, which
 	// constructs the Main Menu scene and loads its save file. Objects created
 	// while the system was still down would keep raylib's unlit shader and
 	// render half-lit with no error anywhere.
-	LightingSystem::getInstance().Init();
+	Lighting::LightingSystem::getInstance().Init();
 
-	SceneManager_init(&SceneManager::getInstance());
+	SceneManagement::SceneManager_init(&SceneManagement::SceneManager::getInstance());
 
 	// Camera
-	SceneManager::getInstance().camera3D.position = Vector3{ 0, 10, 10 };
-	SceneManager::getInstance().camera3D.target = Vector3{ 0, 0, 0 };
-	SceneManager::getInstance().camera3D.up = Vector3(0.0f, 1.0f, 0.0f);
-	SceneManager::getInstance().camera3D.fovy = 90;
-	SceneManager::getInstance().camera3D.projection = CAMERA_PERSPECTIVE;
+	SceneManagement::SceneManager::getInstance().camera3D.position = Vector3{ 0, 10, 10 };
+	SceneManagement::SceneManager::getInstance().camera3D.target = Vector3{ 0, 0, 0 };
+	SceneManagement::SceneManager::getInstance().camera3D.up = Vector3(0.0f, 1.0f, 0.0f);
+	SceneManagement::SceneManager::getInstance().camera3D.fovy = 90;
+	SceneManagement::SceneManager::getInstance().camera3D.projection = CAMERA_PERSPECTIVE;
 
-	SceneManager::getInstance().camera2D.zoom = 1.0f;// Scale Screen To World (1 pixel = 1 unit)
-	SceneManager::getInstance().camera2D.rotation = 0.0f;
-	SceneManager::getInstance().camera2D.offset = Vector2{ 0, 0 };
-	SceneManager::getInstance().camera2D.target = Vector2{ 0, 0 };
+	SceneManagement::SceneManager::getInstance().camera2D.zoom = 1.0f;// Scale Screen To World (1 pixel = 1 unit)
+	SceneManagement::SceneManager::getInstance().camera2D.rotation = 0.0f;
+	SceneManagement::SceneManager::getInstance().camera2D.offset = Vector2{ 0, 0 };
+	SceneManagement::SceneManager::getInstance().camera2D.target = Vector2{ 0, 0 };
 
 	// Go To Main Menu
-	SceneManager_push(&SceneManager::getInstance(), SCENE_MAIN_MENU);
+	//SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), SCENE_MAIN_MENU);
 	
 	return true;
 }
@@ -47,18 +57,18 @@ bool update_game()
 	// Nothing draws a sky, so the clear colour *is* the horizon. Clearing to the
 	// fog colour lets distant geometry dissolve into the background instead of
 	// fading toward a bright wall.
-	ClearBackground(LightingSystem::getInstance().fogColor);
+	ClearBackground(Lighting::LightingSystem::getInstance().fogColor);
 
 	// Update Input System
-	InputSystem::getInstance().Update();
+	InputSystem::InputSystem::getInstance().Update();
 
 	/// Update and Draw Scene
-	SceneManager_update(&SceneManager::getInstance(), deltaTime);
+	SceneManagement::SceneManager_update(&SceneManagement::SceneManager::getInstance(), deltaTime);
 
-	SceneManager_draw(&SceneManager::getInstance());
+	SceneManagement::SceneManager_draw(&SceneManagement::SceneManager::getInstance());
 	
 	DrawFPS(10, 10);
-	return true;
+	return !exitRequested;
 }
 
 void close_game()
@@ -70,7 +80,7 @@ void close_game()
 	auto now = std::chrono::system_clock::now();
 	std::string date_str = "backup/" + std::format("{:%Y-%m-%d}", now) + "_backup";
 
-	SaveSystem::SaveGame(date_str.c_str(), SceneManager::getInstance().currentScene);
+	SaveSystem::SaveGame(date_str.c_str(), SceneManagement::SceneManager::getInstance().currentScene);
 	
 	
 	f << "\n CLOSED\n";
@@ -79,5 +89,5 @@ void close_game()
 	// Materials only hold a copy of the Shader struct, so every model's shader
 	// id dangles once this runs — it has to be the last engine call. ProjectVeil.cpp
 	// invokes close_game() before CloseWindow(), while the GL context is alive.
-	LightingSystem::getInstance().Shutdown();
+	Lighting::LightingSystem::getInstance().Shutdown();
 }

@@ -98,7 +98,7 @@ bool RayOrientedBox(const Ray& ray, Vector3 center, Vector3 size, Quaternion rot
 	return ColliderRaycast(volume, ray, outDistance, outNormal);
 }
 
-PickResult PickSceneObject(Scene* scene, const Ray& ray, PickFilter filter, std::uint64_t ignoreId)
+PickResult PickSceneObject(SceneManagement::Scene* scene, const Ray& ray, PickFilter filter, std::uint64_t ignoreId)
 {
 	PickResult best = {};
 	if (scene == nullptr) { return best; }

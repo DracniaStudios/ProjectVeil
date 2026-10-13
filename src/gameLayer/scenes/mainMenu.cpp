@@ -2,36 +2,63 @@
 
 #include <SaveSystem.h>
 #include <UIEngine.h>
+#include <gameMain.h>
 
 void Scene_MainMenuUpdate(float /*deltaTime*/)
 {
+	auto manager = &SceneManagement::SceneManager::getInstance();
+	auto scene = manager->currentScene;
+	auto player = scene->player;
+
+
+
 }
 
 void Scene_MainMenuDraw2D()
 {
+	auto manager = &SceneManagement::SceneManager::getInstance();
+	auto scene = manager->currentScene;
 
 	// Draw Main Menu
+	// Each row stacks under the last inside the panel, so a new button is one more call here.
+	UI::beginPanel("Main Menu", Rectangle{}, Rectangle{ 0.4f, 0.3f, 0.2f, 0.28f });
 	{
-		drawText("Main Menu", Rectangle{ 0.4f, 0.1f, 0.1f, 0.1f});
+		UI::drawText("Main Menu");
 
-		if (addButton("Play", UIEngine::getInstance()))
+		if (UI::drawButton("Play"))
 		{
 			std::cout << "Play Button Clicked\n";
-			SceneManager_push(&SceneManager::getInstance(), 1);
+			SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), 1);
+		}
+		if (UI::drawButton("Settings"))
+		{
+			std::cout << "Settings Button Clicked\n";
+			// Enable Settings Menu
+			scene->is2DActive = !scene->is2DActive;
+			UI::UIEngine::getInstance().isSettingsEnabled = !UI::UIEngine::getInstance().isSettingsEnabled;
+		}
+		if (UI::drawButton("Exit"))
+		{
+			std::cout << "Exit Button Clicked\n";
+			request_exit();
 		}
 	}
+	UI::endPanel();
 
 };
 
 void Scene_MainMenuDraw3D()
 {
+	auto manager = &SceneManagement::SceneManager::getInstance();
+	auto scene = manager->currentScene;
+
 	// Weird Interaction Between Rendering Ray and layer Objects
 
 }
 
-Scene* Scene_MainMenuConstruct()
+SceneManagement::Scene* Scene_MainMenuConstruct()
 {
-	Scene* scene = Scene_new();
+	SceneManagement::Scene* scene = SceneManagement::Scene_new();
 
 	// Load Main Menu World
 	scene->name = "Main Menu";
@@ -47,6 +74,9 @@ Scene* Scene_MainMenuConstruct()
 	{
 		std::cerr << "[MainMenu] Failed to load the mainMenu world.\n";
 	}
+
+
+	AudioManager::AudioManager::getInstance().Play("Emotion_2", AudioManager::AUDIO_MUSIC);
 
 	return scene;
 }

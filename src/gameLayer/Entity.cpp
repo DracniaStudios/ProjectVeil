@@ -74,7 +74,7 @@ void Entity::render3D()
 	GameObject::render3D();
 }
 
-void Entity::update(Scene* scene, float deltaTime)
+void Entity::update(SceneManagement::Scene* scene, float deltaTime)
 {
 	GameObject::update(scene, deltaTime);
 
@@ -145,7 +145,7 @@ void Entity::Attack()
 
 	// onEnable() (run inside SpawnGameObject()) resets deathSpan, so Decay() must
 	// be applied to the saved copy afterward for the 3-second lifetime to stick.
-	GameObject* saved = SceneManager::getInstance().currentScene->gameMap.SpawnGameObject(projectile);
+	GameObject* saved = SceneManagement::SceneManager::getInstance().currentScene->gameMap.SpawnGameObject(projectile);
 	saved->Decay(3);
 }
 

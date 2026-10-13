@@ -8,7 +8,7 @@
 #include <cstdint>
 
 struct GameObject;
-struct Scene;
+namespace SceneManagement { struct Scene; }
 
 /**
  * What a pick query is allowed to hit.
@@ -52,7 +52,7 @@ Ray GetEditorMouseRay(const Camera3D& camera);
  * (gameObjects, entities, interactables). `ignoreId` skips one object, which
  * placement uses so a ghost preview cannot land on itself.
  */
-PickResult PickSceneObject(Scene* scene, const Ray& ray, PickFilter filter, std::uint64_t ignoreId = 0);
+PickResult PickSceneObject(SceneManagement::Scene* scene, const Ray& ray, PickFilter filter, std::uint64_t ignoreId = 0);
 
 /**
  * Ray against an oriented box. GameObject::render3D bakes scale and rotation

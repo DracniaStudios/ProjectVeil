@@ -265,7 +265,7 @@ void Stalker::render3D()
 	if (hasLastKnown) { DrawSphereWires(lastKnownPosition, 0.6f, 6, 6, MAROON); }
 }
 
-void Stalker::update(Scene* scene, float deltaTime)
+void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 {
 	// Entity::update owns the stamina economy and recomputes currentSpeed from
 	// baseSpeed plus the sprint/crouch flags, so gait changes below take effect

@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+namespace Editor {
+
 namespace
 {
 	// Look angles are clamped just short of straight up/down. At exactly +/-pi/2
@@ -61,18 +63,18 @@ namespace
 
 	void UpdateMovement(EditorCamera* editor)
 	{
-		auto inputSystem = &InputSystem::getInstance();
+		auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 		float speed = kBaseSpeed * 0.1f * FrameStep();
-		if (inputSystem->IsActionDown(ACTION_MOVE_SPRINT)) { speed *= kSprintMultiplier; }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_SPRINT)) { speed *= kSprintMultiplier; }
 
-		if (inputSystem->IsActionDown(ACTION_EDITOR_UP)) { editor->position.y += speed; }
-		if (inputSystem->IsActionDown(ACTION_EDITOR_DOWN)) { editor->position.y -= speed; }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_EDITOR_UP)) { editor->position.y += speed; }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_EDITOR_DOWN)) { editor->position.y -= speed; }
 
-		if (inputSystem->IsActionDown(ACTION_MOVE_FORWARD)) { editor->position += editor->forward * speed; }
-		if (inputSystem->IsActionDown(ACTION_MOVE_BACKWARD)) { editor->position += editor->back * speed; }
-		if (inputSystem->IsActionDown(ACTION_MOVE_LEFT)) { editor->position += editor->left * speed; }
-		if (inputSystem->IsActionDown(ACTION_MOVE_RIGHT)) { editor->position += editor->right * speed; }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_FORWARD)) { editor->position += editor->forward * speed; }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_BACKWARD)) { editor->position += editor->back * speed; }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_LEFT)) { editor->position += editor->left * speed; }
+		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_RIGHT)) { editor->position += editor->right * speed; }
 	}
 }
 
@@ -127,4 +129,5 @@ void EditorCamera::Update(Camera3D* camera)
 	// WorldEditor::UpdateViewportInput, where it can be ordered against the
 	// gizmo and the placement tool — clicking a gizmo handle used to also
 	// reselect whatever object happened to be behind it.
+}
 }

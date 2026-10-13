@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <vector>
 
+namespace Editor {
+
 namespace
 {
 	constexpr ImVec4 kHeaderColour = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
@@ -16,7 +18,7 @@ namespace
 	 * row's ID does not move when the world changes underneath it.
 	 */
 	template <class Set>
-	void ApplyAllRow(Scene* scene, const char* label, Set set)
+	void ApplyAllRow(SceneManagement::Scene* scene, const char* label, Set set)
 	{
 		ImGui::PushID(label);
 		ImGui::TextUnformatted(label);
@@ -70,7 +72,7 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 			// target" — FindWorldObject returns nullptr for that, and
 			// dereferencing it here crashed the editor on the common
 			// self-activating case (see PlacementPanel's "Activator ID" field).
-			if (GameObject* activatorObject = SceneManager::getInstance().currentScene->gameMap.FindWorldObject(object->activator)) {
+			if (GameObject* activatorObject = SceneManagement::SceneManager::getInstance().currentScene->gameMap.FindWorldObject(object->activator)) {
 				ImGui::TextDisabled("%s", activatorObject->name.c_str());
 			}
 			else {
@@ -121,10 +123,10 @@ void WorldEditor::showEntity(Entity* object) {
 	}
 
 	if (ImGui::Button("Teleport To Player")) {
-		object->rigidBody3D.Teleport(SceneManager::getInstance().currentScene->player->getPosition());
+		object->rigidBody3D.Teleport(SceneManagement::SceneManager::getInstance().currentScene->player->getPosition());
 	}
 	if (ImGui::Button("Teleport To Camera")) {
-		object->rigidBody3D.Teleport(SceneManager::getInstance().camera3D.position);
+		object->rigidBody3D.Teleport(SceneManagement::SceneManager::getInstance().camera3D.position);
 	}
 
 	auto spawnPoint = object->getSpawnPoint();
@@ -327,7 +329,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 		ImGui::Image((ImTextureRef)(intptr_t)object->model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture.id, ImVec2(64, 64));
 	}
 	ImGui::Text("Texture: %s", object->textureName.empty() ? "None" : object->textureName.c_str());
-	Asset* activeTexture = getActiveTexture();
+	AssetManager::Asset* activeTexture = getActiveTexture();
 	if (activeTexture != nullptr && ImGui::Button("Apply Active Texture"))
 	{
 		object->setTexture(activeTexture->name);
@@ -337,7 +339,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 	// Model
 	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Model");
 	ImGui::Text("Model: %s", object->modelName.empty() ? "Cube" : object->modelName.c_str());
-	Asset* activeModel = getActiveModel();
+	AssetManager::Asset* activeModel = getActiveModel();
 	if (activeModel != nullptr && ImGui::Button("Apply Active Model"))
 	{
 		object->setModel(activeModel->name);
@@ -382,7 +384,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 	ImGui::PopID();
 }
 
-static void ShowStateButtons(Scene* scene)
+static void ShowStateButtons(SceneManagement::Scene* scene)
 {
 	ApplyAllRow(scene, "Enabled",        [](GameObject& o, bool v) { o.isEnabled = v; });
 	ApplyAllRow(scene, "Selectable",     [](GameObject& o, bool v) { o.isSelectable = v; });
@@ -431,7 +433,7 @@ namespace
 	}
 }
 
-static void ShowObjectList(Scene* scene, std::uint64_t& selectID, bool& objects, bool& entities, bool& interactable)
+static void ShowObjectList(SceneManagement::Scene* scene, std::uint64_t& selectID, bool& objects, bool& entities, bool& interactable)
 {
 	// Display order is this panel's own concern — GameMap's storage is
 	// unordered and owes none (see ForEachGameObject). Sorted by id descending
@@ -453,7 +455,7 @@ static void ShowObjectList(Scene* scene, std::uint64_t& selectID, bool& objects,
 	ObjectList("Interactables", interactableList, interactable, selectID);
 }
 
-void WorldEditor::showSelectedObject(Scene* scene) {
+void WorldEditor::showSelectedObject(SceneManagement::Scene* scene) {
 	GameObject* object = getSelectedObject();
 	if (object == nullptr)
 	{
@@ -484,7 +486,7 @@ void WorldEditor::showSelectedObject(Scene* scene) {
 
 void WorldEditor::ShowObjectBrowser()
 {
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	/// Show Object Browser Window
 	ImGui::Begin("Object Browser");
@@ -508,4 +510,5 @@ void WorldEditor::ShowObjectBrowser()
 	ImGui::EndChild();
 
 	ImGui::End();
+}
 }

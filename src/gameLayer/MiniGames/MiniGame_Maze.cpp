@@ -70,7 +70,7 @@ MiniGame* MiniGame_Maze(Player* player)
 	return game;
 }
 
-void Maze::render(Scene* scene_ptr)
+void Maze::render(SceneManagement::Scene* scene_ptr)
 {
 	using namespace MazeSpace;
 	DrawRectangleRec(GetScreen(), DARKBLUE);
@@ -78,8 +78,9 @@ void Maze::render(Scene* scene_ptr)
 
 }
 
-void Maze::update(Scene* scene_ptr, float delta)
+void Maze::update(SceneManagement::Scene* scene_ptr, float delta)
 {
+	auto inputSystem = &InputSystem::InputSystem::getInstance();
 	auto player = scene_ptr->player;
 	auto data = scene_ptr->miniGame->data;
 	using namespace MazeSpace;

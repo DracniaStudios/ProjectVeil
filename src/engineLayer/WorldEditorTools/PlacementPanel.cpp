@@ -1,5 +1,7 @@
 #include "WorldEditor.h"
 
+namespace Editor {
+
 // Object types a plain Game Object placement may use. Entity and Interactable
 // spawn through their own placement kinds; Player is unique and never spawned here.
 static constexpr ObjectType kGameObjectTypes[] = {
@@ -8,7 +10,7 @@ static constexpr ObjectType kGameObjectTypes[] = {
 
 void WorldEditor::ShowPlacementPanel()
 {
-	const auto manager = &SceneManager::getInstance();
+	const auto manager = &SceneManagement::SceneManager::getInstance();
 	const auto scene = manager->currentScene;
 
 	/// Show Placement Window
@@ -65,7 +67,7 @@ void WorldEditor::ShowPlacementPanel()
 
 	// Active Texture from the Palette
 	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Texture");
-	Asset* activeTexture = getActiveTexture();
+	AssetManager::Asset* activeTexture = getActiveTexture();
 	if (activeTexture != nullptr)
 	{
 		ImGui::Text("Active: %s", activeTexture->name.c_str());
@@ -80,7 +82,7 @@ void WorldEditor::ShowPlacementPanel()
 
 	// Active Model from the Palette
 	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Model");
-	Asset* activeModel = getActiveModel();
+	AssetManager::Asset* activeModel = getActiveModel();
 	if (activeModel != nullptr)
 	{
 		ImGui::Text("Active: %s", activeModel->name.c_str());
@@ -224,7 +226,7 @@ void WorldEditor::ShowPlacementPanel()
  */
 GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 {
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 	if (scene == nullptr) { statusMessage = "No scene loaded"; return nullptr; }
 
 	GameObject object = stagingObject;
@@ -236,8 +238,8 @@ GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 	object.disownModel();
 
 	// Record assets by name — the save call binds them via onEnable()
-	if (Asset* texture = getActiveTexture()) { object.textureName = texture->name; }
-	if (Asset* model = getActiveModel()) { object.modelName = model->name; }
+	if (AssetManager::Asset* texture = getActiveTexture()) { object.textureName = texture->name; }
+	if (AssetManager::Asset* model = getActiveModel()) { object.modelName = model->name; }
 
 	object.rigidBody3D.Teleport(position);
 
@@ -330,4 +332,5 @@ GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 	selectedObjectId = spawned->id;
 	statusMessage = "Spawned: " + spawned->name;
 	return spawned;
+}
 }

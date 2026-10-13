@@ -9,7 +9,7 @@
 #include <AssetManager.h>
 #include <AudioManager.h>
 
-struct Scene;
+namespace SceneManagement { struct Scene; }
 
 enum ObjectType
 {
@@ -27,7 +27,7 @@ enum ObjectType
 struct GameObject 
 {
 	GameObject();
-	virtual ~GameObject() = default;
+	virtual ~GameObject() = default; // Entities and interactables are destroyed through base pointers
 
 	/// Data
 	std::string name = "GameObject";
@@ -54,22 +54,14 @@ struct GameObject
 	/// Status
 	float lifeSpan = 0;
 	float deathSpan = 1;
-	// Sets how long, in seconds, the object lingers after isAlive is cleared
-	// before GameObject::update() destroys it. Must be called after the object
-	// is registered with GameMap, since onEnable() resets deathSpan to its
-	// default.
 	void Decay(float time = 1) { deathSpan = time; }
 
-	// Lives on GameObject (not Entity) so projectiles stored by value in
-	// GameMap::gameObjects keep their damage after slicing to GameObject
 	float baseDamage = 1.0f;
 
 	/// Physics
-	RigidBody3D rigidBody3D = {};
+	Physics3D::RigidBody3D rigidBody3D = {};
 
 	/// Renderer
-	// Assets are referenced by AssetManager name so they can be saved and
-	// reloaded; the raylib handles below are rebound from them at runtime
 	std::string modelName = "";   // empty = generated unit cube
 	std::string textureName = ""; // empty = material default
 	Model model = {};
@@ -121,7 +113,7 @@ struct GameObject
 	Vector3 getSize() const { return rigidBody3D.scale; }
 	ObjectType getType() const { return type; }
 
-	virtual void update(Scene* scene, float deltaTime);
+	virtual void update(SceneManagement::Scene* scene, float deltaTime);
 	virtual void render2D();
 	virtual void render3D();
 	virtual void onEnable();
@@ -129,7 +121,7 @@ struct GameObject
 
 	// Update State
 	virtual void Destroy();
-	virtual void onDestroy(Scene* scene);
+	virtual void onDestroy(SceneManagement::Scene* scene);
 
 	// Save Data
 	virtual Json formatToJson();
@@ -174,7 +166,7 @@ public:
 	virtual void render3D() override {
 		GameObject::render3D();
 	};
-	virtual void update(Scene* scene, float deltaTime) override
+	virtual void update(SceneManagement::Scene* scene, float deltaTime) override
 	{
 		GameObject::update(scene, deltaTime);
 	};

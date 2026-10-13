@@ -97,7 +97,7 @@ namespace SaveSystem
 		return true;
 	}
 
-	static Json SceneToJson(Scene* scene)
+	static Json SceneToJson(SceneManagement::Scene* scene)
 	{
 		Json j;
 
@@ -117,7 +117,7 @@ namespace SaveSystem
 
 		// Lighting (lights + atmosphere). Lives on the LightingSystem singleton
 		// rather than on Scene, the same way the cameras live on SceneManager.
-		j["Lighting"] = LightingSystem::getInstance().formatToJson();
+		j["Lighting"] = Lighting::LightingSystem::getInstance().formatToJson();
 
 		// Game Objects (interactables live in their own section)
 		Json objects = Json::object();
@@ -156,7 +156,7 @@ namespace SaveSystem
 		return j;
 	}
 
-	static bool ApplyJsonToScene(Json& j, Scene& scene)
+	static bool ApplyJsonToScene(Json& j, SceneManagement::Scene& scene)
 	{
 		if (j.value("Version", 0) > VERSION)
 		{
@@ -207,11 +207,11 @@ namespace SaveSystem
 		// unlit world reads as a broken build, so fall back to the default rig
 		if (j.contains("Lighting"))
 		{
-			LightingSystem::getInstance().loadFromJson(j["Lighting"]);
+			Lighting::LightingSystem::getInstance().loadFromJson(j["Lighting"]);
 		}
 		else
 		{
-			LightingSystem::getInstance().CreateDefaultRig();
+			Lighting::LightingSystem::getInstance().CreateDefaultRig();
 		}
 
 		// Load Game Objects
@@ -323,7 +323,7 @@ namespace SaveSystem
 		return true;
 	}
 
-	bool SaveGame(const char* fileName, Scene* scene)
+	bool SaveGame(const char* fileName, SceneManagement::Scene* scene)
 	{
 		if (scene == nullptr) { return false; }
 
@@ -339,7 +339,7 @@ namespace SaveSystem
 		return true;
 	}
 
-	bool LoadGame(const char* fileName, Scene& scene)
+	bool LoadGame(const char* fileName, SceneManagement::Scene& scene)
 	{
 		Json j;
 
@@ -382,7 +382,7 @@ namespace SaveSystem
 		return true;
 	}
 
-	bool SaveWorld(std::string fileName, Scene* scene)
+	bool SaveWorld(std::string fileName, SceneManagement::Scene* scene)
 	{
 		if (scene == nullptr) { return false; }
 
@@ -403,7 +403,7 @@ namespace SaveSystem
 		j["Map"]["SizeZ"] = scene->gameMap.size.z;
 
 		// Lighting is authored level data, so it belongs in the world file too
-		j["Lighting"] = LightingSystem::getInstance().formatToJson();
+		j["Lighting"] = Lighting::LightingSystem::getInstance().formatToJson();
 
 		// Game Objects (interactables live in their own section, projectiles are transient)
 		Json objects = Json::object();
@@ -447,7 +447,7 @@ namespace SaveSystem
 		return true;
 	}
 
-	bool LoadWorld(std::string fileName, Scene& scene)
+	bool LoadWorld(std::string fileName, SceneManagement::Scene& scene)
 	{
 
 		Json j;
@@ -502,11 +502,11 @@ namespace SaveSystem
 		// default rig rather than leaving the level pitch black
 		if (j.contains("Lighting"))
 		{
-			LightingSystem::getInstance().loadFromJson(j["Lighting"]);
+			Lighting::LightingSystem::getInstance().loadFromJson(j["Lighting"]);
 		}
 		else
 		{
-			LightingSystem::getInstance().CreateDefaultRig();
+			Lighting::LightingSystem::getInstance().CreateDefaultRig();
 		}
 
 		// Load Game Objects

@@ -19,7 +19,7 @@ void Director::Record(const DirectorHint& hint)
 	          << " because: " << hint.reason << "\n";
 }
 
-void Director::Update(Scene* scene, float deltaTime)
+void Director::Update(SceneManagement::Scene* scene, float deltaTime)
 {
 	if (scene == nullptr) { return; }
 

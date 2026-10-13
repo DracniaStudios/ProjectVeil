@@ -7,7 +7,7 @@
 #include <vector>
 #include <cstddef>
 
-struct Scene;
+namespace SceneManagement { struct Scene; }
 struct Stalker;
 
 /**
@@ -63,7 +63,7 @@ public:
 	// no model to be more or less sure about.
 	static constexpr float kFixedConfidence = 0.5f;
 
-	void Update(Scene* scene, float deltaTime);
+	void Update(SceneManagement::Scene* scene, float deltaTime);
 
 	void Clear() { log.clear(); cooldown = 0.0f; clock = 0.0f; }
 

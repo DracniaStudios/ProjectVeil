@@ -173,7 +173,7 @@ void GameMap::DestroyInteractable(uint64_t id)
 
 	// Frees Memory Correctly
 	object->releaseGeneratedModel();
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	// currentScene is null between the OUT and IN halves of a scene
 	// transition (see RigidBody3D.cpp for the same hazard).

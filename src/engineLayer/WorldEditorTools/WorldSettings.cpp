@@ -2,7 +2,9 @@
 
 #include <SaveSystem.h>
 
-static void NewWorld(Scene& scene) {
+namespace Editor {
+
+static void NewWorld(SceneManagement::Scene& scene) {
 
 	// DestroyEntity/DestroyInteractable each already release a generated
 	// fallback model before erasing (see GameMap::DestroyGameObject()) — snapshot
@@ -32,7 +34,7 @@ static void NewWorld(Scene& scene) {
 
 void WorldEditor::ShowWorldSettings()
 {
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	/// Show World Settings Window
 	ImGui::Begin("World Settings");
@@ -136,4 +138,5 @@ void WorldEditor::ShowWorldSettings()
 	if (!statusMessage.empty()) { ImGui::Text("%s", statusMessage.c_str()); }
 
 	ImGui::End();
+}
 }

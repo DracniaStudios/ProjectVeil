@@ -4,7 +4,7 @@
 
 #include <vector>
 #include <string>
-struct Scene;
+namespace SceneManagement { struct Scene; }
 struct GameObject;
 
 namespace SaveSystem
@@ -14,12 +14,12 @@ namespace SaveSystem
 	inline std::vector<std::string> game_saves = {};
 
 	// Save/Load the full Scene to a named file
-	bool SaveGame(const char* fileName, Scene* scene);
-	bool LoadGame(const char* fileName, Scene& scene);
+	bool SaveGame(const char* fileName, SceneManagement::Scene* scene);
+	bool LoadGame(const char* fileName, SceneManagement::Scene& scene);
 
 	// Save/Load world geometry only (map size + objects + interactables) to the fixed world.json
-	bool SaveWorld(std::string fileName, Scene* scene);
-	bool LoadWorld(std::string fileName, Scene& scene);
+	bool SaveWorld(std::string fileName, SceneManagement::Scene* scene);
+	bool LoadWorld(std::string fileName, SceneManagement::Scene& scene);
 
 	std::vector<std::string> GetSaveFiles();
 }

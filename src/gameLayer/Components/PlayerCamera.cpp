@@ -7,11 +7,11 @@
 
 void PlayerCamera::UpdateCameraFPS(Camera3D* camera)
 {
-	auto player = SceneManager::getInstance().currentScene->player;
+	auto player = SceneManagement::SceneManager::getInstance().currentScene->player;
 
 	offset = Vector3(0, player->rigidBody3D.scale.y / 2, 0); // Camera offset to be at player's head
 
-	if (InputSystem::getInstance().IsActionDown(ACTION_MOVE_CROUCH)) { offset.y /= 2; }
+	if (InputSystem::InputSystem::getInstance().IsActionDown(InputSystem::ACTION_MOVE_CROUCH)) { offset.y /= 2; }
 
 	camera->position = Vector3Add(player->rigidBody3D.translation, offset);
 	lookRotation.x -= GetMouseDelta().x * sensitivity.x;

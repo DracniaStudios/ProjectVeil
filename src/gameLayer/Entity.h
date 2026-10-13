@@ -6,7 +6,7 @@
 
 #include <memory>
 
-struct Scene;
+namespace SceneManagement { struct Scene; }
 
 enum Buff {
 	BUFF_MOVEMENT,
@@ -107,7 +107,7 @@ public:
 	virtual void onEnable() override;
 	virtual void onDisable() override;
 	virtual void render3D() override;
-	virtual void update(Scene* scene, float deltaTime) override;
+	virtual void update(SceneManagement::Scene* scene, float deltaTime) override;
 
 	Vector3 getSpawnPoint() { return spawnPoint; }
 	void setSpawnPoint(Vector3 spawn) { spawnPoint = spawn; }

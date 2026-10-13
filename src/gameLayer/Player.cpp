@@ -8,7 +8,7 @@
 /* Static Functions */
 #pragma region Static Functions
 void SetMoveDirection(Player* player, float deltaTime) {
-	auto inputSystem = &InputSystem::getInstance();
+	auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 	/// Player Movement
 	auto& speed = player->currentSpeed;
@@ -28,10 +28,10 @@ void SetMoveDirection(Player* player, float deltaTime) {
 
 	// Player Movement Input
 	player->moveDirection = Vector2Zero();
-	player->moveDirection.x = inputSystem->IsActionDown(ACTION_MOVE_LEFT) ? -1.0 :
-		inputSystem->IsActionDown(ACTION_MOVE_RIGHT) ? 1.0f : 0;
-	player->moveDirection.y = inputSystem->IsActionDown(ACTION_MOVE_FORWARD) ? 1.0 :
-		inputSystem->IsActionDown(ACTION_MOVE_BACKWARD) ? -1.0f : 0;
+	player->moveDirection.x = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_LEFT) ? -1.0 :
+		inputSystem->IsActionDown(InputSystem::ACTION_MOVE_RIGHT) ? 1.0f : 0;
+	player->moveDirection.y = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_FORWARD) ? 1.0 :
+		inputSystem->IsActionDown(InputSystem::ACTION_MOVE_BACKWARD) ? -1.0f : 0;
 
 	// Movement was applied as a flat `speed * 0.1f` per frame, so how fast the
 	// player walked was decided by the monitor: identical inputs covered 2.4x
@@ -48,37 +48,37 @@ void SetMoveDirection(Player* player, float deltaTime) {
 }
 
 void UpdateActions(Player* player) {
-	auto inputSystem = &InputSystem::getInstance();
+	auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 	/// Player Flags
-	player->isCrouching = inputSystem->IsActionDown(ACTION_MOVE_CROUCH);
-	player->isSprinting = inputSystem->IsActionDown(ACTION_MOVE_SPRINT);
-	player->isFiring = inputSystem->IsActionPressed(ACTION_USE_ITEM)
-		|| inputSystem->IsActionDown(ACTION_USE_ITEM2);
+	player->isCrouching = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_CROUCH);
+	player->isSprinting = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_SPRINT);
+	player->isFiring = inputSystem->IsActionPressed(InputSystem::ACTION_USE_ITEM)
+		|| inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2);
 
-	if (!WorldEditor::getInstance().IsEnabled()) {
-		if (inputSystem->IsActionPressed(ACTION_MOVE_INTERACT)) { player->Interact(); }
-		if (inputSystem->IsActionPressed(ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(20);
+	if (!Editor::WorldEditor::getInstance().IsEnabled()) {
+		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_INTERACT)) { player->Interact(); }
+		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(20);
 
 		// The flashlight is owned by LightingSystem and follows whichever camera
 		// is active, so the player only owns the toggle. Sitting inside this
 		// block keeps it suppressed while the World Editor has focus, matching
 		// fire/interact/jump.
-		if (inputSystem->IsActionPressed(ACTION_USE_FLASHLIGHT)) { LightingSystem::getInstance().ToggleFlashlight(); }
+		if (inputSystem->IsActionPressed(InputSystem::ACTION_USE_FLASHLIGHT)) { Lighting::LightingSystem::getInstance().ToggleFlashlight(); }
 	}
 }
 
 void updateArtifact(Player* player, float deltaTime) {
 
-	auto inputSystem = &InputSystem::getInstance();
-	const auto scene = SceneManager::getInstance().currentScene;
+	auto inputSystem = &InputSystem::InputSystem::getInstance();
+	const auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	// Artifact Actions
-	player->artifactMode += inputSystem->IsActionPressed(ACTION_USE_ARTIFACT_RIGHT) ? 1
-		: inputSystem->IsActionPressed(ACTION_USE_ARTIFACT_LEFT) ? -1
+	player->artifactMode += inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT_RIGHT) ? 1
+		: inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT_LEFT) ? -1
 		: 0;
 	player->artifactMode = static_cast<int>(Clamp(static_cast<float>(player->artifactMode), -1, player->artifactUnlocked));
-	if (scene->miniGame == nullptr && inputSystem->IsActionPressed(ACTION_USE_ARTIFACT))
+	if (scene->miniGame == nullptr && inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT))
 	{
 		scene->SetMiniGame(player->artifactMode);
 	}
@@ -87,7 +87,7 @@ void updateArtifact(Player* player, float deltaTime) {
 	const auto camera = player->camera;
 	const auto offset = Vector3Add(camera.forward, player->rigidBody3D.left);//camera->left / 2);
 
-	player->artifact->rigidBody3D.translation = Vector3Add(SceneManager::getInstance().camera3D.position, offset);
+	player->artifact->rigidBody3D.translation = Vector3Add(SceneManagement::SceneManager::getInstance().camera3D.position, offset);
 	player->artifact->update(scene, deltaTime);
 }
 
@@ -117,8 +117,8 @@ void Player::onDisable()
 void Player::render2D()
 {
 	if (!this->isEnabled) return;
-	auto inputSystem = &InputSystem::getInstance();
-	auto scene = SceneManager::getInstance().currentScene;
+	auto inputSystem = &InputSystem::InputSystem::getInstance();
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	if (scene->isMiniActive && scene->miniGame != nullptr)
 	{
@@ -128,8 +128,8 @@ void Player::render2D()
 	/// Reticle
 	if (!scene->is2DActive) {
 		DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 10,
-			inputSystem->IsActionDown(ACTION_USE_ITEM) ? RED
-			: inputSystem->IsActionDown(ACTION_USE_ITEM2) ? RED
+			inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM) ? RED
+			: inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2) ? RED
 			: WHITE);
 	}
 }
@@ -144,16 +144,16 @@ void Player::render3D()
 void Player::update2D(float deltaTime, bool canMove)
 {
 	if (!this->isEnabled) return;
-	if (!SceneManager::getInstance().currentScene->is2DActive) return;
+	if (!SceneManagement::SceneManager::getInstance().currentScene->is2DActive) return;
 
-	auto inputSystem = &InputSystem::getInstance();
+	auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 	// Player2D Function
 	moveDirection = Vector2Zero();
-	moveDirection.x = inputSystem->IsActionDown(ACTION_MOVE_LEFT) ? -1.0 : inputSystem->IsActionDown(ACTION_MOVE_RIGHT) ? 1.0f : 0;
-	moveDirection.y = inputSystem->IsActionDown(ACTION_MOVE_FORWARD) ? 1.0 : inputSystem->IsActionDown(ACTION_MOVE_BACKWARD) ? -1.0f : 0;
+	moveDirection.x = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_LEFT) ? -1.0 : inputSystem->IsActionDown(InputSystem::ACTION_MOVE_RIGHT) ? 1.0f : 0;
+	moveDirection.y = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_FORWARD) ? 1.0 : inputSystem->IsActionDown(InputSystem::ACTION_MOVE_BACKWARD) ? -1.0f : 0;
 
-	auto speed = inputSystem->IsActionDown(ACTION_MOVE_SPRINT) ? baseSpeed * 2 : baseSpeed;
+	auto speed = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_SPRINT) ? baseSpeed * 2 : baseSpeed;
 
 	if (canMove)
 	{
@@ -166,7 +166,7 @@ void Player::update2D(float deltaTime, bool canMove)
 // Footsteps, the player's loudest routine emission.
 static void EmitFootsteps(Player* player, float deltaTime)
 {
-	auto scene = SceneManager::getInstance().currentScene;
+	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 	if (scene == nullptr) { return; }
 
 	// Vertical motion is jumping and falling, not walking; only horizontal
@@ -198,7 +198,7 @@ static void EmitFootsteps(Player* player, float deltaTime)
 void Player::update3D(float deltaTime)
 {
 	if (!isEnabled) return;
-	if (SceneManager::getInstance().currentScene->is2DActive) { return; }
+	if (SceneManagement::SceneManager::getInstance().currentScene->is2DActive) { return; }
 
 	/// Player Scale
 	rigidBody3D.scale = Vector3(1, 2, 1);
@@ -210,7 +210,7 @@ void Player::update3D(float deltaTime)
 	// The player ticks its own body rather than going through GameObject::update,
 	// so it needs its own trigger dispatch or it would never report leaving one.
 	// currentScene is null between the two halves of a scene transition.
-	if (Scene* scene = SceneManager::getInstance().currentScene)
+	if (SceneManagement::Scene* scene = SceneManagement::SceneManager::getInstance().currentScene)
 	{
 		rigidBody3D.DispatchTriggerEvents(this, &scene->gameMap);
 	}
@@ -229,7 +229,7 @@ void Player::update3D(float deltaTime)
 }
 
 FMOD_3D_ATTRIBUTES Player::getListener() {
-	const auto camera = &SceneManager::getInstance().currentScene->player->camera;
+	const auto camera = &SceneManagement::SceneManager::getInstance().currentScene->player->camera;
 
 	// FMOD requires forward and up to be normalized and perpendicular
 	Vector3 forward = Vector3Normalize(camera->forward);
@@ -239,9 +239,9 @@ FMOD_3D_ATTRIBUTES Player::getListener() {
 	Vector3 up = Vector3Normalize(Vector3CrossProduct(forward, right));
 
 	FMOD_3D_ATTRIBUTES listenerAttributes = {};
-	listenerAttributes.position = Vector3ToFMOD(SceneManager::getInstance().camera3D.position);
-	listenerAttributes.velocity = Vector3ToFMOD(getVelocity());
-	listenerAttributes.forward = Vector3ToFMOD(forward);
-	listenerAttributes.up = Vector3ToFMOD(up);
+	listenerAttributes.position = AudioManager::Vector3ToFMOD(SceneManagement::SceneManager::getInstance().camera3D.position);
+	listenerAttributes.velocity = AudioManager::Vector3ToFMOD(getVelocity());
+	listenerAttributes.forward = AudioManager::Vector3ToFMOD(forward);
+	listenerAttributes.up = AudioManager::Vector3ToFMOD(up);
 	return listenerAttributes;
 }

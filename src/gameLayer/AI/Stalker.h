@@ -8,7 +8,7 @@
 
 #include <vector>
 
-struct Scene;
+namespace SceneManagement { struct Scene; }
 struct GameMap;
 
 /**
@@ -83,7 +83,7 @@ struct Stalker : Entity
 	bool displayRoute = false;
 
 	/** Functions **/
-	void update(Scene* scene, float deltaTime) override;
+	void update(SceneManagement::Scene* scene, float deltaTime) override;
 	void render3D() override;
 
 	// Applies a Director hint. The hint is a region worth patrolling, derived

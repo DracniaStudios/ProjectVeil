@@ -34,7 +34,7 @@ GameObject::GameObject()
 	// would leave models unlit. loadVisuals() repeats this on every rebind;
 	// this call covers an object drawn before its first bind. It is a no-op
 	// until LightingSystem::Init() has run.
-	LightingSystem::getInstance().ApplyToModel(model);
+	Lighting::LightingSystem::getInstance().ApplyToModel(model);
 
 	// The collision box is not seeded here. It used to be assigned
 	// GetMeshBoundingBox(model.meshes[0]) — a MODEL-LOCAL box written into a
@@ -80,7 +80,7 @@ void GameObject::loadVisuals()
 	releaseGeneratedModel();
 
 	// Model: shared AssetManager handle when one is named, else a unit cube
-	Asset* modelAsset = modelName.empty() ? nullptr : GetAssetPtrByName(modelName, ASSET_MODEL);
+	AssetManager::Asset* modelAsset = modelName.empty() ? nullptr : AssetManager::GetAssetPtrByName(modelName, AssetManager::ASSET_MODEL);
 	if (modelAsset != nullptr && modelAsset->model.meshCount > 0)
 	{
 		model = modelAsset->model;
@@ -98,7 +98,7 @@ void GameObject::loadVisuals()
 
 	// Texture: only applied to owned primitives — an asset model's materials
 	// are shared by every object using it, and it brings its own .mtl textures
-	Asset* textureAsset = textureName.empty() ? nullptr : GetAssetPtrByName(textureName, ASSET_TEXTURE);
+	AssetManager::Asset* textureAsset = textureName.empty() ? nullptr : AssetManager::GetAssetPtrByName(textureName, AssetManager::ASSET_TEXTURE);
 	if (textureAsset != nullptr)
 	{
 		texture = textureAsset->texture;
@@ -116,7 +116,7 @@ void GameObject::loadVisuals()
 	// Every runtime model binding funnels through here — editor placement,
 	// duplication, setModel(), onEnable() and loadCommonFromJson() — which makes
 	// this the one place that guarantees new geometry is lit.
-	LightingSystem::getInstance().ApplyToModel(model);
+	Lighting::LightingSystem::getInstance().ApplyToModel(model);
 
 	// ...and the one place a mesh collider can be kept honest. Its whole point is
 	// to match the art, so it has to be refitted whenever the art changes rather
@@ -140,7 +140,7 @@ void GameObject::setTexture(const std::string& assetName)
 	textureName = assetName;
 
 	// Bind without regenerating the model — safe to call every frame
-	if (Asset* asset = GetAssetPtrByName(assetName, ASSET_TEXTURE))
+	if (AssetManager::Asset* asset = AssetManager::GetAssetPtrByName(assetName, AssetManager::ASSET_TEXTURE))
 	{
 		texture = asset->texture;
 		if (ownsModel && texture.id != 0)
@@ -244,7 +244,7 @@ void GameObject::render3D()
 	}
 }
 
-void GameObject::update(Scene* scene, float deltaTime)
+void GameObject::update(SceneManagement::Scene* scene, float deltaTime)
 {
 	// Before the enabled check on purpose: an object that has just been disabled
 	// stops colliding, and anything sitting in its trigger volumes has therefore
@@ -297,7 +297,7 @@ void GameObject::Destroy()
 	pendingDestroy = true;
 }
 
-void GameObject::onDestroy(Scene* scene)
+void GameObject::onDestroy(SceneManagement::Scene* scene)
 {
 	// Removal happens in the scene's pendingDestroy sweep (Scene_updateScene);
 	// erasing here would invalidate the update loop's iterators
@@ -313,10 +313,10 @@ void GameObject::onDestroy(Scene* scene)
 FMOD_3D_ATTRIBUTES GameObject::get3DAttributes() const
 {
 	FMOD_3D_ATTRIBUTES attributes = {};
-	attributes.position = Vector3ToFMOD(getPosition());
-	attributes.velocity = Vector3ToFMOD(getVelocity());
-	attributes.forward = Vector3ToFMOD(Vector3Normalize(rigidBody3D.forward));
-	attributes.up = Vector3ToFMOD(Vector3Normalize(rigidBody3D.up));
+	attributes.position = AudioManager::Vector3ToFMOD(getPosition());
+	attributes.velocity = AudioManager::Vector3ToFMOD(getVelocity());
+	attributes.forward = AudioManager::Vector3ToFMOD(Vector3Normalize(rigidBody3D.forward));
+	attributes.up = AudioManager::Vector3ToFMOD(Vector3Normalize(rigidBody3D.up));
 	return attributes;
 }
 #pragma endregion
