@@ -78,6 +78,7 @@ namespace Editor {
 		bool isAssetActive = false;
 		bool isLightingActive = false;
 		bool isStalkerActive = false;
+		bool isUIActive = false;
 
 		/** World Settings **/
 		std::string worldName = "world";
@@ -171,10 +172,8 @@ namespace Editor {
 		void ShowMiniGameData(Player* player);
 		void ShowAssetData();
 		void ShowLightingData();
-		// Stalker AI: FSM state, what it last heard, and the Director's hint log.
-		// The hint log is the artifact the slice's acceptance criteria are checked
-		// against — "verify by logging what the Director passes".
 		void ShowStalkerData();
+		void ShowUIData();
 
 		/** Viewport Interaction (EditorViewport.cpp) **/
 		// Arbitrates the mouse between ImGui, the camera, the gizmo, placement and

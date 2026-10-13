@@ -17,6 +17,11 @@ namespace Editor {
 			if (isEditorActive) { editorCamera.SyncFrom(SceneManagement::SceneManager::getInstance().camera3D); }
 			else { gizmo.Cancel(); placementMode = false; }
 		}
+
+		// Game UI is drawn under the editor's windows. Without this, a click on an
+		// inspector also presses whatever menu button sits behind it.
+		UI::UIEngine::getInstance().isMouseBlocked = isEditorActive && ImGui::GetIO().WantCaptureMouse;
+
 		if (!isEditorActive) { return; } // Panel flags are remembered while hidden
 
 		// Tools and panel shortcuts. Runs before the viewport so a tool change or a
@@ -37,6 +42,7 @@ namespace Editor {
 		if (isAssetActive) ShowAssetData();
 		if (isLightingActive) ShowLightingData();
 		if (isStalkerActive) ShowStalkerData();
+		if (isUIActive) ShowUIData();
 	}
 
 	void WorldEditor::ShowEditorHub()
@@ -55,6 +61,7 @@ namespace Editor {
 		ImGui::Checkbox("Asset Data (Ctrl+7)", &isAssetActive);
 		ImGui::Checkbox("Lighting (Ctrl+8)", &isLightingActive);
 		ImGui::Checkbox("Stalker AI", &isStalkerActive);
+		ImGui::Checkbox("UI Data", &isUIActive);
 		ImGui::Separator();
 
 		// Mini Console

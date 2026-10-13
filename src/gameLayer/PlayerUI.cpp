@@ -11,7 +11,8 @@ void PlayerUI::render() {
 
 	// Render the UI elements on the screen
 
-	if (UI::UIEngine::getInstance().drawButton("Return", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.0f, 0.0f, 0.05f, 0.05f })) {
+	// Fixed size in the top-left corner; grows with the window through the UI scale
+	if (UI::drawButton("Return", Rectangle{ 20, 20, 180, 50 })) {
 		SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), 0);
 	}
 

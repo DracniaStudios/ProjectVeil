@@ -10,6 +10,8 @@ void Scene_MainMenuUpdate(float deltaTime)
 	auto scene = manager->currentScene;
 	auto player = scene->player;
 
+
+
 }
 
 void Scene_MainMenuDraw2D()
@@ -18,25 +20,30 @@ void Scene_MainMenuDraw2D()
 	auto scene = manager->currentScene;
 
 	// Draw Main Menu
+	// Each row stacks under the last inside the panel, so a new button is one more call here.
+	UI::beginPanel("Main Menu", Rectangle{}, Rectangle{ 0.4f, 0.3f, 0.2f, 0.28f });
 	{
-		UI::UIEngine::getInstance().drawText("Main Menu", Rectangle{ 0, 0.0f, 100.0f, 50.0f }, Rectangle{0.4f, 0.1f, 0.6f, 0.2f});;
+		UI::drawText("Main Menu");
 
-		if (UI::UIEngine::getInstance().drawButton("Play", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.1f, 0.2f, 0.2f }))
+		if (UI::drawButton("Play"))
 		{
 			std::cout << "Play Button Clicked\n";
 			SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), 1);
 		}
-		if (UI::UIEngine::getInstance().drawButton("Settings", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.1f, 0.2f, 0.2f }))
+		if (UI::drawButton("Settings"))
 		{
 			std::cout << "Settings Button Clicked\n";
 			// Enable Settings Menu
+			scene->is2DActive = !scene->is2DActive;
+			UI::UIEngine::getInstance().isSettingsEnabled = !UI::UIEngine::getInstance().isSettingsEnabled;
 		}
-		if (UI::UIEngine::getInstance().drawButton("Exit", Rectangle{ 0, 0, 100, 50 }, Rectangle{ 0.4f, 0.1f, 0.2f, 0.2f }))
+		if (UI::drawButton("Exit"))
 		{
 			std::cout << "Exit Button Clicked\n";
 			request_exit();
 		}
 	}
+	UI::endPanel();
 
 };
 
@@ -64,6 +71,9 @@ SceneManagement::Scene* Scene_MainMenuConstruct()
 	scene->player->rigidBody3D.Teleport(Vector3(0, 2, 0));
 
 	SaveSystem::LoadWorld("mainMenu", *scene);
+
+
+	AudioManager::AudioManager::getInstance().Play("Emotion_2", AudioManager::AUDIO_MUSIC);
 
 	return scene;
 }
