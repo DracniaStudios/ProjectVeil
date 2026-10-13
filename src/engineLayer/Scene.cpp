@@ -520,7 +520,6 @@ namespace SceneManagement {
 		}
 
 		PlayerUI::getInstance().update();
-		UI::UIEngine::getInstance().update();
 
 		// World Editor (includes the developer tool windows)
 		Editor::WorldEditor::getInstance().update(scene->player);

@@ -125,7 +125,7 @@ namespace UI {
 
 		int textWidth = 0;
 		int textHeight = 0;
-		int fontSize = 20;
+		int textSize = 20;
 
 	};
 
@@ -134,6 +134,9 @@ namespace UI {
 
 		std::string text = {};
 		int textSize = 20;
+		int textWidth = 0;
+		int textHeight = 0;
+
 		Color clickColor = { 100, 100, 100, 255 };
 		Color highlightedColor = { 10, 10, 10, 255 };
 	};

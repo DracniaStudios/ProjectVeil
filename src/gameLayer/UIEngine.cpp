@@ -1,6 +1,7 @@
 #include "UIEngine.h"
 
 #include <Settings.h>
+#include <SceneManager.h>
 
 #include <algorithm>
 #include <iostream>
@@ -148,13 +149,23 @@ namespace UI {
 	void drawSettings() {
 
 		Settings::Settings* settings = &Settings::Settings::getInstance();
+		auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
-		beginPanel("Settings", Rectangle{}, Rectangle{ 0.65f, 0.3f, 0.2f, 0.28f });
+		// The sum of (X + width), (Y + height) is the size of the panel.
+		beginPanel("Settings", Rectangle{}, Rectangle{ 0.1f, 0.1f, 0.8f, 0.8f });
 
 		drawText("Settings");
 
-		if (drawButton(settings->vsync.value != 0 ? "VSync: On" : "VSync: Off")) {
-			settings->vsync.value = !settings->vsync.value;
+		if (drawButton("Return")) {
+			scene->is2DActive = !scene->is2DActive;
+			UIEngine::getInstance().isSettingsEnabled = false;
+		}
+
+		for (auto& setting : settings->settingsList) {
+			std::string displayName = setting->name + ": " + std::to_string(setting->value);
+			if (drawButton(displayName)) {
+				setting->value = setting->value != 1 ? 1 : 0;
+			}
 		}
 
 		endPanel();
@@ -222,52 +233,10 @@ namespace UI {
 
 	}
 
-// Draws centred text inside a rectangle given as fractions of the screen (0..1).
-void drawText(std::string text, Rectangle scaleRect, float yOffset)
-{
-	Rectangle pixelSize = {
-		GetScreenWidth() * scaleRect.x,
-		GetScreenHeight() * scaleRect.y,
-		GetScreenWidth() * scaleRect.width,
-		GetScreenHeight() * scaleRect.height
-	};
-	drawTextPixels(text, pixelSize, yOffset);
-}
 	void UIEngine::placeWidget(Widget& widget, Rectangle pixelRect, Rectangle scaleRect)
 	{
 		const Layout& parent = layoutStack.back();
 
-	float w = GetScreenWidth();
-	float h = GetScreenHeight();
-
-	// Get Base Rectangle
-	Rectangle oneButtonRectangle{};
-	oneButtonRectangle.width = w * 0.8f;
-	oneButtonRectangle.height = h / (ui.widgets.size() + 1);
-
-	oneButtonRectangle.height = std::min(oneButtonRectangle.height, oneButtonRectangle.width / 8.f);
-
-	oneButtonRectangle = placeRectangleCenterTop(oneButtonRectangle, w);
-	oneButtonRectangle.y += oneButtonRectangle.height / 2.f;
-
-	Rectangle smallerRect = shrinkRectanglePercentage(oneButtonRectangle, 0.01f, 0.01f);
-	smallerRect.y += smallerRect.height * widget.id;
-
-	return drawButtonWidget(text, smallerRect, ui);
-}
-
-// Button placed in a rectangle given as fractions of the screen (0..1).
-bool addButton(std::string text, Rectangle scaleRect, UIEngine &ui)
-{
-	UIEngine::Widget widget;
-	widget.type = UIEngine::BUTTON;
-	widget.text = text;
-	widget.id = ui.getID();
-	ui.widgets.push_back(widget);
-
-// Registers a button widget and draws it inside smallerRect (pixels).
-static bool drawButtonWidget(const std::string& text, Rectangle smallerRect, UIEngine &ui)
-{
 		widget.id = static_cast<int>(widgets.size());
 		widget.parentId = parent.panelId;
 		widget.depth = static_cast<int>(layoutStack.size()) - 1;
@@ -277,8 +246,10 @@ static bool drawButtonWidget(const std::string& text, Rectangle smallerRect, UIE
 		widget.screenRect = resolveRect(parent.contentRect, pixelRect, scaleRect, scale);
 
 		const Rectangle screen = { 0, 0, GetScreenSize().x, GetScreenSize().y };
+
 		widget.isVisible = widget.screenRect.width > 0 && widget.screenRect.height > 0
-			&& CheckCollisionRecs(widget.screenRect, screen);
+			&& CheckCollisionRecs(widget.screenRect, parent.contentRect);
+
 	}
 
 	void UIEngine::placeNextRow(Widget& widget)
@@ -364,18 +335,20 @@ static bool drawButtonWidget(const std::string& text, Rectangle smallerRect, UIE
 		// Button Rules
 		// Both the mouse and the hover owner are checked: hoveredId is last
 		// frame's, so on its own it would still hold a button that has since moved.
-		button.isHovered = button.id == ui.hoveredId && CheckCollisionPointRec(GetMousePosition(), button.screenRect);
-		button.isBeingClicked = button.isHovered && IsMouseButtonDown(MOUSE_LEFT_BUTTON);
-		button.isReleased = button.isHovered && IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
+		if (button.isVisible) {
+			button.isHovered = button.id == ui.hoveredId && CheckCollisionPointRec(GetMousePosition(), button.screenRect);
+			button.isBeingClicked = button.isHovered && IsMouseButtonDown(MOUSE_LEFT_BUTTON);
+			button.isReleased = button.isHovered && IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
+		}
 
 		Color color = button.defaultColor;
 		if (button.isBeingClicked) { color = button.clickColor; }
 		else if (button.isHovered) { color = button.highlightedColor; }
 
-		DrawRectangleRec(button.screenRect, color);
+		if (button.isVisible) { DrawRectangleRec(button.screenRect, color); }
 
 		const float yOffset = button.isBeingClicked ? button.screenRect.height * style.buttonClickOffset : 0.0f;
-		drawLabel(text, button.screenRect, button.textSize, yOffset, style);
+		if (button.isVisible) { drawLabel(text, button.screenRect, button.textSize, yOffset, style); }
 
 		const bool isReleased = button.isReleased;
 		ui.widgets.push_back(std::move(button));
@@ -386,65 +359,13 @@ static bool drawButtonWidget(const std::string& text, Rectangle smallerRect, UIE
 		return isReleased;
 	}
 
-bool addButton(std::string text, UIEngine &ui)
-{
-	UIEngine::Widget widget;
-	widget.type = UIEngine::BUTTON;
-	widget.text = text;
-	widget.id = ui.getID();
-	ui.widgets.push_back(widget);
-
-	float w = GetScreenWidth();
-	float h = GetScreenHeight();
-
-	// Get Base Rectangle
-	Rectangle oneButtonRectangle{};
-	oneButtonRectangle.width = w * 0.8f;
-	oneButtonRectangle.height = h / (ui.widgets.size() + 1);
-
-	oneButtonRectangle.height = std::min(oneButtonRectangle.height, oneButtonRectangle.width / 8.f);
-
-	oneButtonRectangle = placeRectangleCenterTop(oneButtonRectangle, w);
-	oneButtonRectangle.y += oneButtonRectangle.height / 2.f;
-
-	Rectangle smallerRect = shrinkRectanglePercentage(oneButtonRectangle, 0.01f, 0.01f);
-	smallerRect.y += smallerRect.height * widget.id;
-
-	return drawButtonWidget(text, smallerRect, ui);
-}
-
-// Button placed in a rectangle given as fractions of the screen (0..1).
-bool addButton(std::string text, Rectangle scaleRect, UIEngine &ui)
-{
-	UIEngine::Widget widget;
-	widget.type = UIEngine::BUTTON;
-	widget.text = text;
-	widget.id = ui.getID();
-	ui.widgets.push_back(widget);
-
-	Rectangle pixelRect = {
-		GetScreenWidth() * scaleRect.x,
-		GetScreenHeight() * scaleRect.y,
-		GetScreenWidth() * scaleRect.width,
-		GetScreenHeight() * scaleRect.height
-	};
-	return drawButtonWidget(text, pixelRect, ui);
-}
-
-void addTitle(std::string text, UIEngine &ui)
-{
-	UIEngine::Widget widget;
-	widget.type = UIEngine::TITLE;
-	widget.text = text;
-	widget.id = ui.getID();
-	ui.widgets.push_back(widget);
 	static void drawPlacedText(UIEngine& ui, Text& widget, const std::string& text)
 	{
 		widget.text = text;
 		widget.defaultColor = ui.style.textColor;
 		widget.textSize = fitTextSize(text, widget.screenRect, ui.style.textHeightRatio);
 
-		drawLabel(text, widget.screenRect, widget.textSize, 0.0f, ui.style);
+		if (widget.isVisible) { drawLabel(text, widget.screenRect, widget.textSize, 0.0f, ui.style); }
 
 		ui.widgets.push_back(std::move(widget));
 	}
@@ -458,13 +379,13 @@ void addTitle(std::string text, UIEngine &ui)
 		panel.name = name;
 		panel.defaultColor = ui.style.panelColor;
 		// Shown so the inspector can say which panel is swallowing the mouse
-		panel.isHovered = panel.id == ui.hoveredId && CheckCollisionPointRec(GetMousePosition(), panel.screenRect);
+		if (panel.isVisible) { panel.isHovered = panel.id == ui.hoveredId && CheckCollisionPointRec(GetMousePosition(), panel.screenRect); }
 
 		const float padding = ui.style.panelPadding * ui.getScale();
 		panel.contentRect = shrinkRectanglePixels(panel.screenRect, padding * 2.0f, padding * 2.0f);
 
 		// Drawn now, before its children, so they land on top of it
-		DrawRectangleRec(panel.screenRect, panel.defaultColor);
+		if (panel.isVisible) { DrawRectangleRec(panel.screenRect, panel.defaultColor); }
 
 		ui.pushPanel(std::move(panel));
 	}
@@ -492,10 +413,6 @@ void addTitle(std::string text, UIEngine &ui)
 		return drawPlacedButton(ui, button, text);
 	}
 
-	// Get Base Rectangle
-	Rectangle oneButtonRectangle{};
-	oneButtonRectangle.width = w * 0.8f;
-	oneButtonRectangle.height = h / (ui.widgets.size() + 1);
 	void drawText(const std::string& text, Rectangle pixelRect, Rectangle scaleRect)
 	{
 		UIEngine& ui = UIEngine::getInstance();
