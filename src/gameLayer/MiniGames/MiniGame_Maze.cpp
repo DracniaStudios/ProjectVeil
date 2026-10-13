@@ -80,7 +80,6 @@ void Maze::render(Scene* scene_ptr)
 
 void Maze::update(Scene* scene_ptr, float delta)
 {
-	auto inputSystem = &InputSystem::getInstance();
 	auto player = scene_ptr->player;
 	auto data = scene_ptr->miniGame->data;
 	using namespace MazeSpace;
