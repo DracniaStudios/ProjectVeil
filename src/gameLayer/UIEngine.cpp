@@ -150,6 +150,7 @@ namespace UI {
 
 		Settings::Settings* settings = &Settings::Settings::getInstance();
 		auto scene = SceneManagement::SceneManager::getInstance().currentScene;
+		if (!scene) { return; }
 
 		// The sum of (X + width), (Y + height) is the size of the panel.
 		beginPanel("Settings", Rectangle{}, Rectangle{ 0.1f, 0.1f, 0.8f, 0.8f });
@@ -244,8 +245,6 @@ namespace UI {
 		widget.anchorRect = scaleRect;
 		widget.pixelRect = pixelRect;
 		widget.screenRect = resolveRect(parent.contentRect, pixelRect, scaleRect, scale);
-
-		const Rectangle screen = { 0, 0, GetScreenSize().x, GetScreenSize().y };
 
 		widget.isVisible = widget.screenRect.width > 0 && widget.screenRect.height > 0
 			&& CheckCollisionRecs(widget.screenRect, parent.contentRect);
