@@ -82,7 +82,7 @@ namespace AssetManager {
 	}
 
 
-	// Load All Folders in "recursive" mode and repead Load Folders for each direcyort
+	// Load All Folders in "recursive" mode and repeat Load Folders for each direction
 
 	// Load all supported texture/model files found under RESOURCES_PATH/folder
 	void AssetManager::loadFolder(const char* folder)

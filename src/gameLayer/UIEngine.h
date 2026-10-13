@@ -121,7 +121,11 @@ namespace UI {
 		Text() { type = WIDGET_TEXT; }
 
 		std::string text = {};
-		int textSize = 20;
+
+		int textWidth = 0;
+		int textHeight = 0;
+		int fontSize = 20;
+
 	};
 
 	struct Button : Widget {
