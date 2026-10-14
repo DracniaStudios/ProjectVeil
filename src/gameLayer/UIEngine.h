@@ -216,6 +216,7 @@ namespace UI {
 
 		/** Menus **/
 		bool isSettingsEnabled = false;
+		bool isMultiplayerEnabled = false;
 	private:
 		UIEngine() = default;
 

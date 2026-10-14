@@ -146,6 +146,17 @@ namespace UI {
 #pragma endregion
 
 #pragma region Settings Menu
+
+	static void returnButton(bool& state) {
+		auto scene = SceneManagement::SceneManager::getInstance().currentScene;
+
+		if (drawButton("Return")) {
+			scene->is2DActive = !scene->is2DActive;
+			UIEngine::getInstance().isSettingsEnabled = false;
+			state = false;
+		}
+	}
+
 	void drawSettings() {
 
 		Settings::Settings* settings = &Settings::Settings::getInstance();
@@ -156,10 +167,7 @@ namespace UI {
 
 		drawText("Settings");
 
-		if (drawButton("Return")) {
-			scene->is2DActive = !scene->is2DActive;
-			UIEngine::getInstance().isSettingsEnabled = false;
-		}
+		returnButton(UI::UIEngine::getInstance().isSettingsEnabled);
 
 		for (auto& setting : settings->settingsList) {
 			std::string displayName = setting->name + ": " + std::to_string(setting->value);
@@ -170,6 +178,25 @@ namespace UI {
 
 		endPanel();
 	};
+
+	void drawMultiplayer() {
+
+		beginPanel("Multiplayer", Rectangle{}, Rectangle{0.1f, 0.1f, 0.8f, 0.8f});
+
+		drawText("Multiplayer");
+
+		returnButton(UI::UIEngine::getInstance().isMultiplayerEnabled);
+
+		if (drawButton("Start Server")) {
+			// Start Server
+		}
+
+		if (drawButton("Join Server")) {
+			// Join Server
+		}
+
+		endPanel();
+	}
 #pragma endregion
 
 	// UIEngine Implementation
@@ -230,7 +257,7 @@ namespace UI {
 		// engine owns.
 
 		if (isSettingsEnabled) { drawSettings(); }
-
+		if (isMultiplayerEnabled) { drawMultiplayer(); }
 	}
 
 	void UIEngine::placeWidget(Widget& widget, Rectangle pixelRect, Rectangle scaleRect)

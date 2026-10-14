@@ -21,7 +21,7 @@ void Scene_MainMenuDraw2D()
 
 	// Draw Main Menu
 	// Each row stacks under the last inside the panel, so a new button is one more call here.
-	UI::beginPanel("Main Menu", Rectangle{}, Rectangle{ 0.4f, 0.3f, 0.2f, 0.28f });
+	UI::beginPanel("Main Menu", Rectangle{}, Rectangle{ 0.4f, 0.3f, 0.2f, 0.4f });
 	{
 		UI::drawText("Main Menu");
 
@@ -30,9 +30,14 @@ void Scene_MainMenuDraw2D()
 			std::cout << "Play Button Clicked\n";
 			SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), 1);
 		}
+		if (UI::drawButton("Multiplayer")) {
+			std::cout << "Open Multiplayer Menu\n";
+			scene->is2DActive = !scene->is2DActive;
+			UI::UIEngine::getInstance().isMultiplayerEnabled = !UI::UIEngine::getInstance().isMultiplayerEnabled;
+		}
 		if (UI::drawButton("Settings"))
 		{
-			std::cout << "Settings Button Clicked\n";
+			std::cout << "Open Settings Menu\n";
 			// Enable Settings Menu
 			scene->is2DActive = !scene->is2DActive;
 			UI::UIEngine::getInstance().isSettingsEnabled = !UI::UIEngine::getInstance().isSettingsEnabled;
