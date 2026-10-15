@@ -151,8 +151,8 @@ namespace UI {
 		auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 		if (drawButton("Return")) {
-			scene->is2DActive = !scene->is2DActive;
-			UIEngine::getInstance().isSettingsEnabled = false;
+			if (scene) { scene->is2DActive = !scene->is2DActive; }
+			// Only close the menu that owns this button
 			state = false;
 		}
 	}
@@ -181,6 +181,8 @@ namespace UI {
 	};
 
 	void drawMultiplayer() {
+
+		if (!SceneManagement::SceneManager::getInstance().currentScene) { return; }
 
 		beginPanel("Multiplayer", Rectangle{}, Rectangle{0.1f, 0.1f, 0.8f, 0.8f});
 
