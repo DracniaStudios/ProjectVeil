@@ -15,6 +15,7 @@ void Scene_MainMenuDraw2D()
 {
 	auto manager = &SceneManagement::SceneManager::getInstance();
 	auto scene = manager->currentScene;
+	if (!scene) { return; }
 
 	// Draw Main Menu
 	// Each row stacks under the last inside the panel, so a new button is one more call here.

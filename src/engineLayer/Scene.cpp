@@ -335,6 +335,9 @@ namespace SceneManagement {
 		case MINI_GAME_RO_SHAM_BOO_ID:
 			miniGame = MiniGame_RoShamBoo(player);
 			break;
+		default:
+			std::cerr << "[Scene] Unknown minigame id " << value << "\n";
+			break;
 		}
 
 		if (miniGame) {
