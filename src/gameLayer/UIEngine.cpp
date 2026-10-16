@@ -149,6 +149,7 @@ namespace UI {
 
 	static void returnButton(bool& state) {
 		auto scene = SceneManagement::SceneManager::getInstance().currentScene;
+		if (!scene) { return; }
 
 		if (drawButton("Return")) {
 			scene->is2DActive = !scene->is2DActive;
