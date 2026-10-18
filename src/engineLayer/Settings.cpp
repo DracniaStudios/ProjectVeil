@@ -28,7 +28,6 @@ namespace Settings {
 	using Json = nlohmann::json;
 	constexpr int VERSION = 1;
 	constexpr const char* SETTINGS_SAVE_PATH = RESOURCES_PATH "../saves/settings.json";
-	constexpr const char* SETTINGS_SAVE_BAK = RESOURCES_PATH "../saves/settings.json.bak";
 
 	static bool JsonToSettings(Json& j, std::vector<GameSettings*> list) {
 		if (j.value("Version", 0) > VERSION) {
