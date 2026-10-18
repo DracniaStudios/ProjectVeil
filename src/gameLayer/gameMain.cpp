@@ -1,6 +1,9 @@
 #include "gameMain.h"
 
+#include <WorldEditor.h>
+
 #include <cmath>
+#include <optional>
 
 constexpr float maxDeltaTime = 1.0f / 30.0f; // 30 FPS
 
@@ -12,6 +15,26 @@ static bool exitRequested = false;
 void request_exit()
 {
 	exitRequested = true;
+}
+
+// Whether the cursor was last locked for gameplay; empty until the first frame
+static std::optional<bool> cursorLockedForGameplay;
+
+// Locks the cursor while gameplay has the player's input, and frees it for any
+// overlay or the World Editor. Applied only when that changes, so the backtick
+// toggle in ProjectVeil.cpp still works by hand in between.
+static void ApplyCursorForInput()
+{
+	const auto scene = SceneManagement::SceneManager::getInstance().currentScene;
+	const bool gameplayHasInput = scene != nullptr
+		&& scene->overlays.GameplayHasInput()
+		&& !Editor::WorldEditor::getInstance().IsEnabled();
+
+	if (cursorLockedForGameplay == gameplayHasInput) { return; }
+	cursorLockedForGameplay = gameplayHasInput;
+
+	if (gameplayHasInput) { DisableCursor(); }
+	else { EnableCursor(); }
 }
 
 bool init_game()
@@ -29,9 +52,9 @@ bool init_game()
 	// render half-lit with no error anywhere.
 	Lighting::LightingSystem::getInstance().Init();
 
-	SceneManagement::SceneManager_init(&SceneManagement::SceneManager::getInstance());
-
 	// Camera
+	// Set BEFORE SceneManager_init, which builds the Main Menu scene: that scene
+	// places the camera for its Title, and setting these afterwards would move it.
 	SceneManagement::SceneManager::getInstance().camera3D.position = Vector3{ 0, 10, 10 };
 	SceneManagement::SceneManager::getInstance().camera3D.target = Vector3{ 0, 0, 0 };
 	SceneManagement::SceneManager::getInstance().camera3D.up = Vector3(0.0f, 1.0f, 0.0f);
@@ -42,6 +65,8 @@ bool init_game()
 	SceneManagement::SceneManager::getInstance().camera2D.rotation = 0.0f;
 	SceneManagement::SceneManager::getInstance().camera2D.offset = Vector2{ 0, 0 };
 	SceneManagement::SceneManager::getInstance().camera2D.target = Vector2{ 0, 0 };
+
+	SceneManagement::SceneManager_init(&SceneManagement::SceneManager::getInstance());
 
 	// Go To Main Menu
 	//SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), SCENE_MAIN_MENU);
@@ -66,7 +91,11 @@ bool update_game()
 	SceneManagement::SceneManager_update(&SceneManagement::SceneManager::getInstance(), deltaTime);
 
 	SceneManagement::SceneManager_draw(&SceneManagement::SceneManager::getInstance());
-	
+
+	// After the draw too, so a menu button that opened or closed an overlay this
+	// frame moves the cursor this frame
+	ApplyCursorForInput();
+
 	DrawFPS(10, 10);
 	return !exitRequested;
 }

@@ -1,8 +1,5 @@
 #include "UIEngine.h"
 
-#include <Settings.h>
-#include <SceneManager.h>
-
 #include <algorithm>
 #include <iostream>
 
@@ -145,62 +142,6 @@ namespace UI {
 	}
 #pragma endregion
 
-#pragma region Settings Menu
-
-	static void returnButton(bool& state) {
-		auto scene = SceneManagement::SceneManager::getInstance().currentScene;
-		if (!scene) { return; }
-
-		if (drawButton("Return")) {
-			scene->is2DActive = !scene->is2DActive;
-			UIEngine::getInstance().isSettingsEnabled = false;
-			state = false;
-		}
-	}
-
-	void drawSettings() {
-
-		Settings::Settings* settings = &Settings::Settings::getInstance();
-		auto scene = SceneManagement::SceneManager::getInstance().currentScene;
-		if (!scene) { return; }
-
-		// The sum of (X + width), (Y + height) is the size of the panel.
-		beginPanel("Settings", Rectangle{}, Rectangle{ 0.1f, 0.1f, 0.8f, 0.8f });
-
-		drawText("Settings");
-
-		returnButton(UI::UIEngine::getInstance().isSettingsEnabled);
-
-		for (auto& setting : settings->settingsList) {
-			std::string displayName = setting->name + ": " + std::to_string(setting->value);
-			if (drawButton(displayName)) {
-				setting->value = setting->value != 1 ? 1 : 0;
-			}
-		}
-
-		endPanel();
-	};
-
-	void drawMultiplayer() {
-
-		beginPanel("Multiplayer", Rectangle{}, Rectangle{0.1f, 0.1f, 0.8f, 0.8f});
-
-		drawText("Multiplayer");
-
-		returnButton(UI::UIEngine::getInstance().isMultiplayerEnabled);
-
-		if (drawButton("Start Server")) {
-			// Start Server
-		}
-
-		if (drawButton("Join Server")) {
-			// Join Server
-		}
-
-		endPanel();
-	}
-#pragma endregion
-
 	// UIEngine Implementation
 #pragma region UIEngine Implementation
 	void UIEngine::beginFrame()
@@ -250,16 +191,6 @@ namespace UI {
 
 		// The inspector re-sets this every frame it is open, so closing it clears the outline
 		highlightedId = -1;
-	}
-
-	void UIEngine::render()
-	{
-		// Widgets are drawn the moment their draw function is called, during the
-		// scene's draw2D, so there is nothing to replay here — only the menus the
-		// engine owns.
-
-		if (isSettingsEnabled) { drawSettings(); }
-		if (isMultiplayerEnabled) { drawMultiplayer(); }
 	}
 
 	void UIEngine::placeWidget(Widget& widget, Rectangle pixelRect, Rectangle scaleRect)

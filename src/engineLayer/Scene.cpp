@@ -4,6 +4,7 @@
 #include <WorldEditor.h>
 #include <AudioManager.h>
 #include <UIEngine.h>
+#include <UI/Overlays.h>
 
 #include <iterator>
 
@@ -260,7 +261,7 @@ namespace SceneManagement {
 
 		// Nothing to replay: hand the player back to the 3D world rather
 		// than stranding them in an empty 2D overlay with no way out.
-		if (miniGame == nullptr) { is2DActive = false; return; }
+		if (miniGame == nullptr) { overlays.Close(Overlay::MiniGame); return; }
 
 		if (stationId != 0)
 		{
@@ -285,8 +286,7 @@ namespace SceneManagement {
 		stationNoiseTimer = 0.0f;
 
 		miniGame = nullptr;
-		isMiniActive = false;
-		is2DActive = false;
+		overlays.Close(Overlay::MiniGame);
 	}
 
 	void Scene::SetMiniGame(int value)
@@ -310,8 +310,7 @@ namespace SceneManagement {
 		ReleaseMiniGame();
 
 		player->rigidBody2D = {};
-		is2DActive = true;
-		isMiniActive = true;
+		overlays.Open(Overlay::MiniGame);
 
 		player->artifactMode = value;
 
@@ -370,13 +369,15 @@ namespace SceneManagement {
 		auto scene = manager->currentScene;
 		if (scene->update) { scene->update(delta); }
 
-		// Swap Editor and Player Camera
-		if (!scene->is2DActive) {
-			if (scene->player != nullptr && worldEditor->IsEnabled() == false) {
+		// Swap Editor and Player Camera. The editor camera ignores overlays, so the
+		// Main Menu world can still be flown around under its Title; the player's
+		// camera only follows the mouse while gameplay has the player's input.
+		if (worldEditor->IsEnabled()) {
+			worldEditor->editorCamera.Update(&manager->camera3D);
+		}
+		else if (scene->overlays.GameplayHasInput()) {
+			if (scene->player != nullptr) {
 				scene->player->camera.UpdateCameraFPS(&manager->camera3D);
-			}
-			else if (worldEditor->IsEnabled()) {
-				worldEditor->editorCamera.Update(&manager->camera3D);
 			}
 			else {
 				std::cerr << "No Camera Detected \n";
@@ -426,15 +427,16 @@ namespace SceneManagement {
 			{
 				player->rigidBody3D.SyncBroadPhaseBox();
 			}
-			else if (scene->is2DActive)
+			else if (scene->overlays.Top() == Overlay::MiniGame)
 			{
 				player->update2D(delta, player->rigidBody2D.canMove);
 			}
-			else
+			else if (scene->overlays.GameplayHasInput())
 			{
 				if (!worldEditor->IsEnabled()) { player->update3D(delta); };
 				clampObject(*player, scene->limitYBounds);
 			}
+			// Under any other overlay the player stands still until it closes
 		}
 
 		/* Update GameObjects */
@@ -501,28 +503,17 @@ namespace SceneManagement {
 		/** Update MiniGame **/
 		if (auto miniGame = scene->miniGame; miniGame != nullptr)
 		{
-			scene->isMiniActive = true;
 			miniGame->update(scene, delta);
 		}
-		else
-		{
-			scene->isMiniActive = false;
-		}
 
-		// Pause To Inventory
-		// Gated on isMiniActive so TAB can't be used to regain 3D player control
-		// while a minigame is still running in the background.
-		if (inputSystem->IsActionPressed(InputSystem::ACTION_UI_PAUSE)) {
-			if (scene->isMiniActive) {
-				scene->is2DActive = false;
+		// The Inventory action opens the Inventory during gameplay and otherwise
+		// backs out of whatever overlay is on top. Backing out of a minigame quits
+		// it, so it is freed here: the stack only records that it closed.
+		if (inputSystem->IsActionPressed(InputSystem::ACTION_UI_INVENTORY)) {
+			if (scene->overlays.InventoryPressed() == Overlay::MiniGame) {
 				scene->ReleaseMiniGame();
 			}
-			else {
-				scene->is2DActive = !scene->is2DActive;
-			}
 		}
-
-		PlayerUI::getInstance().update();
 
 		// World Editor (includes the developer tool windows)
 		Editor::WorldEditor::getInstance().update(scene->player);
@@ -540,25 +531,11 @@ namespace SceneManagement {
 
 			if (scene->draw2D) { scene->draw2D(); }
 
-			if (scene->is2DActive)
-			{
-				/// Background
-				DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{ 20, 20, 20, 200 });
+			// The dimming and the top overlay's panel, Title through MiniGame
+			UI::drawOverlays(*scene);
 
-				/// Inventory
-				//inventory.render(assetManager);
-
-				/// Mini Games On Top
-				if (scene->isMiniActive && scene->miniGame != nullptr)
-				{
-					scene->miniGame->draw(scene);
-				}
-				scene->player->render2D();
-
-				PlayerUI::getInstance().render();
-
-				ui.render();
-			}
+			// Over the overlays: the reticle during gameplay, the cursor in a MiniGame
+			scene->player->render2D();
 
 			ui.endFrame();
 		}

@@ -120,13 +120,14 @@ void Player::render2D()
 	auto inputSystem = &InputSystem::InputSystem::getInstance();
 	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
-	if (scene->isMiniActive && scene->miniGame != nullptr)
+	// The player's cursor inside a running minigame
+	if (scene->overlays.Top() == Overlay::MiniGame && scene->miniGame != nullptr)
 	{
 		DrawCircle(rigidBody2D.translation.x, rigidBody2D.translation.y, rigidBody2D.scale.x, WHITE);
 	}
 
 	/// Reticle
-	if (!scene->is2DActive) {
+	if (scene->overlays.GameplayHasInput()) {
 		DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 10,
 			inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM) ? RED
 			: inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2) ? RED
@@ -144,7 +145,7 @@ void Player::render3D()
 void Player::update2D(float deltaTime, bool canMove)
 {
 	if (!this->isEnabled) return;
-	if (!SceneManagement::SceneManager::getInstance().currentScene->is2DActive) return;
+	if (SceneManagement::SceneManager::getInstance().currentScene->overlays.Top() != Overlay::MiniGame) return;
 
 	auto inputSystem = &InputSystem::InputSystem::getInstance();
 
@@ -198,7 +199,7 @@ static void EmitFootsteps(Player* player, float deltaTime)
 void Player::update3D(float deltaTime)
 {
 	if (!isEnabled) return;
-	if (SceneManagement::SceneManager::getInstance().currentScene->is2DActive) { return; }
+	if (!SceneManagement::SceneManager::getInstance().currentScene->overlays.GameplayHasInput()) { return; }
 
 	/// Player Scale
 	rigidBody3D.scale = Vector3(1, 2, 1);

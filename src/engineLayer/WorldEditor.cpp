@@ -1,5 +1,7 @@
 #include "WorldEditor.h"
 
+#include <UIEngine.h>
+
 namespace Editor {
 
 	void WorldEditor::update(Player* player)

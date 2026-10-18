@@ -7,7 +7,7 @@ void Player::Interact()
 	const auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 	const auto camera = &SceneManagement::SceneManager::getInstance().camera3D;
 
-	if (scene->is2DActive) { return; }
+	if (!scene->overlays.GameplayHasInput()) { return; }
 
 	// Check buff for increased range
 	int interactRange = defaultInteractRange;

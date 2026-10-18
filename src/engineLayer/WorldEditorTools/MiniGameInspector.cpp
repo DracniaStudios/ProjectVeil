@@ -19,7 +19,7 @@ void WorldEditor::ShowMiniGameData(Player* player)
 	ImGui::SameLine();
 	ImGui::TextDisabled("%s", miniGameIdToString(currentGameID));
 
-	ImGui::Checkbox("Is Mini Game Active", &scene->isMiniActive);
+	ImGui::Text("Overlay Open: %s", scene->overlays.IsOpen(Overlay::MiniGame) ? "Yes" : "No");
 
 	/// Launch Mini Game Button
 	if (ImGui::Button("Launch Mini Game"))
@@ -27,11 +27,11 @@ void WorldEditor::ShowMiniGameData(Player* player)
 		miniGameObstacleIndex = -1; // Selection belongs to the previous game's obstacle list
 
 		// Route through Scene::SetMiniGame rather than constructing the game
-		// here. The open-coded switch this replaces built the MiniGame but left
-		// is2DActive false, isMiniActive stale and lastMiniGamePlayed pointing at
-		// the previous game — so the launched game never drew (Scene_drawScene2D
-		// gates the minigame layer on is2DActive) and losing it replayed the
-		// wrong one. SetMiniGame also owns freeing the game being replaced.
+		// here. The open-coded switch this replaces built the MiniGame but never
+		// opened its overlay and left lastMiniGamePlayed pointing at the previous
+		// game — so the launched game never drew (only the top overlay is drawn)
+		// and losing it replayed the wrong one. SetMiniGame also owns freeing the
+		// game being replaced.
 		scene->SetMiniGame(currentGameID);
 	}
 	ImGui::Separator();

@@ -42,8 +42,22 @@ void WorldEditor::ShowWorldSettings()
 
 	/// Show Scene Data
 	ImGui::TextColored(ImVec4(1, 0, 1, 1), "Scene Data");
-	ImGui::Checkbox("Is 2D Active", &scene->is2DActive);
-	ImGui::Checkbox("Is Mini Game Active", &scene->isMiniActive);
+
+	// Read-only. Overlays open and close through their own rules, never by hand
+	// here, so the editor can't leave them in a state the game itself can't reach.
+	std::string openOverlays;
+	for (Overlay overlay : scene->overlays.OpenOverlays()) {
+		if (!openOverlays.empty()) { openOverlays += " > "; }
+		openOverlays += OverlayName(overlay);
+	}
+	ImGui::Text("Overlays: %s", openOverlays.empty() ? "none (gameplay has input)" : openOverlays.c_str());
+	if (ImGui::Button("Close All Overlays")) {
+		// A MiniGame overlay is only closed alongside freeing its minigame; closing
+		// it alone would leave the game running with nothing on screen.
+		if (scene->miniGame != nullptr) { scene->ReleaseMiniGame(); }
+		scene->overlays.CloseAll();
+	}
+
 	ImGui::Checkbox("Limit Y Bounds", &scene->limitYBounds);
 	ImGui::Separator();
 

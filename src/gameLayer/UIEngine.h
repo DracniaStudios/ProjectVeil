@@ -195,7 +195,6 @@ namespace UI {
 		/** Frame **/
 		void beginFrame(); // Before the first widget of the frame
 		void endFrame();   // After the last
-		void render();     // Engine-owned menus (Settings)
 
 		/** Layout **/
 		// Fill in the fields every widget shares and decide where it goes: inside
@@ -213,10 +212,6 @@ namespace UI {
 		/** Debug (UI Inspector) **/
 		bool showBounds = false; // Outline every widget
 		int highlightedId = -1;  // Outlined for one frame; the inspector sets it on hover
-
-		/** Menus **/
-		bool isSettingsEnabled = false;
-		bool isMultiplayerEnabled = false;
 	private:
 		UIEngine() = default;
 

@@ -87,6 +87,27 @@ echo
 COLLIDER_STATUS=$?
 
 # ---------------------------------------------------------------------------
+# OverlayStack tests
+#
+# Cheaper still: OverlayStack.cpp includes nothing from raylib or the engine,
+# so this links no library at all. If it ever needs one, the overlay rules have
+# leaked out of the stack.
+# ---------------------------------------------------------------------------
+OVERLAY_BIN="$OUT_DIR/overlay_stack_tests"
+
+echo
+echo "building $OVERLAY_BIN"
+g++ -std=c++23 -Wall \
+	-I src/gameLayer \
+	tests/OverlayStackTests.cpp \
+	src/gameLayer/OverlayStack.cpp \
+	-o "$OVERLAY_BIN"
+
+echo
+"$OVERLAY_BIN"
+OVERLAY_STATUS=$?
+
+# ---------------------------------------------------------------------------
 # Stalker FSM tests
 #
 # These need the engine. Stalker::update runs Entity::update ->
@@ -103,7 +124,8 @@ if [[ ! -d "$OBJ_ROOT" ]]; then
 	echo
 	echo "skipping engine-linked suites: no compiled objects under '$OBJ_ROOT'." >&2
 	echo "                               build the game first: cmake --build $BUILD_DIR" >&2
-	exit $SOUNDFIELD_STATUS
+	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 ]]; then exit 1; fi
+	exit 0
 fi
 
 # Every object except the one defining main. Detected rather than hardcoded, so
@@ -226,4 +248,4 @@ else
 fi
 TRIGGER_STATUS=$?
 
-if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
+if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi

@@ -17,8 +17,8 @@ void WorldEditor::ShowPlayerData(Player* player)
 	ImGui::Spacing();
 
 
-	/// Show Rigidbody Data based on space
-	if (scene->is2DActive)
+	/// Show Rigidbody Data based on space: 2D only while a MiniGame has the player
+	if (scene->overlays.Top() == Overlay::MiniGame)
 	{
 		ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody2D.isEnabled);
 		ImGui::Text("Player Position 2D: (%.2f, %.2f)", player->rigidBody2D.translation.x, player->rigidBody2D.translation.y);

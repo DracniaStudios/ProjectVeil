@@ -105,9 +105,8 @@ namespace SaveSystem
 		j["Version"] = VERSION;
 		j["IdCounter"] = scene->gameMap.instanceHolder.idCounter;
 
-		// Scene Flags
-		j["Scene"]["Is2DActive"] = scene->is2DActive;
-		j["Scene"]["IsMiniActive"] = scene->isMiniActive;
+		// Scene Flags. Open overlays are not saved: they belong to the session, and
+		// a loaded game always starts with none open.
 		j["Scene"]["LimitYBounds"] = scene->limitYBounds;
 
 		// Map Data
@@ -188,10 +187,10 @@ namespace SaveSystem
 		scene.gameMap.instanceHolder.idCounter = j.value("IdCounter", scene.gameMap.instanceHolder.idCounter);
 
 		// Scene Flags
+		// Older saves also carry Is2DActive and IsMiniActive; they are ignored, since
+		// the overlays those flags stood for are never restored from a save.
 		if (j.contains("Scene"))
 		{
-			scene.is2DActive = j["Scene"].value("Is2DActive", false);
-			scene.isMiniActive = j["Scene"].value("IsMiniActive", false);
 			scene.limitYBounds = j["Scene"].value("LimitYBounds", false);
 		}
 

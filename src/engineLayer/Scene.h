@@ -11,7 +11,7 @@
 #include <gameMap.h>
 #include <InputSystem.h>
 #include <Player.h>
-#include <PlayerUI.h>
+#include <OverlayStack.h>
 #include <Perception/SoundField.h>
 #include <AI/Director.h>
 #include <AssetManager.h>
@@ -57,9 +57,11 @@ namespace SceneManagement {
 		const char* name = "Scene";
 
 		// Flags
-		bool is2DActive = false; // 2D Mode
-		bool isMiniActive = false;// Mini Game 
 		bool limitYBounds = false; // Limit Y Bounds
+
+		// The Overlays open over this scene, which decide whether gameplay has the
+		// player's input. Empty when the scene is built; gone when it is freed.
+		OverlayStack overlays = {};
 
 		// Global Functions
 		updateSceneMethod update = nullptr;

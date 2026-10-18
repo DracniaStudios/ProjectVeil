@@ -5,7 +5,6 @@
 
 using namespace std;
 
-static bool lockMouse;
 int main()
 {
 #if PRODUCTION_BUILD == 1
@@ -65,16 +64,17 @@ int main()
 
 		if (IsKeyPressed(KEY_F11)) { ToggleFullscreen(); }
 		
+		// Dev override for the cursor lock. Read back from raylib rather than kept
+		// here: update_game() also locks and frees the cursor as overlays open and close.
 		if (IsKeyPressed(KEY_GRAVE))
 		{
-			lockMouse = !lockMouse;
-			if (lockMouse)
+			if (IsCursorHidden())
 			{
-				DisableCursor();
+				EnableCursor();
 			}
 			else
 			{
-				EnableCursor();
+				DisableCursor();
 			}
 		}
 		AudioManager::AudioManager::getInstance().update();
