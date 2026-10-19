@@ -107,6 +107,10 @@ namespace Editor {
 
 		/** Point & Place State **/
 		bool placementMode = false;        // Armed: the mouse drops objects into the world
+
+		// Armed by "Pick Target": the next viewport click sets this Task station's
+		// Target instead of changing the selection. 0 when not picking.
+		std::uint64_t targetPickStationId = 0;
 		bool placeAlignToSurface = true;   // Rest the object on the surface it lands on
 		bool placementSnap = true;
 		float placementGridStep = 1.0f;
@@ -137,7 +141,7 @@ namespace Editor {
 		// Interactable extras, applied on spawn when placing an Interactable
 		int stagingInteractType = INTERACT_NONE;
 		int stagingInteractValue = 0;
-		int stagingActivatorValue = 0;
+		std::uint64_t stagingTargetId = 0; // A Task station's Target; 0 toggles itself
 
 		/** Object & Entity Inspector State **/
 		std::uint64_t inspectEntityId = 0; // Id instead of pointer — survives entity removal (gameplay death, Load Game)
@@ -192,6 +196,7 @@ namespace Editor {
 
 		/** Selection Commands **/
 		void SelectUnderMouse(SceneManagement::Scene* scene, const Camera3D& camera);
+		void PickTargetUnderMouse(SceneManagement::Scene* scene, const Camera3D& camera);
 		void DeleteSelection();
 		void DuplicateSelection();
 		void FocusOnSelection();

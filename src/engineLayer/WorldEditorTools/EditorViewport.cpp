@@ -14,6 +14,7 @@ namespace
 	constexpr float kOutlineInflate = 1.02f;
 	const Color kSelectionColor = Color{ 255, 190, 60, 255 };
 	const Color kPlacementColor = Color{ 90, 220, 160, 255 };
+	const Color kTargetColor = Color{ 120, 170, 255, 255 }; // A selected Task station's Target
 
 	/** Removes by id from whichever container actually owns the object. */
 	bool RemoveById(SceneManagement::Scene* scene, std::uint64_t id)
@@ -81,6 +82,24 @@ void WorldEditor::UpdateViewportInput()
 		return;
 	}
 	placementPreviewValid = false;
+
+	// Step 3b. Picking a Task station's Target owns the left button the way
+	// placement does, so the click sets the Target rather than the selection.
+	if (targetPickStationId != 0)
+	{
+		gizmo.Cancel();
+
+		// As for placement: Escape only cancels when no widget has the keyboard
+		if (IsKeyPressed(KEY_ESCAPE) && !io.WantCaptureKeyboard)
+		{
+			targetPickStationId = 0;
+			statusMessage = "Target pick cancelled";
+			return;
+		}
+
+		if (canGrab && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) { PickTargetUnderMouse(scene, camera); }
+		return;
+	}
 
 	// Step 4. Resolved fresh every frame — see FindAnyById on why nothing here
 	// may cache the pointer across a spawn or delete.
@@ -302,6 +321,32 @@ void WorldEditor::SelectUnderMouse(SceneManagement::Scene* scene, const Camera3D
 
 	selectedObjectId = result.id;
 	statusMessage = "Selected: " + (result.object != nullptr ? result.object->name : std::string("object"));
+}
+
+void WorldEditor::PickTargetUnderMouse(SceneManagement::Scene* scene, const Camera3D& camera)
+{
+	InteractableObject* station = scene->gameMap.FindInteractable(targetPickStationId);
+	if (station == nullptr)
+	{
+		targetPickStationId = 0;
+		statusMessage = "Target pick cancelled: the station no longer exists";
+		return;
+	}
+
+	// A miss keeps the pick armed, so a click on empty space is not a lost pick
+	const PickResult result = PickSceneObject(scene, GetEditorMouseRay(camera), PICK_SELECTABLE);
+	if (!result.hit)
+	{
+		statusMessage = "Nothing there to target (Esc cancels)";
+		return;
+	}
+
+	// Picking the station itself means it toggles itself, which is what no Target means
+	station->targetId = result.id == station->id ? 0 : result.id;
+	targetPickStationId = 0;
+	statusMessage = station->targetId == 0
+		? std::string("Target: none (toggles itself)")
+		: "Target: " + (result.object != nullptr ? result.object->name : std::string("object"));
 }
 
 void WorldEditor::DeleteSelection()
@@ -544,6 +589,19 @@ void WorldEditor::DrawViewport3D()
 
 		DrawOrientedBoxWires(transform.position, Vector3Scale(transform.scale, kOutlineInflate),
 			transform.rotation, kSelectionColor);
+
+		// A selected Task station shows which object its MiniGame toggles
+		auto* station = dynamic_cast<InteractableObject*>(selected);
+		if (station != nullptr && station->interactType == INTERACT_MINIGAME && station->targetId != 0)
+		{
+			GameObject* target = station->FindMiniGameTarget(SceneManagement::SceneManager::getInstance().currentScene->gameMap);
+			if (target != nullptr && target != selected)
+			{
+				const GizmoTransform targetTransform = getSelectedTransform(target);
+				DrawOrientedBoxWires(targetTransform.position, Vector3Scale(targetTransform.scale, kOutlineInflate),
+					targetTransform.rotation, kTargetColor);
+			}
+		}
 
 		// Placement takes over the viewport, so the gizmo stands down rather
 		// than competing for the same clicks it can no longer receive.

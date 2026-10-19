@@ -156,8 +156,13 @@ void WorldEditor::ShowPlacementPanel()
 					MINI_GAME_FLAPPY_BIRD_ID, MINI_GAME_RO_SHAM_BOO_ID);
 			}
 			ImGui::Text("%s", miniGameIdToString(stagingInteractValue));
-			ImGui::InputInt("Activator ID", &stagingActivatorValue);
-			ImGui::TextDisabled("Object toggled when the mini game completes");
+			ImGui::InputScalar("MiniGame Target", ImGuiDataType_U64, &stagingTargetId);
+			if (stagingTargetId == 0) { ImGui::TextDisabled("None: the station toggles itself"); }
+			else if (GameObject* target = SceneManagement::SceneManager::getInstance().currentScene->gameMap.FindWorldObject(stagingTargetId)) {
+				ImGui::TextDisabled("%s", target->name.c_str());
+			}
+			else { ImGui::TextDisabled("Missing: nothing has this id yet"); }
+			ImGui::TextDisabled("Toggled when the mini game is won");
 		}
 		else if (stagingInteractType == INTERACT_UNLOCK) {
 			// Feeds player->artifactUnlocked, not an inventory item.
@@ -302,7 +307,8 @@ GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 	{
 		InteractableObject interactable(
 			static_cast<InteractionType>(stagingInteractType),
-			stagingInteractValue, stagingActivatorValue);
+			stagingInteractValue, 0);
+		if (interactable.interactType == INTERACT_MINIGAME) { interactable.targetId = stagingTargetId; }
 		// Same as the Entity branch: release the constructor's fallback cube
 		// before the assignment orphans it.
 		interactable.releaseGeneratedModel();
