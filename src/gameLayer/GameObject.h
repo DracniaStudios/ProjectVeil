@@ -150,8 +150,17 @@ public:
 	InteractableObject(InteractionType type, int value, int activator);
 
 	InteractionType interactType = INTERACT_NONE; // The Type of Interaction
-	int variation = 0; // The Variation of the interaction (most likely unused)
-	int activator = 0; // The Value Returned on the interaction
+	int variation = 0; // The Variation of the interaction: the MiniGame a Task station starts
+	int activator = 0; // The Value Returned on the interaction: an item pickup's value
+
+	// A Task station's Target: the object its MiniGame enables or disables when
+	// won. 0 means the station toggles itself. See CONTEXT.md.
+	std::uint64_t targetId = 0;
+
+	// The object this station's MiniGame toggles: its Target, or the station itself
+	// when it has none. nullptr when the Target no longer exists.
+	GameObject* FindMiniGameTarget(GameMap& gameMap);
+
 	bool isInteractable = true;
 	bool isRunningMiniGame = false;
 

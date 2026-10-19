@@ -149,21 +149,21 @@ static void TestStationNoiseIsPeriodicNotPerFrame()
 	delete scene;
 }
 
-static void TestReleasingTheMiniGameStopsTheHum()
+static void TestQuittingTheMiniGameStopsTheHum()
 {
-	std::printf("releasing the minigame frees the station\n");
+	std::printf("quitting the minigame frees the station\n");
 	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 });
 	station->isRunningMiniGame = true;
 
 	Check(scene->GetRunningStation() == station, "the station reports as occupied");
 
-	// ReleaseMiniGame is the single point that knows the minigame ended. Before
-	// this fix isRunningMiniGame was a one-way latch, so the station hummed for
-	// the rest of the session and the Director never hinted at it again.
-	scene->ReleaseMiniGame();
+	// Ending the minigame is the single point that knows it ended. Before this
+	// fix isRunningMiniGame was a one-way latch, so the station hummed for the
+	// rest of the session and the Director never hinted at it again.
+	scene->QuitMiniGame();
 
-	Check(scene->GetRunningStation() == nullptr, "releasing frees the station");
+	Check(scene->GetRunningStation() == nullptr, "quitting frees the station");
 	Check(!station->isRunningMiniGame, "the occupied flag is cleared");
 
 	scene->soundField.Clear();
@@ -346,7 +346,7 @@ int main()
 	TestIdleStationIsSilent();
 	TestRunningStationEmitsAtTheStation();
 	TestStationNoiseIsPeriodicNotPerFrame();
-	TestReleasingTheMiniGameStopsTheHum();
+	TestQuittingTheMiniGameStopsTheHum();
 	TestDisabledStationIsSilent();
 
 	TestInteractingWithAStationIsTampering();

@@ -25,3 +25,21 @@ _Avoid_: pause, pause menu
 **Pause**:
 The Overlay that stops the game. In single-player it freezes the world; in multiplayer the shared world keeps running.
 _Avoid_: inventory, menu
+
+### MiniGames
+
+**MiniGame**:
+A short 2D game the player plays inside an Overlay. Each round ends Won or Lost; a Lost round restarts fresh, so only the player can walk away from one.
+_Avoid_: mini game, minigame overlay
+
+**Task station**:
+An interactable in the world that starts a MiniGame. Winning there completes the station and toggles its Target.
+_Avoid_: terminal, machine
+
+**Target**:
+The door or other object a Task station's MiniGame enables or disables when won. A station with no Target toggles itself.
+_Avoid_: activator
+
+**Practice run**:
+A MiniGame started from the Artifact instead of a Task station. Winning grants the game's buff but completes nothing and toggles nothing.
+_Avoid_: replay

@@ -180,9 +180,6 @@ void GameMap::DestroyInteractable(uint64_t id)
 	// Player Inventory can hold references to InteractableObjects
 	if (scene && scene->player) {
 		std::erase(scene->player->inventory, object);
-		if (scene->player->interactObjectId == object->id) {
-			scene->player->interactObjectId = 0;
-		}
 	}
 	interactables.erase(it);
 }

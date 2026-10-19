@@ -78,9 +78,10 @@ void updateArtifact(Player* player, float deltaTime) {
 		: inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT_LEFT) ? -1
 		: 0;
 	player->artifactMode = static_cast<int>(Clamp(static_cast<float>(player->artifactMode), -1, player->artifactUnlocked));
-	if (scene->miniGame == nullptr && inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT))
+	// A Practice run: the game's buff, but no station completed and no Target toggled
+	if (!scene->miniGameSession.IsRunning() && inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT))
 	{
-		scene->SetMiniGame(player->artifactMode);
+		scene->StartMiniGame(player->artifactMode);
 	}
 
 	// Artifact
@@ -98,8 +99,7 @@ void Player::onEnable()
 	maxHealth = 100.0f;
 
 	id = PLAYER_ID;
-	rigidBody2D.translation = Vector3(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f, 0);
-	rng = std::ranlux24_base(std::random_device{}());
+	rng =std::ranlux24_base(std::random_device{}());
 	display3DModel = false;
 	
 	Entity::onEnable();
@@ -120,11 +120,7 @@ void Player::render2D()
 	auto inputSystem = &InputSystem::InputSystem::getInstance();
 	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
-	// The player's cursor inside a running minigame
-	if (scene->overlays.Top() == Overlay::MiniGame && scene->miniGame != nullptr)
-	{
-		DrawCircle(rigidBody2D.translation.x, rigidBody2D.translation.y, rigidBody2D.scale.x, WHITE);
-	}
+	// Inside a MiniGame the player is the game's own cursor, which the game draws
 
 	/// Reticle
 	if (scene->overlays.GameplayHasInput()) {
@@ -140,28 +136,6 @@ void Player::render3D()
 	if (!this->isEnabled) { return; }
 	if (artifact) { artifact->render3D(); }
 	Entity::render3D();
-}
-
-void Player::update2D(float deltaTime, bool canMove)
-{
-	if (!this->isEnabled) return;
-	if (SceneManagement::SceneManager::getInstance().currentScene->overlays.Top() != Overlay::MiniGame) return;
-
-	auto inputSystem = &InputSystem::InputSystem::getInstance();
-
-	// Player2D Function
-	moveDirection = Vector2Zero();
-	moveDirection.x = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_LEFT) ? -1.0 : inputSystem->IsActionDown(InputSystem::ACTION_MOVE_RIGHT) ? 1.0f : 0;
-	moveDirection.y = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_FORWARD) ? 1.0 : inputSystem->IsActionDown(InputSystem::ACTION_MOVE_BACKWARD) ? -1.0f : 0;
-
-	auto speed = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_SPRINT) ? baseSpeed * 2 : baseSpeed;
-
-	if (canMove)
-	{
-		rigidBody2D.translation += Vector3(moveDirection.x, moveDirection.y) * speed * 60.0f * deltaTime;
-	}
-
-	rigidBody2D.update(deltaTime);
 }
 
 // Footsteps, the player's loudest routine emission.

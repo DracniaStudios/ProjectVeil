@@ -135,7 +135,7 @@ static void TestSpawnEntityKeysByNewIdAndDoesNotClobberSiblings()
 
 static void TestDestroyInteractableScrubsPlayerInventory()
 {
-	std::printf("destroying an interactable scrubs the player's inventory and interactObjectId\n");
+	std::printf("destroying an interactable scrubs the player's inventory\n");
 	SceneManagement::Scene* scene = MakeScene();
 	GameMap& map = scene->gameMap;
 
@@ -143,15 +143,12 @@ static void TestDestroyInteractableScrubsPlayerInventory()
 	InteractableObject* spawned = map.SpawnInteractable(item);
 
 	scene->player->inventory.push_back(spawned);
-	scene->player->interactObjectId = spawned->id;
 
 	map.DestroyInteractable(spawned->id);
 
 	Check(std::find(scene->player->inventory.begin(), scene->player->inventory.end(), spawned)
 			== scene->player->inventory.end(),
 		"the destroyed interactable is removed from the player's inventory");
-	Check(scene->player->interactObjectId == 0,
-		"the player's interactObjectId is cleared when it pointed at the destroyed interactable");
 	Check(map.FindInteractable(spawned->id) == nullptr, "the interactable itself is gone");
 
 	delete scene;

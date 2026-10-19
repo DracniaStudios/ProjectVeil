@@ -19,14 +19,11 @@ static void NewWorld(SceneManagement::Scene& scene) {
 
 	scene.gameMap.create(Vector3(10.0f, 1.0f, 10.0f));
 
-	// Player::inventory and Player::interactObjectId are non-owning references
-	// into the interactables map just cleared above (see
-	// GameMap::removeInteractable for the same hazard) — left alone here they
-	// dangle the moment any minigame completes or the Player Inspector reads
-	// the inventory.
+	// Player::inventory holds non-owning references into the interactables map
+	// just cleared above (see GameMap::DestroyInteractable for the same hazard) —
+	// left alone they dangle the moment the Player Inspector reads the inventory.
 	if (scene.player) {
 		scene.player->inventory.clear();
-		scene.player->interactObjectId = 0;
 	}
 
 	scene.ResetID();
@@ -52,9 +49,9 @@ void WorldEditor::ShowWorldSettings()
 	}
 	ImGui::Text("Overlays: %s", openOverlays.empty() ? "none (gameplay has input)" : openOverlays.c_str());
 	if (ImGui::Button("Close All Overlays")) {
-		// A MiniGame overlay is only closed alongside freeing its minigame; closing
-		// it alone would leave the game running with nothing on screen.
-		if (scene->miniGame != nullptr) { scene->ReleaseMiniGame(); }
+		// A MiniGame overlay is only closed alongside ending its game; closing it
+		// alone would leave the game waiting with nothing on screen.
+		if (scene->miniGameSession.IsRunning()) { scene->QuitMiniGame(); }
 		scene->overlays.CloseAll();
 	}
 

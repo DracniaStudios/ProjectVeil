@@ -108,6 +108,37 @@ echo
 OVERLAY_STATUS=$?
 
 # ---------------------------------------------------------------------------
+# MiniGame tests
+#
+# The session, all six games with scripted input, and RigidBody2D. Same tier as
+# the collider suite: a game reads its input, screen size and seed from what it
+# is handed and ends by returning an outcome, so raylib is linked for its
+# rectangle and collision helpers but nothing is initialised. If this block
+# ever needs a game header to link, the MiniGame rules have leaked out again.
+# ---------------------------------------------------------------------------
+MINIGAME_BIN="$OUT_DIR/minigame_session_tests"
+
+echo
+echo "building $MINIGAME_BIN"
+g++ -std=c++23 -Wall \
+	-I src/gameLayer \
+	-I src/engineLayer \
+	-I thirdparty/raylib-6.0/src \
+	-I "$JSON_INC" \
+	tests/MiniGameSessionTests.cpp \
+	src/gameLayer/MiniGameSession.cpp \
+	src/gameLayer/MiniGame.cpp \
+	src/gameLayer/MiniGames/*.cpp \
+	src/gameLayer/Components/RigidBody2D.cpp \
+	src/engineLayer/randomStuff.cpp \
+	-o "$MINIGAME_BIN" \
+	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
+
+echo
+"$MINIGAME_BIN"
+MINIGAME_STATUS=$?
+
+# ---------------------------------------------------------------------------
 # Stalker FSM tests
 #
 # These need the engine. Stalker::update runs Entity::update ->
@@ -124,7 +155,7 @@ if [[ ! -d "$OBJ_ROOT" ]]; then
 	echo
 	echo "skipping engine-linked suites: no compiled objects under '$OBJ_ROOT'." >&2
 	echo "                               build the game first: cmake --build $BUILD_DIR" >&2
-	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 ]]; then exit 1; fi
+	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 ]]; then exit 1; fi
 	exit 0
 fi
 
@@ -248,4 +279,4 @@ else
 fi
 TRIGGER_STATUS=$?
 
-if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
+if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi

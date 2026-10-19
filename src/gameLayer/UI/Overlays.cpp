@@ -105,9 +105,7 @@ namespace UI {
 		case Overlay::Inventory:   /* inventory.render(assetManager); */ break;
 		case Overlay::Settings:    drawSettings(overlays); break;
 		case Overlay::Multiplayer: drawMultiplayer(overlays); break;
-		case Overlay::MiniGame:
-			if (scene.miniGame != nullptr) { scene.miniGame->draw(&scene); }
-			break;
+		case Overlay::MiniGame:    scene.miniGameSession.Draw(); break;
 		}
 	}
 }

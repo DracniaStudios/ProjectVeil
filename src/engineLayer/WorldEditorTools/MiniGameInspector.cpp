@@ -26,41 +26,44 @@ void WorldEditor::ShowMiniGameData(Player* player)
 	{
 		miniGameObstacleIndex = -1; // Selection belongs to the previous game's obstacle list
 
-		// Route through Scene::SetMiniGame rather than constructing the game
-		// here. The open-coded switch this replaces built the MiniGame but never
-		// opened its overlay and left lastMiniGamePlayed pointing at the previous
-		// game — so the launched game never drew (only the top overlay is drawn)
-		// and losing it replayed the wrong one. SetMiniGame also owns freeing the
-		// game being replaced.
-		scene->SetMiniGame(currentGameID);
+		// Through the Scene, so the overlay opens and the game it replaces ends
+		// properly. Launched from here it is a Practice run: no station to complete.
+		scene->StartMiniGame(currentGameID);
 	}
 	ImGui::Separator();
 
 	/// Show Mini Game Data
 	ImGui::TextColored(ImVec4(0.0f, 0.0f, 1.0f, 1.0f), "Mini Game Data");
 
-	if (scene->miniGame != nullptr)
+	if (MiniGame* game = scene->miniGameSession.Game())
 	{
-		ImGui::Text("Score: %d", scene->miniGame->data->score);
-		ImGui::Text("Score Goal: %d", scene->miniGame->data->scoreGoal);
-		ImGui::InputFloat4("Screen Size: %d", &scene->miniGame->data->screen.x);
-		ImGui::InputFloat4("Goal Size: %d", &scene->miniGame->data->goal.x);
-		if (ImGui::Button("Complete")) { CompleteMiniGame(*scene->miniGame->data, *scene->player, scene->gameMap, BUFF_RANGE, true); }
-		if (ImGui::Button("Reset")) { scene->ResetMiniGame(); }
-		if (ImGui::Button("Release")) { scene->ReleaseMiniGame(); }
+		ImGui::Text("%s, for station %llu", game->name, static_cast<unsigned long long>(scene->miniGameSession.StationId()));
+		ImGui::Text("Score: %d", game->data.score);
+		ImGui::Text("Score Goal: %d", game->data.scoreGoal);
+		ImGui::InputFloat4("Screen Size: %d", &game->data.screen.x);
+		ImGui::InputFloat4("Goal Size: %d", &game->data.goal.x);
+		ImGui::Text("Cursor: (%.1f, %.1f)  velocity (%.1f, %.1f)",
+			game->cursor.translation.x, game->cursor.translation.y, game->cursor.velocity.x, game->cursor.velocity.y);
+
+		// Win is applied exactly as a real win: the buff, and at a station its
+		// completion and Target. Retry is a fresh round, as after a loss.
+		if (ImGui::Button("Win")) { scene->WinMiniGame(); }
+		ImGui::SameLine();
+		if (ImGui::Button("Retry")) { scene->RetryMiniGame(); miniGameObstacleIndex = -1; }
+		ImGui::SameLine();
+		if (ImGui::Button("Quit")) { scene->QuitMiniGame(); }
 		ImGui::Separator();
 
-		// Reset()/Release() above can null scene->miniGame in this same frame
-		// (Release always does; Reset does too when there is no valid previous
-		// game to replay), so the outer null check taken before those buttons ran
-		// no longer guarantees anything below is safe without re-checking here.
-		if (scene->miniGame == nullptr)
+		// Win and Quit end the game, and Retry replaces it, in this same frame, so
+		// the game fetched above can't be used past the buttons
+		game = scene->miniGameSession.Game();
+		if (game == nullptr)
 		{
 			ImGui::End();
 			return;
 		}
 
-		auto& obstacles = scene->miniGame->data->obstacles;
+		auto& obstacles = game->data.obstacles;
 		ImGui::Text("Obstacles: %d", static_cast<int>(obstacles.size()));
 		for (int i = 0; i < static_cast<int>(obstacles.size()); i++)
 		{

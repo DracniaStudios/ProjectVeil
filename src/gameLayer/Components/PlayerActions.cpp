@@ -55,5 +55,6 @@ void Player::Interact()
 		return;
 	}
 
-	if (artifact && artifact->isEnabled) { scene->SetMiniGame(artifactMode); return; }
+	// Using the Artifact with nothing in reach is a Practice run
+	if (artifact && artifact->isEnabled) { scene->StartMiniGame(artifactMode); return; }
 }

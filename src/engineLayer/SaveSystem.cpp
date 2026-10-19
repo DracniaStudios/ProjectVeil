@@ -147,9 +147,9 @@ namespace SaveSystem
 		// Player
 		if (scene->player != nullptr)
 		{
+			// No 2D position: the player only has one inside a MiniGame, as that
+			// game's cursor, and a running MiniGame is never saved
 			j["Player"] = scene->player->formatToJson();
-			j["Player"]["Pos2X"] = scene->player->rigidBody2D.translation.x;
-			j["Player"]["Pos2Y"] = scene->player->rigidBody2D.translation.y;
 		}
 
 		return j;
@@ -177,12 +177,8 @@ namespace SaveSystem
 		// Player::inventory is a list of non-owning pointers into the map just
 		// cleared above; the player object itself survives the load, so those
 		// pointers would otherwise dangle (inventory contents aren't persisted yet).
-		// Player::interactObjectId is the same hazard — ActivateMiniGame() caches
-		// an id into this same map for any interactable with the default
-		// (0) activator, and nothing else clears it once the map is wiped.
 		if (scene.player) {
 			scene.player->inventory.clear();
-			scene.player->interactObjectId = 0;
 		}
 		scene.gameMap.instanceHolder.idCounter = j.value("IdCounter", scene.gameMap.instanceHolder.idCounter);
 
@@ -294,16 +290,11 @@ namespace SaveSystem
 		// Load Player
 		if (j.contains("Player") && scene.player != nullptr)
 		{
+			// Older saves also carry Pos2X / Pos2Y, the 2D position the player no longer
+			// has; they are ignored.
 			if (!scene.player->loadFromJson(j["Player"]))
 			{
 				std::cerr << "Failed to load Player data.\n";
-			}
-			else
-			{
-				scene.player->rigidBody2D.teleport(Vector2{
-					j["Player"].value("Pos2X", scene.player->rigidBody2D.translation.x),
-					j["Player"].value("Pos2Y", scene.player->rigidBody2D.translation.y)
-				});
 			}
 		}
 
@@ -480,12 +471,8 @@ namespace SaveSystem
 		// Player::inventory is a list of non-owning pointers into the map just
 		// cleared above; the player object itself survives the load, so those
 		// pointers would otherwise dangle (inventory contents aren't persisted yet).
-		// Player::interactObjectId is the same hazard — ActivateMiniGame() caches
-		// an id into this same map for any interactable with the default
-		// (0) activator, and nothing else clears it once the map is wiped.
 		if (scene.player) {
 			scene.player->inventory.clear();
-			scene.player->interactObjectId = 0;
 		}
 		scene.gameMap.instanceHolder.idCounter = 0;
 

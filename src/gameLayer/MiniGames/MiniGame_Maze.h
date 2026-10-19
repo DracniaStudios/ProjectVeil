@@ -1,13 +1,18 @@
 #pragma once
-#ifndef MINI_GAME_MAZE_H
-#define MINI_GAME_MAZE_H
+#ifndef MAZE_H
+#define MAZE_H
 
 #include <MiniGame.h>
 
-struct Maze : MiniGame
+// Unfinished: draws its grid and lets the cursor wander, but can be neither won nor lost
+class Maze : public MiniGame
 {
-	static void render(SceneManagement::Scene* scene_ptr);
-	static void update(SceneManagement::Scene* scene_ptr, float deltaTime);
+public:
+	explicit Maze(const MiniGameSetup& setup);
+
+protected:
+	MiniGameOutcome Update(const MiniGameInput& input, float deltaTime) override;
+	void DrawGame() const override;
 };
 
 #endif

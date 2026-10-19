@@ -7,6 +7,8 @@
 #include <UI/Overlays.h>
 
 #include <iterator>
+#include <optional>
+#include <random>
 
 namespace SceneManagement {
 
@@ -32,7 +34,7 @@ namespace SceneManagement {
 	void Scene_delete(Scene* scene) {
 		if (scene == nullptr) { return; }
 
-		scene->ReleaseMiniGame();
+		scene->QuitMiniGame();
 
 		// ~GameObject() never frees GPU resources, so each generated fallback model
 		// is released first, as GameMap::Destroy* does. Destroy* itself is not used:
@@ -216,14 +218,6 @@ namespace SceneManagement {
 		return gameMap.FindRunningStation();
 	}
 
-	void Scene::SnapshotMiniGameData()
-	{
-		if (miniGame == nullptr || miniGame->data == nullptr) { return; }
-
-		currentMiniGameData = *miniGame->data;
-		hasCurrentMiniGameData = true;
-	}
-
 	// A running task station is a periodic noise source (plan's emitter table:
 	// ~0.6, periodic while active).
 	void Scene::EmitStationNoise(float deltaTime)
@@ -247,115 +241,132 @@ namespace SceneManagement {
 		soundField.Emit(station->getPosition(), kStationLoudness, SOUND_STATION, station->id);
 	}
 
-	void Scene::ResetMiniGame() {
-		// Release BEFORE asking for the replay.
-		const int replayId = GetLastMiniGame();
-
-		const InteractableObject* station = GetRunningStation();
-		const std::uint64_t stationId = station != nullptr ? station->id : 0;
-
-		if (miniGame != nullptr) {
-			ReleaseMiniGame();
-		}
-		SetMiniGame(replayId);
-
-		// Nothing to replay: hand the player back to the 3D world rather
-		// than stranding them in an empty 2D overlay with no way out.
-		if (miniGame == nullptr) { overlays.Close(Overlay::MiniGame); return; }
-
-		if (stationId != 0)
+	namespace {
+		// What winning each MiniGame grants the player
+		struct MiniGameReward
 		{
-			if (auto* resumed = gameMap.FindInteractable(stationId))
+			Buff buff = BUFF_MOVEMENT;
+			float heal = 0.0f;
+		};
+
+		std::optional<MiniGameReward> RewardFor(int gameId)
+		{
+			switch (gameId)
 			{
-				resumed->isRunningMiniGame = true;
+			case MINI_GAME_FLAPPY_BIRD_ID: return MiniGameReward{ BUFF_MOVEMENT };
+			case MINI_GAME_CRANE_ID:       return MiniGameReward{ BUFF_RANGE };
+			case MINI_GAME_DOCTOR_ID:      return MiniGameReward{ BUFF_HEALTH, 3.0f };
+			case MINI_GAME_SIMON_SAYS_ID:  return MiniGameReward{ BUFF_HEARING };
+			case MINI_GAME_MAZE_ID:        return MiniGameReward{ BUFF_SEARCH };
+			case MINI_GAME_RO_SHAM_BOO_ID: return MiniGameReward{ BUFF_RANDOM };
+			default:                       return std::nullopt;
 			}
 		}
+
+		Vector2 WindowSize() { return Vector2{ static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight()) }; }
+
+		// The player's input this frame, as the MiniGame reads it
+		MiniGameInput ReadMiniGameInput()
+		{
+			auto& input = InputSystem::InputSystem::getInstance();
+			const auto keys = [&input](auto query) {
+				return MiniGameKeys{
+					(input.*query)(InputSystem::ACTION_MOVE_LEFT), (input.*query)(InputSystem::ACTION_MOVE_RIGHT),
+					(input.*query)(InputSystem::ACTION_MOVE_FORWARD), (input.*query)(InputSystem::ACTION_MOVE_BACKWARD),
+					(input.*query)(InputSystem::ACTION_MOVE_JUMP), (input.*query)(InputSystem::ACTION_MOVE_SPRINT) };
+			};
+
+			MiniGameInput read;
+			read.held = keys(&InputSystem::InputSystem::IsActionDown);
+			read.pressed = keys(&InputSystem::InputSystem::IsActionPressed);
+			read.screenSize = WindowSize();
+			return read;
+		}
 	}
 
-	void Scene::ReleaseMiniGame()
+	bool Scene::StartMiniGame(int gameId, InteractableObject* station)
 	{
-		SnapshotMiniGameData();
-
-		if (miniGame != nullptr)
+		const std::uint64_t stationId = station != nullptr ? station->id : 0;
+		if (!miniGameSession.Start(gameId, stationId, WindowSize(), std::random_device{}()))
 		{
-			delete miniGame->data;
-			delete miniGame;
+			std::cout << "[Scene.cpp] Ignoring a MiniGame start with unknown id: " << gameId << "\n";
+			return false;
 		}
 
+		// A start replaces any game already running, so the station that one held is
+		// free now; only the new one is occupied.
 		gameMap.ForEachInteractable([](InteractableObject& interactable) { interactable.isRunningMiniGame = false; });
 		stationNoiseTimer = 0.0f;
+		if (station != nullptr) { station->isRunningMiniGame = true; }
 
-		miniGame = nullptr;
-		overlays.Close(Overlay::MiniGame);
+		player->artifactMode = gameId;
+		overlays.Open(Overlay::MiniGame);
+		return true;
 	}
 
-	void Scene::SetMiniGame(int value)
+	void Scene::TickMiniGame(float deltaTime)
 	{
-		if (value < MINI_GAME_FLAPPY_BIRD_ID || value > MINI_GAME_RO_SHAM_BOO_ID)
+		// A game under another overlay waits: it can't be lost while it can't be seen
+		if (overlays.Top() != Overlay::MiniGame || !miniGameSession.IsRunning()) { return; }
+
+		const MiniGameResult result = miniGameSession.Tick(ReadMiniGameInput(), deltaTime);
+		if (result.outcome == MiniGameOutcome::Won) { FinishWonMiniGame(result); }
+	}
+
+	void Scene::QuitMiniGame()
+	{
+		miniGameSession.Quit();
+		CloseMiniGame();
+	}
+
+	void Scene::RetryMiniGame()
+	{
+		miniGameSession.Retry(WindowSize());
+	}
+
+	void Scene::WinMiniGame()
+	{
+		const MiniGameResult won = miniGameSession.Win();
+		if (won.outcome == MiniGameOutcome::Won) { FinishWonMiniGame(won); }
+	}
+
+	void Scene::FinishWonMiniGame(const MiniGameResult& won)
+	{
+		if (const std::optional<MiniGameReward> reward = RewardFor(won.gameId))
 		{
-			std::cout << "[Scene.cpp] Ignoring SetMiniGame with unknown id: " << value << "\n";
-			return;
+			if (reward->heal > 0.0f) { player->applyHealthValue(reward->heal, false); }
+			if (CooldownTimer* buff = player->getBuff(reward->buff)) { buff->use(); }
 		}
 
-		// Roll the history back one slot before the incoming game takes the current
-		// one. Snapshot first: the live data is about to be freed, and what it holds
-		// right now — the score the player actually reached — is the whole point of
-		// keeping it. Ordered ahead of ReleaseMiniGame for that reason.
-		SnapshotMiniGameData();
-		previousMiniGameData = currentMiniGameData;
-		hasPreviousMiniGameData = hasCurrentMiniGameData;
-
-		// Replacing an already-running minigame without freeing it would leak both
-		// the MiniGame and its MiniGameData.
-		ReleaseMiniGame();
-
-		player->rigidBody2D = {};
-		overlays.Open(Overlay::MiniGame);
-
-		player->artifactMode = value;
-
-		switch (value)
+		// A Practice run has no station: it completes nothing and toggles nothing
+		InteractableObject* station = won.stationId != 0 ? gameMap.FindInteractable(won.stationId) : nullptr;
+		if (station != nullptr)
 		{
-		case MINI_GAME_FLAPPY_BIRD_ID:
-			miniGame = MiniGame_FlappyBird(player);
-			break;
-		case MINI_GAME_CRANE_ID:
-			miniGame = MiniGame_Crane(player);
-			break;
-		case MINI_GAME_DOCTOR_ID:
-			miniGame = MiniGame_Doctor(player);
-			break;
-		case MINI_GAME_SIMON_SAYS_ID:
-			miniGame = MiniGame_SimonSays(player);
-			break;
-		case MINI_GAME_MAZE_ID:
-			miniGame = MiniGame_Maze(player);
-			break;
-		case MINI_GAME_RO_SHAM_BOO_ID:
-			miniGame = MiniGame_RoShamBoo(player);
-			break;
-		default:
-			std::cerr << "[Scene] Unknown minigame id " << value << "\n";
-			break;
+			// Marked before the Target is looked up, because this is the point at which
+			// the task is objectively finished. Letting a deleted door un-complete a
+			// finished task would leave the Director hinting at it forever.
+			station->isCompleted = true;
+			station->isInteractable = false;
+
+			if (GameObject* target = station->FindMiniGameTarget(gameMap))
+			{
+				if (target->isEnabled) { target->onDisable(); }
+				else { target->onEnable(); }
+			}
+			else
+			{
+				std::cout << "[MiniGame] Target " << station->targetId << " no longer exists — nothing to open\n";
+			}
 		}
 
-		if (miniGame) {
-			lastMiniGamePlayed = value;
-		}
+		CloseMiniGame();
+	}
 
-		// The incoming game's opening state. A constructor that failed to produce a
-		// game leaves the slot empty rather than carrying the outgoing game's score
-		// forward under the new game's name.
-		if (miniGame != nullptr && miniGame->data != nullptr)
-		{
-			currentMiniGameData = *miniGame->data;
-			hasCurrentMiniGameData = true;
-		}
-		else
-		{
-			currentMiniGameData = {};
-			hasCurrentMiniGameData = false;
-		}
+	void Scene::CloseMiniGame()
+	{
+		overlays.Close(Overlay::MiniGame);
+		gameMap.ForEachInteractable([](InteractableObject& interactable) { interactable.isRunningMiniGame = false; });
+		stationNoiseTimer = 0.0f;
 	}
 #pragma endregion
 
@@ -427,16 +438,13 @@ namespace SceneManagement {
 			{
 				player->rigidBody3D.SyncBroadPhaseBox();
 			}
-			else if (scene->overlays.Top() == Overlay::MiniGame)
-			{
-				player->update2D(delta, player->rigidBody2D.canMove);
-			}
 			else if (scene->overlays.GameplayHasInput())
 			{
 				if (!worldEditor->IsEnabled()) { player->update3D(delta); };
 				clampObject(*player, scene->limitYBounds);
 			}
-			// Under any other overlay the player stands still until it closes
+			// Under any overlay the player stands still until it closes; inside a
+			// MiniGame the player is the game's own cursor
 		}
 
 		/* Update GameObjects */
@@ -501,17 +509,14 @@ namespace SceneManagement {
 		if (!editorFrozen) { solveCollision(scene, delta, 8); }
 
 		/** Update MiniGame **/
-		if (auto miniGame = scene->miniGame; miniGame != nullptr)
-		{
-			miniGame->update(scene, delta);
-		}
+		scene->TickMiniGame(delta);
 
 		// The Inventory action opens the Inventory during gameplay and otherwise
 		// backs out of whatever overlay is on top. Backing out of a minigame quits
-		// it, so it is freed here: the stack only records that it closed.
+		// it, so it is ended here: the stack only records that it closed.
 		if (inputSystem->IsActionPressed(InputSystem::ACTION_UI_INVENTORY)) {
 			if (scene->overlays.InventoryPressed() == Overlay::MiniGame) {
-				scene->ReleaseMiniGame();
+				scene->QuitMiniGame();
 			}
 		}
 

@@ -17,16 +17,8 @@ void WorldEditor::ShowPlayerData(Player* player)
 	ImGui::Spacing();
 
 
-	/// Show Rigidbody Data based on space: 2D only while a MiniGame has the player
-	if (scene->overlays.Top() == Overlay::MiniGame)
-	{
-		ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody2D.isEnabled);
-		ImGui::Text("Player Position 2D: (%.2f, %.2f)", player->rigidBody2D.translation.x, player->rigidBody2D.translation.y);
-		ImGui::Text("Player Velocity 2D: (%.2f, %.2f)", player->rigidBody2D.velocity.x, player->rigidBody2D.velocity.y);
-		ImGui::Text("Player Scale 2D: (%.2f, %.2f)", player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
-
-	}
-	else
+	/// Show Rigidbody Data. Inside a MiniGame the player is that game's cursor,
+	/// shown in the Mini Game Data window instead.
 	{
 		ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody3D.isEnabled);
 		ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player->rigidBody3D.forward.x, player->rigidBody3D.forward.y, player->rigidBody3D.forward.z);

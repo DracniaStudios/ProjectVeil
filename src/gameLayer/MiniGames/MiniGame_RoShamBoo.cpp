@@ -1,61 +1,43 @@
 #include "MiniGame_RoShamBoo.h"
 
-#include <SceneManager.h>
+#include <iostream>
 
-MiniGame* MiniGame_RoShamBoo(Player* player)
+RoShamBoo::RoShamBoo(const MiniGameSetup& setup) : screenSize(setup.screenSize)
 {
-	MiniGame* game = new MiniGame();
-	game->name = "RoShamBoo";
-	game->update = &RoShamBoo::update;
-	game->draw = &RoShamBoo::render;
-	
-	game->data->scoreGoal = 5;
+	name = "RoShamBoo";
 
-	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.4f, GetScreenHeight() * 0.4f));
-	player->rigidBody2D.canMove = false;
+	cursor.teleport(Vector2(screenSize.x * 0.4f, screenSize.y * 0.4f));
+	cursor.bounds = Rectangle{ 0, 0, screenSize.x, screenSize.y };
 
-	auto rng = std::ranlux24_base(std::random_device{}());
-	game->data->scoreGoal = getRandomInt(rng, 1, 3);
-	std::cout << game->name << " Goal: " << game->data->scoreGoal << "\n";
-
-	return game;
+	auto rng = std::ranlux24_base(setup.seed);
+	data.scoreGoal = getRandomInt(rng, 1, 3);
+	std::cout << name << " Goal: " << data.scoreGoal << "\n";
 }
 
-void RoShamBoo::render(SceneManagement::Scene* scene_ptr)
+void RoShamBoo::DrawGame() const
 {
-	auto inputSystem = &InputSystem::InputSystem::getInstance();
-
 	// Display 3 Cards
-	auto leftCard = getScreenScale(Rectangle{ 0.1f, 0.3f, 0.2f, 0.5f });
-	auto middleCard = getScreenScale(Rectangle{ 0.4f, 0.3f, 0.2f, 0.5f });
-	auto rightCard = getScreenScale(Rectangle{ 0.7f, 0.3f, 0.2f, 0.5f });
+	auto leftCard = getScreenScale(screenSize, Rectangle{ 0.1f, 0.3f, 0.2f, 0.5f });
+	auto middleCard = getScreenScale(screenSize, Rectangle{ 0.4f, 0.3f, 0.2f, 0.5f });
+	auto rightCard = getScreenScale(screenSize, Rectangle{ 0.7f, 0.3f, 0.2f, 0.5f });
 
-	// Highlighted from the same actions update() selects on. These were
-	// hardcoded to A/S/D, which is only correct while the movement keys sit at
-	// their defaults — rebinding them lit up a card the player was not choosing
-	// and left the card they were choosing dark.
-	DrawRectangleRec(leftCard, inputSystem->IsActionDown(InputSystem::ACTION_MOVE_LEFT) ? YELLOW : RED);
-	DrawRectangleRec(middleCard, inputSystem->IsActionDown(InputSystem::ACTION_MOVE_BACKWARD) ? YELLOW : WHITE);
-	DrawRectangleRec(rightCard, inputSystem->IsActionDown(InputSystem::ACTION_MOVE_RIGHT) ? YELLOW : BLUE);
+	// Highlighted from the same actions Update() selects on
+	DrawRectangleRec(leftCard, held.left ? YELLOW : RED);
+	DrawRectangleRec(middleCard, held.backward ? YELLOW : WHITE);
+	DrawRectangleRec(rightCard, held.right ? YELLOW : BLUE);
 
 }
 
-void RoShamBoo::update(SceneManagement::Scene* scene_ptr, float delta)
+MiniGameOutcome RoShamBoo::Update(const MiniGameInput& input, float /*deltaTime*/)
 {
-	auto inputSystem = &InputSystem::InputSystem::getInstance();
-	auto data = scene_ptr->miniGame->data;
+	held = input.held;
 
 	// Select Left
-	if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_LEFT)) { data->score = 1; }
+	if (input.pressed.left) { data.score = 1; }
 	// Select Middle
-	if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_BACKWARD)) { data->score = 2; }
+	if (input.pressed.backward) { data.score = 2; }
 	// Select Right
-	if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_RIGHT)) { data->score = 3; }
-	
-	if (data->score == data->scoreGoal) { 
-		CompleteMiniGame(*data, *scene_ptr->player, scene_ptr->gameMap, BUFF_RANDOM, true);
-		scene_ptr->ReleaseMiniGame();
-	};
-	
-	
+	if (input.pressed.right) { data.score = 3; }
+
+	return data.score == data.scoreGoal ? MiniGameOutcome::Won : MiniGameOutcome::Running;
 }

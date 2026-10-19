@@ -466,7 +466,9 @@ namespace Physics2D {
 		bool isEnabled = true;
 		bool isStatic = false;
 		bool useGravity = true;
-		bool canMove = true;
+
+		// Kept inside this rectangle, inset by its scale. No area means no limit.
+		Rectangle bounds = {};
 
 		bool upTouch = false;
 		bool downTouch = false;
@@ -496,12 +498,6 @@ namespace Physics2D {
 			velocity.y = 0;
 			velocity.y -= force;
 		}
-
-		void resolveConstrains(GameMap& mapData);
-
-		void checkCollisionOnce(Vector2& position, GameMap& mapData);
-
-		Vector2 performCollisionOnOneAxis(GameMap& mapData, Vector2 position, Vector2 delta);
 	};
 
 

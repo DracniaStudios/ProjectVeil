@@ -15,7 +15,7 @@
 #include <Perception/SoundField.h>
 #include <AI/Director.h>
 #include <AssetManager.h>
-#include <MiniGame.h>
+#include <MiniGameSession.h>
 #include <asserts.h>
 #include <SaveSystem.h>
 #include <Settings.h>
@@ -70,27 +70,11 @@ namespace SceneManagement {
 
 		// Map Data
 		GameMap gameMap = {}; // The GameMap of the Scene
-		MiniGame* miniGame = {}; // Current Mini Game Loaded
 
-		// Two-deep history of minigame progress, kept by value.
-		//
-		// MiniGameData is heap-allocated by the MiniGame constructor and deleted by
-		// ReleaseMiniGame, so a score lives exactly as long as the overlay showing
-		// it: walking away from a half-finished station threw the progress away with
-		// no record it ever existed. These snapshots outlive the allocation, which is
-		// what makes an interruptible station possible to build on top.
-		//
-		// `current` tracks the live minigame's last known state; `previous` is the
-		// one it displaced. Both are refreshed when SetMiniGame swaps games, and
-		// `current` is captured once more on release so it holds the final state
-		// rather than a stale mid-run reading.
-		MiniGameData currentMiniGameData = {};
-		MiniGameData previousMiniGameData = {};
-
-		// A default MiniGameData is indistinguishable from a genuine score of zero,
-		// so "played and scored nothing" needs to be tellable from "never played".
-		bool hasCurrentMiniGameData = false;
-		bool hasPreviousMiniGameData = false;
+		// The MiniGame being played, if any, and the history of how the last ones went.
+		// Start, quit and win through the Scene's methods below, which also keep the
+		// MiniGame overlay and the Task station in step with it.
+		MiniGameSession miniGameSession = MiniGameSession(CreateMiniGame);
 
 		// Perception — the only channel through which AI learns about the player.
 		// Owned by the Scene because emitters and listeners are both scene objects.
@@ -102,15 +86,20 @@ namespace SceneManagement {
 		// Entity Data
 		Player* player = {};
 
-		void SetMiniGame(int miniGame);
-		int GetLastMiniGame() const { return lastMiniGamePlayed; }
-		void ReleaseMiniGame(); // Frees MiniGame Memory Data
-		void ResetMiniGame();
+		/** MiniGames **/
+		// Starts a MiniGame at a Task station, or as a Practice run with none, and
+		// opens its overlay. False, with nothing changed, for an id that names no game.
+		bool StartMiniGame(int gameId, InteractableObject* station = nullptr);
 
-		// Copies the live minigame's data into currentMiniGameData. Called wherever
-		// the allocation is about to go away or be replaced; a no-op when nothing is
-		// running, so the last captured state stands rather than being erased.
-		void SnapshotMiniGameData();
+		// Runs the MiniGame for a frame while it is the top overlay, and applies a win
+		void TickMiniGame(float deltaTime);
+
+		// Ends the MiniGame unwon and closes its overlay. Progress stays in the history.
+		void QuitMiniGame();
+
+		// The World Editor's buttons: a fresh round, and a win applied like a real one
+		void RetryMiniGame();
+		void WinMiniGame();
 
 		// The task station whose minigame is running, or nullptr for none.
 		InteractableObject* GetRunningStation();
@@ -121,7 +110,12 @@ namespace SceneManagement {
 
 		void ResetID();
 	private:
-		int lastMiniGamePlayed = 0;
+		// Grants the won game's reward and, at a Task station, completes it and
+		// toggles its Target. Then closes the MiniGame overlay.
+		void FinishWonMiniGame(const MiniGameResult& won);
+
+		// Closes the MiniGame overlay and frees every Task station
+		void CloseMiniGame();
 
 		// Countdown to the running station's next noise. Lives on the Scene rather
 		// than on the station because the station is a plain world object that never

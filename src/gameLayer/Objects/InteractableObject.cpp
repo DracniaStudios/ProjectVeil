@@ -13,13 +13,15 @@ void ActivateMiniGame(InteractableObject* interactable, bool bypass = false)
 
 	if (!bypass && scene->player->artifactUnlocked < interactable->variation) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
 
-	scene->SetMiniGame(interactable->variation);
-	// activator == 0 means "no explicit target" — the minigame should toggle
-	// the interactable that launched it rather than nothing at all.
-	scene->player->interactObjectId = interactable->activator != 0
-		? interactable->activator
-		: interactable->id;
-	interactable->isRunningMiniGame = true;
+	// The scene marks the station as occupied, and on a win finds the Target
+	// through the station itself
+	scene->StartMiniGame(interactable->variation, interactable);
+}
+
+GameObject* InteractableObject::FindMiniGameTarget(GameMap& gameMap)
+{
+	if (targetId == 0) { return this; }
+	return gameMap.FindWorldObject(targetId);
 }
 
 void Unlock(InteractableObject* interactable)
@@ -127,6 +129,7 @@ Json InteractableObject::formatToJson()
 	j["InteractType"] = interactType;
 	j["Variation"] = variation;
 	j["Activator"] = activator;
+	j["TargetId"] = targetId;
 	j["IsInteractable"] = isInteractable;
 	j["IsCompleted"] = isCompleted;
 	// isRunningMiniGame is deliberately not persisted: it means "occupied right
@@ -144,6 +147,16 @@ bool InteractableObject::loadFromJson(Json& j)
 	// a save written before ActivatorValue existed load as a real-but-
 	// unresolvable id instead of "none".
 	activator = j.value("Activator", 0);
+
+	// Saves written before a station had a Target of its own kept it in Activator
+	if (j.contains("TargetId")) {
+		targetId = j.value("TargetId", std::uint64_t{ 0 });
+	}
+	else if (interactType == INTERACT_MINIGAME) {
+		targetId = static_cast<std::uint64_t>(std::max(activator, 0));
+		activator = 0;
+	}
+
 	isInteractable = j.value("IsInteractable", true);
 	isCompleted = j.value("IsCompleted", false);
 

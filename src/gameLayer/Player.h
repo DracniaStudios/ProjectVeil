@@ -33,13 +33,10 @@ struct Player : Entity
 	std::unique_ptr<Entity> clone() const override { return std::make_unique<Player>(*this); }
 
 	// Game Mechanics
-	Physics2D::RigidBody2D rigidBody2D = {};
 	Vector2 moveDirection = {};
 	PlayerCamera camera = {};
 	GameObject* artifact = nullptr;
-	
-	// Activator Object ID
-	std::uint64_t interactObjectId = 0;
+
 	std::vector<InteractableObject*> inventory;// Set TO Object IDs if doesn't work (just like ActivatorObject).
 
 	int artifactMode = 0;
@@ -58,12 +55,8 @@ struct Player : Entity
 	void render3D() override;
 	void onEnable() override;
 	void onDisable() override;
-	void update2D(float deltaTime, bool canMove = true);
 	void update3D(float deltaTime);
 
-	Vector2 getPosition2D() const { return Vector2{ rigidBody2D.translation.x, rigidBody2D.translation.y }; }
-	Vector2 getSize2D() const { return Vector2{ rigidBody2D.scale.x, rigidBody2D.scale.y }; }
-	
 	// Audio
 	FMOD_3D_ATTRIBUTES getListener();
 
