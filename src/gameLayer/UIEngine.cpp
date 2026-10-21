@@ -340,9 +340,9 @@ namespace UI {
 	{
 		const int textWidth = MeasureText(text.c_str(), fontSize);
 
-		const float textX = rect.x + (rect.width - textWidth) / 2.f;
-		const float textY = rect.y + (rect.height - fontSize) / 2.f + yOffset;
-		const float shadow = fontSize * 0.08f;
+		const float textX = rect.x + (rect.width - static_cast<float>(textWidth)) / 2.f;
+		const float textY = rect.y + (rect.height - static_cast<float>(fontSize)) / 2.f + yOffset;
+		const float shadow = static_cast<float>(fontSize) * 0.08f;
 
 		DrawText(text.c_str(), static_cast<int>(textX - shadow), static_cast<int>(textY + shadow), fontSize, style.textShadowColor);
 		DrawText(text.c_str(), static_cast<int>(textX), static_cast<int>(textY), fontSize, style.textColor);
