@@ -24,20 +24,48 @@
 
 [ Issues ]
 
+- There is no in-game way back to the Main Menu until the Pause overlay is added.
+- Not yet clicked through in game: TAB, Return, Close All Overlays, each minigame and Pick Target.
 
 [ Added ]
 
-- Added "textWidth" and "textHeight" to Widget: Button.
+- Added an Overlay Stack to each Scene (Title, Inventory, Settings, Multiplayer, MiniGame).
+	It decides which overlay has the player's input, and only the top one draws its panel.
+- Added MiniGameSession. It starts minigames, retries a lost round at the same station,
+	and reports a win with its game and station.
+- Added a Target to Task stations. Winning at a station toggles its Target (none toggles the station itself).
+- Added Pick Target and Clear Target to the Object Browser, and an outline on a selected station's Target.
+- Added Win, Retry and Quit to the MiniGame Inspector.
+- Added Close All Overlays to World Settings, with a read-only list of open overlays.
+- Added OverlayStack and MiniGameSession tests.
+- Added CONTEXT.md for game terms (Overlay, Title, Inventory, MiniGame, Task station, Target, Practice run).
 
 [ Updated ]
 
-- Merged UIEngine branch into Main
-- Updated the Settings Menu to load all settings and their values.
+- Updated TAB to be the Inventory key. It opens the Inventory during gameplay,
+	closes the top overlay otherwise, and quits a running minigame.
+- Updated the Main Menu to open its Title and fix the camera, so the player can't walk or look around behind it.
+- Updated the cursor to lock during gameplay and unlock for any overlay or the World Editor.
+- Updated the six MiniGames to own their state and cursor, and return Running, Won or Lost instead of freeing themselves.
+- Updated Settings and Multiplayer to hide the Title panel instead of drawing over it.
+- Updated RigidBody2D to stay inside a bounds rectangle instead of the window.
+- Updated Task station saves to write "TargetId". Older saves take it from "Activator".
+- Updated the Placement panel's "Activator ID" to "MiniGame Target".
+- Updated the Title panel to draw from UI/Overlays.cpp instead of mainMenu.cpp.
 
 [ Fixed ]
 
-- Fixed an issue where Widget's "isVisible" boolean was not applying to draw functions.
-- Renamed Widget: Text's "fontSize" to "textSize".
+- Fixed Settings, Multiplayer and TAB falling out of sync, which left a dimmed screen with no menu.
+- Fixed minigames freeing themselves in the middle of their own update.
+- Fixed the reticle not drawing.
+- Fixed FlappyBird's "left the green area" check almost never firing.
+- Fixed Artifact Practice runs toggling the last station's door. They now only grant the buff.
+- Fixed RigidBody2D's getRectCentered and getRectCornered returning the far corner instead of a size.
 
 [ Removed ]
+
+- Removed Scene's is2DActive and UIEngine's isSettingsEnabled and isMultiplayerEnabled.
+- Removed PlayerUI and the empty UI/SettingUI.cpp.
+- Removed Player's rigidBody2D, update2D, canMove and interactObjectId.
+- Removed Is2DActive and IsMiniActive from saves. Older saves still load.
 
