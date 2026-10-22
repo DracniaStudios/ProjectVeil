@@ -11,7 +11,8 @@
  * wired later: the running task station, tampering, and physics impacts.
  *
  * Like StalkerFsmTests this links against the game's object files and needs a
- * GL context for GameObject's fallback cube. See tests/run_tests.sh.
+ * GL context, since a world object binds a model when it enters the map. See
+ * tests/run_tests.sh.
  */
 
 #include <raylib.h>
@@ -261,7 +262,7 @@ static void TestFastImpactIsAudible()
 	GameObject* wall = AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 800);
 	GameObject* crate = AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -10, 0, 0 }, false, 801);
 
-	wall->rigidBody3D.resolveConstrains(wall, crate);
+	scene->SolveCollisions();
 
 	const SoundEvent* event = FirstOfKind(scene, SOUND_IMPACT);
 	Check(event != nullptr, "a hard collision emits an impact");
@@ -269,9 +270,9 @@ static void TestFastImpactIsAudible()
 
 	Check(event->loudness > 0.5f, "a 10 u/s impact is loud");
 
-	// solveCollision visits each pair once and the wall happened to be first.
-	// Attribution has to follow the body that moved, or the noise would be
-	// credited to the static geometry that was standing still.
+	// The wall has the lower id, so it is the contact's `a`. Attribution has to
+	// follow the body that moved, or the noise would be credited to the static
+	// geometry that was standing still.
 	Check(event->sourceId == crate->id, "the impact is attributed to the moving body");
 	delete scene;
 }
@@ -286,7 +287,7 @@ static void TestRestingContactIsSilent()
 	GameObject* floor = AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 810);
 	GameObject* box = AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -0.2f, 0, 0 }, false, 811);
 
-	floor->rigidBody3D.resolveConstrains(floor, box);
+	scene->SolveCollisions();
 
 	Check(CountOfKind(scene, SOUND_IMPACT) == 0,
 		"a slow settling contact makes no perception event");
@@ -301,7 +302,7 @@ static void TestImpactScalesWithClosingSpeed()
 		SceneManagement::Scene* scene = MakeScene();
 		GameObject* wall = AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 820);
 		GameObject* crate = AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -speed, 0, 0 }, false, 821);
-		wall->rigidBody3D.resolveConstrains(wall, crate);
+		scene->SolveCollisions();
 		const SoundEvent* event = FirstOfKind(scene, SOUND_IMPACT);
 		const float loudness = event != nullptr ? event->loudness : 0.0f;
 		delete scene;
@@ -324,20 +325,21 @@ static void TestImpactIsOncePerContact()
 	GameObject* wall = AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 830);
 	GameObject* crate = AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -10, 0, 0 }, false, 831);
 
-	// The solver runs up to eight iterations per frame over the same pair. The
-	// emitter hangs off the first-contact branch precisely so that is one bang,
-	// not eight.
-	for (int i = 0; i < 8; ++i) { wall->rigidBody3D.resolveConstrains(wall, crate); }
+	// The solver runs eight iterations per frame over the same pair, and the pair
+	// stays in contact into the next frame. The noise belongs to the contact's
+	// Enter, so that is one bang, not eight or sixteen.
+	scene->SolveCollisions(8);
+	scene->SolveCollisions(8);
 
 	Check(CountOfKind(scene, SOUND_IMPACT) == 1,
-		"eight solver iterations over one contact emit one noise");
+		"two frames of eight solver iterations over one contact emit one noise");
 	delete scene;
 }
 
 int main()
 {
-	// GameObject's constructor uploads a fallback cube, so a GL context has to
-	// exist before any world object is built.
+	// A world object binds a model when it enters the map, so a GL context has
+	// to exist before any is added.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-emitter-tests");
 

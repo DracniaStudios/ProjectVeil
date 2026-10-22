@@ -87,6 +87,25 @@ echo
 COLLIDER_STATUS=$?
 
 # ---------------------------------------------------------------------------
+# PhysicsWorld tests
+#
+# Same cheap tier as the Collider suite: the solver (PhysicsWorld.cpp) and the
+# rigid body it moves (RigidBody3D.cpp) know bodies only by id and include no
+# engine header, so they link against raylib alone. What a contact means for
+# the game (ContactRules) is engine-side and covered by the emitter and contact
+# damage suites below.
+# ---------------------------------------------------------------------------
+PHYSICS_BIN="$OUT_DIR/physics_world_tests"
+
+echo
+echo "building $PHYSICS_BIN"
+g++ -std=c++23 -Wall 	-I src/gameLayer 	-I src/engineLayer 	-I thirdparty/raylib-6.0/src 	-I "$JSON_INC" 	tests/PhysicsWorldTests.cpp 	src/gameLayer/Components/PhysicsWorld.cpp 	src/gameLayer/Components/RigidBody3D.cpp 	src/gameLayer/Components/Collider3D.cpp 	-o "$PHYSICS_BIN" 	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
+
+echo
+"$PHYSICS_BIN"
+PHYSICS_STATUS=$?
+
+# ---------------------------------------------------------------------------
 # OverlayStack tests
 #
 # Cheaper still: OverlayStack.cpp includes nothing from raylib or the engine,
@@ -155,7 +174,7 @@ if [[ ! -d "$OBJ_ROOT" ]]; then
 	echo
 	echo "skipping engine-linked suites: no compiled objects under '$OBJ_ROOT'." >&2
 	echo "                               build the game first: cmake --build $BUILD_DIR" >&2
-	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 ]]; then exit 1; fi
+	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 ]]; then exit 1; fi
 	exit 0
 fi
 
@@ -241,10 +260,11 @@ done
 # ---------------------------------------------------------------------------
 # Collider mode tests
 #
-# The shape maths is covered by collider_tests above, which needs nothing but
-# raylib. What lives in RigidBody3D::resolveConstrains -- collision pushes,
-# trigger does not -- needs real game objects, so this one links the engine on
-# the same terms as the FSM tests and reuses everything they discovered.
+# The shape maths and the solver are covered by collider_tests and
+# physics_world_tests above, which need nothing but raylib. This runs the same
+# rules -- collision pushes, trigger does not -- with real game objects through
+# Scene::SolveCollisions, so it links the engine on the same terms as the FSM
+# tests and reuses everything they discovered.
 # ---------------------------------------------------------------------------
 TRIGGER_BIN="$OUT_DIR/trigger_tests"
 echo
@@ -279,4 +299,4 @@ else
 fi
 TRIGGER_STATUS=$?
 
-if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
+if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi

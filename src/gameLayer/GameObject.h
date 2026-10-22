@@ -10,6 +10,7 @@
 #include <AudioManager.h>
 
 namespace SceneManagement { struct Scene; }
+struct GameMap;
 
 enum ObjectType
 {

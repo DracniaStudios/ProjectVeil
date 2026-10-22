@@ -10,8 +10,8 @@
  * The session's own rules (retrying a lost round, the two-deep progress
  * history) are tested without a window in MiniGameSessionTests.
  *
- * Like the other engine-linked suites this needs a GL context for GameObject's
- * fallback cube. See tests/run_tests.sh.
+ * Like the other engine-linked suites this needs a GL context, since a world
+ * object binds a model when it enters the map. See tests/run_tests.sh.
  */
 
 #include <raylib.h>
@@ -282,8 +282,8 @@ static void TestDirectorSkipsCompletedStations()
 
 int main()
 {
-	// GameObject's constructor uploads a fallback cube, so a GL context has to
-	// exist before any world object is built.
+	// A world object binds a model when it enters the map, so a GL context has
+	// to exist before any is added.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-task-station-tests");
 

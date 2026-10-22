@@ -232,18 +232,15 @@ void GameObject::render3D()
 
 void GameObject::update(SceneManagement::Scene* scene, float deltaTime)
 {
-	// Before the enabled check on purpose: an object that has just been disabled
-	// stops colliding, and anything sitting in its trigger volumes has therefore
-	// left them. Skipping this would leave those overlaps latched open forever.
-	if (scene != nullptr) { rigidBody3D.DispatchTriggerEvents(this, &scene->gameMap); }
-
+	// A body that has just been disabled stops taking part in the physics world,
+	// which then reports the contacts it had as ended
 	rigidBody3D.isEnabled = isEnabled;
 	if (!isEnabled)
 	{
 		// RigidBody3D::Update() is what clears canCollide for a disabled body,
-		// but returning here means it never runs — and solveCollision() filters
-		// on canCollide alone, so a disabled object stayed a solid invisible
-		// wall. onEnable() already restores the flag on the way back.
+		// but returning here means it never runs. PhysicsWorld::Solve skips a
+		// disabled body either way; this keeps anything else that asks the
+		// collider from treating it as solid. onEnable() restores the flag.
 		rigidBody3D.collider.canCollide = false;
 		return;
 	}

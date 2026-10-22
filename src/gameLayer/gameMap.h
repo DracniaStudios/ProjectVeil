@@ -20,7 +20,7 @@ struct InstanceID
 
 // Calls a visitor with one or more references and honours early exit: a
 // visitor returning bool stops the traversal on `false`, a void visitor
-// always continues. Lets ForEach*/ForEachObjectPair accept either shape
+// always continues. Lets the ForEach* traversals accept either shape
 // without callers having to remember to `return true;` themselves.
 namespace GameMapDetail
 {
@@ -195,57 +195,6 @@ struct GameMap {
 		for (const auto& [id, object] : interactables)
 		{
 			if (!GameMapDetail::InvokeVisitor(fn, *object)) return;
-		}
-	}
-
-	// Visits every unordered pair of live GameObjects exactly once, with
-	// mutable access to both — the shape Scene's O(n^2) collision solver
-	// needs. Owned here (rather than reconstructed by nesting
-	// ForEachGameObject calls in the caller) so the traversal strategy can
-	// change later (e.g. spatial partitioning) without touching Scene.cpp.
-	template <class F>
-	void ForEachObjectPair(F&& fn)
-	{
-		for (auto itA = gameObjects.begin(); itA != gameObjects.end(); ++itA)
-		{
-			auto itB = itA;
-			++itB;
-			for (; itB != gameObjects.end(); ++itB)
-			{
-				if (!GameMapDetail::InvokeVisitor(fn, itA->second, itB->second)) return;
-			}
-		}
-	}
-
-	// Same shape as ForEachObjectPair, over entities — Scene's collision
-	// solver runs entity-vs-entity as its own pass (distinct rules from
-	// gameObject-vs-gameObject: no canCollide/isStatic gate today).
-	template <class F>
-	void ForEachEntityPair(F&& fn)
-	{
-		for (auto itA = entities.begin(); itA != entities.end(); ++itA)
-		{
-			auto itB = itA;
-			++itB;
-			for (; itB != entities.end(); ++itB)
-			{
-				if (!GameMapDetail::InvokeVisitor(fn, *itA->second, *itB->second)) return;
-			}
-		}
-	}
-
-	// Same shape again, over interactables.
-	template <class F>
-	void ForEachInteractablePair(F&& fn)
-	{
-		for (auto itA = interactables.begin(); itA != interactables.end(); ++itA)
-		{
-			auto itB = itA;
-			++itB;
-			for (; itB != interactables.end(); ++itB)
-			{
-				if (!GameMapDetail::InvokeVisitor(fn, *itA->second, *itB->second)) return;
-			}
 		}
 	}
 

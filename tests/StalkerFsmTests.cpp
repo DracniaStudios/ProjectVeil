@@ -7,13 +7,13 @@
  * SoundEvents and assert the locked transitions directly.
  *
  * Unlike SoundFieldTests this needs the engine, because Stalker::update runs
- * Entity::update -> GameObject::update -> RigidBody3D::UpdateForce, which
- * reaches SceneManager::currentScene->gameMap. It links against the game's
+ * Entity::update -> GameObject::update with the Scene it is handed, and reads
+ * that scene's map and sound field. It links against the game's
  * own object files (every one except the translation unit holding main) so no
  * build restructuring is required. See tests/run_tests.sh.
  *
- * A window is opened because GameObject's constructor uploads a fallback cube
- * mesh, which needs a GL context. Run under xvfb on a headless machine.
+ * A window is opened because an entity binds a model when it enters the map,
+ * which needs a GL context. Run under xvfb on a headless machine.
  *
  * Transitions are exercised by placing the stalker rather than waiting for it
  * to walk: this is a test of the state machine, not of steering or physics
@@ -382,8 +382,8 @@ static void TestAvoidanceIsSkippedWithoutAWorld()
 
 int main()
 {
-	// GameObject's constructor uploads a fallback cube, so a GL context has to
-	// exist before any entity is built.
+	// An entity binds a model when it enters the map, so a GL context has to
+	// exist before any is added.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-fsm-tests");
 

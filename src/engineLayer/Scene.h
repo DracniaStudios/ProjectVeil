@@ -9,6 +9,7 @@
 #include <randomStuff.h>
 
 #include <gameMap.h>
+#include <PhysicsWorld.h>
 #include <InputSystem.h>
 #include <Player.h>
 #include <OverlayStack.h>
@@ -71,6 +72,10 @@ namespace SceneManagement {
 		// Map Data
 		GameMap gameMap = {}; // The GameMap of the Scene
 
+		// Resolves collisions between every body in the scene, the player's included,
+		// and remembers which pairs are touching. Run through SolveCollisions.
+		Physics3D::PhysicsWorld physics = {};
+
 		// The MiniGame being played, if any, and the history of how the last ones went.
 		// Start, quit and win through the Scene's methods below, which also keep the
 		// MiniGame overlay and the Task station in step with it.
@@ -110,7 +115,13 @@ namespace SceneManagement {
 
 		// Empties the GameMap (GameMap::Clear) and what the player carries with it:
 		// the inventory holds ids, and the next world hands the same ids out again.
+		// The physics world forgets its contacts for the same reason.
 		void ClearWorld();
+
+		// The collision half of the frame, after every body has moved: resolves every
+		// overlapping pair of bodies, the player's included, then applies the game's
+		// contact rules (ContactRules). Returns the contacts that started or ended.
+		std::vector<Physics3D::ContactEvent> SolveCollisions(int iterations = 8);
 	private:
 		// Grants the won game's reward and, at a Task station, completes it and
 		// toggles its Target. Then closes the MiniGame overlay.

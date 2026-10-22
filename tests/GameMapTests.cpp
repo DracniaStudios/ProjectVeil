@@ -497,33 +497,6 @@ static void TestForEachGameObjectVisitsAllAndHonoursEarlyExit()
 	delete scene;
 }
 
-static void TestForEachObjectPairVisitsEveryUnorderedPairOnce()
-{
-	std::printf("ForEachObjectPair visits every unordered pair of live objects exactly once\n");
-	SceneManagement::Scene* scene = MakeScene();
-	GameMap& map = scene->gameMap;
-
-	constexpr int kCount = 4;
-	for (int i = 0; i < kCount; ++i)
-	{
-		GameObject go{};
-		map.SpawnGameObject(go);
-	}
-
-	int pairsVisited = 0;
-	map.ForEachObjectPair([&](GameObject&, GameObject&) { ++pairsVisited; });
-	Check(pairsVisited == (kCount * (kCount - 1)) / 2, "every unordered pair is visited exactly once");
-
-	int pairsBeforeStop = 0;
-	map.ForEachObjectPair([&](GameObject&, GameObject&) -> bool {
-		++pairsBeforeStop;
-		return false; // stop immediately
-	});
-	Check(pairsBeforeStop == 1, "a bool visitor returning false stops pair traversal after the first pair");
-
-	delete scene;
-}
-
 int main()
 {
 	// Spawn and Restore bind a model, so a GL context has to exist before any
@@ -550,7 +523,6 @@ int main()
 	TestClearWorldForgetsWhatThePlayerCarries();
 	TestCreateReplacesTheWholeWorld();
 	TestForEachGameObjectVisitsAllAndHonoursEarlyExit();
-	TestForEachObjectPairVisitsEveryUnorderedPairOnce();
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 

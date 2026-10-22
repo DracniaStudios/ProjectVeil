@@ -182,15 +182,8 @@ void Player::update3D(float deltaTime)
 
 	SetMoveDirection(this, deltaTime);
 
-	// The player ticks its own body rather than going through GameObject::update,
-	// so it needs its own trigger dispatch or it would never report leaving one.
-	// currentScene is null between the two halves of a scene transition.
-	if (SceneManagement::Scene* scene = SceneManagement::SceneManager::getInstance().currentScene)
-	{
-		rigidBody3D.DispatchTriggerEvents(this, &scene->gameMap);
-	}
-
-	/// Update RigidBody3D Physics
+	/// Update RigidBody3D Physics. Its collisions come afterwards, from
+	/// Scene::SolveCollisions over every body at once.
 	rigidBody3D.Update(deltaTime);
 
 	// After the physics step so the noise is stamped at the position the player

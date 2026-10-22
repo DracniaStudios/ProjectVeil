@@ -8,6 +8,10 @@
 #include <unordered_map>
 #include <GameObject.h>
 
+// GameObject.h and this header include each other, so whichever is read first
+// sees the other's types only through a declaration
+struct GameObject;
+
 namespace AudioManager {
 
 	inline Vector3 FMODToVector3(FMOD_VECTOR vector) {

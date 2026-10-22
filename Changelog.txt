@@ -42,6 +42,10 @@
 - Added one GameMap lifecycle for every kind of object: Spawn, Restore, Destroy and Clear.
 	GameMap now owns the ids, and Scene::ClearWorld empties the world and the player's inventory together.
 - Added GameMap tests for Spawn, Restore, Destroy and Clear.
+- Added a PhysicsWorld that resolves every pair of bodies in one pass, player included,
+	and reports each contact's start and end with both bodies' ids.
+- Added ContactRules for impact noise, Stalker contact damage and projectile damage, read from those contacts.
+- Added PhysicsWorld tests, which run without a window.
 
 [ Updated ]
 
@@ -58,6 +62,9 @@
 - Updated Destroy to wait until the end of the frame for entities and interactables too, as it already did for GameObjects.
 - Updated the player's inventory to hold item ids instead of pointers.
 - Updated GameObject to create its model when it enters the world, not in its constructor.
+- Updated touch flags (standing, walls) to come from every solid body, not only plain GameObjects.
+- Updated TriggerTests, EmitterTests and StalkerContactDamageTests to run the real collision solve
+	instead of a copy of it.
 
 [ Fixed ]
 
@@ -70,6 +77,9 @@
 - Fixed loading a save re-enabling doors that were saved disabled, and healing damaged entities to full.
 - Fixed Unlock stations freeing themselves in the middle of their own interaction.
 - Fixed Spawn sharing one model between the prototype and the stored copy, and placed interactables with no scale.
+- Fixed the player being pushed out of entities and interactables twice per solver pass.
+- Fixed a body passing through a trigger making an impact noise.
+- Fixed disabled bodies and bodies that can't collide still counting as ground to stand on.
 
 [ Removed ]
 
@@ -79,4 +89,7 @@
 - Removed Is2DActive and IsMiniActive from saves. Older saves still load.
 - Removed GameMap's Load*, DestroyGameObject/Entity/Interactable, EraseGameObjectsIf, ResetGameObjectIds
 	and the public instanceHolder, and Scene::ResetID.
+- Removed RigidBody3D's per-body contact lists, resolveConstrains, DispatchTriggerEvents and isColliding,
+	Collider3D's empty onCollision/onTrigger hooks, and GameMap's ForEachObjectPair, ForEachEntityPair
+	and ForEachInteractablePair.
 

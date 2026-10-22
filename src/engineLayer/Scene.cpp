@@ -5,6 +5,7 @@
 #include <AudioManager.h>
 #include <UIEngine.h>
 #include <UI/Overlays.h>
+#include <ContactRules.h>
 
 #include <iterator>
 #include <optional>
@@ -56,152 +57,25 @@ namespace SceneManagement {
 
 	void Scene::ClearWorld() {
 		gameMap.Clear();
+		physics.Reset();
 		if (player) { player->inventory.clear(); }
 	}
 
 #pragma region Physics Management
 
 	/** Physics Solutions **/
-	static void refreshBroadPhaseBox(Physics3D::RigidBody3D& body)
+	std::vector<Physics3D::ContactEvent> Scene::SolveCollisions(int iterations)
 	{
-		body.SyncBroadPhaseBox();
-	}
+		// Every body in the scene in one list, so every pair follows the same rules
+		// whatever kind of object owns each body
+		std::vector<Physics3D::PhysicsBody> bodies;
+		bodies.reserve(gameMap.GameObjectCount() + gameMap.EntityCount() + gameMap.InteractableCount() + 1);
+		gameMap.ForEachObject([&](GameObject& object) { bodies.push_back({ object.id, &object.rigidBody3D }); });
+		if (player != nullptr) { bodies.push_back({ player->id, &player->rigidBody3D }); }
 
-	// Collision runs in two phases.
-	static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
-	{
-		solverIterations = static_cast<int>(Clamp(static_cast<float>(solverIterations), 4, 8));
-
-		auto& gameMap = scene->gameMap;
-
-		for (int iter = 0; iter < solverIterations; iter++)
-		{
-			// Game Objects Vs. Game Objects — each unordered pair once;
-			// resolveConstrains already moves both bodies, so visiting (A,B) and
-			// (B,A) doubled every correction and collision event
-			gameMap.ForEachObjectPair([&](GameObject& bodyA, GameObject& bodyB)
-				{
-					if (bodyA.rigidBody3D.collider.canCollide == false || bodyB.rigidBody3D.collider.canCollide == false) { return true; }
-					if (bodyA.rigidBody3D.isStatic && bodyB.rigidBody3D.isStatic) { return true; }
-
-					if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
-					{
-						bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
-						refreshBroadPhaseBox(bodyA.rigidBody3D);
-						refreshBroadPhaseBox(bodyB.rigidBody3D);
-					}
-					return true;
-				});
-
-			// Entities Vs. Game Objects
-			gameMap.ForEachEntity([&](Entity& entity)
-				{
-					gameMap.ForEachGameObject([&](GameObject& bodyB)
-						{
-							if (entity.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
-							{
-								entity.rigidBody3D.resolveConstrains(&entity, &bodyB);
-								refreshBroadPhaseBox(entity.rigidBody3D);
-								refreshBroadPhaseBox(bodyB.rigidBody3D);
-							}
-						});
-				});
-
-			// Entities Vs. Entities — each unordered pair once
-			gameMap.ForEachEntityPair([&](Entity& bodyA, Entity& bodyB)
-				{
-					if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
-					{
-						bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
-						refreshBroadPhaseBox(bodyA.rigidBody3D);
-						refreshBroadPhaseBox(bodyB.rigidBody3D);
-					}
-				});
-
-			// Interactable Vs. Game Objects
-			gameMap.ForEachInteractable([&](InteractableObject& entity)
-				{
-					gameMap.ForEachGameObject([&](GameObject& bodyB)
-						{
-							if (entity.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
-							{
-								entity.rigidBody3D.resolveConstrains(&entity, &bodyB);
-								refreshBroadPhaseBox(entity.rigidBody3D);
-								refreshBroadPhaseBox(bodyB.rigidBody3D);
-							}
-						});
-				});
-
-			// Interactable Vs. Entities — each unordered pair once
-			gameMap.ForEachInteractable([&](InteractableObject& bodyA)
-				{
-					gameMap.ForEachEntity([&](Entity& bodyB)
-						{
-							if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
-							{
-								bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
-								refreshBroadPhaseBox(bodyA.rigidBody3D);
-								refreshBroadPhaseBox(bodyB.rigidBody3D);
-							}
-						});
-				});
-
-			// Interactable Vs. Interactable — each unordered pair once
-			gameMap.ForEachInteractablePair([&](InteractableObject& bodyA, InteractableObject& bodyB)
-				{
-					if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
-					{
-						bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
-						refreshBroadPhaseBox(bodyA.rigidBody3D);
-						refreshBroadPhaseBox(bodyB.rigidBody3D);
-					}
-				});
-
-			// Player Vs. Game Objects — the player lives outside both containers, so
-			// without this pass it walks straight through every entity (it already
-			// resolves against gameObjects in Player::update3D)
-
-			if (auto player = scene->player) {
-				gameMap.ForEachObject([&](GameObject& obj)
-					{
-						if (&obj == player) { return; }
-						if (player->rigidBody3D.OverlapsBroadPhase(obj.rigidBody3D))
-						{
-							player->rigidBody3D.resolveConstrains(player, &obj);
-							refreshBroadPhaseBox(player->rigidBody3D);
-							refreshBroadPhaseBox(obj.rigidBody3D);
-						}
-					});
-			}
-
-			// Player Vs. Entities
-			if (auto player = scene->player)
-			{
-				gameMap.ForEachEntity([&](Entity& entity)
-					{
-						if (player->rigidBody3D.OverlapsBroadPhase(entity.rigidBody3D))
-						{
-							player->rigidBody3D.resolveConstrains(player, &entity);
-							refreshBroadPhaseBox(player->rigidBody3D);
-							refreshBroadPhaseBox(entity.rigidBody3D);
-						}
-					});
-			}
-
-			// Player Vs. Interactables
-			if (auto player = scene->player)
-			{
-				gameMap.ForEachInteractable([&](InteractableObject& entity)
-					{
-						if (player->rigidBody3D.OverlapsBroadPhase(entity.rigidBody3D))
-						{
-							player->rigidBody3D.resolveConstrains(player, &entity);
-							refreshBroadPhaseBox(player->rigidBody3D);
-							refreshBroadPhaseBox(entity.rigidBody3D);
-						}
-					});
-			}
-		}
+		const std::vector<Physics3D::ContactEvent> events = physics.Solve(bodies, iterations);
+		ContactRules::Apply(*this, events);
+		return events;
 	}
 #pragma endregion
 
@@ -492,7 +366,7 @@ namespace SceneManagement {
 		// The solver applies positional corrections, so running it against a frozen
 		// scene would push a just-placed object out of the wall it was deliberately
 		// snapped flush against.
-		if (!editorFrozen) { solveCollision(scene, delta, 8); }
+		if (!editorFrozen) { scene->SolveCollisions(8); }
 
 		/** Update MiniGame **/
 		scene->TickMiniGame(delta);
