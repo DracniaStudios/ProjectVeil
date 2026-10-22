@@ -16,27 +16,11 @@ namespace
 	const Color kPlacementColor = Color{ 90, 220, 160, 255 };
 	const Color kTargetColor = Color{ 120, 170, 255, 255 }; // A selected Task station's Target
 
-	/** Removes by id from whichever container actually owns the object. */
+	/** Removes by id, whatever kind of object it is, at the end of the frame. */
 	bool RemoveById(SceneManagement::Scene* scene, std::uint64_t id)
 	{
 		if (scene == nullptr || id == 0) { return false; }
-
-		if (scene->gameMap.FindInteractable(id) != nullptr)
-		{
-			scene->gameMap.DestroyInteractable(id);
-			return true;
-		}
-		if (scene->gameMap.FindEntity(id) != nullptr)
-		{
-			scene->gameMap.DestroyEntity(id);
-			return true;
-		}
-		if (scene->gameMap.FindGameObject(id) != nullptr)
-		{
-			scene->gameMap.DestroyGameObject(id);
-			return true;
-		}
-		return false;
+		return scene->gameMap.Destroy(id);
 	}
 }
 
@@ -386,29 +370,23 @@ void WorldEditor::DuplicateSelection()
 	const Vector3 offset = Vector3{ 1.0f, 0.0f, 0.0f };
 
 	//
-	// Each copy also inherits the source's model handle and its ownsModel flag.
-	// The original is still live and still using that model, so the copy has to
-	// disown it before being saved — the loadVisuals() inside each save call
-	// releases whatever the object claims to own, and would otherwise free the
-	// model of the object that was just duplicated.
+	// Each copy shares the original's model handle, which is safe: Spawn* never
+	// frees a prototype's model, and binds the stored copy a model of its own.
 	if (object->type == OBJECT_ENTITY)
 	{
 		Entity copy = *static_cast<Entity*>(object);
-		copy.disownModel();
 		copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), offset));
 		spawned = scene->gameMap.SpawnEntity(copy);
 	}
 	else if (object->type == OBJECT_INTERACTABLE)
 	{
 		InteractableObject copy = *static_cast<InteractableObject*>(object);
-		copy.disownModel();
 		copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), offset));
 		spawned = scene->gameMap.SpawnInteractable(copy);
 	}
 	else
 	{
 		GameObject copy = *object;
-		copy.disownModel();
 		copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), offset));
 		spawned = scene->gameMap.SpawnGameObject(copy);
 	}

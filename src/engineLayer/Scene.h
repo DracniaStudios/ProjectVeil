@@ -108,7 +108,9 @@ namespace SceneManagement {
 		// once per frame from Scene_updateScene, ahead of the entity updates.
 		void EmitStationNoise(float deltaTime);
 
-		void ResetID();
+		// Empties the GameMap (GameMap::Clear) and what the player carries with it:
+		// the inventory holds ids, and the next world hands the same ids out again.
+		void ClearWorld();
 	private:
 		// Grants the won game's reward and, at a Task station, completes it and
 		// toggles its Target. Then closes the MiniGame overlay.

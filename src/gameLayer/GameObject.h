@@ -86,10 +86,10 @@ struct GameObject
 	 *
 	 *   no two *live* objects may hold the same handle with ownsModel == true
 	 *
-	 * Copies are the only way to break it, so any code that copies a GameObject
-	 * and then binds the copy into the scene must call disownModel() first.
-	 * There are exactly two such places, both in the World Editor:
-	 * WorldEditor::SpawnStagedObject and WorldEditor::DuplicateSelection.
+	 * Copies are the only way to break it. GameMap's Spawn* is where a copy enters
+	 * the world, and it disowns the copy before binding a model of its own, so
+	 * callers spawning from a prototype don't have to. A new object owns no model
+	 * until loadVisuals() binds one.
 	 */
 
 	// Drops an inherited handle without freeing it — the original still owns it

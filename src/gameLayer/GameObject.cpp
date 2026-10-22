@@ -16,25 +16,11 @@ GameObject::GameObject()
 	isEnabled = true;
 	rigidBody3D = {};
 
-	// Fallback unit cube so the object renders before assets are bound.
-	// Scale is applied through model.transform in render3D, so the mesh
-	// itself never needs to be regenerated when the object is resized
-	if (model.meshCount == 0)
-	{
-		model = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
-		ownsModel = true;
-	}
-
-	if (model.materialCount == 0) {
-		model.materials[MATERIAL_MAP_DIFFUSE] = LoadMaterialDefault();
-	}
-
-	// raylib's DrawMesh() reads material.shader, so lighting has to be written
-	// into the material — BeginShaderMode() only affects the rlgl batch and
-	// would leave models unlit. loadVisuals() repeats this on every rebind;
-	// this call covers an object drawn before its first bind. It is a no-op
-	// until LightingSystem::Init() has run.
-	Lighting::LightingSystem::getInstance().ApplyToModel(model);
+	// No model is created here. A new object is usually a prototype that is
+	// copied into a GameMap, and each upload here used to be a cube nobody
+	// released, or one the copy then shared with it. The model is bound by
+	// loadVisuals(), which onEnable(), GameMap's Restore and loadFromJson() all
+	// run, so an object has one by the time it is first drawn.
 
 	// The collision box is not seeded here. It used to be assigned
 	// GetMeshBoundingBox(model.meshes[0]) — a MODEL-LOCAL box written into a
@@ -290,17 +276,17 @@ void GameObject::update(SceneManagement::Scene* scene, float deltaTime)
 
 void GameObject::Destroy()
 {
-	// Removal is deferred: Destroy() can be called from inside the update
-	// loop that iterates gameMap.gameObjects, and erasing there invalidates
-	// the iterators. The scene sweeps pendingDestroy objects after updating.
+	// Removal is deferred, for every kind of object: Destroy() can be called from
+	// inside the update loop that iterates the GameMap, and erasing there
+	// invalidates the iterators. GameMap::SweepDestroyed removes pendingDestroy
+	// objects after the updates.
 	isAlive = false;
 	pendingDestroy = true;
 }
 
 void GameObject::onDestroy(SceneManagement::Scene* scene)
 {
-	// Removal happens in the scene's pendingDestroy sweep (Scene_updateScene);
-	// erasing here would invalidate the update loop's iterators
+	// Called by GameMap::SweepDestroyed just before it erases this object
 	std::cout << "Destroy Object: " << name << "\n";
 
 	// The destructor is trivial and never frees GPU resources, so a generated

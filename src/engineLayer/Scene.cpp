@@ -36,13 +36,8 @@ namespace SceneManagement {
 
 		scene->QuitMiniGame();
 
-		// ~GameObject() never frees GPU resources, so each generated fallback model
-		// is released first, as GameMap::Destroy* does. Destroy* itself is not used:
-		// DestroyInteractable edits currentScene's player, and by the time a scene is
-		// freed currentScene is the scene that replaced it.
-		scene->gameMap.ForEachGameObject([](GameObject& object) { object.releaseGeneratedModel(); });
-		scene->gameMap.ForEachEntity([](Entity& entity) { entity.releaseGeneratedModel(); });
-		scene->gameMap.ForEachInteractable([](InteractableObject& interactable) { interactable.releaseGeneratedModel(); });
+		// Releases every generated model, which ~GameObject() never would
+		scene->gameMap.Clear();
 
 		if (scene->player) {
 			// The artifact is created on first use (InteractableObject.cpp) and owned by the player.
@@ -59,10 +54,9 @@ namespace SceneManagement {
 
 
 
-	// Renumbers every object sequentially from the first assignable id.
-	void Scene::ResetID() {
-		// Start at 2 to avoid Object 0 and Player;
-		gameMap.ResetGameObjectIds();
+	void Scene::ClearWorld() {
+		gameMap.Clear();
+		if (player) { player->inventory.clear(); }
 	}
 
 #pragma region Physics Management
@@ -463,10 +457,6 @@ namespace SceneManagement {
 			});
 
 		/** Update Entities **/
-		// DestroyEntity() erases from the same map ForEachEntity is iterating, so
-		// dead items are collected here and destroyed in a second pass afterward
-		// rather than mid-traversal.
-		std::vector<std::uint64_t> deadItemEntityIds;
 		scene->gameMap.ForEachEntity([&](Entity& entity)
 			{
 				// Frozen entities are not culled either: an entity sitting at zero
@@ -480,27 +470,23 @@ namespace SceneManagement {
 				{
 					// Only items are auto-removed here; other entity types keep their
 					// (still-zero-health) entry until their own death handling runs.
-					if (entity.type == OBJECT_ITEM) { deadItemEntityIds.push_back(entity.id); }
+					// Destroy only marks it, so this is safe mid-traversal.
+					if (entity.type == OBJECT_ITEM) { entity.Destroy(); }
 					return;
 				}
 
 				entity.update(scene, delta);
 				clampObject(entity, scene->limitYBounds);
 			});
-		for (auto id : deadItemEntityIds) { scene->gameMap.DestroyEntity(id); }
 
 		// After the entities have settled, so the Director advises on the state the
 		// stalker actually ended the frame in rather than the previous one.
 		if (!editorFrozen) { scene->director.Update(scene, delta); }
 
 
-		// Sweep objects flagged by Destroy() — removal must happen outside the
-		// update loop above, since erasing mid-iteration invalidates it
-		scene->gameMap.EraseGameObjectsIf([&](GameObject& object) {
-			if (!object.pendingDestroy) { return false; }
-			object.onDestroy(scene);
-			return true;
-			});
+		// Sweep objects of every kind flagged by Destroy() — removal must happen
+		// outside the update loops above, since erasing mid-iteration invalidates them
+		scene->gameMap.SweepDestroyed(scene);
 
 		/* Update Collisions */
 		// The solver applies positional corrections, so running it against a frozen

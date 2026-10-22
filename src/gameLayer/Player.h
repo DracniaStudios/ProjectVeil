@@ -37,7 +37,10 @@ struct Player : Entity
 	PlayerCamera camera = {};
 	GameObject* artifact = nullptr;
 
-	std::vector<InteractableObject*> inventory;// Set TO Object IDs if doesn't work (just like ActivatorObject).
+	// The ids of the items the player picked up. Ids, not pointers, so an item
+	// destroyed later leaves an id that finds nothing rather than a dangling
+	// pointer. Scene::ClearWorld empties it, since the next world reuses ids.
+	std::vector<std::uint64_t> inventory;
 
 	int artifactMode = 0;
 	int artifactUnlocked = -1;

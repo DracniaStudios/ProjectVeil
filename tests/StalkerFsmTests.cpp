@@ -73,8 +73,11 @@ static Stalker* AddStalker(SceneManagement::Scene* scene, Vector3 at, std::uint6
 	// Gravity is irrelevant here and only adds drift between steps; the FSM
 	// steers and measures on the XZ plane regardless of height.
 	owned->rigidBody3D.isStatic = true;
+	// Enabled as a spawned Stalker would be (full health and stamina), then
+	// restored so it keeps the id the assertions name
+	owned->onEnable();
 	Stalker* stalker = owned.get();
-	scene->gameMap.LoadEntity(std::move(owned));
+	scene->gameMap.RestoreEntity(std::move(owned));
 	return stalker;
 }
 
@@ -98,7 +101,7 @@ static BoundingBox AddBlock(SceneManagement::Scene* scene, Vector3 centre, Vecto
 	block.rigidBody3D.translation = centre;
 	block.rigidBody3D.scale = size;
 	block.rigidBody3D.SyncBroadPhaseBox();
-	GameObject* spawned = scene->gameMap.LoadGameObject(block);
+	GameObject* spawned = scene->gameMap.RestoreGameObject(block);
 	return spawned->rigidBody3D.broadPhaseBox;
 }
 

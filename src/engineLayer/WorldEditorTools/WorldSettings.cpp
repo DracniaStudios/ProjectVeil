@@ -5,28 +5,9 @@
 namespace Editor {
 
 static void NewWorld(SceneManagement::Scene& scene) {
-
-	// DestroyEntity/DestroyInteractable each already release a generated
-	// fallback model before erasing (see GameMap::DestroyGameObject()) — snapshot
-	// ids first since destroying while iterating the same map is unsafe.
-	std::vector<uint64_t> entityIds;
-	scene.gameMap.ForEachEntity([&](Entity& entity) { entityIds.push_back(entity.id); return true; });
-	for (auto id : entityIds) { scene.gameMap.DestroyEntity(id); }
-
-	std::vector<uint64_t> interactableIds;
-	scene.gameMap.ForEachInteractable([&](InteractableObject& interactable) { interactableIds.push_back(interactable.id); return true; });
-	for (auto id : interactableIds) { scene.gameMap.DestroyInteractable(id); }
-
+	// Ids start over with the new world, so the player's inventory goes too
+	scene.ClearWorld();
 	scene.gameMap.create(Vector3(10.0f, 1.0f, 10.0f));
-
-	// Player::inventory holds non-owning references into the interactables map
-	// just cleared above (see GameMap::DestroyInteractable for the same hazard) —
-	// left alone they dangle the moment the Player Inspector reads the inventory.
-	if (scene.player) {
-		scene.player->inventory.clear();
-	}
-
-	scene.ResetID();
 }
 
 void WorldEditor::ShowWorldSettings()
@@ -67,7 +48,7 @@ void WorldEditor::ShowWorldSettings()
 	ImGui::Text("Game Objects: %d", static_cast<int>(scene->gameMap.GameObjectCount()));
 	ImGui::Text("Entities: %d", static_cast<int>(scene->gameMap.EntityCount()));
 	ImGui::Text("Interactables: %d", static_cast<int>(scene->gameMap.InteractableCount()));
-	ImGui::Text("Next ID: %llu", static_cast<unsigned long long>(scene->gameMap.instanceHolder.idCounter));
+	ImGui::Text("Next ID: %llu", static_cast<unsigned long long>(scene->gameMap.NextId()));
 	ImGui::Separator();
 
 	if (ImGui::Button("Save Game")) { 
@@ -96,9 +77,9 @@ void WorldEditor::ShowWorldSettings()
 
 		if (ImGui::Button("New World")) {
 			NewWorld(*scene);
-			// NewWorld() renumbers every remaining object via ResetID(), exactly
-			// like Load Game/Load World — stale selection/undo state would
-			// otherwise reference ids that now belong to different objects.
+			// NewWorld() restarts the ids, exactly like Load Game/Load World —
+			// stale selection/undo state would otherwise reference ids that now
+			// belong to different objects.
 			ResetSelectionState();
 		}
 		if (ImGui::Button("Save World"))

@@ -59,7 +59,7 @@ static InteractableObject* AddStation(SceneManagement::Scene* scene, Vector3 at,
 	owned->isInteractable = true;
 	owned->rigidBody3D.Teleport(at);
 	InteractableObject* station = owned.get();
-	scene->gameMap.LoadInteractable(std::move(owned));
+	scene->gameMap.RestoreInteractable(std::move(owned));
 	return station;
 }
 
@@ -118,7 +118,7 @@ static GameObject* AddDoor(SceneManagement::Scene* scene, std::uint64_t id)
 	GameObject door;
 	door.id = id;
 	door.name = "TestDoor";
-	return scene->gameMap.LoadGameObject(door);
+	return scene->gameMap.RestoreGameObject(door);
 }
 
 static void TestWinningTogglesTheTarget()
@@ -248,7 +248,8 @@ static void TestDirectorSkipsCompletedStations()
 	owned->id = 912;
 	owned->rigidBody3D.Teleport(Vector3{ 0, 0, 0 });
 	owned->rigidBody3D.isStatic = true;
-	scene->gameMap.LoadEntity(std::move(owned));
+	owned->onEnable(); // full health and stamina, as a spawned Stalker
+	scene->gameMap.RestoreEntity(std::move(owned));
 
 	// Long enough past kQuietBeforeHint that the Director is willing to speak.
 	const auto runDirector = [scene]() {

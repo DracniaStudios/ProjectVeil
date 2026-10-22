@@ -43,3 +43,21 @@ _Avoid_: activator
 **Practice run**:
 A MiniGame started from the Artifact instead of a Task station. Winning grants the game's buff but completes nothing and toggles nothing.
 _Avoid_: replay
+
+### World
+
+**Spawn**:
+Adding a new object to the world, made from a prototype. It gets a new id and starts enabled, with full health; the prototype is left as it was.
+_Avoid_: create, add, save (Save writes to disk)
+
+**Restore**:
+Putting an object back into the world exactly as it was saved, under its saved id. Nothing is reset: a door saved shut stays shut, and a hurt Stalker stays hurt.
+_Avoid_: load (that is the whole save file), respawn
+
+**Destroy**:
+Taking an object out of the world. It leaves at the end of the frame, never partway through one.
+_Avoid_: delete, erase, remove
+
+**Clear**:
+Emptying the whole world at once, before a new world is built or a save is loaded. Ids start over, so the player's inventory empties with it.
+_Avoid_: reset, wipe

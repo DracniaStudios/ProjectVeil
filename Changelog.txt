@@ -39,6 +39,9 @@
 - Added Close All Overlays to World Settings, with a read-only list of open overlays.
 - Added OverlayStack and MiniGameSession tests.
 - Added CONTEXT.md for game terms (Overlay, Title, Inventory, MiniGame, Task station, Target, Practice run).
+- Added one GameMap lifecycle for every kind of object: Spawn, Restore, Destroy and Clear.
+	GameMap now owns the ids, and Scene::ClearWorld empties the world and the player's inventory together.
+- Added GameMap tests for Spawn, Restore, Destroy and Clear.
 
 [ Updated ]
 
@@ -52,6 +55,9 @@
 - Updated Task station saves to write "TargetId". Older saves take it from "Activator".
 - Updated the Placement panel's "Activator ID" to "MiniGame Target".
 - Updated the Title panel to draw from UI/Overlays.cpp instead of mainMenu.cpp.
+- Updated Destroy to wait until the end of the frame for entities and interactables too, as it already did for GameObjects.
+- Updated the player's inventory to hold item ids instead of pointers.
+- Updated GameObject to create its model when it enters the world, not in its constructor.
 
 [ Fixed ]
 
@@ -61,6 +67,9 @@
 - Fixed FlappyBird's "left the green area" check almost never firing.
 - Fixed Artifact Practice runs toggling the last station's door. They now only grant the buff.
 - Fixed RigidBody2D's getRectCentered and getRectCornered returning the far corner instead of a size.
+- Fixed loading a save re-enabling doors that were saved disabled, and healing damaged entities to full.
+- Fixed Unlock stations freeing themselves in the middle of their own interaction.
+- Fixed Spawn sharing one model between the prototype and the stored copy, and placed interactables with no scale.
 
 [ Removed ]
 
@@ -68,4 +77,6 @@
 - Removed PlayerUI and the empty UI/SettingUI.cpp.
 - Removed Player's rigidBody2D, update2D, canMove and interactObjectId.
 - Removed Is2DActive and IsMiniActive from saves. Older saves still load.
+- Removed GameMap's Load*, DestroyGameObject/Entity/Interactable, EraseGameObjectsIf, ResetGameObjectIds
+	and the public instanceHolder, and Scene::ResetID.
 

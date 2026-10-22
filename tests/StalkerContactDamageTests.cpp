@@ -58,8 +58,11 @@ static Stalker* AddStalker(SceneManagement::Scene* scene, Vector3 at, std::uint6
 	// Irrelevant here and only adds drift between calls; this test drives
 	// resolveConstrains directly rather than stepping the FSM or physics.
 	owned->rigidBody3D.isStatic = true;
+	// Enabled as a spawned Stalker would be (full health and stamina), then
+	// restored so it keeps the id the assertions name
+	owned->onEnable();
 	Stalker* stalker = owned.get();
-	scene->gameMap.LoadEntity(std::move(owned));
+	scene->gameMap.RestoreEntity(std::move(owned));
 	return stalker;
 }
 

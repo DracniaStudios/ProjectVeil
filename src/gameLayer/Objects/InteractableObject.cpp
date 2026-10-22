@@ -57,14 +57,9 @@ void Unlock(InteractableObject* interactable)
 
 	interactable->isInteractable = false;
 
-	// Destroy() only sets pendingDestroy, which is swept for GameObjects
-	// (Scene.cpp's end-of-frame EraseGameObjectsIf); InteractableObjects live
-	// in GameMap's separate interactables map, which has no such sweep, so
-	// the flag was simply left set forever and the station never actually
-	// left the world. DestroyInteractable() is the real removal path for
-	// this container.
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
-	if (scene) { scene->gameMap.DestroyInteractable(interactable->id); }
+	// Removed at the end of the frame by GameMap::SweepDestroyed, not here: this
+	// runs inside the station's own onInteract
+	interactable->Destroy();
 }
 
 void AddItemToInventory(InteractableObject* interactable)
@@ -73,14 +68,14 @@ void AddItemToInventory(InteractableObject* interactable)
 	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	// Search in vector
-	auto it = std::ranges::find(scene->player->inventory, interactable);
+	auto it = std::ranges::find(scene->player->inventory, interactable->id);
 
 	if (it != scene->player->inventory.end()) {
 		// Item already in inventory
 		return;
 	}
-	
-	scene->player->inventory.push_back(interactable);
+
+	scene->player->inventory.push_back(interactable->id);
 	interactable->onDisable();
 
 	std::cout << "[InteractableObject] Item added to inventory.\n";
@@ -111,10 +106,8 @@ void InteractableObject::onInteract()
 		soundInstance->setParameterByName(soundParameterName.c_str(), soundParameterValue);
 	}
 
-	// Unlock() destroys this object (GameMap::DestroyInteractable erases the
-	// owning unique_ptr immediately, no deferred sweep), so the type has to be
-	// captured before dispatch and the branches kept mutually exclusive —
-	// nothing below may touch `this` after the branch that can free it.
+	// The branches stay mutually exclusive: Unlock() marks this station for
+	// removal, and none of the others may run on a station that is going away.
 	const InteractionType type = interactType;
 	if (type == INTERACT_MINIGAME) { ActivateMiniGame(this); }
 	else if (type == INTERACT_UNLOCK) { Unlock(this); }

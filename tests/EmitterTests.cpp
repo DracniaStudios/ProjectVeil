@@ -54,8 +54,8 @@ static SceneManagement::Scene* MakeScene()
 	return scene;
 }
 
-// A task station at a known position. Registered directly rather than through
-// SpawnInteractable so the id is predictable and the assertions can name it.
+// A task station at a known position. Restored rather than spawned so the id
+// is predictable and the assertions can name it.
 static InteractableObject* AddStation(SceneManagement::Scene* scene, Vector3 at, std::uint64_t id = 700)
 {
 	auto owned = std::make_unique<InteractableObject>(INTERACT_MINIGAME, MINI_GAME_FLAPPY_BIRD_ID, 0);
@@ -65,7 +65,7 @@ static InteractableObject* AddStation(SceneManagement::Scene* scene, Vector3 at,
 	owned->isInteractable = true;
 	owned->rigidBody3D.Teleport(at);
 	InteractableObject* station = owned.get();
-	scene->gameMap.LoadInteractable(std::move(owned));
+	scene->gameMap.RestoreInteractable(std::move(owned));
 	return station;
 }
 
@@ -249,7 +249,7 @@ static GameObject* AddCrate(SceneManagement::Scene* scene, Vector3 at, Vector3 v
 	crate.rigidBody3D.scale = Vector3{ 1, 1, 1 };
 	crate.rigidBody3D.SetVelocity(velocity);
 	crate.rigidBody3D.SyncBroadPhaseBox();
-	return scene->gameMap.LoadGameObject(crate);
+	return scene->gameMap.RestoreGameObject(crate);
 }
 
 static void TestFastImpactIsAudible()

@@ -97,8 +97,10 @@ static ProbeEntity* AddProbe(SceneManagement::Scene* scene, Vector3 at, std::uin
 	owned->rigidBody3D.Teleport(at);
 	owned->rigidBody3D.scale = Vector3{ 1, 1, 1 };
 	owned->rigidBody3D.SyncBroadPhaseBox();
+	// Enabled as a spawned entity would be, then restored so it keeps its id
+	owned->onEnable();
 	ProbeEntity* probe = owned.get();
-	scene->gameMap.LoadEntity(std::move(owned));
+	scene->gameMap.RestoreEntity(std::move(owned));
 	return probe;
 }
 
@@ -119,7 +121,7 @@ static GameObject* AddFloor(SceneManagement::Scene* scene, Vector3 centre, Vecto
 	floor.rigidBody3D.scale = size;
 	floor.rigidBody3D.collider.mode = mode;
 	floor.rigidBody3D.SyncBroadPhaseBox();
-	return scene->gameMap.LoadGameObject(floor);
+	return scene->gameMap.RestoreGameObject(floor);
 }
 
 // One frame, mirroring Scene_updateScene's order: bodies integrate, then the
