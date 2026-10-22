@@ -61,3 +61,13 @@ _Avoid_: delete, erase, remove
 **Clear**:
 Emptying the whole world at once, before a new world is built or a save is loaded. Ids start over, so the player's inventory empties with it.
 _Avoid_: reset, wipe
+
+### Saves
+
+**Game save**:
+A play session as it stood when the player left: the world, anything still in flight, and the player. Loading one Clears the world and Restores everything in it.
+_Avoid_: save file, savegame
+
+**World save**:
+A level as authored in the World Editor: its objects and lighting, with no player and nothing in flight. Loading one replaces the world and leaves the player as they were.
+_Avoid_: scene, map file, level file
