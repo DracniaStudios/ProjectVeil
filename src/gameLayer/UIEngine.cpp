@@ -318,9 +318,9 @@ namespace UI {
 	{
 		const int textWidth = backend.TextWidth(text, fontSize);
 
-		const float textX = rect.x + (rect.width - textWidth) / 2.f;
-		const float textY = rect.y + (rect.height - fontSize) / 2.f + yOffset;
-		const float shadow = fontSize * 0.08f;
+		const float textX = rect.x + (rect.width - static_cast<float>(textWidth)) / 2.f;
+		const float textY = rect.y + (rect.height - static_cast<float>(fontSize)) / 2.f + yOffset;
+		const float shadow = static_cast<float>(fontSize) * 0.08f;
 
 		DrawCommand label;
 		label.kind = DrawCommand::Kind::Text;

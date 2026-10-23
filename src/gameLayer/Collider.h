@@ -132,8 +132,8 @@ private:
 	uint64_t objectID = -1;
 	bool canSetID = true;
 public:
-	int SetObjectID(uint64_t id = 0) { if (canSetID) { objectID = id; canSetID = false; return objectID; } else return objectID; }
-	int GetObjectID() const { return objectID; }
+	uint64_t SetObjectID(uint64_t id = 0) { if (canSetID) { objectID = id; canSetID = false; return objectID; } else return objectID; }
+	uint64_t GetObjectID() const { return objectID; }
 	ColliderShape shape = COLLIDER_BOX;
 	ColliderMode mode = COLLIDER_COLLISION;
 	bool canCollide = true;
