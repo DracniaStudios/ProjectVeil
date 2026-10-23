@@ -389,11 +389,13 @@ namespace SceneManagement {
 	}
 
 	void Scene_drawScene2D(Scene& scene) {
-		// Brackets every widget drawn this frame. The list is cleared here rather
-		// than during update so the UI Inspector, which runs in update, sees the
-		// whole of last frame's UI instead of an empty list.
-		auto& ui = UI::UIEngine::getInstance();
-		ui.beginFrame();
+		// Brackets every widget drawn this frame. The frame is kept whole once it
+		// ends, so the UI Inspector, which runs in update, reads all of last
+		// frame's UI. Widgets reach the screen at endFrame, over anything drawn
+		// straight to raylib in between: the dimming lands under the panels it
+		// dims, and a MiniGame and the reticle only draw when no panel does.
+		const bool editorHasMouse = Editor::WorldEditor::getInstance().CapturesMouse();
+		UI::beginFrame(UI::UIEngine::getInstance(), UI::ReadRaylibInput(editorHasMouse));
 
 		if (scene.draw2D) { scene.draw2D(scene); }
 
@@ -404,7 +406,7 @@ namespace SceneManagement {
 		// player is the game's own cursor, which the game draws.
 		if (scene.player != nullptr && scene.overlays.GameplayHasInput()) { scene.player->render2D(); }
 
-		ui.endFrame();
+		UI::endFrame();
 	}
 
 	void Scene_drawScene3D(Scene& scene) {

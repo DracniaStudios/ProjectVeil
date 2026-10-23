@@ -165,11 +165,95 @@ namespace UI {
 	}
 
 	/**
-	 * Immediate-mode UI.
+	 * One frame's input, read before any widget is drawn. The game reads it
+	 * from raylib (ReadRaylibInput); a test writes its own.
+	 */
+	struct Input
+	{
+		Vector2 screenSize = {};
+		Vector2 mouse = {};
+		bool mouseDown = false;     // Left button held
+		bool mouseReleased = false; // Left button let go this frame
+		bool mouseBlocked = false;  // Something over the UI has the mouse: the World Editor's windows
+	};
+
+	// One thing to draw, recorded by a widget and replayed by the Backend at endFrame
+	struct DrawCommand
+	{
+		enum class Kind { Rect, Outline, Text };
+
+		Kind kind = Kind::Rect;
+		Color color = {};
+		Rectangle rect = {};    // Rect and Outline, in screen pixels
+		float thickness = 1.0f; // Outline
+		std::string text = {};  // Text
+		Vector2 position = {};  // Text: its top-left corner
+		int fontSize = 0;       // Text
+	};
+
+	// How the UI reaches the screen: raylib in the game, a stand-in in tests
+	class Backend
+	{
+	public:
+		virtual ~Backend() = default;
+
+		virtual int TextWidth(const std::string& text, int fontSize) const = 0;
+		virtual void Draw(const std::vector<DrawCommand>& commands) = 0;
+	};
+
+	// Everything one frame drew, kept whole once the frame ends
+	struct Frame
+	{
+		std::vector<WidgetEntry> widgets;  // In draw order; a widget's id is its index here
+		std::vector<DrawCommand> commands; // What reached the screen, in order
+		Vector2 screenSize = {};
+		float scale = 1.0f;
+		int hoveredId = -1; // The widget the mouse was over as the frame began; -1 for none
+	};
+
+	class UIEngine;
+
+	/**
+	 * Frame
+	 *
+	 * Every widget is drawn between beginFrame and endFrame, into the engine
+	 * whose frame is open; one drawn outside a frame draws nothing. Widgets
+	 * reach the screen at endFrame, so anything drawn straight to raylib in
+	 * between lands under all of them.
+	 *
+	 * Hover is decided at beginFrame against last frame's widgets, since this
+	 * frame's aren't drawn yet: the last widget drawn there under the mouse is
+	 * the one on top, and only it is hovered. Text never takes the mouse.
+	 */
+	void beginFrame(UIEngine& ui, const Input& input);
+	void endFrame();
+
+	// Opens a Panel. Widgets drawn until the matching endPanel() are placed inside
+	// it: their rects are relative to it, and the no-rect overloads stack in rows.
+	void beginPanel(const std::string& name, Rectangle pixelRect, Rectangle scaleRect = {});
+	void endPanel();
+
+	// Creates a UI Button. Returns true on the frame the mouse is released over
+	// it, once per click, never while it is held.
+	bool drawButton(const std::string& text, Rectangle pixelRect, Rectangle scaleRect = {});
+	bool drawButton(const std::string& text); // In the open panel's next row
+
+	// Creates Text for UI Elements, centred in its rect
+	void drawText(const std::string& text, Rectangle pixelRect, Rectangle scaleRect = {});
+	void drawText(const std::string& text); // In the open panel's next row
+
+	/**
+	 * Immediate-mode UI: what persists between frames, and the frame being drawn.
+	 *
+	 * Only the look is meant to be changed from outside, by code or the UI
+	 * Inspector. Widgets are drawn through the free functions above, and the
+	 * last frame is read back through LastFrame().
 	 */
 	class UIEngine
 	{
 	public:
+		// Draws every frame through backend
+		explicit UIEngine(Backend& backend) : backend(backend) {}
 
 		// Delete, copy, and move functions to prevent duplication
 		UIEngine(const UIEngine&) = delete;
@@ -177,43 +261,31 @@ namespace UI {
 		UIEngine(UIEngine&&) = delete;
 		UIEngine& operator=(UIEngine&&) = delete;
 
-		// Global Access point to the UIEngine instance
-		static UIEngine& getInstance() {
-			static UIEngine instance; // Guaranteed to be destroyed and instantiated on first use
-			return instance;
-		}
+		// The game's UI, drawn through raylib
+		static UIEngine& getInstance();
 
-		/** Widgets **/
-		// Everything drawn this frame, in draw order; an id is its index here.
-		std::vector<WidgetEntry> widgets;
-
-		/** Style & Scaling **/
+		/** Look **/
 		Style style = {};
 		Vector2 referenceResolution = { 1920.0f, 1080.0f }; // Resolution pixelRects are authored at
-		float getScale() const { return scale; }
-
-		/** Frame **/
-		void beginFrame(); // Before the first widget of the frame
-		void endFrame();   // After the last
-
-		/** Layout **/
-		// Fill in the fields every widget shares and decide where it goes: inside
-		// the open panel at its own rects, or in that panel's next row.
-		void placeWidget(Widget& widget, Rectangle pixelRect, Rectangle scaleRect);
-		void placeNextRow(Widget& widget);
-
-		void pushPanel(Panel panel);
-		void popPanel();
-
-		/** Input **/
-		int hoveredId = -1;
-		bool isMouseBlocked = false; // Set by the World Editor while ImGui owns the mouse
 
 		/** Debug (UI Inspector) **/
 		bool showBounds = false; // Outline every widget
-		int highlightedId = -1;  // Outlined for one frame; the inspector sets it on hover
+		// Outlines one widget at the end of the next frame only, so the inspector
+		// asks again each frame it wants the outline kept
+		void Highlight(int widgetId) { highlightedId = widgetId; }
+
+		// The last frame drawn, whole. Read-only: the next frame rebuilds it.
+		const Frame& LastFrame() const { return lastFrame; }
+
 	private:
-		UIEngine() = default;
+		friend void beginFrame(UIEngine& ui, const Input& input);
+		friend void endFrame();
+		friend void beginPanel(const std::string& name, Rectangle pixelRect, Rectangle scaleRect);
+		friend void endPanel();
+		friend bool drawButton(const std::string& text, Rectangle pixelRect, Rectangle scaleRect);
+		friend bool drawButton(const std::string& text);
+		friend void drawText(const std::string& text, Rectangle pixelRect, Rectangle scaleRect);
+		friend void drawText(const std::string& text);
 
 		// Where the next widget goes. One per open panel, with the screen at the bottom.
 		struct Layout
@@ -223,25 +295,39 @@ namespace UI {
 			int rowCount = 0;
 		};
 
-		// Starts with a root so a widget drawn before the first beginFrame() gets a
-		// zero-sized parent instead of reading back() off an empty vector
-		std::vector<Layout> layoutStack = { Layout{} };
-		float scale = 1.0f;
+		// Fill in the fields every widget shares and decide where it goes: inside
+		// the open panel at its own rects, or in that panel's next row.
+		void placeWidget(Widget& widget, Rectangle pixelRect, Rectangle scaleRect);
+		void placeNextRow(Widget& widget);
+
+		// Whether the mouse is over this widget: it was on top under the mouse
+		// last frame, and the mouse is inside where it is now
+		bool hovers(const Widget& widget) const;
+
+		int fitTextSize(const std::string& text, Rectangle rect) const;
+		void drawRect(Rectangle rect, Color color);
+		void drawLabel(const std::string& text, Rectangle rect, int fontSize, float yOffset);
+		bool finishButton(Button& button, const std::string& text);
+		void finishText(Text& widget, const std::string& text);
+
+		Backend& backend;
+		Input input = {};
+		Frame frame = {};     // Being drawn
+		Frame lastFrame = {};
+		std::vector<Layout> layoutStack;
+		int highlightedId = -1;
 	};
 
-	// Opens a Panel. Widgets drawn until the matching endPanel() are placed inside
-	// it: their rects are relative to it, and the no-rect overloads stack in rows.
-	void beginPanel(const std::string& name, Rectangle pixelRect, Rectangle scaleRect = {});
-	void endPanel();
+	/** raylib **/
+	class RaylibBackend final : public Backend
+	{
+	public:
+		int TextWidth(const std::string& text, int fontSize) const override;
+		void Draw(const std::vector<DrawCommand>& commands) override;
+	};
 
-	// Creates a UI Button. Returns true on the frame the mouse is released over it.
-	bool drawButton(const std::string& text, Rectangle pixelRect, Rectangle scaleRect = {});
-	bool drawButton(const std::string& text); // In the open panel's next row
-
-	// Creates Text for UI Elements, centred in its rect
-	void drawText(const std::string& text, Rectangle pixelRect, Rectangle scaleRect = {});
-	void drawText(const std::string& text); // In the open panel's next row
+	// The mouse and screen as raylib has them this frame
+	Input ReadRaylibInput(bool mouseBlocked);
 }
 
-inline Vector2 GetScreenSize() { return Vector2(GetScreenWidth(), GetScreenHeight()); }
 #endif

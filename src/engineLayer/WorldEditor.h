@@ -67,6 +67,7 @@ namespace Editor {
 
 		/** Window Flags **/
 		bool isEditorActive = false; // Master switch (F1)
+		bool capturesMouse = false;  // Open, with one of its windows under the mouse
 		bool isWorldSettingsActive = true;
 		bool isObjectBrowserActive = false;
 		bool isPlacementActive = false;
@@ -254,6 +255,10 @@ namespace Editor {
 		void DrawViewport3D(SceneManagement::Scene& scene);
 
 		bool IsEnabled() const { return isEditorActive; }
+
+		// Whether the editor's windows have the mouse this frame, so the game UI
+		// drawn beneath them must not react to it
+		bool CapturesMouse() const { return capturesMouse; }
 
 		// Scene_tick asks this before stepping physics. Only meaningful while
 		// the editor is open; the caller checks IsEnabled() as well.

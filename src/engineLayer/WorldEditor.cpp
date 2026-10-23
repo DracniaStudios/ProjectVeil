@@ -1,7 +1,5 @@
 #include "WorldEditor.h"
 
-#include <UIEngine.h>
-
 namespace Editor {
 
 	void WorldEditor::update(SceneManagement::Scene& scene)
@@ -29,9 +27,10 @@ namespace Editor {
 			else { gizmo.Cancel(); placementMode = false; }
 		}
 
-		// Game UI is drawn under the editor's windows. Without this, a click on an
-		// inspector also presses whatever menu button sits behind it.
-		UI::UIEngine::getInstance().isMouseBlocked = isEditorActive && ImGui::GetIO().WantCaptureMouse;
+		// Game UI is drawn under the editor's windows. The Scene hands this to the
+		// UI each frame; without it, a click on an inspector also presses whatever
+		// menu button sits behind it.
+		capturesMouse = isEditorActive && ImGui::GetIO().WantCaptureMouse;
 
 		if (!isEditorActive) { return; } // Panel flags are remembered while hidden
 
