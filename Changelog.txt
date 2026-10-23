@@ -26,6 +26,7 @@
 
 - There is no in-game way back to the Main Menu until the Pause overlay is added.
 - Not yet clicked through in game: TAB, Return, Close All Overlays, each minigame and Pick Target.
+- Not yet clicked through in game: saving and loading from World Settings, and the save written when the game closes.
 
 [ Added ]
 
@@ -46,6 +47,11 @@
 	and reports each contact's start and end with both bodies' ids.
 - Added ContactRules for impact noise, Stalker contact damage and projectile damage, read from those contacts.
 - Added PhysicsWorld tests, which run without a window.
+- Added one save pipeline for Game saves and World saves: one Snapshot and one Apply,
+	with the save's scope deciding what it holds.
+- Added SaveStore, which keeps saves by name in files or in memory, and SaveParticipant,
+	which keeps a section held outside the Scene, such as Lighting.
+- Added SaveSystem tests, which round-trip every kind of object through files and through memory.
 
 [ Updated ]
 
@@ -65,6 +71,10 @@
 - Updated touch flags (standing, walls) to come from every solid body, not only plain GameObjects.
 - Updated TriggerTests, EmitterTests and StalkerContactDamageTests to run the real collision solve
 	instead of a copy of it.
+- Updated SaveGame, LoadGame, SaveWorld and LoadWorld to run through that one pipeline.
+	They keep their names, files and messages.
+- Updated loading to check the whole save before it clears the world.
+- Updated Lighting to be saved as a participant instead of SaveSystem writing it directly.
 
 [ Fixed ]
 
@@ -80,6 +90,8 @@
 - Fixed the player being pushed out of entities and interactables twice per solver pass.
 - Fixed a body passing through a trigger making an impact noise.
 - Fixed disabled bodies and bodies that can't collide still counting as ground to stand on.
+- Fixed a save or world file with a section of the wrong type crashing the load after the world was cleared.
+	It is now refused, and the current world stays.
 
 [ Removed ]
 
@@ -92,4 +104,5 @@
 - Removed RigidBody3D's per-body contact lists, resolveConstrains, DispatchTriggerEvents and isColliding,
 	Collider3D's empty onCollision/onTrigger hooks, and GameMap's ForEachObjectPair, ForEachEntityPair
 	and ForEachInteractablePair.
+- Removed SaveSystem's SceneToJson and ApplyJsonToScene, and the copies of them inside SaveWorld and LoadWorld.
 
