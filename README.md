@@ -94,17 +94,19 @@ Tracked informally via `Changelog.txt` as the project moves toward its next mile
 ProjectVeil/
 ├── src/
 │   ├── platform/         # Entry point, platform bootstrapping, asserts
+│   ├── engineLayer/      # Scene/SceneManager, AssetManager, SaveSystem, Settings, lighting, particles, audio, WorldEditor (+ WorldEditorTools inspectors)
 │   └── gameLayer/
-│       ├── Components/       # RigidBody2D/3D implementations
-│       ├── DeveloperTools/   # ImGui inspector windows
+│       ├── AI/               # Director and Stalker AI
+│       ├── Components/       # RigidBody2D/3D, Collider3D, player components
+│       ├── UI/ + UIEngine    # Main menu, settings and multiplayer menu UI
 │       ├── MiniGames/        # Mini-game implementations
 │       ├── Objects/
 │       │   └── Interactable/ # Interactable world objects (e.g. LockedBox)
-│       ├── Utility/          # Arena/Pool allocators
 │       └── scenes/           # Scene constructors (e.g. Main Menu)
 ├── docs/                 # Development plans (e.g. LightingSystemPlan.md)
 ├── resources/            # Textures, models, icons, and shaders
 │   └── shaders/glsl330/  # Forward lighting vertex/fragment shaders
+├── tests/                # Standalone tests (tests/run_tests.sh)
 ├── saves/                # Serialized world save data
 └── thirdparty/           # Vendored dependencies (raylib, imgui, FastNoise2, json, FMOD, rlImgui)
 ```
