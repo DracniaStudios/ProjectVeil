@@ -127,6 +127,31 @@ echo
 OVERLAY_STATUS=$?
 
 # ---------------------------------------------------------------------------
+# Settings tests
+#
+# Same tier as the overlay suite, plus the JSON headers: Settings.cpp and the
+# SaveStore it keeps values through include nothing from raylib or the engine.
+# The settings are kept in memory or in a temp directory, never in saves/. If
+# this block ever needs a library, what a setting means has leaked out of it.
+# ---------------------------------------------------------------------------
+SETTINGS_BIN="$OUT_DIR/settings_tests"
+
+echo
+echo "building $SETTINGS_BIN"
+g++ -std=c++23 -Wall \
+	-I src/engineLayer \
+	-I "$JSON_INC" \
+	-DRESOURCES_PATH=\"$ROOT/resources/\" \
+	tests/SettingsTests.cpp \
+	src/engineLayer/Settings.cpp \
+	src/engineLayer/SaveStore.cpp \
+	-o "$SETTINGS_BIN"
+
+echo
+"$SETTINGS_BIN"
+SETTINGS_STATUS=$?
+
+# ---------------------------------------------------------------------------
 # MiniGame tests
 #
 # The session, all six games with scripted input, and RigidBody2D. Same tier as
@@ -174,7 +199,7 @@ if [[ ! -d "$OBJ_ROOT" ]]; then
 	echo
 	echo "skipping engine-linked suites: no compiled objects under '$OBJ_ROOT'." >&2
 	echo "                               build the game first: cmake --build $BUILD_DIR" >&2
-	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 ]]; then exit 1; fi
+	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 ]]; then exit 1; fi
 	exit 0
 fi
 
@@ -300,4 +325,4 @@ else
 fi
 TRIGGER_STATUS=$?
 
-if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
+if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi

@@ -62,6 +62,10 @@ _Avoid_: delete, erase, remove
 Emptying the whole world at once, before a new world is built or a save is loaded. Ids start over, so the player's inventory empties with it.
 _Avoid_: reset, wipe
 
+**World lighting**:
+The lights, atmosphere, exposure and shadows a world is authored with, kept in its World save, so each scene is lit its own way. A Setting can change how it looks on screen, never what the world holds.
+_Avoid_: lighting settings, graphics settings
+
 ### Saves
 
 **Game save**:
@@ -71,3 +75,9 @@ _Avoid_: save file, savegame
 **World save**:
 A level as authored in the World Editor: its objects and lighting, with no player and nothing in flight. Loading one replaces the world and leaves the player as they were.
 _Avoid_: scene, map file, level file
+
+### Settings
+
+**Setting**:
+One of the player's own choices about how the game plays, looks and sounds, shared by every scene and kept apart from any save. It adjusts how a world is shown or heard, never the world itself.
+_Avoid_: option, preference, config

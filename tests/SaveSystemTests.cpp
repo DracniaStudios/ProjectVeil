@@ -316,6 +316,60 @@ static void TestLightingTravelsWithTheWorld(const Store& store)
 	delete loaded;
 }
 
+// The world owns its lighting, so each scene can be lit its own way. The
+// player's Shadows and Luminosity settings change what is drawn, never what a
+// World save holds (regression: they were written straight into the world's
+// exposure, shadow switch and shadow map size, and saved with it).
+static void TestTheWorldKeepsItsOwnLighting(const Store& store)
+{
+	std::printf("[%s] the player's Shadows and Luminosity never reach the world's own lighting\n", store.label);
+	Lighting::LightingSystem& lighting = Lighting::LightingSystem::getInstance();
+
+	// What this level was authored with, played by someone with shadows off
+	// and the picture darkened
+	lighting.exposure = 1.4f;
+	lighting.shadowsEnabled = true;
+	lighting.SetShadowResolution(4096);
+	lighting.SetPlayerQuality(0, 0.5f);
+
+	Check(!lighting.ShadowsDrawn() && lighting.DrawnShadowMapSize() == 0, "the player's Shadows Off draws no shadows");
+	Check(lighting.DrawnExposure() == 0.7f, "and Luminosity 50% draws the world's exposure at half");
+	Check(lighting.shadowsEnabled && lighting.exposure == 1.4f && lighting.GetShadowResolution() == 4096,
+		"while the world's own lighting stays as authored");
+
+	SceneManagement::Scene* saved = MakeScene();
+	Check(store.saveWorld(*saved), "the world saves");
+
+	// Another level's lighting is up, and the player has changed their settings
+	lighting.exposure = 0.6f;
+	lighting.shadowsEnabled = false;
+	lighting.SetShadowResolution(512);
+	lighting.SetPlayerQuality(3, 1.25f);
+
+	SceneManagement::Scene* loaded = MakeScene();
+	Check(store.loadWorld(*loaded), "and loads");
+	Check(lighting.exposure == 1.4f, "the world's exposure comes back as authored, not darkened");
+	Check(lighting.shadowsEnabled, "its shadows come back on, though they were off for the player who saved it");
+	Check(lighting.GetShadowResolution() == 4096, "its shadow map size comes back as authored");
+	Check(lighting.GetPlayerShadowLimit() == 2048 && lighting.GetPlayerExposure() == 1.25f,
+		"and the player's own settings are left as they are");
+
+	Check(lighting.DrawnShadowMapSize() == 2048, "a 4096 world under the player's High is drawn at 2048");
+	lighting.SetShadowResolution(1024);
+	Check(lighting.DrawnShadowMapSize() == 1024, "a 1024 world under High keeps its own 1024, never raised");
+	lighting.shadowsEnabled = false;
+	Check(lighting.DrawnShadowMapSize() == 0, "a world with shadows off draws none under any setting");
+
+	// Back to a fresh LightingSystem for the tests after this one
+	lighting.exposure = 1.0f;
+	lighting.shadowsEnabled = true;
+	lighting.SetShadowResolution(2048);
+	lighting.SetPlayerQuality(4, 1.0f);
+
+	delete saved;
+	delete loaded;
+}
+
 // ─── Saves a load turns away ───────────────────────────────────────────────
 
 // A scene with one object in it, to see whether a refused load touched it
@@ -533,6 +587,7 @@ int main()
 		TestGameRoundTripKeepsTheMomentAndThePlayer(store);
 		TestLoadReplacesTheWorld(store);
 		TestLightingTravelsWithTheWorld(store);
+		TestTheWorldKeepsItsOwnLighting(store);
 		RemoveTestFiles();
 	}
 

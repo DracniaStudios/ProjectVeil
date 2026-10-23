@@ -6,8 +6,10 @@
 #include <UIEngine.h>
 #include <gameMain.h>
 
+#include <algorithm>
 #include <iostream>
 #include <string>
+#include <vector>
 
 namespace UI {
 
@@ -47,9 +49,22 @@ namespace UI {
 		endPanel();
 	}
 
+	// The page of the Settings menu on show. Every setting at once overflows the panel.
+	static size_t settingsSection = 0;
+
 	static void drawSettings(OverlayStack& overlays) {
 
-		Settings::Settings* settings = &Settings::Settings::getInstance();
+		Settings::Settings& settings = Settings::Settings::getInstance();
+
+		// The pages, in the order their first setting is listed
+		std::vector<std::string> sections;
+		for (const Settings::Descriptor& descriptor : settings.Descriptors()) {
+			if (std::find(sections.begin(), sections.end(), descriptor.section) == sections.end()) {
+				sections.push_back(descriptor.section);
+			}
+		}
+		if (sections.empty()) { return; }
+		settingsSection %= sections.size();
 
 		// The sum of (X + width), (Y + height) is the size of the panel.
 		beginPanel("Settings", Rectangle{}, Rectangle{ 0.1f, 0.1f, 0.8f, 0.8f });
@@ -58,10 +73,17 @@ namespace UI {
 
 		returnButton(overlays, Overlay::Settings);
 
-		for (auto& setting : settings->settingsList) {
-			std::string displayName = setting->name + ": " + std::to_string(setting->value);
-			if (drawButton(displayName)) {
-				setting->value = setting->value != 1 ? 1 : 0;
+		if (drawButton("Section: " + sections[settingsSection])) {
+			settingsSection = (settingsSection + 1) % sections.size();
+		}
+
+		// A press moves the setting on by one, as its kind says: flip, next option, or next step
+		for (const Settings::Descriptor& descriptor : settings.Descriptors()) {
+			if (descriptor.section != sections[settingsSection]) { continue; }
+
+			const std::string row = descriptor.label + ": " + Settings::FormatValue(descriptor, settings.Get<double>(descriptor.key));
+			if (drawButton(row)) {
+				settings.Cycle(descriptor.key);
 			}
 		}
 

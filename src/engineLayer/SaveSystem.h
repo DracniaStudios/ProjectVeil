@@ -2,12 +2,10 @@
 #ifndef SAVE_SYSTEM_H
 #define SAVE_SYSTEM_H
 
-#include <filesystem>
 #include <functional>
 #include <string>
-#include <unordered_map>
 #include <vector>
-#include <nlohmann/json.hpp>
+#include <SaveStore.h>
 
 namespace SceneManagement { struct Scene; }
 struct GameObject;
@@ -27,8 +25,6 @@ struct GameObject;
  */
 namespace SaveSystem
 {
-	using Json = nlohmann::json;
-
 	inline std::string saveName = "Default Save";
 	inline std::vector<std::string> game_saves = {};
 
@@ -47,49 +43,6 @@ namespace SaveSystem
 	// The LightingSystem's lights and atmosphere. A save from before lighting
 	// existed gets the default rig, since an unlit world reads as a broken build.
 	SaveParticipant LightingParticipant();
-
-	// Where saves are kept, by name
-	class SaveStore
-	{
-	public:
-		virtual ~SaveStore() = default;
-
-		// False when the save could not be kept; whatever was saved under that
-		// name before is still there
-		virtual bool Write(const std::string& name, const Json& save) = 0;
-
-		// False when there is no save under that name, or it is not JSON
-		virtual bool Read(const std::string& name, Json& save) const = 0;
-	};
-
-	// Keeps each save in <directory>/<name>.json. A save is written to a temp file
-	// first, so a crash mid-save never corrupts the real one, and the previous
-	// save is kept beside it as <name>.json.bak.
-	class FileSaveStore final : public SaveStore
-	{
-	public:
-		explicit FileSaveStore(std::filesystem::path directory) : directory(std::move(directory)) {}
-
-		bool Write(const std::string& name, const Json& save) override;
-		bool Read(const std::string& name, Json& save) const override;
-
-		std::filesystem::path PathOf(const std::string& name) const;
-
-	private:
-		std::filesystem::path directory;
-	};
-
-	// Keeps each save in memory as the text a file would hold, so a round trip
-	// through it loses whatever a round trip through a file would. For tests.
-	class MemorySaveStore final : public SaveStore
-	{
-	public:
-		bool Write(const std::string& name, const Json& save) override;
-		bool Read(const std::string& name, Json& save) const override;
-
-	private:
-		std::unordered_map<std::string, std::string> saves;
-	};
 
 	// Writes the scene to the store under `name`. False, with nothing written,
 	// when the world holds more than OBJECT_LIMIT objects or the store can't keep it.

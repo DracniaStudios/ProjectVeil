@@ -34,8 +34,8 @@ namespace
 		return true;
 	}
 
-	// Shadow map sizes offered in the panel, mirroring the Video > Shadows
-	// quality steps in Settings
+	// Shadow map sizes a world can ask for. The player's Video > Shadows
+	// setting can only draw it smaller, never larger.
 	constexpr int SHADOW_RESOLUTIONS[4] = { 512, 1024, 2048, 4096 };
 	constexpr const char* SHADOW_RESOLUTION_LABELS[4] = { "512", "1024", "2048", "4096" };
 
@@ -67,7 +67,11 @@ void WorldEditor::ShowLightingData()
 	}
 	ImGui::Text("Shader ID: %u", lighting->GetShader().id);
 	ImGui::Text("Active Lights: %d / %d", lighting->GetActiveLightCount(), Lighting::LIGHT_LIMIT);
-	ImGui::Text("Shadow Map: %dx%d", lighting->GetShadowMapResolution(), lighting->GetShadowMapResolution());
+	const int drawnMap = lighting->GetShadowMapResolution();
+	if (drawnMap > 0) { ImGui::Text("Shadow Map: %dx%d", drawnMap, drawnMap); }
+	else { ImGui::Text("Shadow Map: none"); }
+	ImGui::Text("Player Settings: shadows up to %d, exposure x%.2f",
+		lighting->GetPlayerShadowLimit(), lighting->GetPlayerExposure());
 	const int shadowOwner = lighting->GetShadowLightIndex();
 	ImGui::Text("Shadow Caster: %s",
 		(shadowOwner >= 0 && shadowOwner < static_cast<int>(lights.size()))
@@ -96,6 +100,7 @@ void WorldEditor::ShowLightingData()
 	ImGui::SliderFloat("Fog Density", &lighting->fogDensity, 0.0f, 0.25f, "%.4f");
 
 	ImGui::SliderFloat("Exposure", &lighting->exposure, 0.0f, 3.0f);
+	ImGui::TextDisabled("The player's Luminosity scales it as drawn; the world saves it as set here.");
 	ImGui::SliderFloat("Specular Strength", &lighting->specularStrength, 0.0f, 2.0f);
 	ImGui::SliderFloat("Shininess", &lighting->shininess, 1.0f, 128.0f);
 	ImGui::Separator();
@@ -104,14 +109,13 @@ void WorldEditor::ShowLightingData()
 	ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "Shadows");
 	ImGui::Checkbox("Shadows Enabled", &lighting->shadowsEnabled);
 
-	int resolutionIndex = ResolutionToIndex(lighting->GetShadowMapResolution());
+	int resolutionIndex = ResolutionToIndex(lighting->GetShadowResolution());
 	if (ImGui::Combo("Resolution", &resolutionIndex, SHADOW_RESOLUTION_LABELS, 4))
 	{
-		// Reallocates the depth framebuffer now when shadows are on; when they
-		// are off the size is remembered and allocated on the next enable
-		statusMessage = lighting->ResizeShadowMap(SHADOW_RESOLUTIONS[resolutionIndex])
-			? "Shadow map set to " + std::string(SHADOW_RESOLUTION_LABELS[resolutionIndex])
-			: "Failed to allocate shadow map";
+		// The map is reallocated at the start of next frame, at this size or at
+		// the player's limit if that is lower; Status shows the size drawn
+		lighting->SetShadowResolution(SHADOW_RESOLUTIONS[resolutionIndex]);
+		statusMessage = "Shadow resolution set to " + std::string(SHADOW_RESOLUTION_LABELS[resolutionIndex]);
 	}
 
 	// Bias trades shadow acne (too low) against peter-panning (too high)
@@ -121,7 +125,8 @@ void WorldEditor::ShowLightingData()
 	ImGui::SliderFloat("Distance", &lighting->shadowDistance, 10.0f, 250.0f);
 	ImGui::SliderFloat("Softness", &lighting->shadowSoftness, 0.0f, 4.0f);
 
-	if (ImGui::Button("Reload Quality From Settings")) { lighting->ApplySettings(); }
+	ImGui::TextDisabled("The player's Shadows setting can switch these off or draw a smaller map;");
+	ImGui::TextDisabled("the world saves them as set here.");
 	ImGui::Separator();
 
 	/// Flashlight
