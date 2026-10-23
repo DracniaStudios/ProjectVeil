@@ -77,7 +77,7 @@ int main()
 				DisableCursor();
 			}
 		}
-		AudioManager::AudioManager::getInstance().update();
+		AudioManager::AudioManager::getInstance().update(SceneManagement::SceneManager::getInstance().currentScene);
 
 		bool gameRunning = update_game();
 

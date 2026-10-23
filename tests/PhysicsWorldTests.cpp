@@ -57,7 +57,7 @@ static RigidBody3D MakeBox(Vector3 at, Vector3 size, bool isStatic)
 	return body;
 }
 
-// One frame in Scene_updateScene's order: every body integrates, then the world
+// One frame in Scene_tick's order: every body integrates, then the world
 // resolves what overlaps.
 static std::vector<ContactEvent> Frame(PhysicsWorld& world, const std::vector<PhysicsBody>& bodies,
 	float dt = 1.0f / 60.0f, int iterations = 8)

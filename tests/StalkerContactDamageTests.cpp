@@ -45,7 +45,6 @@ static SceneManagement::Scene* MakeScene()
 	scene->player->type = OBJECT_PLAYER;
 	scene->player->id = PLAYER_ID;
 	scene->player->onEnable();
-	SceneManagement::SceneManager::getInstance().currentScene = scene;
 	return scene;
 }
 

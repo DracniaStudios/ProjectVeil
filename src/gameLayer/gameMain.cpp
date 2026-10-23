@@ -87,10 +87,13 @@ bool update_game()
 	// Update Input System
 	InputSystem::InputSystem::getInstance().Update();
 
-	/// Update and Draw Scene
-	SceneManagement::SceneManager_update(&SceneManagement::SceneManager::getInstance(), deltaTime);
+	/// Update and Draw Scene. The frame's work (fade, camera, editor) comes first,
+	/// so the tick simulates with the camera the player is now looking through.
+	auto* manager = &SceneManagement::SceneManager::getInstance();
+	SceneManagement::SceneManager_frame(manager, deltaTime);
+	SceneManagement::SceneManager_tick(manager, deltaTime);
 
-	SceneManagement::SceneManager_draw(&SceneManagement::SceneManager::getInstance());
+	SceneManagement::SceneManager_draw(manager);
 
 	// After the draw too, so a menu button that opened or closed an overlay this
 	// frame moves the cursor this frame

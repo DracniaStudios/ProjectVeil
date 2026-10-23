@@ -181,11 +181,10 @@ namespace AudioManager {
 		}
 	}
 
-	void AudioManager::update()
+	void AudioManager::update(SceneManagement::Scene* scene)
 	{
 		if (!studioSystem) return;
 
-		const auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 		if (scene && scene->player)
 		{
 			FMOD_3D_ATTRIBUTES listener = scene->player->getListener();

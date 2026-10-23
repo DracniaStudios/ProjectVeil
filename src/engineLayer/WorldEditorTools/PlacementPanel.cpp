@@ -11,7 +11,7 @@ static constexpr ObjectType kGameObjectTypes[] = {
 void WorldEditor::ShowPlacementPanel()
 {
 	const auto manager = &SceneManagement::SceneManager::getInstance();
-	const auto scene = manager->currentScene;
+	const auto scene = editedScene;
 
 	/// Show Placement Window
 	ImGui::Begin("Placement");
@@ -158,7 +158,7 @@ void WorldEditor::ShowPlacementPanel()
 			ImGui::Text("%s", miniGameIdToString(stagingInteractValue));
 			ImGui::InputScalar("MiniGame Target", ImGuiDataType_U64, &stagingTargetId);
 			if (stagingTargetId == 0) { ImGui::TextDisabled("None: the station toggles itself"); }
-			else if (GameObject* target = SceneManagement::SceneManager::getInstance().currentScene->gameMap.FindWorldObject(stagingTargetId)) {
+			else if (GameObject* target = editedScene->gameMap.FindWorldObject(stagingTargetId)) {
 				ImGui::TextDisabled("%s", target->name.c_str());
 			}
 			else { ImGui::TextDisabled("Missing: nothing has this id yet"); }
@@ -231,7 +231,7 @@ void WorldEditor::ShowPlacementPanel()
  */
 GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 {
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
+	auto scene = editedScene;
 	if (scene == nullptr) { statusMessage = "No scene loaded"; return nullptr; }
 
 	// Spawn* stores its own copy of this and binds that copy a model of its own,

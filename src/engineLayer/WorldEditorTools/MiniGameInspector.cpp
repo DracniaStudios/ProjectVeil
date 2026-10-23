@@ -4,7 +4,7 @@ namespace Editor {
 
 void WorldEditor::ShowMiniGameData(Player* player)
 {
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
+	auto scene = editedScene;
 
 	/// Begin Mini Game Data Window
 	ImGui::Begin("Mini Game Data");

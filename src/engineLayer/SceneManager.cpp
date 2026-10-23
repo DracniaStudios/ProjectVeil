@@ -1,5 +1,7 @@
 #include "SceneManager.h"
 
+#include <iostream>
+
 #include <LightingSystem.h>
 #include <WorldEditor.h>
 
@@ -8,7 +10,7 @@ namespace SceneManagement {
 
 	// Builds one fresh instance of a scene. Every case returns: the cases used to
 	// fall through, so building the main menu rebuilt the tutorial as well.
-	static Scene* ConstructScene(int sceneIndex) {
+	Scene* ConstructScene(int sceneIndex) {
 		switch (sceneIndex) {
 			case SCENE_MAIN_MENU: return Scene_MainMenuConstruct();
 			case SCENE_TUTORIAL: return Scene_TutorialConstruct();
@@ -26,11 +28,15 @@ namespace SceneManagement {
 		manager->nextSceneID = -1;
 		if (sceneID < 0 || sceneID >= SCENE_COUNT) { return; }
 
-		Scene* previous = manager->currentScene;
+		// Not current while it is built: the factory hands the scene to everything
+		// that builds it, so it becomes current only once it is whole
+		Scene* loaded = manager->factory(sceneID);
+		if (loaded == nullptr) {
+			std::cerr << "[SceneManager] No scene was built for id " << sceneID << "; keeping the current one\n";
+			return;
+		}
 
-		// Scene_new() points currentScene at the scene under construction (the
-		// world loader relies on it), so currentScene is the new scene from here.
-		Scene* loaded = ConstructScene(sceneID);
+		Scene* previous = manager->currentScene;
 		manager->currentScene = loaded;
 
 		for (int i = 0; i < SCENE_COUNT; i++) {
@@ -40,46 +46,57 @@ namespace SceneManagement {
 
 		// Every push builds a fresh scene, so the one it replaces is freed rather
 		// than leaked. It is no longer current, and this runs from
-		// SceneManager_update before any scene update, so nothing is iterating it.
+		// SceneManager_frame before any scene work, so nothing is iterating it.
 		if (previous != nullptr && previous != loaded) { Scene_delete(previous); }
 	}
 
-	void SceneManager_init(SceneManager* manager) {
+	// Starts one half of the fade, or ends it. In builds the requested scene first,
+	// so it is built while the screen is fully dark.
+	static void StartFade(SceneManager* manager, SceneFade fade) {
+		if (fade == SceneFade::In) { LoadNextScene(manager); }
+
+		manager->fade = fade;
+		manager->fadeOpacity = fade == SceneFade::In ? 1.0f : 0.0f;
+	}
+
+	void SceneManager_init(SceneManager* manager, SceneFactory factory) {
 		manager->currentScene = nullptr;
 		manager->nextSceneID = -1;
+		manager->factory = factory;
+		manager->fade = SceneFade::None;
+		manager->fadeOpacity = 0.0f;
 		for (int i = 0; i < SCENE_COUNT; i++) { manager->scenes[i] = nullptr; }
-
-		manager->transition = Transition_new();
 
 		// Scenes are built on demand, one per push, so start-up builds only the
 		// main menu.
 		SceneManager_push(manager, SCENE_MAIN_MENU);
 	}
 
-	void SceneManager_update(SceneManager* manager, float delta) {
+	void SceneManager_frame(SceneManager* manager, float frameTime) {
 
-
-		// Update Transition
-		if (manager->transition->direction != NONE) {
-			if (manager->transition->direction == OUT) {
-				manager->transition->opacity += 5;
-				if (manager->transition->opacity >= 255) SceneManager_transition(manager, IN);
-
-			}
-			else {
-				manager->transition->opacity -= 5;
-				if (manager->transition->opacity <= 0) SceneManager_transition(manager, NONE);
-			}
+		// Update Fade. Measured in time rather than frames, so it lasts as long at
+		// 30 frames a second as at 144.
+		const float step = frameTime / FADE_SECONDS;
+		if (manager->fade == SceneFade::Out) {
+			manager->fadeOpacity += step;
+			if (manager->fadeOpacity >= 1.0f) { StartFade(manager, SceneFade::In); }
+		}
+		else if (manager->fade == SceneFade::In) {
+			manager->fadeOpacity -= step;
+			if (manager->fadeOpacity <= 0.0f) { StartFade(manager, SceneFade::None); }
 		}
 
-		// Update Scene
-		if (manager->currentScene) Scene_updateScene(delta);
+		if (Scene* scene = manager->currentScene) { Scene_frame(*scene, manager->camera3D); }
+	}
 
+	void SceneManager_tick(SceneManager* manager, float delta) {
+		if (Scene* scene = manager->currentScene) { Scene_tick(*scene, delta); }
 	}
 
 	void SceneManager_draw(SceneManager* manager) {
 
 		auto lighting = &Lighting::LightingSystem::getInstance();
+		Scene* scene = manager->currentScene;
 
 		// Lighting runs in three ordered stages, all before the camera pass:
 		//   1. Update  - picks the shadow-casting light, drives the flashlight from
@@ -88,50 +105,42 @@ namespace SceneManagement {
 		//                cannot happen inside BeginMode3D.
 		//   3. Bind    - binds the finished depth texture for the camera pass.
 		lighting->Update(manager->camera3D, GetFrameTime());
-		lighting->RenderShadowPass(manager->currentScene);
+		lighting->RenderShadowPass(scene);
 
 		// Draw Scene 3D
 		BeginMode3D(manager->camera3D);
 		lighting->BindShadowMap();
-		if (manager->currentScene) Scene_drawScene3D();
+		if (scene) Scene_drawScene3D(*scene);
 
 		if (Editor::WorldEditor::getInstance().IsEnabled())
 		{
 			lighting->DrawGizmos();
-			Editor::WorldEditor::getInstance().DrawViewport3D();
+			if (scene) Editor::WorldEditor::getInstance().DrawViewport3D(*scene);
 		}
 		EndMode3D();
 
 		// Draw Scene 2D
 		BeginMode2D(manager->camera2D);
-		if (manager->currentScene) Scene_drawScene2D();
+		if (scene) Scene_drawScene2D(*scene);
 		EndMode2D();
 
-		// Draw Transition
-		if (manager->transition->direction != NONE)
-			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{ 0, 0, 0, (unsigned char)manager->transition->opacity });
+		// Draw Fade
+		if (manager->fade != SceneFade::None) {
+			const float opacity = manager->fadeOpacity < 0.0f ? 0.0f : manager->fadeOpacity > 1.0f ? 1.0f : manager->fadeOpacity;
+			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{ 0, 0, 0, static_cast<unsigned char>(opacity * 255.0f) });
+		}
 	}
 
 	void SceneManager_push(SceneManager* manager, int sceneID) {
 		if (sceneID >= 0 && sceneID < SCENE_COUNT) {
+			std::cout << "Loading Scene: " << sceneID << "\n";
+
 			// Only record the request. Pushes come from button handlers inside a
 			// scene's draw2D, so building or swapping scenes here would happen
 			// mid-frame, before the fade-out has even started.
 			manager->nextSceneID = sceneID;
 
-			SceneManager_transition(manager, manager->currentScene ? OUT : IN);
+			StartFade(manager, manager->currentScene ? SceneFade::Out : SceneFade::In);
 		}
-	}
-
-	void SceneManager_transition(SceneManager* manager, TransitionDirection direction) {
-		if (direction == IN) {
-			LoadNextScene(manager);
-		}
-
-		manager->transition->direction = direction;
-
-		if (direction == OUT) manager->transition->opacity = 0;
-		else if (direction == IN) manager->transition->opacity = 255;
-		else manager->transition->opacity = -1;
 	}
 }

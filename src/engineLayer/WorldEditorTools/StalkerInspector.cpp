@@ -16,7 +16,7 @@ namespace Editor {
  */
 void WorldEditor::ShowStalkerData()
 {
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
+	auto scene = editedScene;
 
 	ImGui::Begin("Stalker AI");
 

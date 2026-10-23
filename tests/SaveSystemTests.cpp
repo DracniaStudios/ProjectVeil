@@ -66,7 +66,7 @@ static void WriteFile(const fs::path& path, const std::string& text)
 	file << text;
 }
 
-// Scene_new() so scene->player exists and the scene is current
+// Scene_new() so scene->player exists
 static SceneManagement::Scene* MakeScene()
 {
 	return SceneManagement::Scene_new();

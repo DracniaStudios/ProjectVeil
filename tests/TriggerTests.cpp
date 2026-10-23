@@ -7,7 +7,7 @@
  * pushes and a Trigger collider does not, while both still report the contact.
  *
  * Each frame runs the objects' own updates and then Scene::SolveCollisions, the
- * same call Scene_updateScene makes, rather than a copy of the solver loop.
+ * same call Scene_tick makes, rather than a copy of the solver loop.
  *
  * Like the Stalker FSM tests this links against the engine's own object files,
  * and opens a window because a GameObject entering the map binds a model, which
@@ -72,7 +72,6 @@ struct ProbeEntity : Entity
 static SceneManagement::Scene* MakeScene()
 {
 	SceneManagement::Scene* scene = new SceneManagement::Scene();
-	SceneManagement::SceneManager::getInstance().currentScene = scene;
 	return scene;
 }
 
@@ -110,7 +109,7 @@ static GameObject* AddFloor(SceneManagement::Scene* scene, Vector3 centre, Vecto
 	return scene->gameMap.RestoreGameObject(floor);
 }
 
-// One frame in Scene_updateScene's order: bodies integrate in their own
+// One frame in Scene_tick's order: bodies integrate in their own
 // updates, then the scene resolves every overlapping pair.
 static std::vector<Physics3D::ContactEvent> Step(SceneManagement::Scene* scene, float dt)
 {

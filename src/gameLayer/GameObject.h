@@ -186,7 +186,9 @@ public:
 	virtual void onDisable() override {
 		GameObject::onDisable();
 	};
-	virtual void onInteract();
+	// Plays the station's sound and does what its type says: starts its MiniGame,
+	// unlocks the next one, or goes into the player's inventory
+	virtual void onInteract(SceneManagement::Scene& scene);
 
 	// Save Data
 	Json formatToJson() override;

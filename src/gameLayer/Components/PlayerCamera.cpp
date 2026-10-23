@@ -1,19 +1,18 @@
 #include <Player.h>
 
-#include <SceneManager.h>
+#include <InputSystem.h>
 ///  Camera Update Function for First-Person Style Camera.
 ///  Updates the camera's position to be at the player's head, and rotates based on mouse movement.
 ///  Also updates the player's direction vectors to match the camera's look direction.
 
-void PlayerCamera::UpdateCameraFPS(Camera3D* camera)
+void PlayerCamera::UpdateCameraFPS(Camera3D* camera, Physics3D::RigidBody3D& body)
 {
-	auto player = SceneManagement::SceneManager::getInstance().currentScene->player;
 
-	offset = Vector3(0, player->rigidBody3D.scale.y / 2, 0); // Camera offset to be at player's head
+	offset = Vector3(0, body.scale.y / 2, 0); // Camera offset to be at player's head
 
 	if (InputSystem::InputSystem::getInstance().IsActionDown(InputSystem::ACTION_MOVE_CROUCH)) { offset.y /= 2; }
 
-	camera->position = Vector3Add(player->rigidBody3D.translation, offset);
+	camera->position = Vector3Add(body.translation, offset);
 	lookRotation.x -= GetMouseDelta().x * sensitivity.x;
 	lookRotation.y += GetMouseDelta().y * sensitivity.y;
 
@@ -54,13 +53,13 @@ void PlayerCamera::UpdateCameraFPS(Camera3D* camera)
 
 	// Update Player Angles
 	if (Vector3Length(flatForward) > 0.001f) {
-		player->rigidBody3D.forward = flatForward;
-		player->rigidBody3D.back = Vector3Scale(flatForward, -1);
-		player->rigidBody3D.right = Vector3{ -flatForward.z, 0, flatForward.x };
-		player->rigidBody3D.left = Vector3{ flatForward.z, 0, -flatForward.x };
-		player->rigidBody3D.up = Vector3{ 0, 1, 0 };
-		player->rigidBody3D.down = Vector3{ 0, -1, 0 };
+		body.forward = flatForward;
+		body.back = Vector3Scale(flatForward, -1);
+		body.right = Vector3{ -flatForward.z, 0, flatForward.x };
+		body.left = Vector3{ flatForward.z, 0, -flatForward.x };
+		body.up = Vector3{ 0, 1, 0 };
+		body.down = Vector3{ 0, -1, 0 };
 	}
-	position = Vector3Add(player->rigidBody3D.translation, offset);
-	camera->position = Vector3Add(player->rigidBody3D.translation, offset);
+	position = Vector3Add(body.translation, offset);
+	camera->position = Vector3Add(body.translation, offset);
 }

@@ -27,6 +27,7 @@
 - There is no in-game way back to the Main Menu until the Pause overlay is added.
 - Not yet clicked through in game: TAB, Return, Close All Overlays, each minigame and Pick Target.
 - Not yet clicked through in game: saving and loading from World Settings, and the save written when the game closes.
+- Not yet clicked through in game: Play's fade into the Tutorial, and the World Editor's panels and commands.
 
 [ Added ]
 
@@ -52,6 +53,9 @@
 - Added SaveStore, which keeps saves by name in files or in memory, and SaveParticipant,
 	which keeps a section held outside the Scene, such as Lighting.
 - Added SaveSystem tests, which round-trip every kind of object through files and through memory.
+- Added SceneManager_frame and SceneManager_tick. A frame runs the fade, the camera, the Inventory key
+	and the World Editor; a tick runs the scene's simulation.
+- Added a scene factory to SceneManager, so tests can switch scenes without a world file or music.
 
 [ Updated ]
 
@@ -75,6 +79,11 @@
 	They keep their names, files and messages.
 - Updated loading to check the whole save before it clears the world.
 - Updated Lighting to be saved as a participant instead of SaveSystem writing it directly.
+- Updated scene update and draw functions, Player, interactables, Entity's Attack, AudioManager and the World Editor
+	to be handed the Scene they work on, instead of reading SceneManager's current scene. Only the main loop reads it now.
+- Updated a new scene to become current only once it is fully built.
+- Updated the fade between scenes to last 0.85 seconds each way at any frame rate. Below 60 FPS it used to take longer.
+- Updated SceneTransitionTests to run through SceneManager_frame and SceneManager_tick with their own scene factory.
 
 [ Fixed ]
 
@@ -92,6 +101,8 @@
 - Fixed disabled bodies and bodies that can't collide still counting as ground to stand on.
 - Fixed a save or world file with a section of the wrong type crashing the load after the world was cleared.
 	It is now refused, and the current world stays.
+- Fixed the "Loading Scene" log that an earlier merge lost. The failed-allocation check it also lost is no longer needed:
+	the fade is part of SceneManager and allocates nothing.
 
 [ Removed ]
 
@@ -105,4 +116,5 @@
 	Collider3D's empty onCollision/onTrigger hooks, and GameMap's ForEachObjectPair, ForEachEntityPair
 	and ForEachInteractablePair.
 - Removed SaveSystem's SceneToJson and ApplyJsonToScene, and the copies of them inside SaveWorld and LoadWorld.
+- Removed Transition, SceneManager_update, SceneManager_transition and Scene_updateScene.
 

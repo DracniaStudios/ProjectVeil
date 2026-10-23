@@ -61,7 +61,6 @@ static void CheckState(const Stalker& s, StalkerState expected, const std::strin
 static SceneManagement::Scene* MakeScene()
 {
 	SceneManagement::Scene* scene = new SceneManagement::Scene();
-	SceneManagement::SceneManager::getInstance().currentScene = scene;
 	return scene;
 }
 
@@ -81,7 +80,7 @@ static Stalker* AddStalker(SceneManagement::Scene* scene, Vector3 at, std::uint6
 	return stalker;
 }
 
-// One simulated frame: age the field first, exactly as Scene_updateScene does,
+// One simulated frame: age the field first, exactly as Scene_tick does,
 // so an event emitted this step is audible on this step.
 static void Step(SceneManagement::Scene* scene, Stalker* stalker, float dt)
 {

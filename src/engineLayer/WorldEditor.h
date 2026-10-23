@@ -164,6 +164,14 @@ namespace Editor {
 		/** Feedback **/
 		std::string statusMessage;
 
+		// The scene being edited. update() and DrawViewport3D() hand it in for the
+		// length of their call and clear it after, so every panel and command they
+		// run edits that scene, and nothing holds it once the scene is replaced.
+		SceneManagement::Scene* editedScene = nullptr;
+
+		void RunEditor();
+		void DrawEditorViewport();
+
 		/** Window Data **/
 		void ShowEditorHub();
 		void ShowWorldSettings();
@@ -237,15 +245,17 @@ namespace Editor {
 		EditorCamera editorCamera = {};
 
 		/** Functions **/
-		void update(Player* player);
+		// The editor's frame for the scene it edits: F1, hotkeys, the viewport and
+		// every open panel
+		void update(SceneManagement::Scene& scene);
 
 		// Selection outline, transform gizmo and placement ghost. Must be called
 		// inside BeginMode3D — SceneManager_draw does it after the light gizmos.
-		void DrawViewport3D();
+		void DrawViewport3D(SceneManagement::Scene& scene);
 
 		bool IsEnabled() const { return isEditorActive; }
 
-		// Scene_updateScene asks this before stepping physics. Only meaningful while
+		// Scene_tick asks this before stepping physics. Only meaningful while
 		// the editor is open; the caller checks IsEnabled() as well.
 		bool IsSimulationPaused() const { return simulationPaused; }
 

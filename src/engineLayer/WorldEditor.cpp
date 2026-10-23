@@ -4,9 +4,18 @@
 
 namespace Editor {
 
-	void WorldEditor::update(Player* player)
+	void WorldEditor::update(SceneManagement::Scene& scene)
+	{
+		editedScene = &scene;
+		RunEditor();
+		editedScene = nullptr;
+	}
+
+	void WorldEditor::RunEditor()
 	{
 		if (PRODUCTION_BUILD == 1) { return; }
+
+		Player* player = editedScene->player;
 
 		if (IsKeyPressed(KEY_F1))
 		{
@@ -146,14 +155,10 @@ namespace Editor {
 
 	GameObject* WorldEditor::getSelectedObject()
 	{
-		// The three lookups below all dereference currentScene without checking it.
-		// This is now called from the render pass and from the hub every frame, not
-		// only from panels that had already established a scene, so the guard lives
-		// here rather than at each call site.
-		if (SceneManagement::SceneManager::getInstance().currentScene == nullptr) { return nullptr; }
-		if (selectedObjectId == 0) { return nullptr; }
+		// Only meaningful inside update() or DrawViewport3D(), which hand in the scene
+		if (editedScene == nullptr || selectedObjectId == 0) { return nullptr; }
 
-		return SceneManagement::SceneManager::getInstance().currentScene->gameMap.FindWorldObject(selectedObjectId);
+		return editedScene->gameMap.FindWorldObject(selectedObjectId);
 	}
 
 

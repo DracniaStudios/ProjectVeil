@@ -27,20 +27,22 @@
 #include <unordered_map>
 
 
+namespace SceneManagement { struct Scene; }
+
 /**
- * Define an update method
- * @param object_ptr The object_ptr contained in Scene Object
+ * A scene's own update, run at the start of each tick
+ * @param scene The Scene being ticked
  * @param delta The current deltaTime
  */
-typedef void (*updateSceneMethod)(float delta);
+typedef void (*updateSceneMethod)(SceneManagement::Scene& scene, float delta);
 
 /**
- * Define an draw method
- * @param object_ptr The object_ptr contained in Scene Object
+ * A scene's own drawing, under its objects (3D) or its overlays (2D)
+ * @param scene The Scene being drawn
  */
-typedef void (*drawSceneMethod2D)();
+typedef void (*drawSceneMethod2D)(SceneManagement::Scene& scene);
 
-typedef void (*drawSceneMethod3D)();
+typedef void (*drawSceneMethod3D)(SceneManagement::Scene& scene);
 
 /**
  * Struct to represent a Scene
@@ -110,7 +112,7 @@ namespace SceneManagement {
 		InteractableObject* GetRunningStation();
 
 		// Emits the running station's periodic noise into the sound field. Called
-		// once per frame from Scene_updateScene, ahead of the entity updates.
+		// once per tick from Scene_tick, ahead of the entity updates.
 		void EmitStationNoise(float deltaTime);
 
 		// Empties the GameMap (GameMap::Clear) and what the player carries with it:
@@ -149,18 +151,28 @@ namespace SceneManagement {
 	void Scene_delete(Scene* scene);
 
 	/**
-	 * Update the current Scene active
-	 * @param scene The Scene to update
-	 * @param delta The current deltaTime
+	 * The scene's work for one rendered frame, outside its simulation: the camera
+	 * (the World Editor's, or the player's while gameplay has input), the
+	 * Inventory key, and the World Editor. Runs before the frame's tick.
+	 * @param scene The Scene being played
+	 * @param camera The camera the frame is drawn with
 	 */
-	void Scene_updateScene(float delta);
+	void Scene_frame(Scene& scene, Camera3D& camera);
 
 	/**
-	 * Draw the current Scene active
+	 * The scene's simulation for one tick: its own update, sound, the player and
+	 * every object, the Director, collisions and the running MiniGame
+	 * @param scene The Scene to tick
+	 * @param delta The current deltaTime
+	 */
+	void Scene_tick(Scene& scene, float delta);
+
+	/**
+	 * Draw a Scene: its world (3D), then its UI and overlays (2D)
 	 * @param scene The Scene to draw
 	 */
-	void Scene_drawScene2D();
-	void Scene_drawScene3D();
+	void Scene_drawScene2D(Scene& scene);
+	void Scene_drawScene3D(Scene& scene);
 }
 
 /**

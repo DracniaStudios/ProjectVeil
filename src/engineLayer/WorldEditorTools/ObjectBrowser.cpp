@@ -69,7 +69,7 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 		ImGui::InputScalar("MiniGame Target", ImGuiDataType_U64, &object->targetId);
 
 		// A Target id nothing resolves to is reported rather than dereferenced
-		GameObject* target = object->FindMiniGameTarget(SceneManagement::SceneManager::getInstance().currentScene->gameMap);
+		GameObject* target = object->FindMiniGameTarget(editedScene->gameMap);
 		if (object->targetId == 0) { ImGui::TextDisabled("None (toggles itself)"); }
 		else if (target != nullptr) { ImGui::TextDisabled("%s", target->name.c_str()); }
 		else { ImGui::TextColored(ImVec4(1, 0.4f, 0.4f, 1), "Missing: nothing has id %llu", static_cast<unsigned long long>(object->targetId)); }
@@ -129,7 +129,7 @@ void WorldEditor::showEntity(Entity* object) {
 	}
 
 	if (ImGui::Button("Teleport To Player")) {
-		object->rigidBody3D.Teleport(SceneManagement::SceneManager::getInstance().currentScene->player->getPosition());
+		object->rigidBody3D.Teleport(editedScene->player->getPosition());
 	}
 	if (ImGui::Button("Teleport To Camera")) {
 		object->rigidBody3D.Teleport(SceneManagement::SceneManager::getInstance().camera3D.position);
@@ -492,7 +492,7 @@ void WorldEditor::showSelectedObject(SceneManagement::Scene* scene) {
 
 void WorldEditor::ShowObjectBrowser()
 {
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
+	auto scene = editedScene;
 
 	/// Show Object Browser Window
 	ImGui::Begin("Object Browser");

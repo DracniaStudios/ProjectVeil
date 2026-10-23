@@ -44,8 +44,8 @@ static void Check(bool condition, const std::string& what)
 	}
 }
 
-// Scene_new() (rather than a bare `new Scene`) so scene->player exists and the
-// scene is current, which item pickups and Unlock reach through.
+// Scene_new() (rather than a bare `new Scene`) so scene->player exists, which
+// item pickups and Unlock hand items and the Artifact to.
 static SceneManagement::Scene* MakeScene()
 {
 	return SceneManagement::Scene_new();
@@ -363,7 +363,7 @@ static void TestUnlockRemovesTheStationAtTheSweep()
 	InteractableObject* station = map.SpawnInteractable(unlock);
 	const std::uint64_t id = station->id;
 
-	station->onInteract();
+	station->onInteract(*scene);
 	Check(map.FindInteractable(id) == station, "the station is still there after its own onInteract");
 	Check(scene->player->artifact != nullptr, "the Artifact was handed over");
 
@@ -384,8 +384,8 @@ static void TestAPickedUpItemIsCarriedById()
 	InteractableObject pickup(INTERACT_ITEM, 3);
 	InteractableObject* item = map.SpawnInteractable(pickup);
 
-	item->onInteract();
-	item->onInteract();
+	item->onInteract(*scene);
+	item->onInteract(*scene);
 
 	Check(scene->player->inventory.size() == 1 && scene->player->inventory.front() == item->id,
 		"the inventory holds the item's id, once");

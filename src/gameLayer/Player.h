@@ -22,7 +22,9 @@ struct PlayerCamera : Camera3D
 	float walkLerp = {};
 	float headTimer = {};
 
-	void UpdateCameraFPS(Camera3D* camera);
+	// Follows the mouse, sits the camera at the head of `body`, and turns `body`
+	// to face where the camera looks
+	void UpdateCameraFPS(Camera3D* camera, Physics3D::RigidBody3D& body);
 
 };
 
@@ -54,11 +56,11 @@ struct Player : Entity
 	float footstepTimer = 0.0f;
 
 	// Render And Update
-	void render2D() override;
+	void render2D() override; // The reticle; the Scene draws it only while gameplay has input
 	void render3D() override;
 	void onEnable() override;
 	void onDisable() override;
-	void update3D(float deltaTime);
+	void update3D(SceneManagement::Scene& scene, float deltaTime);
 
 	// Audio
 	FMOD_3D_ATTRIBUTES getListener();
@@ -67,7 +69,7 @@ struct Player : Entity
 	std::ranlux24_base rng;
 
 	// Combat Functions
-	void Interact();
+	void Interact(SceneManagement::Scene& scene);
 
 private:
 	int defaultInteractRange = 5;

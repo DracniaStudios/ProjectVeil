@@ -1,6 +1,5 @@
 #include "Scene.h"
 
-#include <SceneManager.h>
 #include <WorldEditor.h>
 #include <AudioManager.h>
 #include <UIEngine.h>
@@ -28,7 +27,8 @@ namespace SceneManagement {
 
 		scene->player->onEnable();
 
-		SceneManager::getInstance().currentScene = scene;
+		// Not made current here: SceneManager does that once the scene is fully
+		// built, and everything that builds it is handed the scene itself
 		return scene;
 	}
 
@@ -240,28 +240,44 @@ namespace SceneManagement {
 
 #pragma region Scene Update
 	/** Scene Functions **/
-	void Scene_updateScene(float delta) {
+	void Scene_frame(Scene& scene, Camera3D& camera) {
 
-		auto manager = &SceneManager::getInstance();
 		auto worldEditor = &Editor::WorldEditor::getInstance();
 		auto inputSystem = &InputSystem::InputSystem::getInstance();
-		auto scene = manager->currentScene;
-		if (scene->update) { scene->update(delta); }
 
 		// Swap Editor and Player Camera. The editor camera ignores overlays, so the
 		// Main Menu world can still be flown around under its Title; the player's
 		// camera only follows the mouse while gameplay has the player's input.
+		// Ahead of the tick, so the player moves the way the camera now faces.
 		if (worldEditor->IsEnabled()) {
-			worldEditor->editorCamera.Update(&manager->camera3D);
+			worldEditor->editorCamera.Update(&camera);
 		}
-		else if (scene->overlays.GameplayHasInput()) {
-			if (scene->player != nullptr) {
-				scene->player->camera.UpdateCameraFPS(&manager->camera3D);
+		else if (scene.overlays.GameplayHasInput()) {
+			if (scene.player != nullptr) {
+				scene.player->camera.UpdateCameraFPS(&camera, scene.player->rigidBody3D);
 			}
 			else {
 				std::cerr << "No Camera Detected \n";
 			}
 		}
+
+		// The Inventory action opens the Inventory during gameplay and otherwise
+		// backs out of whatever overlay is on top. Backing out of a minigame quits
+		// it, so it is ended here: the stack only records that it closed.
+		if (inputSystem->IsActionPressed(InputSystem::ACTION_UI_INVENTORY)) {
+			if (scene.overlays.InventoryPressed() == Overlay::MiniGame) {
+				scene.QuitMiniGame();
+			}
+		}
+
+		// World Editor (includes the developer tool windows)
+		worldEditor->update(scene);
+	}
+
+	void Scene_tick(Scene& scene, float delta) {
+
+		auto worldEditor = &Editor::WorldEditor::getInstance();
+		if (scene.update) { scene.update(scene, delta); }
 
 		const bool editorFrozen = worldEditor->IsEnabled() && worldEditor->IsSimulationPaused();
 
@@ -291,47 +307,47 @@ namespace SceneManagement {
 		// through unchanged only when the sim is actually running.
 		if (!editorFrozen)
 		{
-			scene->soundField.Update(delta);
+			scene.soundField.Update(delta);
 
 			// Ahead of the player and entity updates for the same reason: the hum a
 			// running station makes this frame should reach the stalker this frame,
 			// not next. The minigame's own update runs much later in this function
 			// and is about the overlay, not about the noise the machine makes.
-			scene->EmitStationNoise(delta);
+			scene.EmitStationNoise(delta);
 		}
 
 		/** Update Player **/
-		if (auto player = scene->player) {
+		if (auto player = scene.player) {
 			if (editorFrozen)
 			{
 				player->rigidBody3D.SyncBroadPhaseBox();
 			}
-			else if (scene->overlays.GameplayHasInput())
+			else if (scene.overlays.GameplayHasInput())
 			{
-				if (!worldEditor->IsEnabled()) { player->update3D(delta); };
-				clampObject(*player, scene->limitYBounds);
+				if (!worldEditor->IsEnabled()) { player->update3D(scene, delta); };
+				clampObject(*player, scene.limitYBounds);
 			}
 			// Under any overlay the player stands still until it closes; inside a
 			// MiniGame the player is the game's own cursor
 		}
 
 		/* Update GameObjects */
-		scene->gameMap.ForEachGameObject([&](GameObject& object) {
+		scene.gameMap.ForEachGameObject([&](GameObject& object) {
 			if (editorFrozen) { object.rigidBody3D.SyncBroadPhaseBox(); return; }
 			object.isSelectable = true;
-			object.update(scene, delta);
-			clampObject(object, scene->limitYBounds);
+			object.update(&scene, delta);
+			clampObject(object, scene.limitYBounds);
 			});
 
 		/* Update Interactables */
-		scene->gameMap.ForEachInteractable([&](InteractableObject& interactable) {
+		scene.gameMap.ForEachInteractable([&](InteractableObject& interactable) {
 			if (editorFrozen) { interactable.rigidBody3D.SyncBroadPhaseBox(); return; }
-			interactable.update(scene, delta);
-			clampObject(interactable, scene->limitYBounds);
+			interactable.update(&scene, delta);
+			clampObject(interactable, scene.limitYBounds);
 			});
 
 		/** Update Entities **/
-		scene->gameMap.ForEachEntity([&](Entity& entity)
+		scene.gameMap.ForEachEntity([&](Entity& entity)
 			{
 				// Frozen entities are not culled either: an entity sitting at zero
 				// health would otherwise be deleted out from under the inspector
@@ -349,74 +365,56 @@ namespace SceneManagement {
 					return;
 				}
 
-				entity.update(scene, delta);
-				clampObject(entity, scene->limitYBounds);
+				entity.update(&scene, delta);
+				clampObject(entity, scene.limitYBounds);
 			});
 
 		// After the entities have settled, so the Director advises on the state the
 		// stalker actually ended the frame in rather than the previous one.
-		if (!editorFrozen) { scene->director.Update(scene, delta); }
+		if (!editorFrozen) { scene.director.Update(&scene, delta); }
 
 
 		// Sweep objects of every kind flagged by Destroy() — removal must happen
 		// outside the update loops above, since erasing mid-iteration invalidates them
-		scene->gameMap.SweepDestroyed(scene);
+		scene.gameMap.SweepDestroyed(&scene);
 
 		/* Update Collisions */
 		// The solver applies positional corrections, so running it against a frozen
 		// scene would push a just-placed object out of the wall it was deliberately
 		// snapped flush against.
-		if (!editorFrozen) { scene->SolveCollisions(8); }
+		if (!editorFrozen) { scene.SolveCollisions(8); }
 
 		/** Update MiniGame **/
-		scene->TickMiniGame(delta);
-
-		// The Inventory action opens the Inventory during gameplay and otherwise
-		// backs out of whatever overlay is on top. Backing out of a minigame quits
-		// it, so it is ended here: the stack only records that it closed.
-		if (inputSystem->IsActionPressed(InputSystem::ACTION_UI_INVENTORY)) {
-			if (scene->overlays.InventoryPressed() == Overlay::MiniGame) {
-				scene->QuitMiniGame();
-			}
-		}
-
-		// World Editor (includes the developer tool windows)
-		Editor::WorldEditor::getInstance().update(scene->player);
+		scene.TickMiniGame(delta);
 	}
 
-	void Scene_drawScene2D() {
-		auto manager = &SceneManager::getInstance();
+	void Scene_drawScene2D(Scene& scene) {
+		// Brackets every widget drawn this frame. The list is cleared here rather
+		// than during update so the UI Inspector, which runs in update, sees the
+		// whole of last frame's UI instead of an empty list.
+		auto& ui = UI::UIEngine::getInstance();
+		ui.beginFrame();
 
-		if (auto scene = manager->currentScene) {
-			// Brackets every widget drawn this frame. The list is cleared here rather
-			// than during update so the UI Inspector, which runs in update, sees the
-			// whole of last frame's UI instead of an empty list.
-			auto& ui = UI::UIEngine::getInstance();
-			ui.beginFrame();
+		if (scene.draw2D) { scene.draw2D(scene); }
 
-			if (scene->draw2D) { scene->draw2D(); }
+		// The dimming and the top overlay's panel, Title through MiniGame
+		UI::drawOverlays(scene);
 
-			// The dimming and the top overlay's panel, Title through MiniGame
-			UI::drawOverlays(*scene);
+		// Over the overlays, the reticle during gameplay. Inside a MiniGame the
+		// player is the game's own cursor, which the game draws.
+		if (scene.player != nullptr && scene.overlays.GameplayHasInput()) { scene.player->render2D(); }
 
-			// Over the overlays: the reticle during gameplay, the cursor in a MiniGame
-			scene->player->render2D();
-
-			ui.endFrame();
-		}
+		ui.endFrame();
 	}
 
-	void Scene_drawScene3D() {
-		auto manager = &SceneManager::getInstance();
-		if (auto scene = manager->currentScene) {
-			if (Editor::WorldEditor::getInstance().IsEnabled()) { DrawGrid(100.0f, 1.0f); }
+	void Scene_drawScene3D(Scene& scene) {
+		if (Editor::WorldEditor::getInstance().IsEnabled()) { DrawGrid(100.0f, 1.0f); }
 
-			if (scene->draw3D) { scene->draw3D(); }
+		if (scene.draw3D) { scene.draw3D(scene); }
 
-			scene->gameMap.ForEachObject([](GameObject& object) { object.render3D(); });
+		scene.gameMap.ForEachObject([](GameObject& object) { object.render3D(); });
 
-			scene->player->render3D();
-		}
+		if (scene.player != nullptr) { scene.player->render3D(); }
 	}
 }
 #pragma endregion

@@ -4,18 +4,17 @@
 #include <gameMap.h>
 
 
-void ActivateMiniGame(InteractableObject* interactable, bool bypass = false)
+void ActivateMiniGame(SceneManagement::Scene& scene, InteractableObject* interactable, bool bypass = false)
 {
 	std::cout << "[InteractableObject] Activating MiniGame: " << interactable->variation << "\n";
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
-	scene->soundField.Emit(interactable->getPosition(), 0.8f, SOUND_TAMPER, interactable->id);
+	scene.soundField.Emit(interactable->getPosition(), 0.8f, SOUND_TAMPER, interactable->id);
 
-	if (!bypass && scene->player->artifactUnlocked < interactable->variation) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
+	if (!bypass && scene.player->artifactUnlocked < interactable->variation) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
 
 	// The scene marks the station as occupied, and on a win finds the Target
 	// through the station itself
-	scene->StartMiniGame(interactable->variation, interactable);
+	scene.StartMiniGame(interactable->variation, interactable);
 }
 
 GameObject* InteractableObject::FindMiniGameTarget(GameMap& gameMap)
@@ -24,10 +23,10 @@ GameObject* InteractableObject::FindMiniGameTarget(GameMap& gameMap)
 	return gameMap.FindWorldObject(targetId);
 }
 
-void Unlock(InteractableObject* interactable)
+void Unlock(SceneManagement::Scene& scene, InteractableObject* interactable)
 {
 	std::cout << "[InteractableObject] Unlocking MiniGame: " << interactable->variation << "\n";
-	auto player = SceneManagement::SceneManager::getInstance().currentScene->player;
+	auto player = scene.player;
 	player->artifactUnlocked = std::max(player->artifactUnlocked, interactable->variation);
 	player->artifactUnlocked = Clamp(player->artifactUnlocked, MINI_GAME_FLAPPY_BIRD_ID, MINI_GAME_RO_SHAM_BOO_ID);
 
@@ -62,20 +61,19 @@ void Unlock(InteractableObject* interactable)
 	interactable->Destroy();
 }
 
-void AddItemToInventory(InteractableObject* interactable)
+void AddItemToInventory(SceneManagement::Scene& scene, InteractableObject* interactable)
 {
 	std::cout << "[InteractableObject] Adding Item to Inventory: " << interactable->activator << "\n";
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	// Search in vector
-	auto it = std::ranges::find(scene->player->inventory, interactable->id);
+	auto it = std::ranges::find(scene.player->inventory, interactable->id);
 
-	if (it != scene->player->inventory.end()) {
+	if (it != scene.player->inventory.end()) {
 		// Item already in inventory
 		return;
 	}
 
-	scene->player->inventory.push_back(interactable->id);
+	scene.player->inventory.push_back(interactable->id);
 	interactable->onDisable();
 
 	std::cout << "[InteractableObject] Item added to inventory.\n";
@@ -95,7 +93,7 @@ InteractableObject::InteractableObject(const InteractionType interact, int varia
 	activator = activate; // Object
 }
 
-void InteractableObject::onInteract()
+void InteractableObject::onInteract(SceneManagement::Scene& scene)
 {
 	AudioManager::AudioManager::getInstance().Play3D(defaultSound, *this);
 	std::cout << "[InteractObject] Interacted with " << name << "\n";
@@ -109,9 +107,9 @@ void InteractableObject::onInteract()
 	// The branches stay mutually exclusive: Unlock() marks this station for
 	// removal, and none of the others may run on a station that is going away.
 	const InteractionType type = interactType;
-	if (type == INTERACT_MINIGAME) { ActivateMiniGame(this); }
-	else if (type == INTERACT_UNLOCK) { Unlock(this); }
-	else if (type == INTERACT_ITEM) { AddItemToInventory(this); }
+	if (type == INTERACT_MINIGAME) { ActivateMiniGame(scene, this); }
+	else if (type == INTERACT_UNLOCK) { Unlock(scene, this); }
+	else if (type == INTERACT_ITEM) { AddItemToInventory(scene, this); }
 
 }
 

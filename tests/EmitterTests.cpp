@@ -51,7 +51,6 @@ static void CheckNear(float actual, float expected, float tolerance, const std::
 static SceneManagement::Scene* MakeScene()
 {
 	SceneManagement::Scene* scene = new SceneManagement::Scene();
-	SceneManagement::SceneManager::getInstance().currentScene = scene;
 	return scene;
 }
 
@@ -199,7 +198,7 @@ static void TestInteractingWithAStationIsTampering()
 	scene->player->artifactUnlocked = MINI_GAME_RO_SHAM_BOO_ID;   // everything unlocked
 
 	InteractableObject* station = AddStation(scene, Vector3{ 3, 0, -4 });
-	station->onInteract();
+	station->onInteract(*scene);
 
 	const SoundEvent* event = FirstOfKind(scene, SOUND_TAMPER);
 	Check(event != nullptr, "interacting with a station is audible");
@@ -226,7 +225,7 @@ static void TestLockedStationStillMakesNoise()
 	// interference, and a silent failed attempt would be the safest way to play.
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 });
 	station->variation = MINI_GAME_RO_SHAM_BOO_ID;
-	station->onInteract();
+	station->onInteract(*scene);
 
 	Check(CountOfKind(scene, SOUND_TAMPER) == 1, "a locked station still makes noise");
 	Check(scene->GetRunningStation() == nullptr, "but no minigame actually started");

@@ -2,12 +2,11 @@
 
 #include <SceneManager.h>
 
-void Player::Interact()
+void Player::Interact(SceneManagement::Scene& scene)
 {
-	const auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 	const auto camera = &SceneManagement::SceneManager::getInstance().camera3D;
 
-	if (!scene->overlays.GameplayHasInput()) { return; }
+	if (!scene.overlays.GameplayHasInput()) { return; }
 
 	// Check buff for increased range
 	int interactRange = defaultInteractRange;
@@ -27,7 +26,7 @@ void Player::Interact()
 	InteractableObject* closest = nullptr;
 	float closestDistance = 0.0f;
 
-	scene->gameMap.ForEachInteractable([&](InteractableObject& obj)
+	scene.gameMap.ForEachInteractable([&](InteractableObject& obj)
 	{
 		// A disabled interactable is one that has been consumed — picked up into
 		// the inventory, or switched off by an activator. It draws nothing
@@ -51,10 +50,10 @@ void Player::Interact()
 
 	if (closest != nullptr)
 	{
-		closest->onInteract();
+		closest->onInteract(scene);
 		return;
 	}
 
 	// Using the Artifact with nothing in reach is a Practice run
-	if (artifact && artifact->isEnabled) { scene->StartMiniGame(artifactMode); return; }
+	if (artifact && artifact->isEnabled) { scene.StartMiniGame(artifactMode); return; }
 }

@@ -42,11 +42,8 @@ namespace
  */
 void WorldEditor::UpdateViewportInput()
 {
-	const auto manager = &SceneManagement::SceneManager::getInstance();
-	SceneManagement::Scene* scene = manager->currentScene;
-	if (scene == nullptr) { return; }
-
-	const Camera3D& camera = manager->camera3D;
+	SceneManagement::Scene* scene = editedScene;
+	const Camera3D& camera = SceneManagement::SceneManager::getInstance().camera3D;
 	const ImGuiIO& io = ImGui::GetIO();
 
 	// Step 1 & 2. Without the ImGui test, pressing "Delete Object" in the Object
@@ -335,7 +332,7 @@ void WorldEditor::PickTargetUnderMouse(SceneManagement::Scene* scene, const Came
 
 void WorldEditor::DeleteSelection()
 {
-	SceneManagement::Scene* scene = SceneManagement::SceneManager::getInstance().currentScene;
+	SceneManagement::Scene* scene = editedScene;
 	GameObject* object = getSelectedObject();
 	if (scene == nullptr || object == nullptr) { statusMessage = "Nothing selected"; return; }
 
@@ -356,7 +353,7 @@ void WorldEditor::DeleteSelection()
 
 void WorldEditor::DuplicateSelection()
 {
-	SceneManagement::Scene* scene = SceneManagement::SceneManager::getInstance().currentScene;
+	SceneManagement::Scene* scene = editedScene;
 	GameObject* object = getSelectedObject();
 	if (scene == nullptr || object == nullptr) { statusMessage = "Nothing selected"; return; }
 
@@ -488,7 +485,7 @@ void WorldEditor::PushEdit(const EditorEdit& edit)
 
 void WorldEditor::Undo()
 {
-	SceneManagement::Scene* scene = SceneManagement::SceneManager::getInstance().currentScene;
+	SceneManagement::Scene* scene = editedScene;
 	if (scene == nullptr) { return; }
 
 	// Entries can go stale — the object may have been deleted by hand since.
@@ -547,14 +544,16 @@ GizmoTransform WorldEditor::getSelectedTransform(const GameObject* object) const
  * both sides of the depth toggle — otherwise the state change lands on the wrong
  * draw calls and hides scene geometry instead.
  */
-void WorldEditor::DrawViewport3D()
+void WorldEditor::DrawViewport3D(SceneManagement::Scene& scene)
+{
+	editedScene = &scene;
+	DrawEditorViewport();
+	editedScene = nullptr;
+}
+
+void WorldEditor::DrawEditorViewport()
 {
 	if (!isEditorActive) { return; }
-
-	// getSelectedObject() walks the scene's containers unguarded, and this runs
-	// outside SceneManager_draw's own currentScene check — a scene swap with the
-	// editor open would otherwise dereference null here.
-	if (SceneManagement::SceneManager::getInstance().currentScene == nullptr) { return; }
 
 	const Camera3D& camera = SceneManagement::SceneManager::getInstance().camera3D;
 
@@ -572,7 +571,7 @@ void WorldEditor::DrawViewport3D()
 		auto* station = dynamic_cast<InteractableObject*>(selected);
 		if (station != nullptr && station->interactType == INTERACT_MINIGAME && station->targetId != 0)
 		{
-			GameObject* target = station->FindMiniGameTarget(SceneManagement::SceneManager::getInstance().currentScene->gameMap);
+			GameObject* target = station->FindMiniGameTarget(editedScene->gameMap);
 			if (target != nullptr && target != selected)
 			{
 				const GizmoTransform targetTransform = getSelectedTransform(target);

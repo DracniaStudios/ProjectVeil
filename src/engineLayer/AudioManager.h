@@ -11,6 +11,7 @@
 // GameObject.h and this header include each other, so whichever is read first
 // sees the other's types only through a declaration
 struct GameObject;
+namespace SceneManagement { struct Scene; }
 
 namespace AudioManager {
 
@@ -63,7 +64,9 @@ namespace AudioManager {
 
 		void init();
 		void loadAll();
-		void update();
+		// Hears the world from the scene's player (nothing before the first scene
+		// is built), then lets FMOD run
+		void update(SceneManagement::Scene* scene);
 		void shutdown();
 
 		// File Audio

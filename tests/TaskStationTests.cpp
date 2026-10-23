@@ -40,7 +40,6 @@ static void Check(bool condition, const std::string& what)
 static SceneManagement::Scene* MakeScene()
 {
 	SceneManagement::Scene* scene = new SceneManagement::Scene();
-	SceneManagement::SceneManager::getInstance().currentScene = scene;
 	scene->player = new Player();
 	scene->player->id = PLAYER_ID;
 	// Everything unlocked, so ActivateMiniGame never bails at the unlock gate
@@ -80,7 +79,7 @@ static void TestWinningCompletesTheStation()
 	std::printf("winning a station's minigame completes the station\n");
 	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 901);
-	station->onInteract();
+	station->onInteract(*scene);
 
 	Check(scene->GetRunningStation() == station, "the station is occupied while it runs");
 	Check(scene->overlays.Top() == Overlay::MiniGame, "the MiniGame overlay is up");
@@ -102,7 +101,7 @@ static void TestQuittingLeavesTheStationOutstanding()
 	std::printf("walking away leaves the station outstanding\n");
 	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 902);
-	station->onInteract();
+	station->onInteract(*scene);
 
 	scene->QuitMiniGame();
 
@@ -132,7 +131,7 @@ static void TestWinningTogglesTheTarget()
 	Check(station->FindMiniGameTarget(scene->gameMap) == door, "the station names its Target");
 	Check(door->isEnabled, "the door starts enabled");
 
-	station->onInteract();
+	station->onInteract(*scene);
 	scene->WinMiniGame();
 
 	door = scene->gameMap.FindGameObject(950);
@@ -151,7 +150,7 @@ static void TestMissingTargetStillCompletes()
 
 	Check(station->FindMiniGameTarget(scene->gameMap) == nullptr, "a missing Target is reported, not guessed");
 
-	station->onInteract();
+	station->onInteract(*scene);
 	scene->WinMiniGame();
 
 	// A deleted door must not un-complete finished work, or the Director would

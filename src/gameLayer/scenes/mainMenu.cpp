@@ -2,19 +2,19 @@
 
 #include <SaveSystem.h>
 
-void Scene_MainMenuUpdate(float /*deltaTime*/)
+void Scene_MainMenuUpdate(SceneManagement::Scene& /*scene*/, float /*deltaTime*/)
 {
 
 
 
 }
 
-void Scene_MainMenuDraw2D()
+void Scene_MainMenuDraw2D(SceneManagement::Scene& /*scene*/)
 {
 	// The menu itself is the Title overlay, drawn with the other overlays (UI/Overlays.cpp)
 };
 
-void Scene_MainMenuDraw3D()
+void Scene_MainMenuDraw3D(SceneManagement::Scene& /*scene*/)
 {
 	// Weird Interaction Between Rendering Ray and layer Objects
 

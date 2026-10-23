@@ -47,7 +47,7 @@ void SetMoveDirection(Player* player, float deltaTime) {
 	if (player->moveDirection.x > 0) { player->rigidBody3D.translation += player->rigidBody3D.right * step; }
 }
 
-void UpdateActions(Player* player) {
+void UpdateActions(Player* player, SceneManagement::Scene& scene) {
 	auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 	/// Player Flags
@@ -57,7 +57,7 @@ void UpdateActions(Player* player) {
 		|| inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2);
 
 	if (!Editor::WorldEditor::getInstance().IsEnabled()) {
-		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_INTERACT)) { player->Interact(); }
+		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_INTERACT)) { player->Interact(scene); }
 		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(20);
 
 		// The flashlight is owned by LightingSystem and follows whichever camera
@@ -68,10 +68,9 @@ void UpdateActions(Player* player) {
 	}
 }
 
-void updateArtifact(Player* player, float deltaTime) {
+void updateArtifact(Player* player, SceneManagement::Scene& scene, float deltaTime) {
 
 	auto inputSystem = &InputSystem::InputSystem::getInstance();
-	const auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	// Artifact Actions
 	player->artifactMode += inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT_RIGHT) ? 1
@@ -79,9 +78,9 @@ void updateArtifact(Player* player, float deltaTime) {
 		: 0;
 	player->artifactMode = static_cast<int>(Clamp(static_cast<float>(player->artifactMode), -1, player->artifactUnlocked));
 	// A Practice run: the game's buff, but no station completed and no Target toggled
-	if (!scene->miniGameSession.IsRunning() && inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT))
+	if (!scene.miniGameSession.IsRunning() && inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT))
 	{
-		scene->StartMiniGame(player->artifactMode);
+		scene.StartMiniGame(player->artifactMode);
 	}
 
 	// Artifact
@@ -89,7 +88,7 @@ void updateArtifact(Player* player, float deltaTime) {
 	const auto offset = Vector3Add(camera.forward, player->rigidBody3D.left);//camera->left / 2);
 
 	player->artifact->rigidBody3D.translation = Vector3Add(SceneManagement::SceneManager::getInstance().camera3D.position, offset);
-	player->artifact->update(scene, deltaTime);
+	player->artifact->update(&scene, deltaTime);
 }
 
 #pragma endregion
@@ -118,17 +117,12 @@ void Player::render2D()
 {
 	if (!this->isEnabled) return;
 	auto inputSystem = &InputSystem::InputSystem::getInstance();
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
-
-	// Inside a MiniGame the player is the game's own cursor, which the game draws
 
 	/// Reticle
-	if (scene->overlays.GameplayHasInput()) {
-		DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 10,
-			inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM) ? RED
-			: inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2) ? RED
-			: WHITE);
-	}
+	DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 10,
+		inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM) ? RED
+		: inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2) ? RED
+		: WHITE);
 }
 
 void Player::render3D()
@@ -139,11 +133,8 @@ void Player::render3D()
 }
 
 // Footsteps, the player's loudest routine emission.
-static void EmitFootsteps(Player* player, float deltaTime)
+static void EmitFootsteps(Player* player, SceneManagement::Scene& scene, float deltaTime)
 {
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
-	if (scene == nullptr) { return; }
-
 	// Vertical motion is jumping and falling, not walking; only horizontal
 	// travel makes footfalls.
 	const Vector3 velocity = player->rigidBody3D.GetVelocity();
@@ -167,18 +158,18 @@ static void EmitFootsteps(Player* player, float deltaTime)
 	if (player->footstepTimer > 0.0f) { return; }
 	player->footstepTimer = interval;
 
-	scene->soundField.Emit(player->getPosition(), loudness, SOUND_FOOTSTEP, player->id);
+	scene.soundField.Emit(player->getPosition(), loudness, SOUND_FOOTSTEP, player->id);
 }
 
-void Player::update3D(float deltaTime)
+void Player::update3D(SceneManagement::Scene& scene, float deltaTime)
 {
 	if (!isEnabled) return;
-	if (!SceneManagement::SceneManager::getInstance().currentScene->overlays.GameplayHasInput()) { return; }
+	if (!scene.overlays.GameplayHasInput()) { return; }
 
 	/// Player Scale
 	rigidBody3D.scale = Vector3(1, 2, 1);
 
-	UpdateActions(this);
+	UpdateActions(this, scene);
 
 	SetMoveDirection(this, deltaTime);
 
@@ -188,16 +179,16 @@ void Player::update3D(float deltaTime)
 
 	// After the physics step so the noise is stamped at the position the player
 	// actually reached this frame, not the one they started it at.
-	EmitFootsteps(this, deltaTime);
+	EmitFootsteps(this, scene, deltaTime);
 
-	if (artifact) { updateArtifact(this, deltaTime); }
+	if (artifact) { updateArtifact(this, scene, deltaTime); }
 
 	stamina = Clamp(stamina, 0, getMaxStamina());
 	health = Clamp(health, 0, getMaxHealth());
 }
 
 FMOD_3D_ATTRIBUTES Player::getListener() {
-	const auto camera = &SceneManagement::SceneManager::getInstance().currentScene->player->camera;
+	const auto camera = &this->camera;
 
 	// FMOD requires forward and up to be normalized and perpendicular
 	Vector3 forward = Vector3Normalize(camera->forward);
