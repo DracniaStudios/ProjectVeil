@@ -177,6 +177,85 @@ echo
 UI_STATUS=$?
 
 # ---------------------------------------------------------------------------
+# Allocator and cooldown timer tests
+#
+# Cheaper than any other tier: ArenaAllocator.h, PoolAllocator.h and helpers.h
+# are header-only and include nothing from raylib or the engine, so these link
+# no library at all. If either block ever needs one, an allocator or the timer
+# has grown a dependency it should not have.
+# ---------------------------------------------------------------------------
+ALLOCATOR_BIN="$OUT_DIR/allocator_tests"
+
+echo
+echo "building $ALLOCATOR_BIN"
+g++ -std=c++23 -Wall \
+	-I src/engineLayer \
+	tests/AllocatorTests.cpp \
+	-o "$ALLOCATOR_BIN"
+
+echo
+"$ALLOCATOR_BIN"
+ALLOCATOR_STATUS=$?
+
+COOLDOWN_BIN="$OUT_DIR/cooldown_timer_tests"
+
+echo
+echo "building $COOLDOWN_BIN"
+g++ -std=c++23 -Wall \
+	-I src/gameLayer \
+	tests/CooldownTimerTests.cpp \
+	-o "$COOLDOWN_BIN"
+
+echo
+"$COOLDOWN_BIN"
+COOLDOWN_STATUS=$?
+
+# ---------------------------------------------------------------------------
+# Random tests
+#
+# Same tier as the UIEngine suite: randomStuff.cpp calls no raylib function,
+# and raylib's header is included only for its Vector3 and Color types.
+# ---------------------------------------------------------------------------
+RANDOM_BIN="$OUT_DIR/random_tests"
+
+echo
+echo "building $RANDOM_BIN"
+g++ -std=c++23 -Wall \
+	-I src/engineLayer \
+	-I thirdparty/raylib-6.0/src \
+	tests/RandomTests.cpp \
+	src/engineLayer/randomStuff.cpp \
+	-o "$RANDOM_BIN"
+
+echo
+"$RANDOM_BIN"
+RANDOM_STATUS=$?
+
+# ---------------------------------------------------------------------------
+# InputSystem tests
+#
+# Same tier as the collider suite: InputSystem.cpp reads raylib's key and
+# gamepad state, so raylib is linked, but no window is opened and raylib then
+# reports every key up. The suite tests the action table rather than live
+# presses.
+# ---------------------------------------------------------------------------
+INPUT_BIN="$OUT_DIR/input_system_tests"
+
+echo
+echo "building $INPUT_BIN"
+g++ -std=c++23 -Wall \
+	-I src/engineLayer \
+	-I thirdparty/raylib-6.0/src \
+	tests/InputSystemTests.cpp \
+	src/engineLayer/InputSystem.cpp \
+	-o "$INPUT_BIN" \
+	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
+
+echo
+"$INPUT_BIN"
+INPUT_STATUS=$?
+
+# ---------------------------------------------------------------------------
 # MiniGame tests
 #
 # The session, all six games with scripted input, and RigidBody2D. Same tier as
@@ -224,7 +303,7 @@ if [[ ! -d "$OBJ_ROOT" ]]; then
 	echo
 	echo "skipping engine-linked suites: no compiled objects under '$OBJ_ROOT'." >&2
 	echo "                               build the game first: cmake --build $BUILD_DIR" >&2
-	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $UI_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 ]]; then exit 1; fi
+	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $UI_STATUS -ne 0 || $ALLOCATOR_STATUS -ne 0 || $COOLDOWN_STATUS -ne 0 || $RANDOM_STATUS -ne 0 || $INPUT_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 ]]; then exit 1; fi
 	exit 0
 fi
 
@@ -268,7 +347,10 @@ for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
              "TaskStationTests:task_station_tests" "GameMapTests:game_map_tests" \
              "StalkerContactDamageTests:stalker_contact_damage_tests" \
              "SceneTransitionTests:scene_transition_tests" \
-             "SaveSystemTests:save_system_tests"; do
+             "SaveSystemTests:save_system_tests" \
+             "DirectorTests:director_tests" "ContactRulesTests:contact_rules_tests" \
+             "EditorPickingTests:editor_picking_tests" "LightingTests:lighting_tests" \
+             "EntityTests:entity_tests"; do
 	SRC="tests/${suite%%:*}.cpp"
 	TEST_BIN="$OUT_DIR/${suite##*:}"
 
@@ -350,4 +432,4 @@ else
 fi
 TRIGGER_STATUS=$?
 
-if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $UI_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
+if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $UI_STATUS -ne 0 || $ALLOCATOR_STATUS -ne 0 || $COOLDOWN_STATUS -ne 0 || $RANDOM_STATUS -ne 0 || $INPUT_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi

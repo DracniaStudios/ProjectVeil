@@ -63,6 +63,9 @@
 - Added a backend to the UIEngine. Each frame is handed the mouse and screen as an input snapshot, widgets record
 	what they draw, and the raylib backend draws it at the end of the frame.
 - Added UIEngine tests for clicks, hover, layout and drawing, which need no window and no library.
+- Added Allocator, Cooldown Timer, Random and InputSystem tests, which need no window.
+	The Allocator tests come from the arena-pool branch, rewritten for the Arena on this branch.
+- Added Director, ContactRules, Editor Picking, Lighting and Entity tests, which link the game like the Stalker tests.
 
 [ Updated ]
 
