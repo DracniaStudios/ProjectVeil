@@ -62,6 +62,7 @@
 - Added World lighting and Setting to CONTEXT.md: a world owns its lighting, and a Setting only changes how it is shown.
 - Added a backend to the UIEngine. Each frame is handed the mouse and screen as an input snapshot, widgets record
 	what they draw, and the raylib backend draws it at the end of the frame.
+- Added UIEngine tests for clicks, hover, layout and drawing, which need no window and no library.
 
 [ Updated ]
 

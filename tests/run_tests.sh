@@ -152,6 +152,31 @@ echo
 SETTINGS_STATUS=$?
 
 # ---------------------------------------------------------------------------
+# UIEngine tests
+#
+# Same tier as the overlay suite: UIEngine.cpp takes its input as a snapshot
+# and records what it draws for a backend to replay, so it calls no raylib
+# function. raylib's header is included for its Rectangle, Vector2 and Color
+# types, and nothing is linked. The raylib backend (UI/RaylibBackend.cpp) is
+# left out on purpose; if this block ever needs it, hover or drawing has
+# started calling raylib again.
+# ---------------------------------------------------------------------------
+UI_BIN="$OUT_DIR/ui_engine_tests"
+
+echo
+echo "building $UI_BIN"
+g++ -std=c++23 -Wall \
+	-I src/gameLayer \
+	-I thirdparty/raylib-6.0/src \
+	tests/UIEngineTests.cpp \
+	src/gameLayer/UIEngine.cpp \
+	-o "$UI_BIN"
+
+echo
+"$UI_BIN"
+UI_STATUS=$?
+
+# ---------------------------------------------------------------------------
 # MiniGame tests
 #
 # The session, all six games with scripted input, and RigidBody2D. Same tier as
@@ -199,7 +224,7 @@ if [[ ! -d "$OBJ_ROOT" ]]; then
 	echo
 	echo "skipping engine-linked suites: no compiled objects under '$OBJ_ROOT'." >&2
 	echo "                               build the game first: cmake --build $BUILD_DIR" >&2
-	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 ]]; then exit 1; fi
+	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $UI_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 ]]; then exit 1; fi
 	exit 0
 fi
 
@@ -325,4 +350,4 @@ else
 fi
 TRIGGER_STATUS=$?
 
-if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
+if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $UI_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
