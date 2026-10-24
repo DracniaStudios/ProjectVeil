@@ -153,12 +153,9 @@ public:
 	Vector3 offset = { 0.0f, 0.0f, 0.0f };
 	float radius = 0.5f; // Sphere only
 
+	// Contacts are reported by PhysicsWorld::Solve as ContactEvents naming both
+	// bodies' ids, not through the collider.
 	bool isTrigger() const { return mode == COLLIDER_TRIGGER; }
-
-	virtual bool onCollisionEnter(Collider3D& other) const;
-	virtual bool onCollisionExit(Collider3D& other) const;
-	virtual bool onTriggerEnter(Collider3D& other) const;
-	virtual bool onTriggerExit(Collider3D& other) const;
 
 	/** Half extents along the body's own axes, clamped away from degenerate. */
 	Vector3 GetLocalHalfExtents(Vector3 bodyScale) const;

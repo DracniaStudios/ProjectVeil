@@ -1,86 +1,64 @@
 #include "MiniGame_FlappyBird.h"
 
-#include <SceneManager.h>
+#include <iostream>
 
-namespace FlappyBirdSpace
+namespace
 {
-	// Which side the player is currently being pushed toward — the game's only
-	// state beyond the score, and it lives outside MiniGameData because
-	// MiniGameData has nowhere to put it. Reset on construction (below).
-	//
-	// `static` (via the anonymous namespace) matters: these had external
-	// linkage, so `leftGoal` and `rightGoal` in particular were global symbols
-	// that any other translation unit could collide with at link time.
-	bool isLeftGoalActive = false;
-	bool isRightGoalActive = true;
-
 	// The two scoring bands, in the same normalized space the obstacles use.
-	// render() used to compute these into file scope as a side effect of
-	// drawing, which update() then read — so on the first frame of every game
-	// (update runs before the first draw) the goals were still {0,0,0,0} at the
-	// screen origin, and any frame that updated without drawing tested against
-	// stale rectangles. Deriving them lets both passes ask for the same answer.
+	// Derived rather than stored, so Update and DrawGame ask for the same answer.
 	Rectangle GetLeftGoal(Rectangle screen) { return generateScaleRect(screen, Rectangle{ 1.05f, 1.05f, 0.1f, 0.95f }); }
 	Rectangle GetRightGoal(Rectangle screen) { return generateScaleRect(screen, Rectangle{ 2.75f, 1.05f, 0.1f, 0.95f }); }
 
-	// The play area, shared by update() and render() for the same reason
-	Rectangle GetPlayScreen() { return getScreenScale({ 0.25f, 0.3f, 0.5f, 0.5f }); }
+	// Inside the play screen, the area the bird must stay in
+	Rectangle GetGreenArea(Rectangle screen) { return generateScaleRect(screen, Rectangle{ 1.05f, 1.05f, 0.95f, 0.95f }); }
+
+	// Sideways push toward the live goal
+	constexpr float kSpeed = 100.0f;
 }
 
-MiniGame* MiniGame_FlappyBird(Player* player)
+FlappyBird::FlappyBird(const MiniGameSetup& setup) : rng(setup.seed)
 {
-	auto* game = new MiniGame();
-	game->name = "Flappy Bird";
-	game->update = &FlappyBird::update;
-	game->draw = &FlappyBird::render;
+	name = "Flappy Bird";
 
-	game->data->scoreGoal = 3;
+	data.scoreGoal = 3;
 
-	using namespace FlappyBirdSpace;
-	// isLeftGoalActive/isRightGoalActive are file-scope, not part of MiniGameData,
-	// so a retry/reset (which reconstructs the MiniGame via this function) must
-	// reset them explicitly or the new game inherits whichever goal was active
-	// when the previous attempt ended.
-	isLeftGoalActive = false;
-	isRightGoalActive = true;
+	// The play area. Kept in the layout, so the MiniGame Inspector edits the real thing.
+	data.screen = getScreenScale(setup.screenSize, { 0.25f, 0.3f, 0.5f, 0.5f });
 
-	player->rigidBody2D.scale = Vector3(5.0f, 5.0f, 5.0f);
-	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
-	player->rigidBody2D.canMove = false;
-	player->rigidBody2D.useGravity = false;
+	cursor.scale = Vector3(5.0f, 5.0f, 5.0f);
+	cursor.teleport(Vector2(setup.screenSize.x * 0.5f, setup.screenSize.y * 0.5f));
+	cursor.useGravity = false;
+	cursor.bounds = Rectangle{ 0, 0, setup.screenSize.x, setup.screenSize.y };
 
-	// Generate Obstacle
+	GenerateObstacles(4);
+}
+
+void FlappyBird::GenerateObstacles(int count)
+{
+	data.obstacles = {};
+
+	// x 500 -> 1100
+
+	for (int i = 0; i < count; i++)
 	{
-		game->data->obstacles = {};
-		auto rng = std::ranlux24_base(std::random_device{}());
+		// Gen Top Size
+		Rectangle top = { getRandomFloat(rng, 0.2f, 1.5f), 0.05f, 0.05f, getRandomFloat(rng, 0.1f, 0.3f) };
 
-		// x 500 -> 1100
+		// Gen Bottom Size
+		Rectangle bottom = { top.x, top.height + 0.9f, top.width, 0.5f - top.height };
 
-		for (int i = 0; i < 4; i++)
-		{
-			// Gen Top Size
-			Rectangle top = { getRandomFloat(rng, 0.2f, 1.5f), 0.05f, 0.05f, getRandomFloat(rng, 0.1f, 0.3f) };
-
-			// Gen Bottom Size
-			Rectangle bottom = { top.x, top.height + 0.9f, top.width, 0.5f - top.height };
-
-			game->data->obstacles.push_back(top);
-			game->data->obstacles.push_back(bottom);
-		}
+		data.obstacles.push_back(top);
+		data.obstacles.push_back(bottom);
 	}
-
-	return game;
 }
 
-void FlappyBird::render(SceneManagement::Scene* scene_ptr)
+void FlappyBird::DrawGame() const
 {
-	auto data = scene_ptr->miniGame->data;
-	using namespace FlappyBirdSpace;
 	/// Draw Background Screen
-	Rectangle screen = GetPlayScreen();
+	const Rectangle screen = data.screen;
 
 	DrawRectangleRec(generateScaleRect(screen, Rectangle{ 1, 1, 1, 1 }), BLACK);
-	DrawRectangleRec(generateScaleRect(screen, Rectangle{1.05f, 1.05f,0.95f, 0.95f}), DARKGREEN);
+	DrawRectangleRec(GetGreenArea(screen), DARKGREEN);
 
 	/// Draw Goal Borders
 	if (isLeftGoalActive) { DrawRectangleRec(GetLeftGoal(screen), GOLD); }
@@ -88,7 +66,7 @@ void FlappyBird::render(SceneManagement::Scene* scene_ptr)
 
 	/// Draw Enemy Tiles
 
-	for (auto &obj : data->obstacles)
+	for (auto &obj : data.obstacles)
 	{
 		Rectangle newSize =
 		{
@@ -108,136 +86,77 @@ void FlappyBird::render(SceneManagement::Scene* scene_ptr)
 
 }
 
-void FlappyBird::update(SceneManagement::Scene* scene_ptr, float deltaTime)
+MiniGameOutcome FlappyBird::Update(const MiniGameInput& input, float /*deltaTime*/)
 {
-	auto inputSystem = &InputSystem::InputSystem::getInstance();
-	auto data = scene_ptr->miniGame->data;
-	auto player = scene_ptr->player;
-	using namespace FlappyBirdSpace;
-
-	auto generateObstacle = [&](int count = 4)
-		{
-			data->obstacles = {};
-			auto rng = std::ranlux24_base(std::random_device{}());
-
-			// x 500 -> 1100
-
-			for (int i = 0; i < count; i++)
-			{
-				// Gen Top Size
-				Rectangle top = { getRandomFloat(rng, 0.2f, 1.5f), 0.05f, 0.05f, getRandomFloat(rng, 0.1f, 0.3f) };
-
-				// Gen Bottom Size
-				Rectangle bottom = { top.x, top.height + 0.9f, top.width, 0.5f - top.height };
-
-				data->obstacles.push_back(top);
-				data->obstacles.push_back(bottom);
-			}
-		};
-
-	Rectangle screen = GetPlayScreen();
+	const Rectangle screen = data.screen;
 	const Rectangle leftGoal = GetLeftGoal(screen);
 	const Rectangle rightGoal = GetRightGoal(screen);
 
-	const Vector2 playerPosition = player->rigidBody2D.getPosition();
-	const float playerRadius = player->rigidBody2D.scale.x;
+	const Vector2 cursorPosition = cursor.getPosition();
+	const float cursorRadius = cursor.scale.x;
 
 	// Game Logic
-	// The active-goal test is part of the condition rather than an early `return`
-	// out of update(). Returning skipped everything below it — the out-of-bounds
-	// checks, the win check, gravity and the player's input — so simply resting
-	// inside the goal that was already scored froze the whole game.
-	if (isLeftGoalActive && CheckCollisionCircleRec(playerPosition, playerRadius, leftGoal))
+	// The active-goal test is part of the condition rather than an early return,
+	// so resting inside the goal that was already scored doesn't freeze the game.
+	if (isLeftGoalActive && CheckCollisionCircleRec(cursorPosition, cursorRadius, leftGoal))
 	{
 		std::cout << "Player Inside Left Goal \n";
-		data->score++;
+		data.score++;
 		isRightGoalActive = true;
 		isLeftGoalActive = false;
-		player->rigidBody2D.velocity = Vector2Negate(player->rigidBody2D.velocity);
-		generateObstacle(2 + data->score);
+		cursor.velocity = Vector2Negate(cursor.velocity);
+		GenerateObstacles(2 + data.score);
 
 	}
-	else if (isRightGoalActive && CheckCollisionCircleRec(playerPosition, playerRadius, rightGoal))
+	else if (isRightGoalActive && CheckCollisionCircleRec(cursorPosition, cursorRadius, rightGoal))
 	{
 		std::cout << "Player Inside Right Goal \n";
-		data->score++;
+		data.score++;
 		isLeftGoalActive = true;
 		isRightGoalActive = false;
-		player->rigidBody2D.velocity = Vector2Negate(player->rigidBody2D.velocity);
-		generateObstacle(2 + data->score);
+		cursor.velocity = Vector2Negate(cursor.velocity);
+		GenerateObstacles(2 + data.score);
 	}
 
-	if (!CheckCollisionRecs(player->rigidBody2D.getRectCentered(), generateScaleRect(screen, Rectangle{ 1.05f, 1.05f,0.95f, 0.95f }))) {
-		scene_ptr->ResetMiniGame();
-		// ResetMiniGame() frees the MiniGameData `data` points to (and, for a
-		// replay, allocates a fresh one at scene_ptr->miniGame->data). Everything
-		// below reads `data`, so continuing would be a use-after-free — same
-		// reasoning as the out-of-screen lose path's early return further down.
-		return;
-	}
-	/*
-	if (player->rigidBody2D.getPosition().x < screen.x) scene->miniGame->data->isReset = true;
-	if (player->rigidBody2D.getPosition().y < screen.y) scene->miniGame->data->isReset = true;
-	if (player->rigidBody2D.getPosition().x > screen.x + screen.width) scene->miniGame->data->isReset = true;
-	if (player->rigidBody2D.getPosition().y > screen.y + screen.height) scene->miniGame->data->isReset = true;
-	*/
+	if (!CheckCollisionRecs(cursor.getRectCentered(), GetGreenArea(screen))) { return MiniGameOutcome::Lost; }
 
 	// Win Condition
-	if (CompleteMiniGame(*data, *player, scene_ptr->gameMap, BUFF_MOVEMENT)) {
-		scene_ptr->ReleaseMiniGame();
-		// ReleaseMiniGame() deleted `data` and nulled scene_ptr->miniGame, same as
-		// the lose path below. Missing this return let execution fall through into
-		// the Entity Logic loop and iterate a vector living in freed memory.
-		return;
-	}
+	if (data.score >= data.scoreGoal) { return MiniGameOutcome::Won; }
 
-	// Lose Condition
-	 auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
-
-	if (!CheckCollisionRecs(playerRect, screen)) {
-		scene_ptr->ReleaseMiniGame();
-		std::cout << "[MiniGame/FlappyBird] Play Fail Sound\n";
-		// ReleaseMiniGame() deleted `data` and nulled scene_ptr->miniGame. Everything
-		// below reads one or the other, so returning here is what keeps the loss
-		// path from iterating a destroyed vector and dereferencing null.
-		return;
-	}
-
-	// Player Logic
+	// Lose Condition. This one used to quit the station outright; a lost round now
+	// always starts a fresh one, like every other way of losing.
+	auto cursorRect = Rectangle(cursor.translation.x, cursor.translation.y, cursor.scale.x, cursor.scale.y);
+	if (!CheckCollisionRecs(cursorRect, screen))
 	{
-		static int speed = 100;
-		// Was followed by a second, default-argument applyGravity() call that
-		// added an extra, unintended (0, 20) on top of the tuned (0, 200) every
-		// frame — a leftover duplicate, not a second intentional force.
-		player->rigidBody2D.applyGravity(Vector2(0, 200));
-		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_JUMP)) { player->rigidBody2D.jump(200); }
+		std::cout << "[MiniGame/FlappyBird] Play Fail Sound\n";
+		return MiniGameOutcome::Lost;
+	}
 
-		if (isLeftGoalActive) { player->rigidBody2D.applyForce(Vector2(-speed, 0)); }
-		if (isRightGoalActive) { player->rigidBody2D.applyForce(Vector2(speed, 0)); }
+	// Cursor Logic
+	{
+		cursor.applyGravity(Vector2(0, 200));
+		if (input.pressed.jump) { cursor.jump(200); }
+
+		if (isLeftGoalActive) { cursor.applyForce(Vector2(-kSpeed, 0)); }
+		if (isRightGoalActive) { cursor.applyForce(Vector2(kSpeed, 0)); }
 
 	}
 
 	// Entity Logic
+	for (const Rectangle& obj : data.obstacles)
 	{
-		for (auto &obj : data->obstacles)
+		Rectangle newSize{
+			1 + obj.x,
+			1 + obj.y,
+			obj.width,
+			obj.height,
+		};
+
+		if (CheckCollisionCircleRec(cursor.getPosition(), cursor.scale.x, generateScaleRect(screen, newSize)))
 		{
-			Rectangle newSize{
-				1 + obj.x,
-				1 + obj.y,
-				obj.width,
-				obj.height,
-			};
-
-			Rectangle obstacle = generateScaleRect(screen, newSize);
-
-			if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, obstacle))
-			{
-				scene_ptr->ResetMiniGame();
-				// ResetMiniGame() just freed the MiniGameData that `data->obstacles`
-				// (and `obj`, a reference into it) live in. Continuing to iterate a
-				// container whose backing store is gone is a use-after-free.
-				return;
-			}
+			return MiniGameOutcome::Lost;
 		}
 	}
+
+	return MiniGameOutcome::Running;
 }

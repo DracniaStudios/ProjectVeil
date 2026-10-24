@@ -14,28 +14,13 @@ namespace
 	constexpr float kOutlineInflate = 1.02f;
 	const Color kSelectionColor = Color{ 255, 190, 60, 255 };
 	const Color kPlacementColor = Color{ 90, 220, 160, 255 };
+	const Color kTargetColor = Color{ 120, 170, 255, 255 }; // A selected Task station's Target
 
-	/** Removes by id from whichever container actually owns the object. */
+	/** Removes by id, whatever kind of object it is, at the end of the frame. */
 	bool RemoveById(SceneManagement::Scene* scene, std::uint64_t id)
 	{
 		if (scene == nullptr || id == 0) { return false; }
-
-		if (scene->gameMap.FindInteractable(id) != nullptr)
-		{
-			scene->gameMap.DestroyInteractable(id);
-			return true;
-		}
-		if (scene->gameMap.FindEntity(id) != nullptr)
-		{
-			scene->gameMap.DestroyEntity(id);
-			return true;
-		}
-		if (scene->gameMap.FindGameObject(id) != nullptr)
-		{
-			scene->gameMap.DestroyGameObject(id);
-			return true;
-		}
-		return false;
+		return scene->gameMap.Destroy(id);
 	}
 }
 
@@ -57,11 +42,8 @@ namespace
  */
 void WorldEditor::UpdateViewportInput()
 {
-	const auto manager = &SceneManagement::SceneManager::getInstance();
-	SceneManagement::Scene* scene = manager->currentScene;
-	if (scene == nullptr) { return; }
-
-	const Camera3D& camera = manager->camera3D;
+	SceneManagement::Scene* scene = editedScene;
+	const Camera3D& camera = SceneManagement::SceneManager::getInstance().camera3D;
 	const ImGuiIO& io = ImGui::GetIO();
 
 	// Step 1 & 2. Without the ImGui test, pressing "Delete Object" in the Object
@@ -81,6 +63,24 @@ void WorldEditor::UpdateViewportInput()
 		return;
 	}
 	placementPreviewValid = false;
+
+	// Step 3b. Picking a Task station's Target owns the left button the way
+	// placement does, so the click sets the Target rather than the selection.
+	if (targetPickStationId != 0)
+	{
+		gizmo.Cancel();
+
+		// As for placement: Escape only cancels when no widget has the keyboard
+		if (IsKeyPressed(KEY_ESCAPE) && !io.WantCaptureKeyboard)
+		{
+			targetPickStationId = 0;
+			statusMessage = "Target pick cancelled";
+			return;
+		}
+
+		if (canGrab && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) { PickTargetUnderMouse(scene, camera); }
+		return;
+	}
 
 	// Step 4. Resolved fresh every frame — see FindAnyById on why nothing here
 	// may cache the pointer across a spawn or delete.
@@ -304,9 +304,35 @@ void WorldEditor::SelectUnderMouse(SceneManagement::Scene* scene, const Camera3D
 	statusMessage = "Selected: " + (result.object != nullptr ? result.object->name : std::string("object"));
 }
 
+void WorldEditor::PickTargetUnderMouse(SceneManagement::Scene* scene, const Camera3D& camera)
+{
+	InteractableObject* station = scene->gameMap.FindInteractable(targetPickStationId);
+	if (station == nullptr)
+	{
+		targetPickStationId = 0;
+		statusMessage = "Target pick cancelled: the station no longer exists";
+		return;
+	}
+
+	// A miss keeps the pick armed, so a click on empty space is not a lost pick
+	const PickResult result = PickSceneObject(scene, GetEditorMouseRay(camera), PICK_SELECTABLE);
+	if (!result.hit)
+	{
+		statusMessage = "Nothing there to target (Esc cancels)";
+		return;
+	}
+
+	// Picking the station itself means it toggles itself, which is what no Target means
+	station->targetId = result.id == station->id ? 0 : result.id;
+	targetPickStationId = 0;
+	statusMessage = station->targetId == 0
+		? std::string("Target: none (toggles itself)")
+		: "Target: " + (result.object != nullptr ? result.object->name : std::string("object"));
+}
+
 void WorldEditor::DeleteSelection()
 {
-	SceneManagement::Scene* scene = SceneManagement::SceneManager::getInstance().currentScene;
+	SceneManagement::Scene* scene = editedScene;
 	GameObject* object = getSelectedObject();
 	if (scene == nullptr || object == nullptr) { statusMessage = "Nothing selected"; return; }
 
@@ -327,7 +353,7 @@ void WorldEditor::DeleteSelection()
 
 void WorldEditor::DuplicateSelection()
 {
-	SceneManagement::Scene* scene = SceneManagement::SceneManager::getInstance().currentScene;
+	SceneManagement::Scene* scene = editedScene;
 	GameObject* object = getSelectedObject();
 	if (scene == nullptr || object == nullptr) { statusMessage = "Nothing selected"; return; }
 
@@ -341,29 +367,23 @@ void WorldEditor::DuplicateSelection()
 	const Vector3 offset = Vector3{ 1.0f, 0.0f, 0.0f };
 
 	//
-	// Each copy also inherits the source's model handle and its ownsModel flag.
-	// The original is still live and still using that model, so the copy has to
-	// disown it before being saved — the loadVisuals() inside each save call
-	// releases whatever the object claims to own, and would otherwise free the
-	// model of the object that was just duplicated.
+	// Each copy shares the original's model handle, which is safe: Spawn* never
+	// frees a prototype's model, and binds the stored copy a model of its own.
 	if (object->type == OBJECT_ENTITY)
 	{
 		Entity copy = *static_cast<Entity*>(object);
-		copy.disownModel();
 		copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), offset));
 		spawned = scene->gameMap.SpawnEntity(copy);
 	}
 	else if (object->type == OBJECT_INTERACTABLE)
 	{
 		InteractableObject copy = *static_cast<InteractableObject*>(object);
-		copy.disownModel();
 		copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), offset));
 		spawned = scene->gameMap.SpawnInteractable(copy);
 	}
 	else
 	{
 		GameObject copy = *object;
-		copy.disownModel();
 		copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), offset));
 		spawned = scene->gameMap.SpawnGameObject(copy);
 	}
@@ -465,7 +485,7 @@ void WorldEditor::PushEdit(const EditorEdit& edit)
 
 void WorldEditor::Undo()
 {
-	SceneManagement::Scene* scene = SceneManagement::SceneManager::getInstance().currentScene;
+	SceneManagement::Scene* scene = editedScene;
 	if (scene == nullptr) { return; }
 
 	// Entries can go stale — the object may have been deleted by hand since.
@@ -524,14 +544,16 @@ GizmoTransform WorldEditor::getSelectedTransform(const GameObject* object) const
  * both sides of the depth toggle — otherwise the state change lands on the wrong
  * draw calls and hides scene geometry instead.
  */
-void WorldEditor::DrawViewport3D()
+void WorldEditor::DrawViewport3D(SceneManagement::Scene& scene)
+{
+	editedScene = &scene;
+	DrawEditorViewport();
+	editedScene = nullptr;
+}
+
+void WorldEditor::DrawEditorViewport()
 {
 	if (!isEditorActive) { return; }
-
-	// getSelectedObject() walks the scene's containers unguarded, and this runs
-	// outside SceneManager_draw's own currentScene check — a scene swap with the
-	// editor open would otherwise dereference null here.
-	if (SceneManagement::SceneManager::getInstance().currentScene == nullptr) { return; }
 
 	const Camera3D& camera = SceneManagement::SceneManager::getInstance().camera3D;
 
@@ -544,6 +566,19 @@ void WorldEditor::DrawViewport3D()
 
 		DrawOrientedBoxWires(transform.position, Vector3Scale(transform.scale, kOutlineInflate),
 			transform.rotation, kSelectionColor);
+
+		// A selected Task station shows which object its MiniGame toggles
+		auto* station = dynamic_cast<InteractableObject*>(selected);
+		if (station != nullptr && station->interactType == INTERACT_MINIGAME && station->targetId != 0)
+		{
+			GameObject* target = station->FindMiniGameTarget(editedScene->gameMap);
+			if (target != nullptr && target != selected)
+			{
+				const GizmoTransform targetTransform = getSelectedTransform(target);
+				DrawOrientedBoxWires(targetTransform.position, Vector3Scale(targetTransform.scale, kOutlineInflate),
+					targetTransform.rotation, kTargetColor);
+			}
+		}
 
 		// Placement takes over the viewport, so the gizmo stands down rather
 		// than competing for the same clicks it can no longer receive.

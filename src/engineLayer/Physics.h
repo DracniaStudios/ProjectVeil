@@ -200,9 +200,6 @@ inline Vector3& operator/=(Vector3& a, const Vector3& b)
 }
 #endif // RAYMATH_DISABLE_CPP_OPERATORS
 
-struct GameMap;
-struct GameObject;
-
 using Json = nlohmann::json;
 
 namespace Physics3D {
@@ -243,15 +240,7 @@ namespace Physics3D {
 	struct RigidBody3D : Transform3D
 	{
 	private:
-		// GameObjects that had multiple contacts on a single frame no longer linger together
-		// This could cause the OnCollision functions to run multiple times.
-		std::vector<GameObject*> contactsThisFrame;
-		std::vector<GameObject*> contactsLastFrame;
-
-		// GameObjects that are looked up by ID.
-		std::vector<std::uint64_t> triggerContactsThisFrame;
-		std::vector<std::uint64_t> triggerContactsLastFrame;
-
+		// Which bodies are touching which is kept by the PhysicsWorld, by id, not here
 		Vector3 lastPosition = {};
 		Vector3 appliedGravity = Vector3{ 0, 20, 0 };
 
@@ -259,7 +248,6 @@ namespace Physics3D {
 		float drag = 0.9f;
 
 		bool useGravity = true;
-		bool isColliding = false;
 
 		float airTime = 0;
 		uint64_t objectID = 0;
@@ -298,7 +286,6 @@ namespace Physics3D {
 		void SetVelocity(float x, float y, float z) { SetVelocity(Vector3(x, y, z)); }
 
 		/// Get Values
-		GameObject* GetCollider() const { return contactsThisFrame.empty() ? nullptr : contactsThisFrame.front(); }
 		Vector3 GetVelocity() const { return velocity; }
 		Vector3 GetAcceleration() const { return acceleration; }
 		float GetAirTime() const { return airTime; }
@@ -332,18 +319,10 @@ namespace Physics3D {
 		void AddForce(Vector3 forceDirection, float force);
 		void Jump(float force);
 		void UpdateForce(float deltaTime);
-		void Update(float deltaTime);
 
-		/**
-		 * Fires onTriggerExit for anything that left this body's trigger volumes, then
-		 * rolls the trigger contact lists ready for this frame's solver.
-		 *
-		 * Called once per body per frame from the two places that tick a body —
-		 * GameObject::update and Player::update3D — rather than from Update(), because
-		 * it needs the owning object and the map to resolve IDs, and because a
-		 * disabled body must still report the contacts it just lost.
-		 */
-		void DispatchTriggerEvents(GameObject* self, GameMap* map);
+		// Integrates this body over one frame. Collisions and touch flags come
+		// afterwards, from PhysicsWorld::Solve over every body at once.
+		void Update(float deltaTime);
 
 		/// Collision Detection
 		/**
@@ -385,7 +364,6 @@ namespace Physics3D {
 		void checkRayCollision(const RigidBody3D& other);
 
 		/// Constraint Resolution
-		void resolveConstrains(GameObject* self, GameObject* otherObject);
 		void resolveCollision(RigidBody3D& other);
 		// Resolves against an already-computed contact, so the solver does not repeat
 		// the narrow-phase test it just ran
@@ -466,7 +444,9 @@ namespace Physics2D {
 		bool isEnabled = true;
 		bool isStatic = false;
 		bool useGravity = true;
-		bool canMove = true;
+
+		// Kept inside this rectangle, inset by its scale. No area means no limit.
+		Rectangle bounds = {};
 
 		bool upTouch = false;
 		bool downTouch = false;
@@ -496,12 +476,6 @@ namespace Physics2D {
 			velocity.y = 0;
 			velocity.y -= force;
 		}
-
-		void resolveConstrains(GameMap& mapData);
-
-		void checkCollisionOnce(Vector2& position, GameMap& mapData);
-
-		Vector2 performCollisionOnOneAxis(GameMap& mapData, Vector2 position, Vector2 delta);
 	};
 
 

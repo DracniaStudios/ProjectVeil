@@ -22,7 +22,9 @@ struct PlayerCamera : Camera3D
 	float walkLerp = {};
 	float headTimer = {};
 
-	void UpdateCameraFPS(Camera3D* camera);
+	// Follows the mouse, sits the camera at the head of `body`, and turns `body`
+	// to face where the camera looks
+	void UpdateCameraFPS(Camera3D* camera, Physics3D::RigidBody3D& body);
 
 };
 
@@ -33,14 +35,14 @@ struct Player : Entity
 	std::unique_ptr<Entity> clone() const override { return std::make_unique<Player>(*this); }
 
 	// Game Mechanics
-	Physics2D::RigidBody2D rigidBody2D = {};
 	Vector2 moveDirection = {};
 	PlayerCamera camera = {};
 	GameObject* artifact = nullptr;
-	
-	// Activator Object ID
-	std::uint64_t interactObjectId = 0;
-	std::vector<InteractableObject*> inventory;// Set TO Object IDs if doesn't work (just like ActivatorObject).
+
+	// The ids of the items the player picked up. Ids, not pointers, so an item
+	// destroyed later leaves an id that finds nothing rather than a dangling
+	// pointer. Scene::ClearWorld empties it, since the next world reuses ids.
+	std::vector<std::uint64_t> inventory;
 
 	int artifactMode = 0;
 	int artifactUnlocked = -1;
@@ -54,16 +56,12 @@ struct Player : Entity
 	float footstepTimer = 0.0f;
 
 	// Render And Update
-	void render2D() override;
+	void render2D() override; // The reticle; the Scene draws it only while gameplay has input
 	void render3D() override;
 	void onEnable() override;
 	void onDisable() override;
-	void update2D(float deltaTime, bool canMove = true);
-	void update3D(float deltaTime);
+	void update3D(SceneManagement::Scene& scene, float deltaTime);
 
-	Vector2 getPosition2D() const { return Vector2{ rigidBody2D.translation.x, rigidBody2D.translation.y }; }
-	Vector2 getSize2D() const { return Vector2{ rigidBody2D.scale.x, rigidBody2D.scale.y }; }
-	
 	// Audio
 	FMOD_3D_ATTRIBUTES getListener();
 
@@ -71,7 +69,7 @@ struct Player : Entity
 	std::ranlux24_base rng;
 
 	// Combat Functions
-	void Interact();
+	void Interact(SceneManagement::Scene& scene);
 
 private:
 	int defaultInteractRange = 5;

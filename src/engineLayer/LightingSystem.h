@@ -158,12 +158,12 @@ namespace Lighting {
 		float ambientStrength = 0.14f;
 		Color fogColor = Color{ 8, 9, 12, 255 };
 		float fogDensity = 0.030f;
-		float exposure = 1.0f;
+		float exposure = 1.0f; // The world's; the player's Luminosity scales what is drawn
 		float specularStrength = 0.25f;
 		float shininess = 16.0f;
 
 		/** Shadow Tuning **/
-		bool shadowsEnabled = true;
+		bool shadowsEnabled = true; // The world's; the player's Shadows setting can still switch them off
 		float shadowBias = 0.0018f;
 		float shadowDistance = 60.0f; // Orthographic extent of the shadow light's camera
 		float shadowSoftness = 1.0f;  // PCF tap spacing, in shadow-map texels
@@ -171,14 +171,33 @@ namespace Lighting {
 		/** Diagnostics **/
 		int GetActiveLightCount() const { return activeLightCount; }
 		int GetShadowLightIndex() const { return shadowLightIndex; }
-		int GetShadowMapResolution() const { return shadowMapResolution; }
+		int GetShadowMapResolution() const { return shadowMap.id != 0 ? shadowMap.texture.width : 0; } // The map drawn into; 0 for none
 		const Shader& GetShader() const { return lightShader; }
 
-		// Reallocates the depth framebuffer; safe to call at runtime
-		bool ResizeShadowMap(int resolution);
+		// The world's shadow map size, kept in its World save. The map is drawn at
+		// this size, or smaller if the player's Shadows setting caps it, and is
+		// (re)allocated at the next Update rather than in the middle of a frame.
+		void SetShadowResolution(int resolution);
+		int GetShadowResolution() const { return shadowResolution; }
 
-		/** Settings / Save Data **/
-		void ApplySettings();
+		/** Player Quality (Settings) **/
+		// The world owns its lighting, so each scene can be lit its own way. The
+		// player's Shadows and Luminosity settings only adjust how it is drawn:
+		// they are never written into the fields above, so a World save keeps
+		// exactly what the world was authored with.
+		void ApplySettings(); // From Settings; runs again whenever either changes
+		// Shadows 0-4 (Off through Ultra): Off draws none, Low to Ultra cap the map's size.
+		// Luminosity multiplies the world's exposure.
+		void SetPlayerQuality(int shadowQuality, float luminosity);
+		int GetPlayerShadowLimit() const { return playerShadowLimit; }
+		float GetPlayerExposure() const { return playerExposure; }
+
+		// What is drawn: the world's lighting under the player's quality
+		bool ShadowsDrawn() const { return shadowsEnabled && playerShadowLimit > 0; }
+		int DrawnShadowMapSize() const; // 0 when no shadows are drawn
+		float DrawnExposure() const { return exposure * playerExposure; }
+
+		/** Save Data **/
 		Json formatToJson() const;
 		bool loadFromJson(const Json& j);
 
@@ -237,16 +256,24 @@ namespace Lighting {
 		Light flashlight = {};
 		bool flashlightEnabled = false;
 
+		// Allocates, resizes or frees the shadow map to match DrawnShadowMapSize().
+		// Called only where no pass is under way: Init and Update.
+		void RefreshShadowMap();
+
 		// Hand-built depth-only framebuffer. LoadRenderTexture() cannot be used:
 		// its depth buffer is a renderbuffer and is not sampleable.
 		RenderTexture2D shadowMap = {};
-		int shadowMapResolution = 2048;
+		int shadowResolution = 2048;  // The world's, as saved
+		int failedShadowMapSize = 0;  // Last size that failed to allocate, so Update doesn't retry it every frame
+		int playerShadowLimit = 4096; // Largest map the player's Shadows setting allows; 0 is Off
+		float playerExposure = 1.0f;  // The player's Luminosity
 		Matrix lightViewProj = {};
 		int shadowLightIndex = -1; // Index into `lights`, -1 when nothing casts
 
 		int activeLightCount = 0;
 		int gizmoHighlightIndex = -1; // Index into `lights`, -1 for no selection
 		bool isReady = false;
+		bool heardSettings = false; // Subscribed to Settings yet
 	};
 }
 #endif

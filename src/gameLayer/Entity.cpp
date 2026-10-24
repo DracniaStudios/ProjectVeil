@@ -1,7 +1,7 @@
 #include "Entity.h"
 
 #include <complex>
-#include <SceneManager.h>
+#include <Scene.h>
 #include <helpers.h>
 #include <Player.h>
 #include <AI/Stalker.h>
@@ -111,7 +111,7 @@ void Entity::update(SceneManagement::Scene* scene, float deltaTime)
 	// Neither used to reach Attack() with a cooldown, so normal play could never
 	// fire at all, and forceFire spawned a projectile every single frame.
 	canAttack = attackCooldown.is_ready();
-	if ((isFiring || forceFire) && canAttack) { Attack(); }
+	if ((isFiring || forceFire) && canAttack) { Attack(*scene); }
 
 }
 
@@ -126,7 +126,7 @@ void Entity::onHit(const Entity* collider)
 	}
 }
 
-void Entity::Attack()
+void Entity::Attack(SceneManagement::Scene& scene)
 {
 	attackCooldown.use();
 	Entity projectile = {};
@@ -145,7 +145,7 @@ void Entity::Attack()
 
 	// onEnable() (run inside SpawnGameObject()) resets deathSpan, so Decay() must
 	// be applied to the saved copy afterward for the 3-second lifetime to stick.
-	GameObject* saved = SceneManagement::SceneManager::getInstance().currentScene->gameMap.SpawnGameObject(projectile);
+	GameObject* saved = scene.gameMap.SpawnGameObject(projectile);
 	saved->Decay(3);
 }
 

@@ -1,16 +1,17 @@
 /**
- * Tests for task-station state: per-station completion, and the Scene's
- * two-deep record of minigame progress.
+ * Tests for Task station state: what winning, quitting and Practice runs do to
+ * a station and its Target, through the Scene's MiniGame methods.
  *
- * Both exist because progress used to have nowhere to live. MiniGameData is
- * heap-allocated by the MiniGame constructor and deleted by ReleaseMiniGame, so
- * a score lasted exactly as long as the overlay showing it, and a station had no
- * way to say it had ever been finished. The Director reads the completion flag
- * to tell an outstanding objective from a done one, so a regression here is a
- * regression in what the AI applies pressure toward — not just bookkeeping.
+ * A station had no way to say it had ever been finished until it carried its
+ * own completion flag. The Director reads that flag to tell an outstanding
+ * objective from a done one, so a regression here is a regression in what the
+ * AI applies pressure toward — not just bookkeeping.
  *
- * Like the other engine-linked suites this needs a GL context for GameObject's
- * fallback cube. See tests/run_tests.sh.
+ * The session's own rules (retrying a lost round, the two-deep progress
+ * history) are tested without a window in MiniGameSessionTests.
+ *
+ * Like the other engine-linked suites this needs a GL context, since a world
+ * object binds a model when it enters the map. See tests/run_tests.sh.
  */
 
 #include <raylib.h>
@@ -39,7 +40,6 @@ static void Check(bool condition, const std::string& what)
 static SceneManagement::Scene* MakeScene()
 {
 	SceneManagement::Scene* scene = new SceneManagement::Scene();
-	SceneManagement::SceneManager::getInstance().currentScene = scene;
 	scene->player = new Player();
 	scene->player->id = PLAYER_ID;
 	// Everything unlocked, so ActivateMiniGame never bails at the unlock gate
@@ -58,7 +58,7 @@ static InteractableObject* AddStation(SceneManagement::Scene* scene, Vector3 at,
 	owned->isInteractable = true;
 	owned->rigidBody3D.Teleport(at);
 	InteractableObject* station = owned.get();
-	scene->gameMap.LoadInteractable(std::move(owned));
+	scene->gameMap.RestoreInteractable(std::move(owned));
 	return station;
 }
 
@@ -74,57 +74,120 @@ static void TestStationStartsIncomplete()
 	delete scene;
 }
 
-static void TestCompletingMarksTheRunningStation()
+static void TestWinningCompletesTheStation()
 {
-	std::printf("finishing a minigame completes its station\n");
+	std::printf("winning a station's minigame completes the station\n");
 	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 901);
-	station->onInteract();
+	station->onInteract(*scene);
 
 	Check(scene->GetRunningStation() == station, "the station is occupied while it runs");
+	Check(scene->overlays.Top() == Overlay::MiniGame, "the MiniGame overlay is up");
 
-	MiniGameData data = {};
-	data.score = 5;
-	data.scoreGoal = 3;
-	CompleteMiniGame(data, *scene->player, scene->gameMap, BUFF_RANGE);
+	scene->WinMiniGame();
 
-	Check(station->isCompleted, "carrying the score goal completes the station");
+	Check(station->isCompleted, "winning completes the station");
+	Check(!station->isInteractable, "a completed station can't be started again");
+	// isRunningMiniGame is "occupied right now" and clears when the game ends;
+	// isCompleted is "this work is done" and must not.
+	Check(!station->isRunningMiniGame, "the station is free again");
+	Check(!scene->overlays.IsOpen(Overlay::MiniGame), "the MiniGame overlay is closed");
+	Check(!station->isEnabled, "with no Target, the station toggles itself");
 	delete scene;
 }
 
-static void TestUnfinishedWorkDoesNotComplete()
+static void TestQuittingLeavesTheStationOutstanding()
 {
-	std::printf("falling short leaves the station outstanding\n");
+	std::printf("walking away leaves the station outstanding\n");
 	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 902);
-	station->onInteract();
+	station->onInteract(*scene);
 
-	MiniGameData data = {};
-	data.score = 1;
-	data.scoreGoal = 3;
-	CompleteMiniGame(data, *scene->player, scene->gameMap, BUFF_RANGE);
+	scene->QuitMiniGame();
 
-	Check(!station->isCompleted, "a score below the goal does not complete the station");
+	Check(!station->isCompleted, "quitting does not complete the station");
+	Check(!station->isRunningMiniGame, "but it does free it");
+	Check(!scene->overlays.IsOpen(Overlay::MiniGame), "and closes the MiniGame overlay");
+	Check(station->isEnabled, "nothing was toggled");
 	delete scene;
 }
 
-static void TestCompletionSurvivesRelease()
+static GameObject* AddDoor(SceneManagement::Scene* scene, std::uint64_t id)
 {
-	std::printf("completion outlives the minigame that earned it\n");
+	GameObject door;
+	door.id = id;
+	door.name = "TestDoor";
+	return scene->gameMap.RestoreGameObject(door);
+}
+
+static void TestWinningTogglesTheTarget()
+{
+	std::printf("winning toggles the station's Target, not the station\n");
 	SceneManagement::Scene* scene = MakeScene();
+	GameObject* door = AddDoor(scene, 950);
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 903);
-	station->onInteract();
+	station->targetId = door->id;
 
-	MiniGameData data = {};
-	data.score = 5;
-	data.scoreGoal = 3;
-	CompleteMiniGame(data, *scene->player, scene->gameMap, BUFF_RANGE);
-	scene->ReleaseMiniGame();
+	Check(station->FindMiniGameTarget(scene->gameMap) == door, "the station names its Target");
+	Check(door->isEnabled, "the door starts enabled");
 
-	// isRunningMiniGame is "occupied right now" and clears on release;
-	// isCompleted is "this work is done" and must not.
-	Check(!station->isRunningMiniGame, "releasing frees the station");
-	Check(station->isCompleted, "but the station stays completed");
+	station->onInteract(*scene);
+	scene->WinMiniGame();
+
+	door = scene->gameMap.FindGameObject(950);
+	Check(door != nullptr && !door->isEnabled, "the Target is toggled");
+	Check(station->isEnabled, "the station itself is left alone");
+	Check(station->isCompleted, "and the station is complete");
+	delete scene;
+}
+
+static void TestMissingTargetStillCompletes()
+{
+	std::printf("a station whose Target is gone still completes\n");
+	SceneManagement::Scene* scene = MakeScene();
+	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 904);
+	station->targetId = 9999; // Nothing has this id
+
+	Check(station->FindMiniGameTarget(scene->gameMap) == nullptr, "a missing Target is reported, not guessed");
+
+	station->onInteract(*scene);
+	scene->WinMiniGame();
+
+	// A deleted door must not un-complete finished work, or the Director would
+	// keep hinting at it forever
+	Check(station->isCompleted, "the station is complete anyway");
+	delete scene;
+}
+
+static void TestPracticeRunCompletesNothing()
+{
+	std::printf("a Practice run grants the buff but completes and toggles nothing\n");
+	SceneManagement::Scene* scene = MakeScene();
+	GameObject* door = AddDoor(scene, 951);
+	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 905);
+	station->targetId = door->id;
+
+	// Started from the Artifact: no station
+	Check(scene->StartMiniGame(MINI_GAME_CRANE_ID), "the practice game starts");
+	Check(scene->GetRunningStation() == nullptr, "no station is occupied");
+	scene->WinMiniGame();
+
+	CooldownTimer* range = scene->player->getBuff(BUFF_RANGE);
+	Check(range != nullptr && range->remaining_time() > 0, "winning Crane grants the Range buff");
+	Check(!station->isCompleted, "no station is completed");
+	door = scene->gameMap.FindGameObject(951);
+	Check(door != nullptr && door->isEnabled, "and no door is toggled");
+	delete scene;
+}
+
+static void TestUnknownGameStartsNothing()
+{
+	std::printf("an id that names no game starts nothing\n");
+	SceneManagement::Scene* scene = MakeScene();
+
+	Check(!scene->StartMiniGame(999), "the start is refused");
+	Check(!scene->miniGameSession.IsRunning(), "no game runs");
+	Check(!scene->overlays.IsOpen(Overlay::MiniGame), "and no overlay opens");
 	delete scene;
 }
 
@@ -132,18 +195,38 @@ static void TestCompletionRoundTripsThroughJson()
 {
 	std::printf("completion survives a save/load round trip\n");
 	SceneManagement::Scene* scene = MakeScene();
-	InteractableObject* station = AddStation(scene, Vector3{ 2, 0, 3 }, MINI_GAME_CRANE_ID, 904);
+	InteractableObject* station = AddStation(scene, Vector3{ 2, 0, 3 }, MINI_GAME_CRANE_ID, 906);
 	station->isCompleted = true;
 	station->isRunningMiniGame = true;
+	station->targetId = 77;
 
 	Json saved = station->formatToJson();
 
 	InteractableObject loaded;
 	Check(loaded.loadFromJson(saved), "the station loads back");
 	Check(loaded.isCompleted, "completion is persisted");
+	Check(loaded.targetId == 77, "the Target is persisted");
 	// Occupancy is a live fact about someone standing there, and a reloaded save
 	// has nobody at the station.
 	Check(!loaded.isRunningMiniGame, "occupancy is not persisted");
+	delete scene;
+}
+
+static void TestOldSavesKeepTheirTarget()
+{
+	std::printf("a station saved before Targets existed keeps its Target\n");
+	SceneManagement::Scene* scene = MakeScene();
+	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 907);
+
+	// Written the old way: the Target in Activator, and no TargetId
+	Json saved = station->formatToJson();
+	saved.erase("TargetId");
+	saved["Activator"] = 55;
+
+	InteractableObject loaded;
+	Check(loaded.loadFromJson(saved), "the old station loads");
+	Check(loaded.targetId == 55, "its Activator becomes its Target");
+	Check(loaded.activator == 0, "and is no longer an activator value");
 	delete scene;
 }
 
@@ -164,7 +247,8 @@ static void TestDirectorSkipsCompletedStations()
 	owned->id = 912;
 	owned->rigidBody3D.Teleport(Vector3{ 0, 0, 0 });
 	owned->rigidBody3D.isStatic = true;
-	scene->gameMap.LoadEntity(std::move(owned));
+	owned->onEnable(); // full health and stamina, as a spawned Stalker
+	scene->gameMap.RestoreEntity(std::move(owned));
 
 	// Long enough past kQuietBeforeHint that the Director is willing to speak.
 	const auto runDirector = [scene]() {
@@ -195,116 +279,26 @@ static void TestDirectorSkipsCompletedStations()
 	delete scene;
 }
 
-// ─── MiniGameData history ──────────────────────────────────────────────────
-
-static void TestNoHistoryBeforeAnythingRuns()
-{
-	std::printf("a fresh scene has no minigame history\n");
-	SceneManagement::Scene* scene = MakeScene();
-
-	// A default MiniGameData reads as a genuine score of zero, which is why the
-	// flags exist at all.
-	Check(!scene->hasCurrentMiniGameData, "no current data before anything runs");
-	Check(!scene->hasPreviousMiniGameData, "no previous data before anything runs");
-	delete scene;
-}
-
-static void TestProgressIsRecordedOnRelease()
-{
-	std::printf("progress is captured before the data is freed\n");
-	SceneManagement::Scene* scene = MakeScene();
-	scene->SetMiniGame(MINI_GAME_CRANE_ID);
-
-	Check(scene->miniGame != nullptr, "a minigame started");
-	if (scene->miniGame == nullptr) { delete scene; return; }
-
-	// Play a little, then walk away. Before this record existed the score died
-	// with the allocation and there was nothing left to resume from.
-	scene->miniGame->data->score = 7;
-	scene->ReleaseMiniGame();
-
-	Check(scene->hasCurrentMiniGameData, "leaving a station records its progress");
-	Check(scene->currentMiniGameData.score == 7, "the recorded score is the one reached");
-	delete scene;
-}
-
-static void TestSetMiniGameRollsTheHistory()
-{
-	std::printf("starting a new minigame displaces the old one\n");
-	SceneManagement::Scene* scene = MakeScene();
-
-	scene->SetMiniGame(MINI_GAME_CRANE_ID);
-	scene->miniGame->data->score = 4;
-
-	scene->SetMiniGame(MINI_GAME_MAZE_ID);
-
-	Check(scene->hasPreviousMiniGameData, "the displaced game is remembered");
-	Check(scene->previousMiniGameData.score == 4,
-		"previous holds the score the displaced game reached");
-	Check(scene->hasCurrentMiniGameData, "the incoming game is recorded");
-	Check(scene->currentMiniGameData.score == 0, "the incoming game starts fresh");
-	delete scene;
-}
-
-static void TestHistoryIsTwoDeep()
-{
-	std::printf("the history is two deep\n");
-	SceneManagement::Scene* scene = MakeScene();
-
-	scene->SetMiniGame(MINI_GAME_CRANE_ID);
-	scene->miniGame->data->score = 1;
-	scene->SetMiniGame(MINI_GAME_MAZE_ID);
-	scene->miniGame->data->score = 2;
-	scene->SetMiniGame(MINI_GAME_DOCTOR_ID);
-
-	// The first game has fallen off the end; only the last two are kept.
-	Check(scene->previousMiniGameData.score == 2, "previous is the game just displaced");
-	Check(scene->currentMiniGameData.score == 0, "current is the game now running");
-	delete scene;
-}
-
-static void TestRejectedSetMiniGameLeavesHistoryAlone()
-{
-	std::printf("an unknown minigame id does not disturb the history\n");
-	SceneManagement::Scene* scene = MakeScene();
-
-	scene->SetMiniGame(MINI_GAME_CRANE_ID);
-	scene->miniGame->data->score = 3;
-	scene->SnapshotMiniGameData();
-
-	// SetMiniGame rejects an unknown id before touching anything. A rejected
-	// call must not shuffle the history, or a typo would silently discard the
-	// record of what the player was doing.
-	scene->SetMiniGame(999);
-
-	Check(scene->currentMiniGameData.score == 3, "the current record is untouched");
-	Check(!scene->hasPreviousMiniGameData, "nothing was rolled into previous");
-	Check(scene->miniGame != nullptr, "the running minigame is untouched");
-	delete scene;
-}
-
 int main()
 {
-	// GameObject's constructor uploads a fallback cube, so a GL context has to
-	// exist before any world object is built.
+	// A world object binds a model when it enters the map, so a GL context has
+	// to exist before any is added.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-task-station-tests");
 
 	std::printf("Task station tests\n\n");
 
 	TestStationStartsIncomplete();
-	TestCompletingMarksTheRunningStation();
-	TestUnfinishedWorkDoesNotComplete();
-	TestCompletionSurvivesRelease();
+	TestWinningCompletesTheStation();
+	TestQuittingLeavesTheStationOutstanding();
+	TestWinningTogglesTheTarget();
+	TestMissingTargetStillCompletes();
+	TestPracticeRunCompletesNothing();
+	TestUnknownGameStartsNothing();
 	TestCompletionRoundTripsThroughJson();
+	TestOldSavesKeepTheirTarget();
 
 	TestDirectorSkipsCompletedStations();
-
-	TestNoHistoryBeforeAnythingRuns();
-	TestProgressIsRecordedOnRelease();
-	TestSetMiniGameRollsTheHistory();
-	TestHistoryIsTwoDeep();
-	TestRejectedSetMiniGameLeavesHistoryAlone();
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 

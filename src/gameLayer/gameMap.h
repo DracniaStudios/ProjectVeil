@@ -9,15 +9,18 @@
 
 inline constexpr int OBJECT_LIMIT = 10000;
 
+// The first id a GameMap hands out: 0 means "no object" and 1 is the player.
+inline constexpr std::uint64_t FIRST_OBJECT_ID = 2;
+
 struct InstanceID
 {
-	std::uint64_t idCounter = 2;
+	std::uint64_t idCounter = FIRST_OBJECT_ID;
 	std::uint64_t getIdAndIncrement();
 };
 
 // Calls a visitor with one or more references and honours early exit: a
 // visitor returning bool stops the traversal on `false`, a void visitor
-// always continues. Lets ForEach*/ForEachObjectPair accept either shape
+// always continues. Lets the ForEach* traversals accept either shape
 // without callers having to remember to `return true;` themselves.
 namespace GameMapDetail
 {
@@ -36,31 +39,64 @@ namespace GameMapDetail
 	}
 }
 
+/**
+ * The world's objects, and the one lifecycle every kind of object goes
+ * through. See CONTEXT.md for Spawn, Restore, Destroy and Clear.
+ *
+ * GameObjects, Entities and InteractableObjects each live in their own
+ * container, but share one id sequence and the same four rules:
+ *
+ *   Spawn    stores its own copy of a prototype under a fresh id and enables it
+ *   Restore  puts a saved object back under its own id, exactly as it was saved
+ *   Destroy  marks an object; SweepDestroyed removes it at the end of the frame
+ *   Clear    removes everything now and restarts the ids
+ *
+ * The map owns every model its objects generated, so nothing outside it has to
+ * release one before an object goes away.
+ */
 struct GameMap {
 
+	// Clears the map and lays a floor the size of the world.
 	void create(Vector3 size);
 
-	// Spawn: create and register a new world object into the map's live
-	// state (assigns an id, calls onEnable). See CONTEXT.md — distinct from
-	// Save, which persists to disk.
-	GameObject* SpawnGameObject(GameObject& object);
-	Entity* SpawnEntity(Entity& object);
-	InteractableObject* SpawnInteractable(InteractableObject& object);
+	// Spawn: add a new object built from a prototype. The map stores its own copy
+	// under a fresh id, gives it a unit scale if it has none, and enables it
+	// (onEnable), which binds a model of the copy's own. The prototype is left as
+	// it was and keeps whatever model it holds.
+	GameObject* SpawnGameObject(const GameObject& prototype);
+	Entity* SpawnEntity(const Entity& prototype);
+	InteractableObject* SpawnInteractable(const InteractableObject& prototype);
 
-	// Load: insert an already-fully-formed object under the id it already
-	// carries, bypassing Spawn*'s id assignment and onEnable() call — for
-	// SaveSystem restoring an object exactly as serialized, not creating a
-	// new one.
-	GameObject* LoadGameObject(GameObject object);
-	void LoadEntity(std::unique_ptr<Entity> entity);
-	void LoadInteractable(std::unique_ptr<InteractableObject> interactable);
+	// Restore: put back an object as it was saved, under the id it carries. It is
+	// not enabled, so its saved flags, health and stamina stand: a door saved
+	// disabled stays disabled. Its model is bound, its collider follows isEnabled,
+	// and the next Spawn gets an id above it. Returns nullptr, and keeps nothing,
+	// when another object of any kind already holds that id.
+	GameObject* RestoreGameObject(GameObject object);
+	Entity* RestoreEntity(std::unique_ptr<Entity> entity);
+	InteractableObject* RestoreInteractable(std::unique_ptr<InteractableObject> interactable);
 
-	// Destroy: remove a previously spawned object by id. Keyed by id, not
-	// pointer — a pointer into these containers is only guaranteed valid
-	// until the next Destroy of that same object.
-	void DestroyGameObject(uint64_t id);
-	void DestroyEntity(uint64_t id);
-	void DestroyInteractable(uint64_t id);
+	// Destroy: mark an object of any kind for removal (GameObject::Destroy).
+	// Nothing is erased until SweepDestroyed, so this is safe from inside the
+	// object's own update or a ForEach. Returns false when no object has that id.
+	bool Destroy(std::uint64_t id);
+
+	// Removes every object Destroy marked, of every kind, calling onDestroy on
+	// each first. The Scene runs it once a frame, after the updates.
+	void SweepDestroyed(SceneManagement::Scene* scene);
+
+	// Clear: release every object's model and remove every object now, then
+	// restart the ids at FIRST_OBJECT_ID. Not deferred, so never call it from
+	// inside an update or a ForEach. Scene::ClearWorld also empties what the
+	// player carries.
+	void Clear();
+
+	// The id the next Spawn will get, for saves and the editor.
+	std::uint64_t NextId() const { return instanceHolder.idCounter; }
+
+	// Keeps every id below `nextId` from being handed out, the way a save
+	// reserves the ids it used. Never lowers the next id.
+	void ReserveIdsBelow(std::uint64_t nextId);
 
 	GameObject* FindGameObject(uint64_t id);
 	Entity* FindEntity(uint64_t id);
@@ -162,97 +198,11 @@ struct GameMap {
 		}
 	}
 
-	// Visits every unordered pair of live GameObjects exactly once, with
-	// mutable access to both — the shape Scene's O(n^2) collision solver
-	// needs. Owned here (rather than reconstructed by nesting
-	// ForEachGameObject calls in the caller) so the traversal strategy can
-	// change later (e.g. spatial partitioning) without touching Scene.cpp.
-	template <class F>
-	void ForEachObjectPair(F&& fn)
-	{
-		for (auto itA = gameObjects.begin(); itA != gameObjects.end(); ++itA)
-		{
-			auto itB = itA;
-			++itB;
-			for (; itB != gameObjects.end(); ++itB)
-			{
-				if (!GameMapDetail::InvokeVisitor(fn, itA->second, itB->second)) return;
-			}
-		}
-	}
-
-	// Same shape as ForEachObjectPair, over entities — Scene's collision
-	// solver runs entity-vs-entity as its own pass (distinct rules from
-	// gameObject-vs-gameObject: no canCollide/isStatic gate today).
-	template <class F>
-	void ForEachEntityPair(F&& fn)
-	{
-		for (auto itA = entities.begin(); itA != entities.end(); ++itA)
-		{
-			auto itB = itA;
-			++itB;
-			for (; itB != entities.end(); ++itB)
-			{
-				if (!GameMapDetail::InvokeVisitor(fn, *itA->second, *itB->second)) return;
-			}
-		}
-	}
-
-	// Same shape again, over interactables.
-	template <class F>
-	void ForEachInteractablePair(F&& fn)
-	{
-		for (auto itA = interactables.begin(); itA != interactables.end(); ++itA)
-		{
-			auto itB = itA;
-			++itB;
-			for (; itB != interactables.end(); ++itB)
-			{
-				if (!GameMapDetail::InvokeVisitor(fn, *itA->second, *itB->second)) return;
-			}
-		}
-	}
-
-	// Bulk conditional erase over gameObjects — the shape Scene's end-of-frame
-	// pendingDestroy sweep needs (call a side effect, then decide whether to
-	// erase), kept distinct from DestroyGameObject: the sweep already calls
-	// onDestroy() itself and, matching its existing behavior, does not release
-	// a generated model here.
-	template <class Pred>
-	void EraseGameObjectsIf(Pred&& pred)
-	{
-		std::erase_if(gameObjects, [&](auto& entry) { return pred(entry.second); });
-	}
-
-	// Reassigns every GameObject's id sequentially from a fresh counter and
-	// rebuilds this map's keys to match — a plain field mutation would leave
-	// the map keyed by stale ids. Entities/interactables are untouched,
-	// matching Scene::ResetID's existing scope.
-	void ResetGameObjectIds()
-	{
-		instanceHolder = InstanceID{};
-		std::unordered_map<std::uint64_t, GameObject> renumbered;
-		renumbered.reserve(gameObjects.size());
-		for (auto& [oldId, object] : gameObjects)
-		{
-			object.id = instanceHolder.getIdAndIncrement();
-			renumbered.emplace(object.id, std::move(object));
-		}
-		gameObjects = std::move(renumbered);
-	}
-
 	Vector3 size = {10, 10, 10};
 
 	// PLayer Spawn Point on Load Scene
 	//Vector3 spawnPoint = {0, 0, 0};
 	//bool hasSpawnPoint = false;
-
-	// Not part of the container-privacy deepening below: SaveSystem and
-	// Scene::ResetID already manipulate the id-floor/reset logic directly,
-	// and consolidating that is a separate, later change (SaveSystem owning
-	// its own serialize/deserialize invariants) — left public so this pass
-	// doesn't preempt it.
-	InstanceID instanceHolder = {}; // All IDs Stored
 
 	// Read-only counts for editor/debug display.
 	size_t GameObjectCount() const { return gameObjects.size(); }
@@ -260,6 +210,11 @@ struct GameMap {
 	size_t InteractableCount() const { return interactables.size(); }
 
 private:
+	// Whether any object, of any kind, holds this id
+	bool IsIdInUse(std::uint64_t id) const;
+
+	InstanceID instanceHolder = {}; // All IDs Stored
+
 	std::unordered_map<std::uint64_t, GameObject> gameObjects = {};
 	std::unordered_map<std::uint64_t, std::unique_ptr<Entity>> entities{}; // Entities
 	std::unordered_map<std::uint64_t, std::unique_ptr<InteractableObject>> interactables{}; // Interactables

@@ -64,21 +64,27 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 		ImGui::TextDisabled("Completed stations are skipped by the Director");
 	}
 
-	if (object->interactType == INTERACT_MINIGAME || object->interactType == INTERACT_ITEM) {
-		ImGui::InputInt("Activator Value", &object->activator);
+	// The Target: what this station's MiniGame enables or disables when won
+	if (object->interactType == INTERACT_MINIGAME) {
+		ImGui::InputScalar("MiniGame Target", ImGuiDataType_U64, &object->targetId);
 
-		if (object->interactType == INTERACT_MINIGAME) {
-			// activator == 0 (or an id nothing resolves to) means "no explicit
-			// target" — FindWorldObject returns nullptr for that, and
-			// dereferencing it here crashed the editor on the common
-			// self-activating case (see PlacementPanel's "Activator ID" field).
-			if (GameObject* activatorObject = SceneManagement::SceneManager::getInstance().currentScene->gameMap.FindWorldObject(object->activator)) {
-				ImGui::TextDisabled("%s", activatorObject->name.c_str());
-			}
-			else {
-				ImGui::TextDisabled("None (self)");
-			}
+		// A Target id nothing resolves to is reported rather than dereferenced
+		GameObject* target = object->FindMiniGameTarget(editedScene->gameMap);
+		if (object->targetId == 0) { ImGui::TextDisabled("None (toggles itself)"); }
+		else if (target != nullptr) { ImGui::TextDisabled("%s", target->name.c_str()); }
+		else { ImGui::TextColored(ImVec4(1, 0.4f, 0.4f, 1), "Missing: nothing has id %llu", static_cast<unsigned long long>(object->targetId)); }
+
+		const bool picking = targetPickStationId == object->id;
+		if (ImGui::Button(picking ? "Click the Target in the viewport (Esc cancels)" : "Pick Target")) {
+			targetPickStationId = picking ? 0 : object->id;
+			statusMessage = picking ? "Target pick cancelled" : "Click the object this station's MiniGame toggles";
 		}
+		ImGui::SameLine();
+		if (ImGui::Button("Clear Target")) { object->targetId = 0; }
+	}
+
+	if (object->interactType == INTERACT_ITEM) {
+		ImGui::InputInt("Activator Value", &object->activator);
 		if (ImGui::Button("Self Activator")) { object->activator = object->id; }
 	}
 
@@ -123,7 +129,7 @@ void WorldEditor::showEntity(Entity* object) {
 	}
 
 	if (ImGui::Button("Teleport To Player")) {
-		object->rigidBody3D.Teleport(SceneManagement::SceneManager::getInstance().currentScene->player->getPosition());
+		object->rigidBody3D.Teleport(editedScene->player->getPosition());
 	}
 	if (ImGui::Button("Teleport To Camera")) {
 		object->rigidBody3D.Teleport(SceneManagement::SceneManager::getInstance().camera3D.position);
@@ -486,7 +492,7 @@ void WorldEditor::showSelectedObject(SceneManagement::Scene* scene) {
 
 void WorldEditor::ShowObjectBrowser()
 {
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
+	auto scene = editedScene;
 
 	/// Show Object Browser Window
 	ImGui::Begin("Object Browser");

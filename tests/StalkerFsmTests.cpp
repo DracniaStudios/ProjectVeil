@@ -7,13 +7,13 @@
  * SoundEvents and assert the locked transitions directly.
  *
  * Unlike SoundFieldTests this needs the engine, because Stalker::update runs
- * Entity::update -> GameObject::update -> RigidBody3D::UpdateForce, which
- * reaches SceneManager::currentScene->gameMap. It links against the game's
+ * Entity::update -> GameObject::update with the Scene it is handed, and reads
+ * that scene's map and sound field. It links against the game's
  * own object files (every one except the translation unit holding main) so no
  * build restructuring is required. See tests/run_tests.sh.
  *
- * A window is opened because GameObject's constructor uploads a fallback cube
- * mesh, which needs a GL context. Run under xvfb on a headless machine.
+ * A window is opened because an entity binds a model when it enters the map,
+ * which needs a GL context. Run under xvfb on a headless machine.
  *
  * Transitions are exercised by placing the stalker rather than waiting for it
  * to walk: this is a test of the state machine, not of steering or physics
@@ -61,7 +61,6 @@ static void CheckState(const Stalker& s, StalkerState expected, const std::strin
 static SceneManagement::Scene* MakeScene()
 {
 	SceneManagement::Scene* scene = new SceneManagement::Scene();
-	SceneManagement::SceneManager::getInstance().currentScene = scene;
 	return scene;
 }
 
@@ -73,12 +72,15 @@ static Stalker* AddStalker(SceneManagement::Scene* scene, Vector3 at, std::uint6
 	// Gravity is irrelevant here and only adds drift between steps; the FSM
 	// steers and measures on the XZ plane regardless of height.
 	owned->rigidBody3D.isStatic = true;
+	// Enabled as a spawned Stalker would be (full health and stamina), then
+	// restored so it keeps the id the assertions name
+	owned->onEnable();
 	Stalker* stalker = owned.get();
-	scene->gameMap.LoadEntity(std::move(owned));
+	scene->gameMap.RestoreEntity(std::move(owned));
 	return stalker;
 }
 
-// One simulated frame: age the field first, exactly as Scene_updateScene does,
+// One simulated frame: age the field first, exactly as Scene_tick does,
 // so an event emitted this step is audible on this step.
 static void Step(SceneManagement::Scene* scene, Stalker* stalker, float dt)
 {
@@ -98,7 +100,7 @@ static BoundingBox AddBlock(SceneManagement::Scene* scene, Vector3 centre, Vecto
 	block.rigidBody3D.translation = centre;
 	block.rigidBody3D.scale = size;
 	block.rigidBody3D.SyncBroadPhaseBox();
-	GameObject* spawned = scene->gameMap.LoadGameObject(block);
+	GameObject* spawned = scene->gameMap.RestoreGameObject(block);
 	return spawned->rigidBody3D.broadPhaseBox;
 }
 
@@ -379,8 +381,8 @@ static void TestAvoidanceIsSkippedWithoutAWorld()
 
 int main()
 {
-	// GameObject's constructor uploads a fallback cube, so a GL context has to
-	// exist before any entity is built.
+	// An entity binds a model when it enters the map, so a GL context has to
+	// exist before any is added.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-fsm-tests");
 

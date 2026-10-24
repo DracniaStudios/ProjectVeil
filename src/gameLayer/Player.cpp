@@ -47,7 +47,7 @@ void SetMoveDirection(Player* player, float deltaTime) {
 	if (player->moveDirection.x > 0) { player->rigidBody3D.translation += player->rigidBody3D.right * step; }
 }
 
-void UpdateActions(Player* player) {
+void UpdateActions(Player* player, SceneManagement::Scene& scene) {
 	auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 	/// Player Flags
@@ -57,7 +57,7 @@ void UpdateActions(Player* player) {
 		|| inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2);
 
 	if (!Editor::WorldEditor::getInstance().IsEnabled()) {
-		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_INTERACT)) { player->Interact(); }
+		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_INTERACT)) { player->Interact(scene); }
 		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(20);
 
 		// The flashlight is owned by LightingSystem and follows whichever camera
@@ -68,19 +68,19 @@ void UpdateActions(Player* player) {
 	}
 }
 
-void updateArtifact(Player* player, float deltaTime) {
+void updateArtifact(Player* player, SceneManagement::Scene& scene, float deltaTime) {
 
 	auto inputSystem = &InputSystem::InputSystem::getInstance();
-	const auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
 	// Artifact Actions
 	player->artifactMode += inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT_RIGHT) ? 1
 		: inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT_LEFT) ? -1
 		: 0;
 	player->artifactMode = static_cast<int>(Clamp(static_cast<float>(player->artifactMode), -1, player->artifactUnlocked));
-	if (scene->miniGame == nullptr && inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT))
+	// A Practice run: the game's buff, but no station completed and no Target toggled
+	if (!scene.miniGameSession.IsRunning() && inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT))
 	{
-		scene->SetMiniGame(player->artifactMode);
+		scene.StartMiniGame(player->artifactMode);
 	}
 
 	// Artifact
@@ -88,7 +88,7 @@ void updateArtifact(Player* player, float deltaTime) {
 	const auto offset = Vector3Add(camera.forward, player->rigidBody3D.left);//camera->left / 2);
 
 	player->artifact->rigidBody3D.translation = Vector3Add(SceneManagement::SceneManager::getInstance().camera3D.position, offset);
-	player->artifact->update(scene, deltaTime);
+	player->artifact->update(&scene, deltaTime);
 }
 
 #pragma endregion
@@ -98,8 +98,7 @@ void Player::onEnable()
 	maxHealth = 100.0f;
 
 	id = PLAYER_ID;
-	rigidBody2D.translation = Vector3(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f, 0);
-	rng = std::ranlux24_base(std::random_device{}());
+	rng =std::ranlux24_base(std::random_device{}());
 	display3DModel = false;
 	
 	Entity::onEnable();
@@ -118,20 +117,12 @@ void Player::render2D()
 {
 	if (!this->isEnabled) return;
 	auto inputSystem = &InputSystem::InputSystem::getInstance();
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
-
-	if (scene->isMiniActive && scene->miniGame != nullptr)
-	{
-		DrawCircle(rigidBody2D.translation.x, rigidBody2D.translation.y, rigidBody2D.scale.x, WHITE);
-	}
 
 	/// Reticle
-	if (!scene->is2DActive) {
-		DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 10,
-			inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM) ? RED
-			: inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2) ? RED
-			: WHITE);
-	}
+	DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 10,
+		inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM) ? RED
+		: inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2) ? RED
+		: WHITE);
 }
 
 void Player::render3D()
@@ -141,34 +132,9 @@ void Player::render3D()
 	Entity::render3D();
 }
 
-void Player::update2D(float deltaTime, bool canMove)
-{
-	if (!this->isEnabled) return;
-	if (!SceneManagement::SceneManager::getInstance().currentScene->is2DActive) return;
-
-	auto inputSystem = &InputSystem::InputSystem::getInstance();
-
-	// Player2D Function
-	moveDirection = Vector2Zero();
-	moveDirection.x = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_LEFT) ? -1.0 : inputSystem->IsActionDown(InputSystem::ACTION_MOVE_RIGHT) ? 1.0f : 0;
-	moveDirection.y = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_FORWARD) ? 1.0 : inputSystem->IsActionDown(InputSystem::ACTION_MOVE_BACKWARD) ? -1.0f : 0;
-
-	auto speed = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_SPRINT) ? baseSpeed * 2 : baseSpeed;
-
-	if (canMove)
-	{
-		rigidBody2D.translation += Vector3(moveDirection.x, moveDirection.y) * speed * 60.0f * deltaTime;
-	}
-
-	rigidBody2D.update(deltaTime);
-}
-
 // Footsteps, the player's loudest routine emission.
-static void EmitFootsteps(Player* player, float deltaTime)
+static void EmitFootsteps(Player* player, SceneManagement::Scene& scene, float deltaTime)
 {
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
-	if (scene == nullptr) { return; }
-
 	// Vertical motion is jumping and falling, not walking; only horizontal
 	// travel makes footfalls.
 	const Vector3 velocity = player->rigidBody3D.GetVelocity();
@@ -192,44 +158,37 @@ static void EmitFootsteps(Player* player, float deltaTime)
 	if (player->footstepTimer > 0.0f) { return; }
 	player->footstepTimer = interval;
 
-	scene->soundField.Emit(player->getPosition(), loudness, SOUND_FOOTSTEP, player->id);
+	scene.soundField.Emit(player->getPosition(), loudness, SOUND_FOOTSTEP, player->id);
 }
 
-void Player::update3D(float deltaTime)
+void Player::update3D(SceneManagement::Scene& scene, float deltaTime)
 {
 	if (!isEnabled) return;
-	if (SceneManagement::SceneManager::getInstance().currentScene->is2DActive) { return; }
+	if (!scene.overlays.GameplayHasInput()) { return; }
 
 	/// Player Scale
 	rigidBody3D.scale = Vector3(1, 2, 1);
 
-	UpdateActions(this);
+	UpdateActions(this, scene);
 
 	SetMoveDirection(this, deltaTime);
 
-	// The player ticks its own body rather than going through GameObject::update,
-	// so it needs its own trigger dispatch or it would never report leaving one.
-	// currentScene is null between the two halves of a scene transition.
-	if (SceneManagement::Scene* scene = SceneManagement::SceneManager::getInstance().currentScene)
-	{
-		rigidBody3D.DispatchTriggerEvents(this, &scene->gameMap);
-	}
-
-	/// Update RigidBody3D Physics
+	/// Update RigidBody3D Physics. Its collisions come afterwards, from
+	/// Scene::SolveCollisions over every body at once.
 	rigidBody3D.Update(deltaTime);
 
 	// After the physics step so the noise is stamped at the position the player
 	// actually reached this frame, not the one they started it at.
-	EmitFootsteps(this, deltaTime);
+	EmitFootsteps(this, scene, deltaTime);
 
-	if (artifact) { updateArtifact(this, deltaTime); }
+	if (artifact) { updateArtifact(this, scene, deltaTime); }
 
 	stamina = Clamp(stamina, 0, getMaxStamina());
 	health = Clamp(health, 0, getMaxHealth());
 }
 
 FMOD_3D_ATTRIBUTES Player::getListener() {
-	const auto camera = &SceneManagement::SceneManager::getInstance().currentScene->player->camera;
+	const auto camera = &this->camera;
 
 	// FMOD requires forward and up to be normalized and perpendicular
 	Vector3 forward = Vector3Normalize(camera->forward);

@@ -67,6 +67,7 @@ namespace Editor {
 
 		/** Window Flags **/
 		bool isEditorActive = false; // Master switch (F1)
+		bool capturesMouse = false;  // Open, with one of its windows under the mouse
 		bool isWorldSettingsActive = true;
 		bool isObjectBrowserActive = false;
 		bool isPlacementActive = false;
@@ -107,6 +108,10 @@ namespace Editor {
 
 		/** Point & Place State **/
 		bool placementMode = false;        // Armed: the mouse drops objects into the world
+
+		// Armed by "Pick Target": the next viewport click sets this Task station's
+		// Target instead of changing the selection. 0 when not picking.
+		std::uint64_t targetPickStationId = 0;
 		bool placeAlignToSurface = true;   // Rest the object on the surface it lands on
 		bool placementSnap = true;
 		float placementGridStep = 1.0f;
@@ -137,7 +142,7 @@ namespace Editor {
 		// Interactable extras, applied on spawn when placing an Interactable
 		int stagingInteractType = INTERACT_NONE;
 		int stagingInteractValue = 0;
-		int stagingActivatorValue = 0;
+		std::uint64_t stagingTargetId = 0; // A Task station's Target; 0 toggles itself
 
 		/** Object & Entity Inspector State **/
 		std::uint64_t inspectEntityId = 0; // Id instead of pointer — survives entity removal (gameplay death, Load Game)
@@ -159,6 +164,14 @@ namespace Editor {
 
 		/** Feedback **/
 		std::string statusMessage;
+
+		// The scene being edited. update() and DrawViewport3D() hand it in for the
+		// length of their call and clear it after, so every panel and command they
+		// run edits that scene, and nothing holds it once the scene is replaced.
+		SceneManagement::Scene* editedScene = nullptr;
+
+		void RunEditor();
+		void DrawEditorViewport();
 
 		/** Window Data **/
 		void ShowEditorHub();
@@ -192,6 +205,7 @@ namespace Editor {
 
 		/** Selection Commands **/
 		void SelectUnderMouse(SceneManagement::Scene* scene, const Camera3D& camera);
+		void PickTargetUnderMouse(SceneManagement::Scene* scene, const Camera3D& camera);
 		void DeleteSelection();
 		void DuplicateSelection();
 		void FocusOnSelection();
@@ -232,15 +246,21 @@ namespace Editor {
 		EditorCamera editorCamera = {};
 
 		/** Functions **/
-		void update(Player* player);
+		// The editor's frame for the scene it edits: F1, hotkeys, the viewport and
+		// every open panel
+		void update(SceneManagement::Scene& scene);
 
 		// Selection outline, transform gizmo and placement ghost. Must be called
 		// inside BeginMode3D — SceneManager_draw does it after the light gizmos.
-		void DrawViewport3D();
+		void DrawViewport3D(SceneManagement::Scene& scene);
 
 		bool IsEnabled() const { return isEditorActive; }
 
-		// Scene_updateScene asks this before stepping physics. Only meaningful while
+		// Whether the editor's windows have the mouse this frame, so the game UI
+		// drawn beneath them must not react to it
+		bool CapturesMouse() const { return capturesMouse; }
+
+		// Scene_tick asks this before stepping physics. Only meaningful while
 		// the editor is open; the caller checks IsEnabled() as well.
 		bool IsSimulationPaused() const { return simulationPaused; }
 

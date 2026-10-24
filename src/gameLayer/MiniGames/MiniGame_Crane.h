@@ -4,10 +4,15 @@
 
 #include <MiniGame.h>
 
-struct Crane : MiniGame
+// Lower the crane through a gap in each row of obstacles, down to the goal line
+class Crane : public MiniGame
 {
-	static void render(SceneManagement::Scene* scene_ptr);
-	static void update(SceneManagement::Scene* scene_ptr, float deltaTime);
+public:
+	explicit Crane(const MiniGameSetup& setup);
+
+protected:
+	MiniGameOutcome Update(const MiniGameInput& input, float deltaTime) override;
+	void DrawGame() const override;
 };
 
 #endif

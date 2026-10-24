@@ -1,11 +1,14 @@
 #include "Scene.h"
 
-#include <SceneManager.h>
 #include <WorldEditor.h>
 #include <AudioManager.h>
 #include <UIEngine.h>
+#include <UI/Overlays.h>
+#include <ContactRules.h>
 
 #include <iterator>
+#include <optional>
+#include <random>
 
 namespace SceneManagement {
 
@@ -24,22 +27,18 @@ namespace SceneManagement {
 
 		scene->player->onEnable();
 
-		SceneManager::getInstance().currentScene = scene;
+		// Not made current here: SceneManager does that once the scene is fully
+		// built, and everything that builds it is handed the scene itself
 		return scene;
 	}
 
 	void Scene_delete(Scene* scene) {
 		if (scene == nullptr) { return; }
 
-		scene->ReleaseMiniGame();
+		scene->QuitMiniGame();
 
-		// ~GameObject() never frees GPU resources, so each generated fallback model
-		// is released first, as GameMap::Destroy* does. Destroy* itself is not used:
-		// DestroyInteractable edits currentScene's player, and by the time a scene is
-		// freed currentScene is the scene that replaced it.
-		scene->gameMap.ForEachGameObject([](GameObject& object) { object.releaseGeneratedModel(); });
-		scene->gameMap.ForEachEntity([](Entity& entity) { entity.releaseGeneratedModel(); });
-		scene->gameMap.ForEachInteractable([](InteractableObject& interactable) { interactable.releaseGeneratedModel(); });
+		// Releases every generated model, which ~GameObject() never would
+		scene->gameMap.Clear();
 
 		if (scene->player) {
 			// The artifact is created on first use (InteractableObject.cpp) and owned by the player.
@@ -56,155 +55,27 @@ namespace SceneManagement {
 
 
 
-	// Renumbers every object sequentially from the first assignable id.
-	void Scene::ResetID() {
-		// Start at 2 to avoid Object 0 and Player;
-		gameMap.ResetGameObjectIds();
+	void Scene::ClearWorld() {
+		gameMap.Clear();
+		physics.Reset();
+		if (player) { player->inventory.clear(); }
 	}
 
 #pragma region Physics Management
 
 	/** Physics Solutions **/
-	static void refreshBroadPhaseBox(Physics3D::RigidBody3D& body)
+	std::vector<Physics3D::ContactEvent> Scene::SolveCollisions(int iterations)
 	{
-		body.SyncBroadPhaseBox();
-	}
+		// Every body in the scene in one list, so every pair follows the same rules
+		// whatever kind of object owns each body
+		std::vector<Physics3D::PhysicsBody> bodies;
+		bodies.reserve(gameMap.GameObjectCount() + gameMap.EntityCount() + gameMap.InteractableCount() + 1);
+		gameMap.ForEachObject([&](GameObject& object) { bodies.push_back({ object.id, &object.rigidBody3D }); });
+		if (player != nullptr) { bodies.push_back({ player->id, &player->rigidBody3D }); }
 
-	// Collision runs in two phases.
-	static void solveCollision(Scene* scene, float delta, int solverIterations = 6)
-	{
-		solverIterations = static_cast<int>(Clamp(static_cast<float>(solverIterations), 4, 8));
-
-		auto& gameMap = scene->gameMap;
-
-		for (int iter = 0; iter < solverIterations; iter++)
-		{
-			// Game Objects Vs. Game Objects — each unordered pair once;
-			// resolveConstrains already moves both bodies, so visiting (A,B) and
-			// (B,A) doubled every correction and collision event
-			gameMap.ForEachObjectPair([&](GameObject& bodyA, GameObject& bodyB)
-				{
-					if (bodyA.rigidBody3D.collider.canCollide == false || bodyB.rigidBody3D.collider.canCollide == false) { return true; }
-					if (bodyA.rigidBody3D.isStatic && bodyB.rigidBody3D.isStatic) { return true; }
-
-					if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
-					{
-						bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
-						refreshBroadPhaseBox(bodyA.rigidBody3D);
-						refreshBroadPhaseBox(bodyB.rigidBody3D);
-					}
-					return true;
-				});
-
-			// Entities Vs. Game Objects
-			gameMap.ForEachEntity([&](Entity& entity)
-				{
-					gameMap.ForEachGameObject([&](GameObject& bodyB)
-						{
-							if (entity.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
-							{
-								entity.rigidBody3D.resolveConstrains(&entity, &bodyB);
-								refreshBroadPhaseBox(entity.rigidBody3D);
-								refreshBroadPhaseBox(bodyB.rigidBody3D);
-							}
-						});
-				});
-
-			// Entities Vs. Entities — each unordered pair once
-			gameMap.ForEachEntityPair([&](Entity& bodyA, Entity& bodyB)
-				{
-					if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
-					{
-						bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
-						refreshBroadPhaseBox(bodyA.rigidBody3D);
-						refreshBroadPhaseBox(bodyB.rigidBody3D);
-					}
-				});
-
-			// Interactable Vs. Game Objects
-			gameMap.ForEachInteractable([&](InteractableObject& entity)
-				{
-					gameMap.ForEachGameObject([&](GameObject& bodyB)
-						{
-							if (entity.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
-							{
-								entity.rigidBody3D.resolveConstrains(&entity, &bodyB);
-								refreshBroadPhaseBox(entity.rigidBody3D);
-								refreshBroadPhaseBox(bodyB.rigidBody3D);
-							}
-						});
-				});
-
-			// Interactable Vs. Entities — each unordered pair once
-			gameMap.ForEachInteractable([&](InteractableObject& bodyA)
-				{
-					gameMap.ForEachEntity([&](Entity& bodyB)
-						{
-							if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
-							{
-								bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
-								refreshBroadPhaseBox(bodyA.rigidBody3D);
-								refreshBroadPhaseBox(bodyB.rigidBody3D);
-							}
-						});
-				});
-
-			// Interactable Vs. Interactable — each unordered pair once
-			gameMap.ForEachInteractablePair([&](InteractableObject& bodyA, InteractableObject& bodyB)
-				{
-					if (bodyA.rigidBody3D.OverlapsBroadPhase(bodyB.rigidBody3D))
-					{
-						bodyA.rigidBody3D.resolveConstrains(&bodyA, &bodyB);
-						refreshBroadPhaseBox(bodyA.rigidBody3D);
-						refreshBroadPhaseBox(bodyB.rigidBody3D);
-					}
-				});
-
-			// Player Vs. Game Objects — the player lives outside both containers, so
-			// without this pass it walks straight through every entity (it already
-			// resolves against gameObjects in Player::update3D)
-
-			if (auto player = scene->player) {
-				gameMap.ForEachObject([&](GameObject& obj)
-					{
-						if (&obj == player) { return; }
-						if (player->rigidBody3D.OverlapsBroadPhase(obj.rigidBody3D))
-						{
-							player->rigidBody3D.resolveConstrains(player, &obj);
-							refreshBroadPhaseBox(player->rigidBody3D);
-							refreshBroadPhaseBox(obj.rigidBody3D);
-						}
-					});
-			}
-
-			// Player Vs. Entities
-			if (auto player = scene->player)
-			{
-				gameMap.ForEachEntity([&](Entity& entity)
-					{
-						if (player->rigidBody3D.OverlapsBroadPhase(entity.rigidBody3D))
-						{
-							player->rigidBody3D.resolveConstrains(player, &entity);
-							refreshBroadPhaseBox(player->rigidBody3D);
-							refreshBroadPhaseBox(entity.rigidBody3D);
-						}
-					});
-			}
-
-			// Player Vs. Interactables
-			if (auto player = scene->player)
-			{
-				gameMap.ForEachInteractable([&](InteractableObject& entity)
-					{
-						if (player->rigidBody3D.OverlapsBroadPhase(entity.rigidBody3D))
-						{
-							player->rigidBody3D.resolveConstrains(player, &entity);
-							refreshBroadPhaseBox(player->rigidBody3D);
-							refreshBroadPhaseBox(entity.rigidBody3D);
-						}
-					});
-			}
-		}
+		const std::vector<Physics3D::ContactEvent> events = physics.Solve(bodies, iterations);
+		ContactRules::Apply(*this, events);
+		return events;
 	}
 #pragma endregion
 
@@ -213,14 +84,6 @@ namespace SceneManagement {
 	InteractableObject* Scene::GetRunningStation()
 	{
 		return gameMap.FindRunningStation();
-	}
-
-	void Scene::SnapshotMiniGameData()
-	{
-		if (miniGame == nullptr || miniGame->data == nullptr) { return; }
-
-		currentMiniGameData = *miniGame->data;
-		hasCurrentMiniGameData = true;
 	}
 
 	// A running task station is a periodic noise source (plan's emitter table:
@@ -246,142 +109,175 @@ namespace SceneManagement {
 		soundField.Emit(station->getPosition(), kStationLoudness, SOUND_STATION, station->id);
 	}
 
-	void Scene::ResetMiniGame() {
-		// Release BEFORE asking for the replay.
-		const int replayId = GetLastMiniGame();
-
-		const InteractableObject* station = GetRunningStation();
-		const std::uint64_t stationId = station != nullptr ? station->id : 0;
-
-		if (miniGame != nullptr) {
-			ReleaseMiniGame();
-		}
-		SetMiniGame(replayId);
-
-		// Nothing to replay: hand the player back to the 3D world rather
-		// than stranding them in an empty 2D overlay with no way out.
-		if (miniGame == nullptr) { is2DActive = false; return; }
-
-		if (stationId != 0)
+	namespace {
+		// What winning each MiniGame grants the player
+		struct MiniGameReward
 		{
-			if (auto* resumed = gameMap.FindInteractable(stationId))
+			Buff buff = BUFF_MOVEMENT;
+			float heal = 0.0f;
+		};
+
+		std::optional<MiniGameReward> RewardFor(int gameId)
+		{
+			switch (gameId)
 			{
-				resumed->isRunningMiniGame = true;
+			case MINI_GAME_FLAPPY_BIRD_ID: return MiniGameReward{ BUFF_MOVEMENT };
+			case MINI_GAME_CRANE_ID:       return MiniGameReward{ BUFF_RANGE };
+			case MINI_GAME_DOCTOR_ID:      return MiniGameReward{ BUFF_HEALTH, 3.0f };
+			case MINI_GAME_SIMON_SAYS_ID:  return MiniGameReward{ BUFF_HEARING };
+			case MINI_GAME_MAZE_ID:        return MiniGameReward{ BUFF_SEARCH };
+			case MINI_GAME_RO_SHAM_BOO_ID: return MiniGameReward{ BUFF_RANDOM };
+			default:                       return std::nullopt;
 			}
 		}
+
+		Vector2 WindowSize() { return Vector2{ static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight()) }; }
+
+		// The player's input this frame, as the MiniGame reads it
+		MiniGameInput ReadMiniGameInput()
+		{
+			auto& input = InputSystem::InputSystem::getInstance();
+			const auto keys = [&input](auto query) {
+				return MiniGameKeys{
+					(input.*query)(InputSystem::ACTION_MOVE_LEFT), (input.*query)(InputSystem::ACTION_MOVE_RIGHT),
+					(input.*query)(InputSystem::ACTION_MOVE_FORWARD), (input.*query)(InputSystem::ACTION_MOVE_BACKWARD),
+					(input.*query)(InputSystem::ACTION_MOVE_JUMP), (input.*query)(InputSystem::ACTION_MOVE_SPRINT) };
+			};
+
+			MiniGameInput read;
+			read.held = keys(&InputSystem::InputSystem::IsActionDown);
+			read.pressed = keys(&InputSystem::InputSystem::IsActionPressed);
+			read.screenSize = WindowSize();
+			return read;
+		}
 	}
 
-	void Scene::ReleaseMiniGame()
+	bool Scene::StartMiniGame(int gameId, InteractableObject* station)
 	{
-		SnapshotMiniGameData();
-
-		if (miniGame != nullptr)
+		const std::uint64_t stationId = station != nullptr ? station->id : 0;
+		if (!miniGameSession.Start(gameId, stationId, WindowSize(), std::random_device{}()))
 		{
-			delete miniGame->data;
-			delete miniGame;
+			std::cout << "[Scene.cpp] Ignoring a MiniGame start with unknown id: " << gameId << "\n";
+			return false;
 		}
 
+		// A start replaces any game already running, so the station that one held is
+		// free now; only the new one is occupied.
 		gameMap.ForEachInteractable([](InteractableObject& interactable) { interactable.isRunningMiniGame = false; });
 		stationNoiseTimer = 0.0f;
+		if (station != nullptr) { station->isRunningMiniGame = true; }
 
-		miniGame = nullptr;
-		isMiniActive = false;
-		is2DActive = false;
+		player->artifactMode = gameId;
+		overlays.Open(Overlay::MiniGame);
+		return true;
 	}
 
-	void Scene::SetMiniGame(int value)
+	void Scene::TickMiniGame(float deltaTime)
 	{
-		if (value < MINI_GAME_FLAPPY_BIRD_ID || value > MINI_GAME_RO_SHAM_BOO_ID)
+		// A game under another overlay waits: it can't be lost while it can't be seen
+		if (overlays.Top() != Overlay::MiniGame || !miniGameSession.IsRunning()) { return; }
+
+		const MiniGameResult result = miniGameSession.Tick(ReadMiniGameInput(), deltaTime);
+		if (result.outcome == MiniGameOutcome::Won) { FinishWonMiniGame(result); }
+	}
+
+	void Scene::QuitMiniGame()
+	{
+		miniGameSession.Quit();
+		CloseMiniGame();
+	}
+
+	void Scene::RetryMiniGame()
+	{
+		miniGameSession.Retry(WindowSize());
+	}
+
+	void Scene::WinMiniGame()
+	{
+		const MiniGameResult won = miniGameSession.Win();
+		if (won.outcome == MiniGameOutcome::Won) { FinishWonMiniGame(won); }
+	}
+
+	void Scene::FinishWonMiniGame(const MiniGameResult& won)
+	{
+		if (const std::optional<MiniGameReward> reward = RewardFor(won.gameId))
 		{
-			std::cout << "[Scene.cpp] Ignoring SetMiniGame with unknown id: " << value << "\n";
-			return;
+			if (reward->heal > 0.0f) { player->applyHealthValue(reward->heal, false); }
+			if (CooldownTimer* buff = player->getBuff(reward->buff)) { buff->use(); }
 		}
 
-		// Roll the history back one slot before the incoming game takes the current
-		// one. Snapshot first: the live data is about to be freed, and what it holds
-		// right now — the score the player actually reached — is the whole point of
-		// keeping it. Ordered ahead of ReleaseMiniGame for that reason.
-		SnapshotMiniGameData();
-		previousMiniGameData = currentMiniGameData;
-		hasPreviousMiniGameData = hasCurrentMiniGameData;
-
-		// Replacing an already-running minigame without freeing it would leak both
-		// the MiniGame and its MiniGameData.
-		ReleaseMiniGame();
-
-		player->rigidBody2D = {};
-		is2DActive = true;
-		isMiniActive = true;
-
-		player->artifactMode = value;
-
-		switch (value)
+		// A Practice run has no station: it completes nothing and toggles nothing
+		InteractableObject* station = won.stationId != 0 ? gameMap.FindInteractable(won.stationId) : nullptr;
+		if (station != nullptr)
 		{
-		case MINI_GAME_FLAPPY_BIRD_ID:
-			miniGame = MiniGame_FlappyBird(player);
-			break;
-		case MINI_GAME_CRANE_ID:
-			miniGame = MiniGame_Crane(player);
-			break;
-		case MINI_GAME_DOCTOR_ID:
-			miniGame = MiniGame_Doctor(player);
-			break;
-		case MINI_GAME_SIMON_SAYS_ID:
-			miniGame = MiniGame_SimonSays(player);
-			break;
-		case MINI_GAME_MAZE_ID:
-			miniGame = MiniGame_Maze(player);
-			break;
-		case MINI_GAME_RO_SHAM_BOO_ID:
-			miniGame = MiniGame_RoShamBoo(player);
-			break;
-		default:
-			std::cerr << "[Scene] Unknown minigame id " << value << "\n";
-			break;
+			// Marked before the Target is looked up, because this is the point at which
+			// the task is objectively finished. Letting a deleted door un-complete a
+			// finished task would leave the Director hinting at it forever.
+			station->isCompleted = true;
+			station->isInteractable = false;
+
+			if (GameObject* target = station->FindMiniGameTarget(gameMap))
+			{
+				if (target->isEnabled) { target->onDisable(); }
+				else { target->onEnable(); }
+			}
+			else
+			{
+				std::cout << "[MiniGame] Target " << station->targetId << " no longer exists — nothing to open\n";
+			}
 		}
 
-		if (miniGame) {
-			lastMiniGamePlayed = value;
-		}
+		CloseMiniGame();
+	}
 
-		// The incoming game's opening state. A constructor that failed to produce a
-		// game leaves the slot empty rather than carrying the outgoing game's score
-		// forward under the new game's name.
-		if (miniGame != nullptr && miniGame->data != nullptr)
-		{
-			currentMiniGameData = *miniGame->data;
-			hasCurrentMiniGameData = true;
-		}
-		else
-		{
-			currentMiniGameData = {};
-			hasCurrentMiniGameData = false;
-		}
+	void Scene::CloseMiniGame()
+	{
+		overlays.Close(Overlay::MiniGame);
+		gameMap.ForEachInteractable([](InteractableObject& interactable) { interactable.isRunningMiniGame = false; });
+		stationNoiseTimer = 0.0f;
 	}
 #pragma endregion
 
 #pragma region Scene Update
 	/** Scene Functions **/
-	void Scene_updateScene(float delta) {
+	void Scene_frame(Scene& scene, Camera3D& camera) {
 
-		auto manager = &SceneManager::getInstance();
 		auto worldEditor = &Editor::WorldEditor::getInstance();
 		auto inputSystem = &InputSystem::InputSystem::getInstance();
-		auto scene = manager->currentScene;
-		if (scene->update) { scene->update(delta); }
 
-		// Swap Editor and Player Camera
-		if (!scene->is2DActive) {
-			if (scene->player != nullptr && worldEditor->IsEnabled() == false) {
-				scene->player->camera.UpdateCameraFPS(&manager->camera3D);
-			}
-			else if (worldEditor->IsEnabled()) {
-				worldEditor->editorCamera.Update(&manager->camera3D);
+		// Swap Editor and Player Camera. The editor camera ignores overlays, so the
+		// Main Menu world can still be flown around under its Title; the player's
+		// camera only follows the mouse while gameplay has the player's input.
+		// Ahead of the tick, so the player moves the way the camera now faces.
+		if (worldEditor->IsEnabled()) {
+			worldEditor->editorCamera.Update(&camera);
+		}
+		else if (scene.overlays.GameplayHasInput()) {
+			if (scene.player != nullptr) {
+				scene.player->camera.UpdateCameraFPS(&camera, scene.player->rigidBody3D);
 			}
 			else {
 				std::cerr << "No Camera Detected \n";
 			}
 		}
+
+		// The Inventory action opens the Inventory during gameplay and otherwise
+		// backs out of whatever overlay is on top. Backing out of a minigame quits
+		// it, so it is ended here: the stack only records that it closed.
+		if (inputSystem->IsActionPressed(InputSystem::ACTION_UI_INVENTORY)) {
+			if (scene.overlays.InventoryPressed() == Overlay::MiniGame) {
+				scene.QuitMiniGame();
+			}
+		}
+
+		// World Editor (includes the developer tool windows)
+		worldEditor->update(scene);
+	}
+
+	void Scene_tick(Scene& scene, float delta) {
+
+		auto worldEditor = &Editor::WorldEditor::getInstance();
+		if (scene.update) { scene.update(scene, delta); }
 
 		const bool editorFrozen = worldEditor->IsEnabled() && worldEditor->IsSimulationPaused();
 
@@ -411,53 +307,47 @@ namespace SceneManagement {
 		// through unchanged only when the sim is actually running.
 		if (!editorFrozen)
 		{
-			scene->soundField.Update(delta);
+			scene.soundField.Update(delta);
 
 			// Ahead of the player and entity updates for the same reason: the hum a
 			// running station makes this frame should reach the stalker this frame,
 			// not next. The minigame's own update runs much later in this function
 			// and is about the overlay, not about the noise the machine makes.
-			scene->EmitStationNoise(delta);
+			scene.EmitStationNoise(delta);
 		}
 
 		/** Update Player **/
-		if (auto player = scene->player) {
+		if (auto player = scene.player) {
 			if (editorFrozen)
 			{
 				player->rigidBody3D.SyncBroadPhaseBox();
 			}
-			else if (scene->is2DActive)
+			else if (scene.overlays.GameplayHasInput())
 			{
-				player->update2D(delta, player->rigidBody2D.canMove);
+				if (!worldEditor->IsEnabled()) { player->update3D(scene, delta); };
+				clampObject(*player, scene.limitYBounds);
 			}
-			else
-			{
-				if (!worldEditor->IsEnabled()) { player->update3D(delta); };
-				clampObject(*player, scene->limitYBounds);
-			}
+			// Under any overlay the player stands still until it closes; inside a
+			// MiniGame the player is the game's own cursor
 		}
 
 		/* Update GameObjects */
-		scene->gameMap.ForEachGameObject([&](GameObject& object) {
+		scene.gameMap.ForEachGameObject([&](GameObject& object) {
 			if (editorFrozen) { object.rigidBody3D.SyncBroadPhaseBox(); return; }
 			object.isSelectable = true;
-			object.update(scene, delta);
-			clampObject(object, scene->limitYBounds);
+			object.update(&scene, delta);
+			clampObject(object, scene.limitYBounds);
 			});
 
 		/* Update Interactables */
-		scene->gameMap.ForEachInteractable([&](InteractableObject& interactable) {
+		scene.gameMap.ForEachInteractable([&](InteractableObject& interactable) {
 			if (editorFrozen) { interactable.rigidBody3D.SyncBroadPhaseBox(); return; }
-			interactable.update(scene, delta);
-			clampObject(interactable, scene->limitYBounds);
+			interactable.update(&scene, delta);
+			clampObject(interactable, scene.limitYBounds);
 			});
 
 		/** Update Entities **/
-		// DestroyEntity() erases from the same map ForEachEntity is iterating, so
-		// dead items are collected here and destroyed in a second pass afterward
-		// rather than mid-traversal.
-		std::vector<std::uint64_t> deadItemEntityIds;
-		scene->gameMap.ForEachEntity([&](Entity& entity)
+		scene.gameMap.ForEachEntity([&](Entity& entity)
 			{
 				// Frozen entities are not culled either: an entity sitting at zero
 				// health would otherwise be deleted out from under the inspector
@@ -470,111 +360,63 @@ namespace SceneManagement {
 				{
 					// Only items are auto-removed here; other entity types keep their
 					// (still-zero-health) entry until their own death handling runs.
-					if (entity.type == OBJECT_ITEM) { deadItemEntityIds.push_back(entity.id); }
+					// Destroy only marks it, so this is safe mid-traversal.
+					if (entity.type == OBJECT_ITEM) { entity.Destroy(); }
 					return;
 				}
 
-				entity.update(scene, delta);
-				clampObject(entity, scene->limitYBounds);
+				entity.update(&scene, delta);
+				clampObject(entity, scene.limitYBounds);
 			});
-		for (auto id : deadItemEntityIds) { scene->gameMap.DestroyEntity(id); }
 
 		// After the entities have settled, so the Director advises on the state the
 		// stalker actually ended the frame in rather than the previous one.
-		if (!editorFrozen) { scene->director.Update(scene, delta); }
+		if (!editorFrozen) { scene.director.Update(&scene, delta); }
 
 
-		// Sweep objects flagged by Destroy() — removal must happen outside the
-		// update loop above, since erasing mid-iteration invalidates it
-		scene->gameMap.EraseGameObjectsIf([&](GameObject& object) {
-			if (!object.pendingDestroy) { return false; }
-			object.onDestroy(scene);
-			return true;
-			});
+		// Sweep objects of every kind flagged by Destroy() — removal must happen
+		// outside the update loops above, since erasing mid-iteration invalidates them
+		scene.gameMap.SweepDestroyed(&scene);
 
 		/* Update Collisions */
 		// The solver applies positional corrections, so running it against a frozen
 		// scene would push a just-placed object out of the wall it was deliberately
 		// snapped flush against.
-		if (!editorFrozen) { solveCollision(scene, delta, 8); }
+		if (!editorFrozen) { scene.SolveCollisions(8); }
 
 		/** Update MiniGame **/
-		if (auto miniGame = scene->miniGame; miniGame != nullptr)
-		{
-			scene->isMiniActive = true;
-			miniGame->update(scene, delta);
-		}
-		else
-		{
-			scene->isMiniActive = false;
-		}
-
-		// Pause To Inventory
-		// Gated on isMiniActive so TAB can't be used to regain 3D player control
-		// while a minigame is still running in the background.
-		if (inputSystem->IsActionPressed(InputSystem::ACTION_UI_PAUSE)) {
-			if (scene->isMiniActive) {
-				scene->is2DActive = false;
-				scene->ReleaseMiniGame();
-			}
-			else {
-				scene->is2DActive = !scene->is2DActive;
-			}
-		}
-
-		PlayerUI::getInstance().update();
-
-		// World Editor (includes the developer tool windows)
-		Editor::WorldEditor::getInstance().update(scene->player);
+		scene.TickMiniGame(delta);
 	}
 
-	void Scene_drawScene2D() {
-		auto manager = &SceneManager::getInstance();
+	void Scene_drawScene2D(Scene& scene) {
+		// Brackets every widget drawn this frame. The frame is kept whole once it
+		// ends, so the UI Inspector, which runs in update, reads all of last
+		// frame's UI. Widgets reach the screen at endFrame, over anything drawn
+		// straight to raylib in between: the dimming lands under the panels it
+		// dims, and a MiniGame and the reticle only draw when no panel does.
+		const bool editorHasMouse = Editor::WorldEditor::getInstance().CapturesMouse();
+		UI::beginFrame(UI::UIEngine::getInstance(), UI::ReadRaylibInput(editorHasMouse));
 
-		if (auto scene = manager->currentScene) {
-			// Brackets every widget drawn this frame. The list is cleared here rather
-			// than during update so the UI Inspector, which runs in update, sees the
-			// whole of last frame's UI instead of an empty list.
-			auto& ui = UI::UIEngine::getInstance();
-			ui.beginFrame();
+		if (scene.draw2D) { scene.draw2D(scene); }
 
-			if (scene->draw2D) { scene->draw2D(); }
+		// The dimming and the top overlay's panel, Title through MiniGame
+		UI::drawOverlays(scene);
 
-			if (scene->is2DActive)
-			{
-				/// Background
-				DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{ 20, 20, 20, 200 });
+		// Over the overlays, the reticle during gameplay. Inside a MiniGame the
+		// player is the game's own cursor, which the game draws.
+		if (scene.player != nullptr && scene.overlays.GameplayHasInput()) { scene.player->render2D(); }
 
-				/// Inventory
-				//inventory.render(assetManager);
-
-				/// Mini Games On Top
-				if (scene->isMiniActive && scene->miniGame != nullptr)
-				{
-					scene->miniGame->draw(scene);
-				}
-				scene->player->render2D();
-
-				PlayerUI::getInstance().render();
-
-				ui.render();
-			}
-
-			ui.endFrame();
-		}
+		UI::endFrame();
 	}
 
-	void Scene_drawScene3D() {
-		auto manager = &SceneManager::getInstance();
-		if (auto scene = manager->currentScene) {
-			if (Editor::WorldEditor::getInstance().IsEnabled()) { DrawGrid(100.0f, 1.0f); }
+	void Scene_drawScene3D(Scene& scene) {
+		if (Editor::WorldEditor::getInstance().IsEnabled()) { DrawGrid(100.0f, 1.0f); }
 
-			if (scene->draw3D) { scene->draw3D(); }
+		if (scene.draw3D) { scene.draw3D(scene); }
 
-			scene->gameMap.ForEachObject([](GameObject& object) { object.render3D(); });
+		scene.gameMap.ForEachObject([](GameObject& object) { object.render3D(); });
 
-			scene->player->render3D();
-		}
+		if (scene.player != nullptr) { scene.player->render3D(); }
 	}
 }
 #pragma endregion

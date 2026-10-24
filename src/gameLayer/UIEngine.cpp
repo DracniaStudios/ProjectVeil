@@ -1,8 +1,5 @@
 #include "UIEngine.h"
 
-#include <Settings.h>
-#include <SceneManager.h>
-
 #include <algorithm>
 #include <iostream>
 
@@ -145,138 +142,127 @@ namespace UI {
 	}
 #pragma endregion
 
-#pragma region Settings Menu
-
-	static void returnButton(bool& state) {
-		auto scene = SceneManagement::SceneManager::getInstance().currentScene;
-		if (!scene) { return; }
-
-		if (drawButton("Return")) {
-			scene->is2DActive = !scene->is2DActive;
-			UIEngine::getInstance().isSettingsEnabled = false;
-			state = false;
-		}
+	// Same rules as raylib's CheckCollisionPointRec and CheckCollisionRecs, kept
+	// here so the UI's rules link without raylib
+	static bool contains(Rectangle rect, Vector2 point)
+	{
+		return point.x >= rect.x && point.x < rect.x + rect.width
+			&& point.y >= rect.y && point.y < rect.y + rect.height;
 	}
 
-	void drawSettings() {
-
-		Settings::Settings* settings = &Settings::Settings::getInstance();
-		auto scene = SceneManagement::SceneManager::getInstance().currentScene;
-		if (!scene) { return; }
-
-		// The sum of (X + width), (Y + height) is the size of the panel.
-		beginPanel("Settings", Rectangle{}, Rectangle{ 0.1f, 0.1f, 0.8f, 0.8f });
-
-		drawText("Settings");
-
-		returnButton(UI::UIEngine::getInstance().isSettingsEnabled);
-
-		for (auto& setting : settings->settingsList) {
-			std::string displayName = setting->name + ": " + std::to_string(setting->value);
-			if (drawButton(displayName)) {
-				setting->value = setting->value != 1 ? 1 : 0;
-			}
-		}
-
-		endPanel();
-	};
-
-	void drawMultiplayer() {
-
-		beginPanel("Multiplayer", Rectangle{}, Rectangle{0.1f, 0.1f, 0.8f, 0.8f});
-
-		drawText("Multiplayer");
-
-		returnButton(UI::UIEngine::getInstance().isMultiplayerEnabled);
-
-		if (drawButton("Start Server")) {
-			// Start Server
-		}
-
-		if (drawButton("Join Server")) {
-			// Join Server
-		}
-
-		endPanel();
+	static bool overlaps(Rectangle a, Rectangle b)
+	{
+		return a.x < b.x + b.width && a.x + a.width > b.x
+			&& a.y < b.y + b.height && a.y + a.height > b.y;
 	}
-#pragma endregion
+
+	// The engine whose frame is open, nullptr between frames
+	static UIEngine* openFrame = nullptr;
+
+	// A widget drawn outside a frame has nowhere to go. Reported once, not every frame.
+	static UIEngine* frameFor(const char* what)
+	{
+		static bool reported = false;
+		if (openFrame == nullptr && !reported)
+		{
+			std::cerr << "[UI] " << what << " outside beginFrame/endFrame draws nothing\n";
+			reported = true;
+		}
+		return openFrame;
+	}
 
 	// UIEngine Implementation
-#pragma region UIEngine Implementation
-	void UIEngine::beginFrame()
+#pragma region Frame
+	void beginFrame(UIEngine& ui, const Input& input)
 	{
-		// Hover is resolved against last frame's widgets, before they are cleared.
+		if (openFrame != nullptr)
+		{
+			std::cerr << "[UI] beginFrame while a frame is open; ending that one first\n";
+			endFrame();
+		}
+		openFrame = &ui;
+		ui.input = input;
+
+		Frame& frame = ui.frame;
+		frame = Frame{};
+		frame.screenSize = input.screenSize;
+		frame.scale = computeScale(input.screenSize, ui.referenceResolution);
+
 		// The last one drawn is on top, so the first hit walking backwards is the
 		// only one the mouse is really over. Text never blocks: a label drawn over
-		// a button should not make the button unclickable.
-		hoveredId = -1;
-		if (!isMouseBlocked)
+		// a button should not make the button unclickable. Nor does a widget that
+		// was not drawn, such as a row overflowing the bottom of its panel.
+		if (!input.mouseBlocked)
 		{
-			const Vector2 mouse = GetMousePosition();
-			for (auto it = widgets.rbegin(); it != widgets.rend(); ++it)
+			const std::vector<WidgetEntry>& last = ui.lastFrame.widgets;
+			for (auto it = last.rbegin(); it != last.rend(); ++it)
 			{
 				const Widget& widget = getWidget(*it);
-				if (widget.type == WIDGET_TEXT) { continue; }
-				if (CheckCollisionPointRec(mouse, widget.screenRect)) { hoveredId = widget.id; break; }
+				if (widget.type == WIDGET_TEXT || !widget.isVisible) { continue; }
+				if (contains(widget.screenRect, input.mouse)) { frame.hoveredId = widget.id; break; }
 			}
 		}
 
-		widgets.clear();
-
-		scale = computeScale(GetScreenSize(), referenceResolution);
-
-		layoutStack.clear();
-		layoutStack.push_back(Layout{ -1, Rectangle{ 0, 0, GetScreenSize().x, GetScreenSize().y }, 0 });
+		ui.layoutStack.assign(1, UIEngine::Layout{ -1, Rectangle{ 0, 0, input.screenSize.x, input.screenSize.y }, 0 });
 	}
 
-	void UIEngine::endFrame()
+	void endFrame()
 	{
+		if (openFrame == nullptr)
+		{
+			std::cerr << "[UI] endFrame without a beginFrame\n";
+			return;
+		}
+		UIEngine& ui = *openFrame;
+		openFrame = nullptr;
+
 		// Reported once rather than every frame; beginFrame resets the stack, so
 		// the damage is limited to whatever was drawn after the missing endPanel.
 		static bool reportedUnclosedPanel = false;
-		if (layoutStack.size() > 1 && !reportedUnclosedPanel)
+		if (ui.layoutStack.size() > 1 && !reportedUnclosedPanel)
 		{
 			std::cerr << "[UI] beginPanel without a matching endPanel\n";
 			reportedUnclosedPanel = true;
 		}
 
-		for (const WidgetEntry& entry : widgets)
+		for (const WidgetEntry& entry : ui.frame.widgets)
 		{
 			const Widget& widget = getWidget(entry);
 
-			if (widget.id == highlightedId) { DrawRectangleLinesEx(widget.screenRect, 3.0f, RED); }
-			else if (showBounds) { DrawRectangleLinesEx(widget.screenRect, 1.0f, YELLOW); }
+			DrawCommand outline;
+			outline.kind = DrawCommand::Kind::Outline;
+			outline.rect = widget.screenRect;
+			if (widget.id == ui.highlightedId) { outline.thickness = 3.0f; outline.color = RED; }
+			else if (ui.showBounds) { outline.thickness = 1.0f; outline.color = YELLOW; }
+			else { continue; }
+			ui.frame.commands.push_back(std::move(outline));
 		}
 
-		// The inspector re-sets this every frame it is open, so closing it clears the outline
-		highlightedId = -1;
+		// The inspector asks again every frame it is open, so closing it clears the outline
+		ui.highlightedId = -1;
+
+		ui.backend.Draw(ui.frame.commands);
+		ui.lastFrame = std::move(ui.frame);
+		ui.frame = Frame{};
+		ui.layoutStack.clear();
 	}
+#pragma endregion
 
-	void UIEngine::render()
-	{
-		// Widgets are drawn the moment their draw function is called, during the
-		// scene's draw2D, so there is nothing to replay here — only the menus the
-		// engine owns.
-
-		if (isSettingsEnabled) { drawSettings(); }
-		if (isMultiplayerEnabled) { drawMultiplayer(); }
-	}
-
+#pragma region Layout
 	void UIEngine::placeWidget(Widget& widget, Rectangle pixelRect, Rectangle scaleRect)
 	{
 		const Layout& parent = layoutStack.back();
 
-		widget.id = static_cast<int>(widgets.size());
+		widget.id = static_cast<int>(frame.widgets.size());
 		widget.parentId = parent.panelId;
 		widget.depth = static_cast<int>(layoutStack.size()) - 1;
 
 		widget.anchorRect = scaleRect;
 		widget.pixelRect = pixelRect;
-		widget.screenRect = resolveRect(parent.contentRect, pixelRect, scaleRect, scale);
+		widget.screenRect = resolveRect(parent.contentRect, pixelRect, scaleRect, frame.scale);
 
 		widget.isVisible = widget.screenRect.width > 0 && widget.screenRect.height > 0
-			&& CheckCollisionRecs(widget.screenRect, parent.contentRect);
-
+			&& overlaps(widget.screenRect, parent.contentRect);
 	}
 
 	void UIEngine::placeNextRow(Widget& widget)
@@ -293,40 +279,23 @@ namespace UI {
 		widget.isAutoPlaced = true;
 	}
 
-	void UIEngine::pushPanel(Panel panel)
+	bool UIEngine::hovers(const Widget& widget) const
 	{
-		const int panelId = panel.id;
-		const Rectangle contentRect = panel.contentRect;
-
-		widgets.push_back(std::move(panel));
-		layoutStack.push_back(Layout{ panelId, contentRect, 0 });
-	}
-
-	void UIEngine::popPanel()
-	{
-		// The screen layout at the bottom of the stack is never popped
-		if (layoutStack.size() <= 1)
-		{
-			std::cerr << "[UI] endPanel without a matching beginPanel\n";
-			return;
-		}
-
-		const Layout& layout = layoutStack.back();
-		std::get<Panel>(widgets[layout.panelId]).rowCount = layout.rowCount;
-		layoutStack.pop_back();
+		// Both are checked: hoveredId is last frame's, so on its own it would
+		// still hold a button that has since moved out from under the mouse.
+		return widget.isVisible && widget.id == frame.hoveredId && contains(widget.screenRect, input.mouse);
 	}
 #pragma endregion
 
-	// UIEngine Helper Functions
-
+#pragma region Drawing
 	// Largest font that fills heightRatio of the rect without spilling past its
 	// width, so a long label shrinks instead of overflowing a narrow button.
-	static int fitTextSize(const std::string& text, Rectangle rect, float heightRatio)
+	int UIEngine::fitTextSize(const std::string& text, Rectangle rect) const
 	{
-		int fontSize = static_cast<int>(rect.height * heightRatio);
+		int fontSize = static_cast<int>(rect.height * style.textHeightRatio);
 
 		const float maxWidth = rect.width * 0.9f;
-		const int textWidth = MeasureText(text.c_str(), fontSize);
+		const int textWidth = backend.TextWidth(text, fontSize);
 		if (textWidth > maxWidth && textWidth > 0)
 		{
 			fontSize = static_cast<int>(fontSize * maxWidth / textWidth);
@@ -335,50 +304,64 @@ namespace UI {
 		return std::max(fontSize, 1);
 	}
 
-	// Draws text with a drop shadow, centred in a rect given in screen pixels.
-	static void drawLabel(const std::string& text, Rectangle rect, int fontSize, float yOffset, const Style& style)
+	void UIEngine::drawRect(Rectangle rect, Color color)
 	{
-		const int textWidth = MeasureText(text.c_str(), fontSize);
+		DrawCommand command;
+		command.kind = DrawCommand::Kind::Rect;
+		command.rect = rect;
+		command.color = color;
+		frame.commands.push_back(std::move(command));
+	}
+
+	// Text with a drop shadow, centred in a rect given in screen pixels
+	void UIEngine::drawLabel(const std::string& text, Rectangle rect, int fontSize, float yOffset)
+	{
+		const int textWidth = backend.TextWidth(text, fontSize);
 
 		const float textX = rect.x + (rect.width - static_cast<float>(textWidth)) / 2.f;
 		const float textY = rect.y + (rect.height - static_cast<float>(fontSize)) / 2.f + yOffset;
 		const float shadow = static_cast<float>(fontSize) * 0.08f;
 
-		DrawText(text.c_str(), static_cast<int>(textX - shadow), static_cast<int>(textY + shadow), fontSize, style.textShadowColor);
-		DrawText(text.c_str(), static_cast<int>(textX), static_cast<int>(textY), fontSize, style.textColor);
+		DrawCommand label;
+		label.kind = DrawCommand::Kind::Text;
+		label.text = text;
+		label.fontSize = fontSize;
+
+		label.position = Vector2{ textX - shadow, textY + shadow };
+		label.color = style.textShadowColor;
+		frame.commands.push_back(label);
+
+		label.position = Vector2{ textX, textY };
+		label.color = style.textColor;
+		frame.commands.push_back(std::move(label));
 	}
 
 	// Shared by both drawButton overloads once the button has been placed
-	static bool drawPlacedButton(UIEngine& ui, Button& button, const std::string& text)
+	bool UIEngine::finishButton(Button& button, const std::string& text)
 	{
-		const Style& style = ui.style;
-
 		button.text = text;
 		button.defaultColor = style.buttonColor;
 		button.highlightedColor = style.buttonHighlightedColor;
 		button.clickColor = style.buttonClickColor;
-		button.textSize = fitTextSize(text, button.screenRect, style.textHeightRatio);
+		button.textSize = fitTextSize(text, button.screenRect);
 
-		// Button Rules
-		// Both the mouse and the hover owner are checked: hoveredId is last
-		// frame's, so on its own it would still hold a button that has since moved.
-		if (button.isVisible) {
-			button.isHovered = button.id == ui.hoveredId && CheckCollisionPointRec(GetMousePosition(), button.screenRect);
-			button.isBeingClicked = button.isHovered && IsMouseButtonDown(MOUSE_LEFT_BUTTON);
-			button.isReleased = button.isHovered && IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
+		if (button.isVisible)
+		{
+			button.isHovered = hovers(button);
+			button.isBeingClicked = button.isHovered && input.mouseDown;
+			button.isReleased = button.isHovered && input.mouseReleased;
+
+			Color color = button.defaultColor;
+			if (button.isBeingClicked) { color = button.clickColor; }
+			else if (button.isHovered) { color = button.highlightedColor; }
+			drawRect(button.screenRect, color);
+
+			const float yOffset = button.isBeingClicked ? button.screenRect.height * style.buttonClickOffset : 0.0f;
+			drawLabel(text, button.screenRect, button.textSize, yOffset);
 		}
 
-		Color color = button.defaultColor;
-		if (button.isBeingClicked) { color = button.clickColor; }
-		else if (button.isHovered) { color = button.highlightedColor; }
-
-		if (button.isVisible) { DrawRectangleRec(button.screenRect, color); }
-
-		const float yOffset = button.isBeingClicked ? button.screenRect.height * style.buttonClickOffset : 0.0f;
-		if (button.isVisible) { drawLabel(text, button.screenRect, button.textSize, yOffset, style); }
-
 		const bool isReleased = button.isReleased;
-		ui.widgets.push_back(std::move(button));
+		frame.widgets.push_back(std::move(button));
 
 		// Fires once, on release, rather than every frame the mouse stays down —
 		// isBeingClicked here would re-trigger the caller's action each frame a
@@ -386,75 +369,96 @@ namespace UI {
 		return isReleased;
 	}
 
-	static void drawPlacedText(UIEngine& ui, Text& widget, const std::string& text)
+	void UIEngine::finishText(Text& widget, const std::string& text)
 	{
 		widget.text = text;
-		widget.defaultColor = ui.style.textColor;
-		widget.textSize = fitTextSize(text, widget.screenRect, ui.style.textHeightRatio);
+		widget.defaultColor = style.textColor;
+		widget.textSize = fitTextSize(text, widget.screenRect);
 
-		if (widget.isVisible) { drawLabel(text, widget.screenRect, widget.textSize, 0.0f, ui.style); }
+		if (widget.isVisible) { drawLabel(text, widget.screenRect, widget.textSize, 0.0f); }
 
-		ui.widgets.push_back(std::move(widget));
+		frame.widgets.push_back(std::move(widget));
 	}
+#pragma endregion
 
+#pragma region Widgets
 	void beginPanel(const std::string& name, Rectangle pixelRect, Rectangle scaleRect)
 	{
-		UIEngine& ui = UIEngine::getInstance();
+		UIEngine* ui = frameFor("beginPanel");
+		if (ui == nullptr) { return; }
 
 		Panel panel;
-		ui.placeWidget(panel, pixelRect, scaleRect);
+		ui->placeWidget(panel, pixelRect, scaleRect);
 		panel.name = name;
-		panel.defaultColor = ui.style.panelColor;
+		panel.defaultColor = ui->style.panelColor;
 		// Shown so the inspector can say which panel is swallowing the mouse
-		if (panel.isVisible) { panel.isHovered = panel.id == ui.hoveredId && CheckCollisionPointRec(GetMousePosition(), panel.screenRect); }
+		panel.isHovered = ui->hovers(panel);
 
-		const float padding = ui.style.panelPadding * ui.getScale();
+		const float padding = ui->style.panelPadding * ui->frame.scale;
 		panel.contentRect = shrinkRectanglePixels(panel.screenRect, padding * 2.0f, padding * 2.0f);
 
 		// Drawn now, before its children, so they land on top of it
-		if (panel.isVisible) { DrawRectangleRec(panel.screenRect, panel.defaultColor); }
+		if (panel.isVisible) { ui->drawRect(panel.screenRect, panel.defaultColor); }
 
-		ui.pushPanel(std::move(panel));
+		ui->layoutStack.push_back(UIEngine::Layout{ panel.id, panel.contentRect, 0 });
+		ui->frame.widgets.push_back(std::move(panel));
 	}
 
 	void endPanel()
 	{
-		UIEngine::getInstance().popPanel();
+		UIEngine* ui = frameFor("endPanel");
+		if (ui == nullptr) { return; }
+
+		// The screen layout at the bottom of the stack is never popped
+		if (ui->layoutStack.size() <= 1)
+		{
+			std::cerr << "[UI] endPanel without a matching beginPanel\n";
+			return;
+		}
+
+		const UIEngine::Layout& layout = ui->layoutStack.back();
+		std::get<Panel>(ui->frame.widgets[layout.panelId]).rowCount = layout.rowCount;
+		ui->layoutStack.pop_back();
 	}
 
 	bool drawButton(const std::string& text, Rectangle pixelRect, Rectangle scaleRect)
 	{
-		UIEngine& ui = UIEngine::getInstance();
+		UIEngine* ui = frameFor("drawButton");
+		if (ui == nullptr) { return false; }
 
 		Button button;
-		ui.placeWidget(button, pixelRect, scaleRect);
-		return drawPlacedButton(ui, button, text);
+		ui->placeWidget(button, pixelRect, scaleRect);
+		return ui->finishButton(button, text);
 	}
 
 	bool drawButton(const std::string& text)
 	{
-		UIEngine& ui = UIEngine::getInstance();
+		UIEngine* ui = frameFor("drawButton");
+		if (ui == nullptr) { return false; }
 
 		Button button;
-		ui.placeNextRow(button);
-		return drawPlacedButton(ui, button, text);
+		ui->placeNextRow(button);
+		return ui->finishButton(button, text);
 	}
 
 	void drawText(const std::string& text, Rectangle pixelRect, Rectangle scaleRect)
 	{
-		UIEngine& ui = UIEngine::getInstance();
+		UIEngine* ui = frameFor("drawText");
+		if (ui == nullptr) { return; }
 
 		Text widget;
-		ui.placeWidget(widget, pixelRect, scaleRect);
-		drawPlacedText(ui, widget, text);
+		ui->placeWidget(widget, pixelRect, scaleRect);
+		ui->finishText(widget, text);
 	}
 
 	void drawText(const std::string& text)
 	{
-		UIEngine& ui = UIEngine::getInstance();
+		UIEngine* ui = frameFor("drawText");
+		if (ui == nullptr) { return; }
 
 		Text widget;
-		ui.placeNextRow(widget);
-		drawPlacedText(ui, widget, text);
+		ui->placeNextRow(widget);
+		ui->finishText(widget, text);
 	}
+#pragma endregion
 }

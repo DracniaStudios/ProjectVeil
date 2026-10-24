@@ -1,8 +1,6 @@
 #include "Physics.h"
 
-#include <gameMap.h>
 #include <iostream>
-#include <SceneManager.h>
 
 #include <cfloat>
 #include <cmath>
@@ -86,7 +84,7 @@ namespace Physics3D {
 
 		// Check each face with a raycast and accumulate touch flags so testing
 		// against several bodies doesn't overwrite earlier hits (cleared once
-		// per frame in UpdateForce)
+		// per frame in PhysicsWorld::Solve)
 		upTouch |= hitWithinRange(generateRay({ c.x, c.y + hy, c.z }, up));
 		downTouch |= hitWithinRange(generateRay({ c.x, c.y - hy, c.z }, down));
 		frontTouch |= hitWithinRange(generateRay({ c.x, c.y, c.z + hz }, forward));
@@ -122,185 +120,9 @@ namespace Physics3D {
 	}
 
 	// ─── Constraint Resolution ─────────────────────────────────────────────────
-
-	namespace
-	{
-
-		const char* groundImpactSound = "Jump_Landing_With_Small_Coins";
-		// Physics impacts as a perception event (plan's emitter table: scaled by
-		// impact velocity).
-		//
-		// Called from the first-contact branch below rather than from the velocity
-		// response, so one collision is one noise: the solver runs eight iterations
-		// over every overlapping pair and would otherwise emit eight times for a
-		// single bang.
-		//
-		// Loudness comes from closing speed along the contact normal, which is what
-		// separates a thrown crate from a body resting on the floor. A resting or
-		// sliding contact closes at ~0 and never reaches kQuietImpact, so walking a
-		// room does not light up the sound field — footsteps are their own emitter
-		// with their own gait rules, and this must not quietly duplicate them.
-		void EmitImpactNoise(GameObject* self, GameObject* other, const ContactInfo& contact)
-		{
-			constexpr float kQuietImpact = 2.0f;   // below this there is no audible event
-			constexpr float kLoudImpact = 12.0f;   // at or above this, full loudness
-
-			// Symmetric: contact.normal points from self toward other and the
-			// relative velocity is self-minus-other, so swapping the two bodies
-			// negates both factors and leaves the closing speed unchanged.
-			const Vector3 relativeVelocity = Vector3Subtract(
-				self->rigidBody3D.GetVelocity(), other->rigidBody3D.GetVelocity());
-			const float closingSpeed = Vector3DotProduct(relativeVelocity, contact.normal);
-
-			// Gated before anything else is touched: resting and sliding contacts are
-			// the overwhelmingly common case and should cost a dot product, no more.
-			if (closingSpeed <= kQuietImpact) { return; }
-
-			auto scene = SceneManagement::SceneManager::getInstance().currentScene;
-			if (scene == nullptr) { return; }
-
-			const float loudness = Clamp(
-				(closingSpeed - kQuietImpact) / (kLoudImpact - kQuietImpact), 0.0f, 1.0f);
-
-			const GameObject* striker =
-				Vector3LengthSqr(other->rigidBody3D.GetVelocity()) >
-				Vector3LengthSqr(self->rigidBody3D.GetVelocity()) ? other : self;
-
-			// SoundField only records the AI-perception event; playing it back for
-			// the player is a separate, explicit step here (SoundField itself has
-			// no AudioManager/FMOD dependency by design).
-			AudioManager::AudioManager::getInstance().Play3D(groundImpactSound, striker->getPosition(), AudioManager::AUDIO_GAMEPLAY_SFX, loudness);
-			scene->soundField.Emit(striker->getPosition(), loudness, SOUND_IMPACT, striker->id);
-		}
-
-		// Contact damage from the Stalker catching the player. This lived in
-		// Player::onCollision until collision dispatch moved onto Collider3D
-		// (Collider3D.cpp), which deliberately cannot see the owning GameObject —
-		// its own comment points a rule that needs the real GameObjects at this
-		// caller. Gated the same way as EmitImpactNoise above: once per first
-		// contact, not once per solver iteration.
-		void ApplyStalkerContactDamage(GameObject* self, GameObject* other)
-		{
-			GameObject* player = nullptr;
-			GameObject* stalker = nullptr;
-			if (self->type == OBJECT_PLAYER) { player = self; stalker = other; }
-			else if (other->type == OBJECT_PLAYER) { player = other; stalker = self; }
-			else { return; }
-
-			if (stalker->type != OBJECT_ENTITY
-				|| static_cast<Entity*>(stalker)->kind != ENTITYKIND_STALKER) {
-				return;
-			}
-
-			static_cast<Entity*>(player)->applyHealthValue(stalker->baseDamage, true);
-		}
-
-		// Entity::Attack() spawns a physical OBJECT_PROJECTILE that flies, collides,
-		// and decays after 3s, but nothing ever applied its damage: Entity::onHit()
-		// — the only code that ever read a collider's baseDamage — became dead when
-		// GameObject-level onCollision/onHit virtual dispatch was removed in favor
-		// of Collider3D (a4c90d7), and no ApplyProjectileDamage equivalent to
-		// ApplyStalkerContactDamage was added to replace it. Gated the same way:
-		// once per first contact, not once per solver iteration.
-		void ApplyProjectileDamage(GameObject* self, GameObject* other)
-		{
-			GameObject* projectile = nullptr;
-			GameObject* target = nullptr;
-			if (self->type == OBJECT_PROJECTILE) { projectile = self; target = other; }
-			else if (other->type == OBJECT_PROJECTILE) { projectile = other; target = self; }
-			else { return; }
-
-			if (target->type != OBJECT_PLAYER && target->type != OBJECT_ENTITY) { return; }
-
-			static_cast<Entity*>(target)->applyHealthValue(projectile->baseDamage, true);
-			projectile->Destroy();
-		}
-	}
-
-	void RigidBody3D::resolveConstrains(GameObject* self, GameObject* other)
-	{
-		if (&other->rigidBody3D == this) return;
-		if (other->rigidBody3D.collider.canCollide == false || self->rigidBody3D.collider.canCollide == false) return;
-
-		// A trigger reports contacts and applies no physics. That has to include the
-		// touch flags: a trigger volume that set downTouch would be a floor the
-		// player could stand and jump on, which is exactly what a damage zone or an
-		// objective volume must not be. Either side being a trigger is enough — a
-		// solid body must not be stopped by one any more than the reverse.
-		const bool isTriggerPair = collider.isTrigger() || other->rigidBody3D.collider.isTrigger();
-
-		// Update Collision Flags
-		if (!isTriggerPair) { checkRayCollision(other->rigidBody3D); }
-
-		// One separating-axis test drives both the event and the resolution. The
-		// narrow phase walks 15 axes and the solver runs 8 iterations over every
-		// overlapping pair, so asking isColliding/normal/depth separately — as this
-		// used to — paid for four full tests where one does.
-		const ContactInfo contact = getContact(other->rigidBody3D);
-
-		if (contact.hit)
-		{
-			// Call Collision Event on Owner only on first contact with this object;
-			// the solver runs several iterations per frame and damage/events must
-			// not fire on every pass. Type-specific reactions (e.g. projectile
-			// damage) live in onCollision overrides so no unchecked casts happen here.
-			// "First contact" means absent from last frame's contacts, not merely
-			// different from the previous pair the solver happened to visit.
-
-			const auto isKnown = [other](const std::vector<GameObject*>& contacts) {
-				return std::find(contacts.begin(), contacts.end(), other) != contacts.end();
-				};
-
-			if (!isKnown(contactsThisFrame))
-			{
-				if (!isKnown(contactsLastFrame))
-				{
-					// onCollision fires for triggers too, so switching an object to a
-					// trigger does not silently stop whatever already listened to it.
-					// onTriggerEnter is the additional signal, dispatched below off the
-					// id-based trigger lists — not here too, or a trigger pair's first
-					// contact double-fires onTriggerEnter every time.
-					self->rigidBody3D.collider.onCollisionEnter(other->rigidBody3D.collider);
-					EmitImpactNoise(self, other, contact);
-					ApplyStalkerContactDamage(self, other);
-					ApplyProjectileDamage(self, other);
-				}
-				contactsThisFrame.push_back(other);
-			}
-
-			// Recorded by ID: the matching exit fires a frame later, by which time this
-			// partner may no longer exist.
-			if (isTriggerPair
-				&& std::find(triggerContactsThisFrame.begin(), triggerContactsThisFrame.end(), other->id)
-				== triggerContactsThisFrame.end())
-			{
-				triggerContactsThisFrame.push_back(other->id);
-
-				// Enable Trigger
-				if (std::find(triggerContactsLastFrame.begin(), triggerContactsLastFrame.end(), other->id)
-					== triggerContactsLastFrame.end())
-				{
-					self->rigidBody3D.collider.onTriggerEnter(other->rigidBody3D.collider);
-				}
-			}
-
-			isColliding = true;
-		}
-		else
-		{
-			// Only this pair stopped overlapping; other contacts this frame stand.
-			std::erase(contactsThisFrame, other);
-			isColliding = !contactsThisFrame.empty();
-			return; // nothing overlapping, nothing to separate
-		}
-
-		// A trigger has now done everything it does: it detected the overlap and
-		// reported it. Nothing is pushed, no velocity changes, no friction.
-		if (isTriggerPair) { return; }
-
-		// Reset Position to prevent tunneling
-		resolveCollision(other->rigidBody3D, contact);
-	}
+	//
+	// Which pairs to resolve, and what a contact means for the game, is decided by
+	// PhysicsWorld::Solve and whoever reads its events. These only push.
 
 	void RigidBody3D::resolveCollision(RigidBody3D& other)
 	{
@@ -459,46 +281,13 @@ namespace Physics3D {
 		// Reset acceleration for the next frame
 		acceleration = {};
 
-		// Rebuild touch flags: clear once, then accumulate across nearby bodies.
-		// The cheap AABB test gates the 6 raycasts so distant objects cost nothing.
-		upTouch = downTouch = frontTouch = backTouch = leftTouch = rightTouch = false;
-
-		const float touchMargin = 0.15f;
-		const Vector3 nearCenter = GetColliderCenter();
-		const Vector3 nearHalf = GetWorldHalfExtents();
-		BoundingBox nearBox = {
-			{ nearCenter.x - nearHalf.x - touchMargin, nearCenter.y - nearHalf.y - touchMargin, nearCenter.z - nearHalf.z - touchMargin },
-			{ nearCenter.x + nearHalf.x + touchMargin, nearCenter.y + nearHalf.y + touchMargin, nearCenter.z + nearHalf.z + touchMargin }
-		};
-
-		// currentScene is null between the OUT and IN halves of a scene transition,
-		// and Player::update() reaches this without Scene_updateScene's null guard.
-		SceneManagement::Scene* scene = SceneManagement::SceneManager::getInstance().currentScene;
-		if (scene == nullptr) { return; }
-
-		scene->gameMap.ForEachGameObject([&](GameObject& obj)
-			{
-				if (&obj.rigidBody3D == this) { return; } // rays from our own faces always hit our own box
-				// Same rule resolveConstrains applies to this same call: a trigger must
-				// never set a touch flag, or a damage zone or objective volume becomes a
-				// floor the player can stand and jump on.
-				if (obj.rigidBody3D.collider.isTrigger()) { return; }
-				// Not OverlapsBroadPhase: nearBox is this body's box inflated by the touch
-				// margin, not the box itself, so the pair test does not apply.
-				if (!CheckCollisionBoxes(nearBox, obj.rigidBody3D.broadPhaseBox)) { return; }
-				checkRayCollision(obj.rigidBody3D);
-			});
+		// Touch flags are rebuilt after the collisions, by PhysicsWorld::Solve, against
+		// every solid body near this one. airTime above reads the last frame's.
 	}
 
 	void RigidBody3D::Update(float deltaTime)
 	{
-		// Runs once per body per frame, before solveCollision's iterations. Rolling
-		// the lists here is what makes onCollision fire on entering a contact rather
-		// than every frame it persists, and it drops any partner that was destroyed
-		// since — nothing carries over except through this frame's overlap tests.
-		contactsLastFrame.swap(contactsThisFrame);
-		contactsThisFrame.clear();
-
+		// Runs once per body per frame, before PhysicsWorld::Solve
 		if (!isEnabled) {
 			collider.canCollide = false;
 			return;
@@ -534,34 +323,6 @@ namespace Physics3D {
 
 		// Update collision box to match current position and scale
 		SyncBroadPhaseBox();
-	}
-
-	void RigidBody3D::DispatchTriggerEvents(GameObject* self, GameMap* map)
-	{
-		if (self == nullptr || map == nullptr) { return; }
-
-		// At this point triggerContactsThisFrame still holds what the PREVIOUS
-		// frame's solver accumulated, and triggerContactsLastFrame the frame before
-		// that. Anything in the older set that is absent from the newer one stopped
-		// overlapping during the previous frame — which is the earliest a departure
-		// can possibly be known, since a single solver pass visits pairs in no
-		// particular order.
-		for (const std::uint64_t id : triggerContactsLastFrame)
-		{
-			const bool stillTouching = std::find(triggerContactsThisFrame.begin(),
-				triggerContactsThisFrame.end(), id) != triggerContactsThisFrame.end();
-			if (stillTouching) { continue; }
-
-			// A destroyed partner resolves to nullptr and is simply dropped. This is
-			// the whole reason these lists hold IDs rather than pointers.
-			if (GameObject* other = map->FindWorldObject(id))
-			{
-				self->rigidBody3D.collider.onTriggerExit(other->rigidBody3D.collider);
-			}
-		}
-
-		triggerContactsLastFrame.swap(triggerContactsThisFrame);
-		triggerContactsThisFrame.clear();
 	}
 
 	void RigidBody3D::SyncBroadPhaseBox()

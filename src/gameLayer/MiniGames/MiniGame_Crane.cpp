@@ -1,40 +1,35 @@
 #include "MiniGame_Crane.h"
 
-#include <Player.h>
-#include <SceneManager.h>
+namespace {
+	// Horizontal drift per frame at 60 FPS
+	constexpr int kSpeed = 2;
+}
 
-MiniGame* MiniGame_Crane(Player* player)
+Crane::Crane(const MiniGameSetup& setup)
 {
-	MiniGame* game = new MiniGame();
-	game->name = "Crane";
-	game->update = &Crane::update;
-	game->draw = &Crane::render;
+	name = "Crane";
 
-	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.5f, GetScreenHeight() * 0.5f));
-	player->rigidBody2D.scale = Vector3(5, 5, 5);
-	// Crane drives the player itself; without this, update2D's own WASD
-	// handling also moves the player every frame, double-applying input and
-	// letting the crane fly straight through the obstacle course.
-	player->rigidBody2D.canMove = false;
+	cursor.teleport(Vector2(setup.screenSize.x * 0.5f, setup.screenSize.y * 0.5f));
+	cursor.scale = Vector3(5, 5, 5);
+	cursor.bounds = Rectangle{ 0, 0, setup.screenSize.x, setup.screenSize.y };
 
-	auto screen = game->data->screen = getScreenScale({ 0.25f, 0.2f, 0.5f, 0.7f });
+	auto screen = data.screen = getScreenScale(setup.screenSize, { 0.25f, 0.2f, 0.5f, 0.7f });
 	// Generate Obstacles
 	{
-		game->data->obstacles = {};
-		auto rng = std::ranlux24_base(std::random_device{}());
-		
+		data.obstacles = {};
+		auto rng = std::ranlux24_base(setup.seed);
+
 		// Generate Obstacles
 		for (int i = 0; i < 9; i++)
 		{
 
 			// Create Y Offset For Obstacles
 			float width = getRandomFloat(rng, 0.1f, 0.4f);
-			float height = GetScreenHeight() * 0.03f;
+			float height = setup.screenSize.y * 0.03f;
 			float x = screen.x + (screen.x * getRandomFloat(rng, 0, 0.5f));
 			float y = screen.y + (screen.height * (i * 0.1f));
-			//float y = screen.y + (i * height);
 			// Gen Top Size
-			
+
 			Rectangle left = {
 				x,
 				y,
@@ -53,94 +48,60 @@ MiniGame* MiniGame_Crane(Player* player)
 				height
 			};
 
-			game->data->obstacles.push_back(left);
-			game->data->obstacles.push_back(right);
+			data.obstacles.push_back(left);
+			data.obstacles.push_back(right);
 		}
 	}
-	
+
 	/// Goal Line
-	game->data->goal = generateScaleRect(game->data->screen, { 1.0f, 1.0f, 1.0f, 0.1f });
-	game->data->goal.y = game->data->screen.y + game->data->screen.height - game->data->goal.height;
-	return game;
+	data.goal = generateScaleRect(data.screen, { 1.0f, 1.0f, 1.0f, 0.1f });
+	data.goal.y = data.screen.y + data.screen.height - data.goal.height;
 }
 
-void Crane::render(SceneManagement::Scene* scene_ptr)
+void Crane::DrawGame() const
 {
-	auto data = scene_ptr->miniGame->data;
-	// An unused std::random_device + generator used to be constructed here, once
-	// per frame. random_device can hit the OS entropy source on construction, so
-	// this was a syscall per frame in the draw path for a value nothing read.
-
 	/// Draw Background Screen
-	DrawRectangleRec(data->screen, BLACK);
-	DrawRectangleRec(data->goal, BLUE);
+	DrawRectangleRec(data.screen, BLACK);
+	DrawRectangleRec(data.goal, BLUE);
 
-	for (auto& obj : data->obstacles)
+	for (auto& obj : data.obstacles)
 	{
 		DrawRectangleRec(obj, RED);
 	}
 
 }
 
-void Crane::update(SceneManagement::Scene* scene_ptr, float deltaTime)
+MiniGameOutcome Crane::Update(const MiniGameInput& input, float deltaTime)
 {
-	auto inputSystem = &InputSystem::InputSystem::getInstance();
-	auto data = scene_ptr->miniGame->data;
-	auto player = scene_ptr->player;
-
-	/// Player Logic
+	/// Cursor Logic
 	{
-		player->rigidBody2D.applyGravity(Vector2{ 0, -150 });
+		cursor.applyGravity(Vector2{ 0, -150 });
 
-		static int speed = 2;
+		// kSpeed is a per-frame offset, so it is scaled by deltaTime and multiplied
+		// back up by 60, keeping the drift off the refresh rate.
+		const float step = kSpeed * 60.0f * deltaTime;
 
-		// speed is a per-frame offset, so applying it directly (as this used to)
-		// made the crane's horizontal drift run 2.4x faster at 144 FPS than at
-		// the tuned 60 FPS baseline. Scaled by deltaTime and multiplied back up
-		// by 60 the same way Player::update2D/SetMoveDirection already are.
-		const float step = speed * 60.0f * deltaTime;
+		if (input.held.jump) { cursor.jump(-200); }
+		if (input.held.left) { cursor.translation += Vector3(-step, 0); }
+		if (input.held.right) { cursor.translation += Vector3(step, 0); }
 
-		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_JUMP)) { player->rigidBody2D.jump(-200); }
-		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_LEFT)) { player->rigidBody2D.translation += Vector3(-step, 0); }
-		if (inputSystem->IsActionDown(InputSystem::ACTION_MOVE_RIGHT)) { player->rigidBody2D.translation += Vector3(step, 0); }
-
-		if (player->rigidBody2D.getPosition().y < data->screen.y)
+		if (cursor.getPosition().y < data.screen.y)
 		{
-			player->rigidBody2D.translation = Vector3(player->rigidBody2D.getPosition().x, data->screen.y  + player->rigidBody2D.scale.x);
+			cursor.translation = Vector3(cursor.getPosition().x, data.screen.y + cursor.scale.x);
 		}
 
 	}
 
-	for (auto obstacle : data->obstacles)
+	for (const Rectangle& obstacle : data.obstacles)
 	{
-		if (CheckCollisionCircleRec(player->getPosition2D(), player->rigidBody2D.scale.x, obstacle))
-		{
-			scene_ptr->ResetMiniGame();
-			// ResetMiniGame() just freed the MiniGameData `data` (and, with it,
-			// data->obstacles) points to. Continuing to iterate the now-freed
-			// container, or reading `data` in the Goal Logic below, is a
-			// use-after-free.
-			return;
-		}
+		if (CheckCollisionCircleRec(cursor.getPosition(), cursor.scale.x, obstacle)) { return MiniGameOutcome::Lost; }
 	}
 
 	/// Goal Logic
-	{
-		if (CheckCollisionCircleRec(player->rigidBody2D.getPosition(), player->rigidBody2D.scale.x, data->goal))
-		{
-			CompleteMiniGame(*data, *player, scene_ptr->gameMap, BUFF_RANGE, true);
-			scene_ptr->ReleaseMiniGame();
-			// ReleaseMiniGame() just freed `data`; the out-of-screen check below
-			// reads data->screen and would be a use-after-free.
-			return;
-		}
+	if (CheckCollisionCircleRec(cursor.getPosition(), cursor.scale.x, data.goal)) { return MiniGameOutcome::Won; }
 
-		auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
+	auto cursorRect = Rectangle(cursor.translation.x, cursor.translation.y, cursor.scale.x, cursor.scale.y);
+	if (!CheckCollisionRecs(cursorRect, data.screen)) { return MiniGameOutcome::Lost; }
 
-		if (!CheckCollisionRecs(playerRect, data->screen)) {
-			scene_ptr->ResetMiniGame();
-			return;
-		}
-	}
-
+	return MiniGameOutcome::Running;
 }

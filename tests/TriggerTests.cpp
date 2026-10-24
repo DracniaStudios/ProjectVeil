@@ -1,21 +1,17 @@
 /**
- * Behavioural tests for Collider3D's two modes.
+ * Behavioural tests for Collider3D's two modes, through the scene.
  *
- * The shape maths is covered standalone in tests/ColliderTests.cpp. What cannot
- * be tested there is the part that lives in RigidBody3D::resolveConstrains and
- * needs real game objects: that a Collision collider pushes and a Trigger
- * collider does not, while both still report the contact.
+ * The shape maths is covered standalone in tests/ColliderTests.cpp, and the
+ * solver itself in tests/PhysicsWorldTests.cpp. What is tested here is the same
+ * behaviour with real game objects in a real Scene: that a Collision collider
+ * pushes and a Trigger collider does not, while both still report the contact.
+ *
+ * Each frame runs the objects' own updates and then Scene::SolveCollisions, the
+ * same call Scene_tick makes, rather than a copy of the solver loop.
  *
  * Like the Stalker FSM tests this links against the engine's own object files,
- * and opens a window because GameObject's constructor uploads a fallback cube
- * mesh and needs a GL context. Run under xvfb on a headless machine.
- *
- * The solver loop is mirrored here rather than called: Scene.cpp's
- * solveCollision() is file-static, and Scene_updateScene() drags in cameras,
- * the World Editor and ImGui. The two loops below are copies of the
- * objects-vs-objects and entities-vs-objects passes at Scene.cpp:64-95, with
- * the same guards in the same order. What is under test is resolveConstrains,
- * not the iteration around it.
+ * and opens a window because a GameObject entering the map binds a model, which
+ * needs a GL context. Run under xvfb on a headless machine.
  */
 
 #include <raylib.h>
@@ -30,6 +26,7 @@
 #include <cstdio>
 #include <memory>
 #include <string>
+#include <vector>
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -57,22 +54,11 @@ static void CheckEqual(int actual, int expected, const std::string& what)
 // ─── Fixtures ──────────────────────────────────────────────────────────────
 
 /**
- * An entity that records what it was told.
+ * An entity that counts the contacts the scene reported for it.
  *
  * It has to be an Entity rather than a GameObject because GameMap::gameObjects
- * stores by value and would slice the overrides straight off. The entities map
- * holds unique_ptrs and dispatches virtually.
- *
- * Collision/trigger dispatch no longer runs through GameObject/Entity virtuals
- * (see RigidBody3D::resolveConstrains, which calls onCollisionEnter/
- * onTriggerEnter/onTriggerExit on the *collider*, a Collider3D held by value —
- * not polymorphically overridable per entity). So instead of overriding hooks
- * that no longer exist on Entity, this counts edges of the same geometric
- * contact test resolveConstrains itself gates its dispatch on
- * (RigidBody3D::isCollidingWith, the public wrapper around getContact().hit):
- * a false-to-true edge is exactly the condition that fires onCollisionEnter
- * (and onTriggerEnter, when the pair is a trigger pair), a true-to-false edge
- * the condition onTriggerExit eventually fires on.
+ * stores by value and would slice it. The counts come from the ContactEvents
+ * Scene::SolveCollisions returns, so they are what the game itself is told.
  */
 struct ProbeEntity : Entity
 {
@@ -86,7 +72,6 @@ struct ProbeEntity : Entity
 static SceneManagement::Scene* MakeScene()
 {
 	SceneManagement::Scene* scene = new SceneManagement::Scene();
-	SceneManagement::SceneManager::getInstance().currentScene = scene;
 	return scene;
 }
 
@@ -97,8 +82,10 @@ static ProbeEntity* AddProbe(SceneManagement::Scene* scene, Vector3 at, std::uin
 	owned->rigidBody3D.Teleport(at);
 	owned->rigidBody3D.scale = Vector3{ 1, 1, 1 };
 	owned->rigidBody3D.SyncBroadPhaseBox();
+	// Enabled as a spawned entity would be, then restored so it keeps its id
+	owned->onEnable();
 	ProbeEntity* probe = owned.get();
-	scene->gameMap.LoadEntity(std::move(owned));
+	scene->gameMap.RestoreEntity(std::move(owned));
 	return probe;
 }
 
@@ -119,58 +106,39 @@ static GameObject* AddFloor(SceneManagement::Scene* scene, Vector3 centre, Vecto
 	floor.rigidBody3D.scale = size;
 	floor.rigidBody3D.collider.mode = mode;
 	floor.rigidBody3D.SyncBroadPhaseBox();
-	return scene->gameMap.LoadGameObject(floor);
+	return scene->gameMap.RestoreGameObject(floor);
 }
 
-// One frame, mirroring Scene_updateScene's order: bodies integrate, then the
-// solver runs its iterations over every overlapping pair.
-static void Step(SceneManagement::Scene* scene, float dt, int solverIterations = 8)
+// One frame in Scene_tick's order: bodies integrate in their own
+// updates, then the scene resolves every overlapping pair.
+static std::vector<Physics3D::ContactEvent> Step(SceneManagement::Scene* scene, float dt)
 {
 	scene->gameMap.ForEachGameObject([&](GameObject& object) { object.update(scene, dt); });
 	scene->gameMap.ForEachEntity([&](Entity& entity) { entity.update(scene, dt); });
-
-	for (int iteration = 0; iteration < solverIterations; ++iteration)
-	{
-		// Scene.cpp:84-95 — entities against world objects
-		scene->gameMap.ForEachEntity([&](Entity& entity)
-		{
-			scene->gameMap.ForEachGameObject([&](GameObject& body)
-			{
-				if (entity.rigidBody3D.OverlapsBroadPhase(body.rigidBody3D))
-				{
-					entity.rigidBody3D.resolveConstrains(&entity, &body);
-					entity.rigidBody3D.SyncBroadPhaseBox();
-					body.rigidBody3D.SyncBroadPhaseBox();
-				}
-			});
-		});
-	}
+	return scene->SolveCollisions(8);
 }
 
-// Advances one frame and tallies collisions/triggerEnters/triggerExits on the
-// probe as edges of isCollidingWith(other) — the test-side mirror of what
-// onCollisionEnter/onTriggerEnter/onTriggerExit would have counted, had they
-// still been reachable from an Entity override. A trigger pair is identified
-// the same way resolveConstrains identifies one: either side's collider is in
-// COLLIDER_TRIGGER mode.
-static void StepAndTrackContact(SceneManagement::Scene* scene, ProbeEntity* probe, GameObject* other,
-	float dt, bool& wasColliding)
+// Advances one frame and tallies on the probe what the scene reported between
+// it and `other`: every Enter is a collision, and a trigger pair's Enter and
+// Exit are also a trigger enter and exit.
+static void StepAndTrackContact(SceneManagement::Scene* scene, ProbeEntity* probe, GameObject* other, float dt)
 {
-	Step(scene, dt);
-
-	const bool colliding = probe->rigidBody3D.isCollidingWith(other->rigidBody3D);
-	const bool isTriggerPair = probe->rigidBody3D.collider.isTrigger() || other->rigidBody3D.collider.isTrigger();
-
-	if (colliding && !wasColliding)
+	for (const Physics3D::ContactEvent& event : Step(scene, dt))
 	{
-		++probe->collisions;
-		if (isTriggerPair) { ++probe->triggerEnters; }
+		const bool isThisPair = (event.a == probe->id && event.b == other->id)
+			|| (event.a == other->id && event.b == probe->id);
+		if (!isThisPair) { continue; }
+
+		if (event.phase == Physics3D::ContactPhase::Enter)
+		{
+			++probe->collisions;
+			if (event.isTrigger) { ++probe->triggerEnters; }
+		}
+		else if (event.isTrigger)
+		{
+			++probe->triggerExits;
+		}
 	}
-	else if (!colliding && wasColliding && isTriggerPair)
-	{
-		++probe->triggerExits;
-	}
-	wasColliding = colliding;
 }
 
 // ─── Tests ─────────────────────────────────────────────────────────────────
@@ -187,10 +155,9 @@ static void TestSolidColliderStopsAFall()
 	GameObject* floor = AddFloor(scene, Vector3{ 0, -1, 0 }, Vector3{ 20, 1, 20 }, COLLIDER_COLLISION);
 	ProbeEntity* probe = AddProbe(scene, Vector3{ 0, 2, 0 });
 
-	bool wasColliding = false;
 	for (int frame = 0; frame < 120; ++frame)
 	{
-		StepAndTrackContact(scene, probe, floor, 1.0f / 60.0f, wasColliding);
+		StepAndTrackContact(scene, probe, floor, 1.0f / 60.0f);
 	}
 
 	Check(probe->rigidBody3D.translation.y > -1.0f,
@@ -226,10 +193,9 @@ static void TestTriggerStillReportsTheContact()
 	GameObject* floor = AddFloor(scene, Vector3{ 0, -1, 0 }, Vector3{ 20, 1, 20 }, COLLIDER_TRIGGER);
 	ProbeEntity* probe = AddProbe(scene, Vector3{ 0, 2, 0 });
 
-	bool wasColliding = false;
 	for (int frame = 0; frame < 120; ++frame)
 	{
-		StepAndTrackContact(scene, probe, floor, 1.0f / 60.0f, wasColliding);
+		StepAndTrackContact(scene, probe, floor, 1.0f / 60.0f);
 	}
 
 	CheckEqual(probe->triggerEnters, 1, "entering the volume fired exactly one onTriggerEnter");
@@ -254,10 +220,9 @@ static void TestTriggerDoesNotGroundABody()
 	ProbeEntity* probe = AddProbe(scene, Vector3{ 0, 0.0f, 0 });
 
 	// Few enough frames that the body is still inside the volume
-	bool wasColliding = false;
 	for (int frame = 0; frame < 5; ++frame)
 	{
-		StepAndTrackContact(scene, probe, floor, 1.0f / 60.0f, wasColliding);
+		StepAndTrackContact(scene, probe, floor, 1.0f / 60.0f);
 	}
 
 	Check(probe->triggerEnters > 0, "the body really is inside the trigger");
@@ -297,8 +262,7 @@ static void TestColliderSizeChangesWhatCollides()
 
 int main()
 {
-	// GameObject's constructor uploads a fallback cube mesh, which needs a GL
-	// context.
+	// A GameObject entering the map binds a model, which needs a GL context.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-trigger-tests");
 

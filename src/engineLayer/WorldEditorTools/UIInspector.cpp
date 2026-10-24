@@ -106,13 +106,15 @@ namespace
  * UI inspector.
  *
  * Lists every widget the UIEngine drew last frame, in draw order. The list is
- * rebuilt from the draw calls each frame, so widget data is read-only here.
+ * rebuilt from the draw calls each frame, so widget data is read-only here:
+ * LastFrame() hands it out const.
  * What does persist — the shared Style and the reference resolution — is
  * editable, and restyles every widget at once.
  */
 void WorldEditor::ShowUIData()
 {
 	auto& ui = UI::UIEngine::getInstance();
+	const UI::Frame& lastFrame = ui.LastFrame();
 
 	ImGui::Begin("UI Data");
 
@@ -120,7 +122,7 @@ void WorldEditor::ShowUIData()
 	ImGui::TextColored(HEADER_COLOR, "Scaling");
 	ImGui::Text("Screen: %d x %d", GetScreenWidth(), GetScreenHeight());
 	ImGui::DragFloat2("Reference resolution", &ui.referenceResolution.x, 1.0f, 1.0f, 7680.0f, "%.0f");
-	ImGui::Text("UI scale: %.3f", ui.getScale());
+	ImGui::Text("UI scale: %.3f", lastFrame.scale);
 	ImGui::Separator();
 
 	// --- Style ------------------------------------------------------------
@@ -152,14 +154,15 @@ void WorldEditor::ShowUIData()
 	ImGui::Separator();
 
 	// --- Widgets ----------------------------------------------------------
-	ImGui::TextColored(HEADER_COLOR, "Widgets (%d)", static_cast<int>(ui.widgets.size()));
-	if (ui.hoveredId < 0) { ImGui::Text("Under mouse: none"); }
-	else { ImGui::Text("Under mouse: #%d", ui.hoveredId); }
+	ImGui::TextColored(HEADER_COLOR, "Widgets (%d)", static_cast<int>(lastFrame.widgets.size()));
+	if (lastFrame.hoveredId < 0) { ImGui::Text("Under mouse: none"); }
+	else { ImGui::Text("Under mouse: #%d", lastFrame.hoveredId); }
+	ImGui::Text("Draw commands: %d", static_cast<int>(lastFrame.commands.size()));
 	ImGui::Checkbox("Show bounds in game", &ui.showBounds);
 	ImGui::TextDisabled("Hover a row to outline that widget in game.");
 
 	ImGui::BeginChild("##Widgets");
-	for (const UI::WidgetEntry& entry : ui.widgets)
+	for (const UI::WidgetEntry& entry : lastFrame.widgets)
 	{
 		const UI::Widget& widget = UI::getWidget(entry);
 		ImGui::PushID(widget.id);
@@ -171,7 +174,7 @@ void WorldEditor::ShowUIData()
 
 		const bool isOpen = ImGui::TreeNode("##Widget", "%s #%d  %s",
 			UI::widgetTypeToString(widget.type), widget.id, WidgetLabel(entry));
-		if (ImGui::IsItemHovered()) { ui.highlightedId = widget.id; }
+		if (ImGui::IsItemHovered()) { ui.Highlight(widget.id); }
 
 		if (isOpen)
 		{

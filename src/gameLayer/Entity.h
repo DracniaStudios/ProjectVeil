@@ -126,7 +126,8 @@ public:
 	virtual void onHit(const Entity* collider);
 
 	void applyHealthValue(const float& value, bool isDamage){ if (isDamage) { health -= value; } else { health += value; } }
-	virtual void Attack();
+	// Fires a projectile into the scene, which decays after three seconds
+	virtual void Attack(SceneManagement::Scene& scene);
 
 };
 

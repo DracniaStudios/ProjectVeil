@@ -1,13 +1,21 @@
 #pragma once
-#ifndef MINI_GAME_SIMON_SAYS_H
-#define MINI_GAME_SIMON_SAYS_H
+#ifndef SIMON_SAYS_H
+#define SIMON_SAYS_H
 
 #include <MiniGame.h>
 
-struct SimonSays : MiniGame
+// Press the shown sequence of directions, in order
+class SimonSays : public MiniGame
 {
-	static void render(SceneManagement::Scene* scene_ptr);
-	static void update(SceneManagement::Scene* scene_ptr, float deltaTime);
+public:
+	explicit SimonSays(const MiniGameSetup& setup);
+
+protected:
+	MiniGameOutcome Update(const MiniGameInput& input, float deltaTime) override;
+	void DrawGame() const override;
+
+private:
+	Vector2 screenSize = {};
 };
 
 #endif

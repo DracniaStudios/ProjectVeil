@@ -11,7 +11,7 @@ static constexpr ObjectType kGameObjectTypes[] = {
 void WorldEditor::ShowPlacementPanel()
 {
 	const auto manager = &SceneManagement::SceneManager::getInstance();
-	const auto scene = manager->currentScene;
+	const auto scene = editedScene;
 
 	/// Show Placement Window
 	ImGui::Begin("Placement");
@@ -156,8 +156,13 @@ void WorldEditor::ShowPlacementPanel()
 					MINI_GAME_FLAPPY_BIRD_ID, MINI_GAME_RO_SHAM_BOO_ID);
 			}
 			ImGui::Text("%s", miniGameIdToString(stagingInteractValue));
-			ImGui::InputInt("Activator ID", &stagingActivatorValue);
-			ImGui::TextDisabled("Object toggled when the mini game completes");
+			ImGui::InputScalar("MiniGame Target", ImGuiDataType_U64, &stagingTargetId);
+			if (stagingTargetId == 0) { ImGui::TextDisabled("None: the station toggles itself"); }
+			else if (GameObject* target = editedScene->gameMap.FindWorldObject(stagingTargetId)) {
+				ImGui::TextDisabled("%s", target->name.c_str());
+			}
+			else { ImGui::TextDisabled("Missing: nothing has this id yet"); }
+			ImGui::TextDisabled("Toggled when the mini game is won");
 		}
 		else if (stagingInteractType == INTERACT_UNLOCK) {
 			// Feeds player->artifactUnlocked, not an inventory item.
@@ -226,24 +231,20 @@ void WorldEditor::ShowPlacementPanel()
  */
 GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 {
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
+	auto scene = editedScene;
 	if (scene == nullptr) { statusMessage = "No scene loaded"; return nullptr; }
 
+	// Spawn* stores its own copy of this and binds that copy a model of its own,
+	// so the staging object's settings carry over and nothing of it is freed
 	GameObject object = stagingObject;
 
-	// The copy inherited the staging object's model handle *and* its ownsModel
-	// flag, but staging is still using that model — and will keep using it for
-	// the next placement. Without disowning, the loadVisuals() inside the save
-	// call below would free it out from under the panel.
-	object.disownModel();
-
-	// Record assets by name — the save call binds them via onEnable()
+	// Record assets by name — Spawn* binds them via onEnable()
 	if (AssetManager::Asset* texture = getActiveTexture()) { object.textureName = texture->name; }
 	if (AssetManager::Asset* model = getActiveModel()) { object.modelName = model->name; }
 
 	object.rigidBody3D.Teleport(position);
 
-	// saveObject/saveEntity only repair an exactly-zero scale. A negative extent
+	// Spawn* only repairs an exactly-zero scale. A negative extent
 	// typed into the panel would survive into the world and invert the object's
 	// collision box, leaving it both unclickable and uncollidable.
 	if (object.rigidBody3D.scale != Vector3Zero())
@@ -258,7 +259,7 @@ GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 	{
 		// Built through the factory so the spawned object really is the
 		// requested subclass rather than a base Entity wearing its name.
-		// saveEntity() stores it via the virtual clone(), so a Stalker survives
+		// SpawnEntity() stores it via the virtual clone(), so a Stalker survives
 		// the copy into Scene::entities intact.
 		auto entity = Entity::createByKind(static_cast<EntityKind>(stagingEntityKind));
 
@@ -270,12 +271,6 @@ GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 		const float kindDamage = entity->baseDamage;
 		const std::string kindName = entity->name;
 
-		// The Entity constructor runs GameObject's, which generates a fallback
-		// cube. The assignment below overwrites that handle wholesale, so
-		// without this the mesh is orphaned — one leak per Entity spawned.
-		// Safe to free unconditionally: this object was constructed on the line
-		// above and nothing has copied it.
-		entity->releaseGeneratedModel();
 		static_cast<GameObject&>(*entity) = object; // shared base fields
 		entity->type = OBJECT_ENTITY; // base copy overwrote the constructor's type
 		entity->maxHealth = stagingMaxHealth;
@@ -302,17 +297,10 @@ GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 	{
 		InteractableObject interactable(
 			static_cast<InteractionType>(stagingInteractType),
-			stagingInteractValue, stagingActivatorValue);
-		// Same as the Entity branch: release the constructor's fallback cube
-		// before the assignment orphans it.
-		interactable.releaseGeneratedModel();
+			stagingInteractValue, 0);
+		if (interactable.interactType == INTERACT_MINIGAME) { interactable.targetId = stagingTargetId; }
 		static_cast<GameObject&>(interactable) = object; // shared base fields
 		interactable.type = OBJECT_INTERACTABLE; // base copy overwrote the constructor's type
-		// SpawnInteractable skips the zero-scale fix SpawnGameObject/SpawnEntity apply
-		if (interactable.rigidBody3D.scale == Vector3Zero())
-		{
-			interactable.rigidBody3D.scale = Vector3One();
-		}
 		spawned = scene->gameMap.SpawnInteractable(interactable);
 		break;
 	}
@@ -323,10 +311,10 @@ GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 
 	if (spawned == nullptr) { statusMessage = "Spawn failed"; return nullptr; }
 
-	// SpawnGameObject/SpawnEntity repair a zero scale, but none of them rebuild the
-	// collision box afterwards — and with the simulation frozen nothing else
-	// will. A freshly placed object would be invisible to the very mouse ray
-	// that placed it until physics was resumed.
+	// Spawn* repairs a zero scale before enabling the object, which builds its
+	// collision box. Resynced anyway: with the simulation frozen nothing else
+	// will, and a stale box would hide a freshly placed object from the very
+	// mouse ray that placed it until physics was resumed.
 	spawned->rigidBody3D.SyncBroadPhaseBox();
 
 	selectedObjectId = spawned->id;
