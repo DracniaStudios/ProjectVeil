@@ -11,7 +11,7 @@ namespace Settings {
 	GameSettings foliage = {};
 	GameSettings antiAliasing = {};
 	
-	/* Audio 
+	// Audio
 	GameSettings masterVolume = {};
 	GameSettings musicVolume = {};
 	GameSettings sfxVolume = {};
