@@ -21,7 +21,7 @@ MiniGame* MiniGame_SimonSays(Player* player)
 		// Holds ID and Type. update() only recognizes obstacle values 0-3 (one
 		// per direction) — getRandomInt is inclusive of its upper bound, so this
 		// must stay 3, not 4, or a generated obstacle could never be cleared.
-		game->data->obstacles.push_back(Rectangle{static_cast<float>(i), static_cast<float>(getRandomInt(rng, 0, 3))});
+		game->data->obstacles.push_back(Rectangle{static_cast<float>(i), static_cast<float>(getRandomInt(rng, 0, 3)), 0.0f, 0.0f});
 		
 	}
 

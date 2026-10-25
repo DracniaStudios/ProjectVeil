@@ -101,7 +101,7 @@ MiniGame* MiniGame_Maze(Player* player);
 #define MINI_GAME_RO_SHAM_BOO_ID 5
 MiniGame* MiniGame_RoShamBoo(Player* player);// Rock Paper Scissors
 
-static const char* miniGameIdToString(int id)
+inline const char* miniGameIdToString(int id)
 {
 	switch (id)
 	{
