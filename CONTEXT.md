@@ -18,13 +18,9 @@ _Avoid_: title, title screen
 The Overlay holding Play, Multiplayer, Settings and Exit, opened by the Main Menu scene. It closes only when the scene changes.
 _Avoid_: main menu (that is the scene)
 
-**Inventory**:
-The Overlay the player opens during gameplay to look at what they carry. The world keeps running while it is open, so it is never a safe place to hide.
-_Avoid_: pause, pause menu
-
 **Pause**:
 The Overlay that stops the game. In single-player it freezes the world; in multiplayer the shared world keeps running.
-_Avoid_: inventory, menu
+_Avoid_: menu
 
 ### MiniGames
 
@@ -59,7 +55,7 @@ Taking an object out of the world. It leaves at the end of the frame, never part
 _Avoid_: delete, erase, remove
 
 **Clear**:
-Emptying the whole world at once, before a new world is built or a save is loaded. Ids start over, so the player's inventory empties with it.
+Emptying the whole world at once, before a new world is built or a save is loaded. Ids start over.
 _Avoid_: reset, wipe
 
 **World lighting**:

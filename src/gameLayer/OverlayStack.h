@@ -5,14 +5,10 @@
 #include <optional>
 #include <vector>
 
-/**
- * A 2D layer drawn over the world that takes player input away from gameplay
- * while it is open. See CONTEXT.md.
- */
+// UI Panels
 enum class Overlay
 {
 	Title,
-	Inventory,
 	Settings,
 	Multiplayer,
 	MiniGame,
@@ -42,9 +38,9 @@ public:
 	// Closes every overlay but the Title. For the World Editor.
 	void CloseAll();
 
-	// What the Inventory action (TAB) does. Returns the overlay it closed, if any.
-	// The Title is never closed by it, and nothing opens over the Title.
-	std::optional<Overlay> InventoryPressed();
+	// What the Back action (TAB) does: closes the overlay on top and returns it.
+	// Returns none when nothing is open, and the Title is never closed by it.
+	std::optional<Overlay> BackPressed();
 
 	/** Queries **/
 	// The overlay that was opened last and is still open, or none

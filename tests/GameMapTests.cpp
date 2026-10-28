@@ -375,25 +375,6 @@ static void TestUnlockRemovesTheStationAtTheSweep()
 	delete scene;
 }
 
-static void TestAPickedUpItemIsCarriedById()
-{
-	std::printf("picking up an item puts its id in the inventory, once\n");
-	SceneManagement::Scene* scene = MakeScene();
-	GameMap& map = scene->gameMap;
-
-	InteractableObject pickup(INTERACT_ITEM, 3);
-	InteractableObject* item = map.SpawnInteractable(pickup);
-
-	item->onInteract(*scene);
-	item->onInteract(*scene);
-
-	Check(scene->player->inventory.size() == 1 && scene->player->inventory.front() == item->id,
-		"the inventory holds the item's id, once");
-	Check(!item->isEnabled, "the item left the world");
-
-	delete scene;
-}
-
 // ─── Clear ─────────────────────────────────────────────────────────────────
 
 static void TestClearEmptiesEveryKindAndRestartsIds()
@@ -424,20 +405,17 @@ static void TestClearEmptiesEveryKindAndRestartsIds()
 	delete scene;
 }
 
-static void TestClearWorldForgetsWhatThePlayerCarries()
+static void TestClearWorldEmptiesTheMap()
 {
-	std::printf("Scene::ClearWorld empties the map and the player's inventory with it "
-		"(the inventory holds ids, which the next world would reuse)\n");
+	std::printf("Scene::ClearWorld empties the map\n");
 	SceneManagement::Scene* scene = MakeScene();
 
 	InteractableObject pickup(INTERACT_ITEM, 0);
-	InteractableObject* item = scene->gameMap.SpawnInteractable(pickup);
-	scene->player->inventory.push_back(item->id);
+	scene->gameMap.SpawnInteractable(pickup);
 
 	scene->ClearWorld();
 
-	Check(scene->player->inventory.empty(), "the inventory is empty");
-	Check(scene->gameMap.InteractableCount() == 0, "and so is the map");
+	Check(scene->gameMap.InteractableCount() == 0, "the map is empty");
 
 	delete scene;
 }
@@ -518,9 +496,8 @@ int main()
 	TestDestroyIsDeferredForEveryKind();
 	TestDestroyInsideForEachIsSafe();
 	TestUnlockRemovesTheStationAtTheSweep();
-	TestAPickedUpItemIsCarriedById();
 	TestClearEmptiesEveryKindAndRestartsIds();
-	TestClearWorldForgetsWhatThePlayerCarries();
+	TestClearWorldEmptiesTheMap();
 	TestCreateReplacesTheWholeWorld();
 	TestForEachGameObjectVisitsAllAndHonoursEarlyExit();
 

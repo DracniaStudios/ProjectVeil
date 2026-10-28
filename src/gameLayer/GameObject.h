@@ -187,7 +187,7 @@ public:
 		GameObject::onDisable();
 	};
 	// Plays the station's sound and does what its type says: starts its MiniGame,
-	// unlocks the next one, or goes into the player's inventory
+	// or unlocks the next one
 	virtual void onInteract(SceneManagement::Scene& scene);
 
 	// Save Data

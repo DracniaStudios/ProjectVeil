@@ -11,9 +11,6 @@ namespace SceneManagement { struct Scene; }
 namespace ContactRules
 {
 	/**
-	 * What contacts mean for the game, read from the events PhysicsWorld::Solve
-	 * reported this frame.
-	 *
 	 * Each rule runs once, when a pair starts touching:
 	 *
 	 *   - a solid impact fast enough to hear is a noise, for the player and for the

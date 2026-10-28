@@ -77,7 +77,7 @@ namespace SceneManagement {
 
 	/**
 	 * The current Scene's work for one rendered frame: the fade (which builds the
-	 * requested Scene once the screen is dark), then the Scene's camera, Inventory
+	 * requested Scene once the screen is dark), then the Scene's camera, Back
 	 * key and World Editor (Scene_frame). Runs before the frame's tick.
 	 * @param manager The SceneManager currently used in game
 	 * @param frameTime The time this frame took

@@ -46,9 +46,9 @@
         "LockScale": false,
         "LockTranslation": false,
         "LockVelocity": false,
-        "PosX": 13.421120643615723,
-        "PosY": 1.989568829536438,
-        "PosZ": 108.48153686523438,
+        "PosX": 14.473453521728516,
+        "PosY": 1.9896601438522339,
+        "PosZ": 108.25516510009766,
         "RotW": 1.0,
         "RotX": 0.0,
         "RotY": 0.0,
@@ -56,9 +56,9 @@
         "ScaleX": 1.0,
         "ScaleY": 3.0,
         "ScaleZ": 1.0,
-        "VelocityX": -2.2704818547936156e-05,
+        "VelocityX": -4.346582412719727,
         "VelocityY": 0.0,
-        "VelocityZ": 0.0
+        "VelocityZ": 1.1649997234344482
       },
       "SearchDuration": 8.0,
       "SearchRadius": 6.0,
@@ -367,7 +367,7 @@
       ]
     }
   },
-  "IdCounter": 310,
+  "IdCounter": 315,
   "Interactables": {
     "114": {
       "Activator": 0,
@@ -421,6 +421,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
+      "TargetId": 0,
       "Texture": "Chip001",
       "Variation": 0
     },
@@ -476,6 +477,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
+      "TargetId": 0,
       "Texture": "Chip001",
       "Variation": 0
     },
@@ -531,6 +533,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
+      "TargetId": 0,
       "Texture": "Chip001",
       "Variation": 0
     },
@@ -586,6 +589,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
+      "TargetId": 0,
       "Texture": "Chip001",
       "Variation": 0
     },
@@ -641,6 +645,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
+      "TargetId": 0,
       "Texture": "Chip001",
       "Variation": 0
     },
@@ -696,61 +701,7 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Texture": "Chip001",
-      "Variation": 0
-    },
-    "288": {
-      "Activator": 0,
-      "CastsShadow": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "InteractType": 1,
-      "IsCompleted": false,
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "IsInteractable": true,
-      "IsSelectable": true,
-      "Name": "Ro Sham Boo",
-      "ObjectType": 3,
-      "RigidBody3D": {
-        "CanCollide": true,
-        "Collider": {
-          "Mode": 0,
-          "OffsetX": 0.0,
-          "OffsetY": 0.0,
-          "OffsetZ": 0.0,
-          "Radius": 0.5,
-          "Shape": 0,
-          "SizeX": 1.0,
-          "SizeY": 1.0,
-          "SizeZ": 1.0
-        },
-        "IsEnabled": true,
-        "IsStatic": true,
-        "LockAcceleration": false,
-        "LockAngularVelocity": false,
-        "LockRotation": false,
-        "LockScale": false,
-        "LockTranslation": false,
-        "LockVelocity": false,
-        "PosX": 18.0,
-        "PosY": 5.489508628845215,
-        "PosZ": 106.98999786376953,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 14.0,
-        "ScaleY": 10.0,
-        "ScaleZ": 2.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
+      "TargetId": 0,
       "Texture": "Chip001",
       "Variation": 0
     },
@@ -806,66 +757,12 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
+      "TargetId": 0,
       "Texture": "Chip001",
       "Variation": 0
     },
-    "295": {
-      "Activator": 0,
-      "CastsShadow": true,
-      "Color": [
-        255,
-        255,
-        255,
-        255
-      ],
-      "InteractType": 2,
-      "IsCompleted": false,
-      "IsDestructible": true,
-      "IsEnabled": true,
-      "IsInteractable": true,
-      "IsSelectable": true,
-      "Model": "RubixCube1",
-      "Name": "Artifact",
-      "ObjectType": 3,
-      "RigidBody3D": {
-        "CanCollide": true,
-        "Collider": {
-          "Mode": 0,
-          "OffsetX": -2.9802322387695313e-08,
-          "OffsetY": 2.9802322387695313e-08,
-          "OffsetZ": 2.9802322387695313e-08,
-          "Radius": 0.30000001192092896,
-          "Shape": 0,
-          "SizeX": 0.6000000238418579,
-          "SizeY": 0.6000000238418579,
-          "SizeZ": 0.6000000238418579
-        },
-        "IsEnabled": true,
-        "IsStatic": true,
-        "LockAcceleration": false,
-        "LockAngularVelocity": true,
-        "LockRotation": false,
-        "LockScale": false,
-        "LockTranslation": true,
-        "LockVelocity": false,
-        "PosX": 0.0,
-        "PosY": 3.0,
-        "PosZ": 0.0,
-        "RotW": 1.0,
-        "RotX": 0.0,
-        "RotY": 0.0,
-        "RotZ": 0.0,
-        "ScaleX": 1.0,
-        "ScaleY": 1.0,
-        "ScaleZ": 1.0,
-        "VelocityX": 0.0,
-        "VelocityY": 0.0,
-        "VelocityZ": 0.0
-      },
-      "Variation": 0
-    },
     "302": {
-      "Activator": 301,
+      "Activator": 0,
       "CastsShadow": true,
       "Color": [
         255,
@@ -877,10 +774,10 @@
       "IsCompleted": true,
       "IsDestructible": true,
       "IsEnabled": true,
-      "IsInteractable": false,
+      "IsInteractable": true,
       "IsSelectable": true,
       "Model": "Terminal",
-      "Name": "Terminal 1",
+      "Name": "Guard Door Terminal",
       "ObjectType": 3,
       "RigidBody3D": {
         "CanCollide": true,
@@ -917,10 +814,11 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
+      "TargetId": 301,
       "Variation": 0
     },
     "303": {
-      "Activator": 307,
+      "Activator": 0,
       "CastsShadow": true,
       "Color": [
         255,
@@ -972,10 +870,11 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
+      "TargetId": 307,
       "Variation": 1
     },
     "309": {
-      "Activator": 306,
+      "Activator": 0,
       "CastsShadow": true,
       "Color": [
         255,
@@ -1027,7 +926,120 @@
         "VelocityY": 0.0,
         "VelocityZ": 0.0
       },
-      "Variation": 1
+      "TargetId": 306,
+      "Variation": 0
+    },
+    "311": {
+      "Activator": 0,
+      "CastsShadow": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "InteractType": 2,
+      "IsCompleted": false,
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "IsInteractable": true,
+      "IsSelectable": true,
+      "Model": "RubixCube0",
+      "Name": "Artifact",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
+        "IsEnabled": true,
+        "IsStatic": false,
+        "LockAcceleration": false,
+        "LockAngularVelocity": true,
+        "LockRotation": false,
+        "LockScale": false,
+        "LockTranslation": true,
+        "LockVelocity": false,
+        "PosX": 0.0,
+        "PosY": 3.0,
+        "PosZ": -0.0,
+        "RotW": 0.15984420478343964,
+        "RotX": 0.0,
+        "RotY": -0.9871423244476318,
+        "RotZ": 0.0,
+        "ScaleX": 1.0,
+        "ScaleY": 1.0,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "TargetId": 0,
+      "Variation": 0
+    },
+    "312": {
+      "Activator": 0,
+      "CastsShadow": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "InteractType": 1,
+      "IsCompleted": false,
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "IsInteractable": true,
+      "IsSelectable": true,
+      "Model": "Terminal",
+      "Name": "Stalker Door Terminal",
+      "ObjectType": 3,
+      "RigidBody3D": {
+        "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 4.151370525360107,
+          "OffsetZ": 0.0,
+          "Radius": 5.151370525360107,
+          "Shape": 0,
+          "SizeX": 6.0,
+          "SizeY": 10.302741050720215,
+          "SizeZ": 6.0
+        },
+        "IsEnabled": true,
+        "IsStatic": true,
+        "LockAcceleration": false,
+        "LockAngularVelocity": false,
+        "LockRotation": false,
+        "LockScale": false,
+        "LockTranslation": false,
+        "LockVelocity": false,
+        "PosX": -7.0,
+        "PosY": 1.0,
+        "PosZ": 80.0,
+        "RotW": 0.7071957588195801,
+        "RotX": 0.0,
+        "RotY": 0.7070178389549255,
+        "RotZ": 0.0,
+        "ScaleX": 0.30000001192092896,
+        "ScaleY": 0.30000001192092896,
+        "ScaleZ": 0.30000001192092896,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "TargetId": 314,
+      "Variation": 0
     }
   },
   "Lighting": {
@@ -4593,7 +4605,7 @@
         },
         "IsEnabled": true,
         "IsStatic": true,
-        "LockAcceleration": false,
+        "LockAcceleration": true,
         "LockAngularVelocity": false,
         "LockRotation": false,
         "LockScale": false,
@@ -5997,7 +6009,7 @@
         "LockRotation": false,
         "LockScale": false,
         "LockTranslation": false,
-        "LockVelocity": false,
+        "LockVelocity": true,
         "PosX": 0.0,
         "PosY": 1.0,
         "PosZ": 0.0,
@@ -10525,7 +10537,7 @@
       "IsDestructible": true,
       "IsEnabled": true,
       "IsSelectable": true,
-      "Name": "Guard Door",
+      "Name": "Guard Do1",
       "ObjectType": 0,
       "RigidBody3D": {
         "CanCollide": true,
@@ -10713,6 +10725,56 @@
         "VelocityZ": 0.0
       },
       "Texture": "Ground088"
+    },
+    "314": {
+      "CastsShadow": true,
+      "Color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "IsDestructible": true,
+      "IsEnabled": true,
+      "IsSelectable": true,
+      "Name": "Stalker Door",
+      "ObjectType": 6,
+      "RigidBody3D": {
+        "CanCollide": true,
+        "Collider": {
+          "Mode": 0,
+          "OffsetX": 0.0,
+          "OffsetY": 0.0,
+          "OffsetZ": 0.0,
+          "Radius": 0.5,
+          "Shape": 0,
+          "SizeX": 1.0,
+          "SizeY": 1.0,
+          "SizeZ": 1.0
+        },
+        "IsEnabled": true,
+        "IsStatic": true,
+        "LockAcceleration": false,
+        "LockAngularVelocity": false,
+        "LockRotation": false,
+        "LockScale": false,
+        "LockTranslation": false,
+        "LockVelocity": false,
+        "PosX": 19.0,
+        "PosY": 5.0,
+        "PosZ": 107.0,
+        "RotW": 1.0,
+        "RotX": 0.0,
+        "RotY": 0.0,
+        "RotZ": 0.0,
+        "ScaleX": 15.5,
+        "ScaleY": 11.75,
+        "ScaleZ": 1.0,
+        "VelocityX": 0.0,
+        "VelocityY": 0.0,
+        "VelocityZ": 0.0
+      },
+      "Texture": "Bricks058"
     },
     "36": {
       "CastsShadow": true,

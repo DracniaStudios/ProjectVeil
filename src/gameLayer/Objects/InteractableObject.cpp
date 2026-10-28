@@ -61,24 +61,6 @@ void Unlock(SceneManagement::Scene& scene, InteractableObject* interactable)
 	interactable->Destroy();
 }
 
-void AddItemToInventory(SceneManagement::Scene& scene, InteractableObject* interactable)
-{
-	std::cout << "[InteractableObject] Adding Item to Inventory: " << interactable->activator << "\n";
-
-	// Search in vector
-	auto it = std::ranges::find(scene.player->inventory, interactable->id);
-
-	if (it != scene.player->inventory.end()) {
-		// Item already in inventory
-		return;
-	}
-
-	scene.player->inventory.push_back(interactable->id);
-	interactable->onDisable();
-
-	std::cout << "[InteractableObject] Item added to inventory.\n";
-}
-
 InteractableObject::InteractableObject(const InteractionType interact, int value)
 {
 	type = OBJECT_INTERACTABLE;
@@ -109,7 +91,6 @@ void InteractableObject::onInteract(SceneManagement::Scene& scene)
 	const InteractionType type = interactType;
 	if (type == INTERACT_MINIGAME) { ActivateMiniGame(scene, this); }
 	else if (type == INTERACT_UNLOCK) { Unlock(scene, this); }
-	else if (type == INTERACT_ITEM) { AddItemToInventory(scene, this); }
 
 }
 

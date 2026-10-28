@@ -7,7 +7,6 @@ const char* OverlayName(Overlay overlay)
 	switch (overlay)
 	{
 	case Overlay::Title:       return "Title";
-	case Overlay::Inventory:   return "Inventory";
 	case Overlay::Settings:    return "Settings";
 	case Overlay::Multiplayer: return "Multiplayer";
 	case Overlay::MiniGame:    return "MiniGame";
@@ -37,13 +36,9 @@ void OverlayStack::CloseAll()
 	std::erase_if(stack, [](Overlay overlay) { return overlay != Overlay::Title; });
 }
 
-std::optional<Overlay> OverlayStack::InventoryPressed()
+std::optional<Overlay> OverlayStack::BackPressed()
 {
-	if (stack.empty())
-	{
-		stack.push_back(Overlay::Inventory);
-		return std::nullopt;
-	}
+	if (stack.empty()) { return std::nullopt; }
 
 	const Overlay top = stack.back();
 	if (top == Overlay::Title) { return std::nullopt; }

@@ -197,10 +197,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 	// Scale is applied through the model transform each frame — no mesh regen needed
 	if (ImGui::DragFloat3("Scale: ", &object->rigidBody3D.scale.x))
 	{
-		// Every other scale path clamps (the gizmo, ApplyTransform, SpawnStagedObject).
-		// Dragging this field negative inverts the collision box, and per
-		// EditorPicking.h an inverted box is neither pickable nor collidable — the
-		// object would become impossible to re-select in the viewport to undo it.
+		// Every other scale path clamps (the gizmo, ApplyTransform, SpawnStagedObject). 
 		object->rigidBody3D.scale = SanitizeScale(object->rigidBody3D.scale);
 	}
 	ImGui::Spacing();
@@ -252,7 +249,11 @@ void WorldEditor::showGameObject(GameObject* object) {
 		collider.shape = static_cast<ColliderShape>(shapeIndex);
 		// Switching to Mesh should show the fitted volume straight away rather than
 		// leaving the last hand-authored size sitting on screen looking authoritative
-		if (collider.shape == COLLIDER_MESH) { collider.FitToModel(object->model); }
+		if (collider.shape == COLLIDER_MESH) { 
+			collider.FitToModel(object->model);
+			object->rigidBody3D.broadPhaseBox = GetModelBoundingBox(object->model);
+		}
+
 	}
 
 	int modeIndex = static_cast<int>(collider.mode);

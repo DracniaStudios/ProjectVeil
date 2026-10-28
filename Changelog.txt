@@ -14,144 +14,22 @@
 
 1. Create a player goal to load into the next scene and save current data
 
-2. Create a full UI Engine to make the PlayerUI and Main Menu
-	2.1. Create a UIEngine to handle all UI elements and render them to the screen
-	2.2. Create a PlayerUI to handle all UI elements for the player and render them to the screen 
-	2.3. Create multiple Widget Types to handle different UI elements and render them to the screen
-	2.4. Render all UI elements to the screen and update positions based on percent scale.
-
-3. Create a real main menu for the player to load into the game
-
 [ Issues ]
 
-- There is no in-game way back to the Main Menu until the Pause overlay is added.
-- Not yet clicked through in game: TAB, Return, Close All Overlays, each minigame and Pick Target.
-- Not yet clicked through in game: saving and loading from World Settings, and the save written when the game closes.
-- Not yet clicked through in game: Play's fade into the Tutorial, and the World Editor's panels and commands.
-- Not yet clicked through in game: the Settings menu's pages and rows, and a volume change reaching the Main Menu music.
 
 [ Added ]
 
-- Added an Overlay Stack to each Scene (Title, Inventory, Settings, Multiplayer, MiniGame).
-	It decides which overlay has the player's input, and only the top one draws its panel.
-- Added MiniGameSession. It starts minigames, retries a lost round at the same station,
-	and reports a win with its game and station.
-- Added a Target to Task stations. Winning at a station toggles its Target (none toggles the station itself).
-- Added Pick Target and Clear Target to the Object Browser, and an outline on a selected station's Target.
-- Added Win, Retry and Quit to the MiniGame Inspector.
-- Added Close All Overlays to World Settings, with a read-only list of open overlays.
-- Added OverlayStack and MiniGameSession tests.
-- Added CONTEXT.md for game terms (Overlay, Title, Inventory, MiniGame, Task station, Target, Practice run).
-- Added one GameMap lifecycle for every kind of object: Spawn, Restore, Destroy and Clear.
-	GameMap now owns the ids, and Scene::ClearWorld empties the world and the player's inventory together.
-- Added GameMap tests for Spawn, Restore, Destroy and Clear.
-- Added a PhysicsWorld that resolves every pair of bodies in one pass, player included,
-	and reports each contact's start and end with both bodies' ids.
-- Added ContactRules for impact noise, Stalker contact damage and projectile damage, read from those contacts.
-- Added PhysicsWorld tests, which run without a window.
-- Added one save pipeline for Game saves and World saves: one Snapshot and one Apply,
-	with the save's scope deciding what it holds.
-- Added SaveStore, which keeps saves by name in files or in memory, and SaveParticipant,
-	which keeps a section held outside the Scene, such as Lighting.
-- Added SaveSystem tests, which round-trip every kind of object through files and through memory.
-- Added SceneManager_frame and SceneManager_tick. A frame runs the fade, the camera, the Inventory key
-	and the World Editor; a tick runs the scene's simulation.
-- Added a scene factory to SceneManager, so tests can switch scenes without a world file or music.
-- Added a description to every setting: its kind (Toggle, Choice or Range), its label, its page in the menu and its default.
-- Added Settings tests, which need no window and no library but JSON.
-- Added World lighting and Setting to CONTEXT.md: a world owns its lighting, and a Setting only changes how it is shown.
-- Added a backend to the UIEngine. Each frame is handed the mouse and screen as an input snapshot, widgets record
-	what they draw, and the raylib backend draws it at the end of the frame.
-- Added UIEngine tests for clicks, hover, layout and drawing, which need no window and no library.
-- Added Allocator, Cooldown Timer, Random and InputSystem tests, which need no window.
-	The Allocator tests come from the arena-pool branch, rewritten for the Arena on this branch.
-- Added Director, ContactRules, Editor Picking, Lighting and Entity tests, which link the game like the Stalker tests.
+- Added AudioManager's Stop Audio function.
 
 [ Updated ]
 
-- Updated TAB to be the Inventory key. It opens the Inventory during gameplay,
-	closes the top overlay otherwise, and quits a running minigame.
-- Updated the Main Menu to open its Title and fix the camera, so the player can't walk or look around behind it.
-- Updated the cursor to lock during gameplay and unlock for any overlay or the World Editor.
-- Updated the six MiniGames to own their state and cursor, and return Running, Won or Lost instead of freeing themselves.
-- Updated Settings and Multiplayer to hide the Title panel instead of drawing over it.
-- Updated RigidBody2D to stay inside a bounds rectangle instead of the window.
-- Updated Task station saves to write "TargetId". Older saves take it from "Activator".
-- Updated the Placement panel's "Activator ID" to "MiniGame Target".
-- Updated the Title panel to draw from UI/Overlays.cpp instead of mainMenu.cpp.
-- Updated Destroy to wait until the end of the frame for entities and interactables too, as it already did for GameObjects.
-- Updated the player's inventory to hold item ids instead of pointers.
-- Updated GameObject to create its model when it enters the world, not in its constructor.
-- Updated touch flags (standing, walls) to come from every solid body, not only plain GameObjects.
-- Updated TriggerTests, EmitterTests and StalkerContactDamageTests to run the real collision solve
-	instead of a copy of it.
-- Updated SaveGame, LoadGame, SaveWorld and LoadWorld to run through that one pipeline.
-	They keep their names, files and messages.
-- Updated loading to check the whole save before it clears the world.
-- Updated Lighting to be saved as a participant instead of SaveSystem writing it directly.
-- Updated scene update and draw functions, Player, interactables, Entity's Attack, AudioManager and the World Editor
-	to be handed the Scene they work on, instead of reading SceneManager's current scene. Only the main loop reads it now.
-- Updated a new scene to become current only once it is fully built.
-- Updated the fade between scenes to last 0.85 seconds each way at any frame rate. Below 60 FPS it used to take longer.
-- Updated SceneTransitionTests to run through SceneManager_frame and SceneManager_tick with their own scene factory.
-- Updated the Settings menu to show one page at a time (Gameplay, Display, Video, Sound),
-	with each value in its own words: On, Ultra, 75%.
-- Updated a press on a setting to move it on as its kind says: a Toggle flips, a Choice moves to its next option,
-	and a Range steps up, each going back to its first value after its last.
-- Updated Settings to save every change as it is made, and to tell Audio and Lighting at once.
-- Updated volume changes to reach sounds already playing from files, such as the Main Menu music.
-	FMOD events take the new volume the next time they start.
-- Updated Settings to be kept through a SaveStore, like Game saves and World saves. settings.json keeps its name and keys.
-- Updated loading settings to keep the default for any value a setting can't hold as written, such as Luminosity 0.
-- Updated Lighting to belong to each world, so every scene can be lit its own way. The player's Shadows setting
-	can switch shadows off or draw a smaller shadow map, and Luminosity scales the world's exposure;
-	neither changes what the world's save holds. A world never gets a bigger shadow map than it was saved with.
-- Updated the shadow map to be resized at the start of the next frame, not at the moment a setting or the Lighting panel changes.
-- Updated the Lighting panel to show the shadow map being drawn and the player's limits beside the world's own values.
-- Updated the UI Inspector to read the last frame's widgets without changing them, and to show its draw command count.
-- Updated the World Editor to report that its windows have the mouse, instead of setting a flag inside the UIEngine.
+- Updated Stalker to Chase & Attack player with new States.
 
 [ Fixed ]
 
-- Fixed Settings, Multiplayer and TAB falling out of sync, which left a dimmed screen with no menu.
-- Fixed minigames freeing themselves in the middle of their own update.
-- Fixed the reticle not drawing.
-- Fixed FlappyBird's "left the green area" check almost never firing.
-- Fixed Artifact Practice runs toggling the last station's door. They now only grant the buff.
-- Fixed RigidBody2D's getRectCentered and getRectCornered returning the far corner instead of a size.
-- Fixed loading a save re-enabling doors that were saved disabled, and healing damaged entities to full.
-- Fixed Unlock stations freeing themselves in the middle of their own interaction.
-- Fixed Spawn sharing one model between the prototype and the stored copy, and placed interactables with no scale.
-- Fixed the player being pushed out of entities and interactables twice per solver pass.
-- Fixed a body passing through a trigger making an impact noise.
-- Fixed disabled bodies and bodies that can't collide still counting as ground to stand on.
-- Fixed a save or world file with a section of the wrong type crashing the load after the world was cleared.
-	It is now refused, and the current world stays.
-- Fixed the "Loading Scene" log that an earlier merge lost. The failed-allocation check it also lost is no longer needed:
-	the fade is part of SceneManager and allocates nothing.
-- Fixed the Settings menu treating every setting as on or off. The master volume went from 75% to 100% to 0%,
-	and Shadows from Ultra to Low to Off.
-- Fixed changes in the Settings menu being neither saved nor applied.
-- Fixed the player's Shadows and Luminosity being written into the world's lighting, and saved into the world
-	from the World Editor.
-- Fixed a world saved with shadows on loading with them off while the player had shadows switched off.
-- Fixed a row overflowing the bottom of its panel taking the mouse from whatever was under it, though it isn't drawn.
+- Fixed an issue where Objects didn't update the BroadPhaseBox on FitToModel.
 
 [ Removed ]
 
-- Removed Scene's is2DActive and UIEngine's isSettingsEnabled and isMultiplayerEnabled.
-- Removed PlayerUI and the empty UI/SettingUI.cpp.
-- Removed Player's rigidBody2D, update2D, canMove and interactObjectId.
-- Removed Is2DActive and IsMiniActive from saves. Older saves still load.
-- Removed GameMap's Load*, DestroyGameObject/Entity/Interactable, EraseGameObjectsIf, ResetGameObjectIds
-	and the public instanceHolder, and Scene::ResetID.
-- Removed RigidBody3D's per-body contact lists, resolveConstrains, DispatchTriggerEvents and isColliding,
-	Collider3D's empty onCollision/onTrigger hooks, and GameMap's ForEachObjectPair, ForEachEntityPair
-	and ForEachInteractablePair.
-- Removed SaveSystem's SceneToJson and ApplyJsonToScene, and the copies of them inside SaveWorld and LoadWorld.
-- Removed Transition, SceneManager_update, SceneManager_transition and Scene_updateScene.
-- Removed Settings' public GameSettings fields and settingsList, and AudioManager's updateVolume.
-- Removed the Lighting panel's Reload Quality From Settings, and LightingSystem's ResizeShadowMap.
-- Removed UIEngine's public widgets, hoveredId, highlightedId, isMouseBlocked, getScale, placeWidget,
-	placeNextRow, pushPanel and popPanel, and GetScreenSize.
-
+- Removed Asset Inspector's Folder list
+- Removed Inventory from Player.

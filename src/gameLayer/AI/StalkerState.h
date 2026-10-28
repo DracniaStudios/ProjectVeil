@@ -16,6 +16,8 @@ enum StalkerState
 	STALKER_PATROL,
 	STALKER_INVESTIGATE,
 	STALKER_HUNT,
+	STALKER_CHASE,
+	STALKER_KILL,
 	STALKER_SEARCH_LAST_KNOWN,
 	STALKER_STATE_COUNT
 };
@@ -27,6 +29,8 @@ inline const char* stalkerStateToString(int state)
 	case STALKER_PATROL:            return "Patrol";
 	case STALKER_INVESTIGATE:       return "Investigate";
 	case STALKER_HUNT:              return "Hunt";
+	case STALKER_CHASE:             return "Chase";
+	case STALKER_KILL:              return "Kill";
 	case STALKER_SEARCH_LAST_KNOWN: return "Search Last Known";
 	default:                        return "Unknown";
 	}

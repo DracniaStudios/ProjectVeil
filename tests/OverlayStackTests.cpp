@@ -2,7 +2,7 @@
  * Standalone tests for the overlay stack.
  *
  * The stack decides which Overlay (see CONTEXT.md) has the player's input and
- * what the Inventory action does in each state. It draws nothing and includes
+ * what the Back action does in each state. It draws nothing and includes
  * nothing from raylib or the engine, so this suite is the cheapest tier of all:
  * no library linked, nothing initialised.
  *
@@ -41,35 +41,21 @@ static void TestNewStackLeavesGameplayWithInput()
 	Check(!overlays.DimsWorld(), "the world is not dimmed");
 }
 
-static void TestInventoryActionDuringGameplayOpensInventory()
+static void TestBackActionDuringGameplayDoesNothing()
 {
-	std::printf("the Inventory action during gameplay opens the Inventory\n");
+	std::printf("the Back action during gameplay opens nothing\n");
 
 	OverlayStack overlays;
-	const std::optional<Overlay> closed = overlays.InventoryPressed();
+	const std::optional<Overlay> closed = overlays.BackPressed();
 
 	Check(!closed.has_value(), "nothing is reported closed");
-	Check(overlays.Top() == Overlay::Inventory, "the Inventory is on top");
-	Check(!overlays.GameplayHasInput(), "gameplay loses input");
-	Check(overlays.DimsWorld(), "the world is dimmed behind the Inventory");
-}
-
-static void TestInventoryActionClosesTheInventory()
-{
-	std::printf("the Inventory action closes an open Inventory\n");
-
-	OverlayStack overlays;
-	overlays.InventoryPressed();
-	const std::optional<Overlay> closed = overlays.InventoryPressed();
-
-	Check(closed == Overlay::Inventory, "the Inventory is reported closed");
-	Check(overlays.GameplayHasInput(), "gameplay has input again");
-	Check(!overlays.DimsWorld(), "the world is no longer dimmed");
+	Check(!overlays.Top().has_value(), "nothing is on top");
+	Check(overlays.GameplayHasInput(), "gameplay keeps input");
 }
 
 static void TestTitleTakesInputWithoutDimming()
 {
-	std::printf("the Title takes input without dimming, and ignores the Inventory action\n");
+	std::printf("the Title takes input without dimming, and ignores the Back action\n");
 
 	OverlayStack overlays;
 	overlays.Open(Overlay::Title);
@@ -77,9 +63,9 @@ static void TestTitleTakesInputWithoutDimming()
 	Check(!overlays.GameplayHasInput(), "gameplay has no input under the Title");
 	Check(!overlays.DimsWorld(), "the Main Menu world is shown undimmed behind the Title");
 
-	const std::optional<Overlay> closed = overlays.InventoryPressed();
-	Check(!closed.has_value(), "the Inventory action closes nothing");
-	Check(overlays.Top() == Overlay::Title, "the Title is still on top: no Inventory over the Main Menu");
+	const std::optional<Overlay> closed = overlays.BackPressed();
+	Check(!closed.has_value(), "the Back action closes nothing");
+	Check(overlays.Top() == Overlay::Title, "the Title is still on top");
 }
 
 static void TestClosingReturnsToTheOverlayBeneath()
@@ -130,14 +116,14 @@ static void TestOpeningAnOpenOverlayDoesNothing()
 	Check(overlays.Top() == Overlay::Title, "one Close removes it: there was never a second copy");
 }
 
-static void TestInventoryActionClosesWhateverIsOnTop()
+static void TestBackActionClosesWhateverIsOnTop()
 {
-	std::printf("the Inventory action backs out of a menu, and quits a MiniGame\n");
+	std::printf("the Back action backs out of a menu, and quits a MiniGame\n");
 
 	OverlayStack menus;
 	menus.Open(Overlay::Title);
 	menus.Open(Overlay::Settings);
-	Check(menus.InventoryPressed() == Overlay::Settings, "Settings is reported closed");
+	Check(menus.BackPressed() == Overlay::Settings, "Settings is reported closed");
 	Check(menus.Top() == Overlay::Title, "backing out of Settings lands on the Title");
 
 	OverlayStack station;
@@ -146,7 +132,7 @@ static void TestInventoryActionClosesWhateverIsOnTop()
 	Check(station.DimsWorld(), "the world is dimmed behind a MiniGame");
 
 	// The scene frees the minigame on hearing this; its own Close afterwards must be harmless
-	Check(station.InventoryPressed() == Overlay::MiniGame, "the MiniGame is reported closed so the scene can release it");
+	Check(station.BackPressed() == Overlay::MiniGame, "the MiniGame is reported closed so the scene can release it");
 	station.Close(Overlay::MiniGame);
 	Check(station.GameplayHasInput(), "closing an overlay that is no longer open does nothing");
 }
@@ -164,7 +150,7 @@ static void TestCloseAllKeepsTheTitle()
 
 	OverlayStack tutorial;
 	tutorial.Open(Overlay::MiniGame);
-	tutorial.Open(Overlay::Inventory);
+	tutorial.Open(Overlay::Settings);
 	tutorial.CloseAll();
 	Check(tutorial.GameplayHasInput(), "a scene without a Title is handed back to gameplay");
 }
@@ -182,7 +168,6 @@ static void TestOpenOverlaysReadBottomFirst()
 	Check(open.size() == 2 && open[0] == Overlay::Title && open[1] == Overlay::Settings, "the Title is listed first, Settings above it");
 
 	Check(std::string(OverlayName(Overlay::Title)) == "Title", "the Title is named Title");
-	Check(std::string(OverlayName(Overlay::Inventory)) == "Inventory", "the Inventory is named Inventory");
 	Check(std::string(OverlayName(Overlay::Settings)) == "Settings", "Settings is named Settings");
 	Check(std::string(OverlayName(Overlay::Multiplayer)) == "Multiplayer", "Multiplayer is named Multiplayer");
 	Check(std::string(OverlayName(Overlay::MiniGame)) == "MiniGame", "a MiniGame is named MiniGame");
@@ -193,13 +178,12 @@ int main()
 	std::printf("OverlayStack tests\n\n");
 
 	TestNewStackLeavesGameplayWithInput();
-	TestInventoryActionDuringGameplayOpensInventory();
-	TestInventoryActionClosesTheInventory();
+	TestBackActionDuringGameplayDoesNothing();
 	TestTitleTakesInputWithoutDimming();
 	TestClosingReturnsToTheOverlayBeneath();
 	TestTitleCannotBeClosed();
 	TestOpeningAnOpenOverlayDoesNothing();
-	TestInventoryActionClosesWhateverIsOnTop();
+	TestBackActionClosesWhateverIsOnTop();
 	TestCloseAllKeepsTheTitle();
 	TestOpenOverlaysReadBottomFirst();
 

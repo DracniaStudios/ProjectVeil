@@ -4,10 +4,7 @@
 #include <SceneManager.h>
 
 // Mesh geometry reaches collision through the collider, never straight from the
-// model. A COLLIDER_MESH collider is fitted from the model's own bounds in
-// loadVisuals() below, and SyncBroadPhaseBox builds the box from the collider
-// alone — one source of truth. A helper that built a bounding box directly from
-// a model used to live here and was deliberately removed; do not revive it.
+// model. 
 
 #pragma region GameObject
 /** Initialization **/
@@ -15,18 +12,6 @@ GameObject::GameObject()
 {
 	isEnabled = true;
 	rigidBody3D = {};
-
-	// No model is created here. A new object is usually a prototype that is
-	// copied into a GameMap, and each upload here used to be a cube nobody
-	// released, or one the copy then shared with it. The model is bound by
-	// loadVisuals(), which onEnable(), GameMap's Restore and loadFromJson() all
-	// run, so an object has one by the time it is first drawn.
-
-	// The collision box is not seeded here. It used to be assigned
-	// GetMeshBoundingBox(model.meshes[0]) — a MODEL-LOCAL box written into a
-	// WORLD-space field, which the first SyncBroadPhaseBox() overwrote anyway. The
-	// body builds its own box from its collider, and does so before anything can
-	// read it.
 	lifeSpan = 0;
 	deathSpan = 1;
 
@@ -44,9 +29,7 @@ void GameObject::disownModel()
 
 void GameObject::releaseGeneratedModel()
 {
-	// Only primitives this object generated for itself are unloadable. A named
-	// asset's model is shared by every object using it and belongs to the
-	// AssetManager, so this is a no-op there rather than a free.
+	// Only primitives this object generated for itself are unloadable.
 	if (!ownsModel) { return; }
 
 	if (model.meshCount > 0) { UnloadModel(model); }
@@ -57,12 +40,7 @@ void GameObject::releaseGeneratedModel()
 /** Asset Binding **/
 void GameObject::loadVisuals()
 {
-	// Release whatever this object generated for itself before replacing it.
-	// Every rebind used to orphan the previous cube's GPU buffers — one leak per
-	// projectile fired, per object in a loaded world, and per Entity spawned in
-	// the editor. This is safe because ownsModel is only ever true on the sole
-	// owner; see the ownership note in GameObject.h for the invariant and the
-	// two call sites that maintain it.
+	// Release whatever this object generated for itself before replacing it..
 	releaseGeneratedModel();
 
 	// Model: shared AssetManager handle when one is named, else a unit cube
@@ -356,12 +334,6 @@ bool GameObject::loadCommonFromJson(Json& j)
 
 	// Flags
 	isEnabled = j.value("IsEnabled", true);
-	// "CanBeSelected" is the legacy key. isSelectable and canBeSelected were two
-	// fields carrying the same meaning and the same default; canBeSelected was the
-	// one that persisted, so every world authored before the merge stores its
-	// authored value under the old name. Without this fallback each of them would
-	// miss and silently default to true - including the floor GameMap::create()
-	// deliberately clears - and the next editor save would write the loss back out.
 	isSelectable = j.value("IsSelectable", j.value("CanBeSelected", true));
 	isDestructible = j.value("IsDestructible", true);
 

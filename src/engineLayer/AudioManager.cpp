@@ -224,6 +224,16 @@ namespace AudioManager {
 		studioSystem->update();
 	}
 
+	void AudioManager::StopAudio() {
+		for (auto& [name, sound] : sounds) { sound->release(); }
+		sounds.clear();
+
+		for (FMOD::ChannelGroup*& group : channelGroups) {
+			if (group) { group->release(); }
+			group = nullptr;
+		}
+	}
+
 	void AudioManager::shutdown()
 	{
 		for (auto& [name, sound] : sounds) { sound->release(); }

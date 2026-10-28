@@ -265,8 +265,7 @@ static void TestGameRoundTripKeepsTheMomentAndThePlayer(const Store& store)
 
 static void TestLoadReplacesTheWorld(const Store& store)
 {
-	std::printf("[%s] loading replaces everything already in the world, and empties what "
-		"the player carries\n", store.label);
+	std::printf("[%s] loading replaces everything already in the world\n", store.label);
 	SceneManagement::Scene* saved = MakeScene();
 	BuildWorld(*saved);
 	Check(store.saveWorld(*saved), "the world saves");
@@ -278,15 +277,12 @@ static void TestLoadReplacesTheWorld(const Store& store)
 		SceneManagement::Scene* loaded = MakeScene();
 		GameObject leftoverPrototype{};
 		leftoverPrototype.name = "Leftover";
-		GameObject* leftover = loaded->gameMap.SpawnGameObject(leftoverPrototype);
-		loaded->player->inventory.push_back(leftover->id);
+		loaded->gameMap.SpawnGameObject(leftoverPrototype);
 
 		Check(scope == 0 ? store.loadWorld(*loaded) : store.loadGame(*loaded),
 			std::string(which) + " save loads");
 		Check(FindByName(loaded->gameMap, "Leftover") == nullptr,
 			std::string("the object already in the world is gone after a ") + which + " load");
-		Check(loaded->player->inventory.empty(),
-			std::string("and the player carries nothing after a ") + which + " load");
 
 		delete loaded;
 	}
@@ -378,17 +374,14 @@ static SceneManagement::Scene* MakeOccupiedScene()
 	SceneManagement::Scene* scene = MakeScene();
 	GameObject keeperPrototype{};
 	keeperPrototype.name = "Keeper";
-	GameObject* keeper = scene->gameMap.SpawnGameObject(keeperPrototype);
-	scene->player->inventory.push_back(keeper->id);
+	scene->gameMap.SpawnGameObject(keeperPrototype);
 	return scene;
 }
 
 static void CheckUntouched(SceneManagement::Scene& scene, const std::string& after)
 {
 	Check(FindByName(scene.gameMap, "Keeper") != nullptr && scene.gameMap.GameObjectCount() == 1,
-		"the world is untouched after " + after);
-	Check(scene.player->inventory.size() == 1, "and so is what the player carries after " + after);
-}
+		"the world is untouched after " + after);}
 
 static void TestANewerSaveLeavesTheWorldUntouched()
 {

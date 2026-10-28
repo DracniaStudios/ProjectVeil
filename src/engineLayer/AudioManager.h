@@ -83,6 +83,9 @@ namespace AudioManager {
 		bool PlayEvent3D(const std::string& eventPath, GameObject& object, AudioType type = AUDIO_NONE, float volume = 1.0f);
 		bool PlayEvent3D(const std::string& eventPath, Vector3 position, AudioType type = AUDIO_NONE, float volume = 1.0f);
 
+		// End Audio
+		void StopAudio();
+
 	private:
 		// The group a file sound of that kind plays in, or nullptr when FMOD couldn't make one
 		FMOD::ChannelGroup* GroupFor(AudioType type) const;

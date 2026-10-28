@@ -38,7 +38,7 @@ namespace InputSystem {
 		ACTION_EDITOR_DOWN,
 
 		// Menu Actions
-		ACTION_UI_INVENTORY, // Opens the Inventory, or backs out of the overlay on top
+		ACTION_UI_BACK, // Backs out of the overlay on top
 
 		MAX_ACTION
 	};

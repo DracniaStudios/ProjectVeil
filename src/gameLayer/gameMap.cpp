@@ -54,10 +54,7 @@ bool GameMap::IsIdInUse(std::uint64_t id) const
 
 namespace
 {
-	// Readies a freshly stored copy of a prototype to be enabled. It inherited the
-	// prototype's model handle and its ownsModel flag, but the prototype may still
-	// be using that model (the editor's selection, when it is duplicated), so the
-	// copy is disowned rather than released. onEnable() then binds its own.
+	// Readies a freshly stored copy of a prototype to be enabled. Disabling the copy's model.
 	void PrepareSpawnedCopy(GameObject& copy, std::uint64_t id)
 	{
 		copy.id = id;
@@ -71,9 +68,7 @@ namespace
 		}
 	}
 
-	// What a restored object needs to take part in the world. onEnable() is not
-	// called: it would re-enable an object saved disabled and refill an entity's
-	// health and stamina.
+	// What a restored object needs to take part in the world.
 	void BindRestored(GameObject& object)
 	{
 		object.rigidBody3D.collider.SetObjectID(object.id);

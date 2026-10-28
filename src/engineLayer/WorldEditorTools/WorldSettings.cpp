@@ -5,7 +5,7 @@
 namespace Editor {
 
 static void NewWorld(SceneManagement::Scene& scene) {
-	// Ids start over with the new world, so the player's inventory goes too
+	// Ids start over with the new world
 	scene.ClearWorld();
 	scene.gameMap.create(Vector3(10.0f, 1.0f, 10.0f));
 }

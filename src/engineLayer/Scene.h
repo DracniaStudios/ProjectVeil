@@ -115,9 +115,8 @@ namespace SceneManagement {
 		// once per tick from Scene_tick, ahead of the entity updates.
 		void EmitStationNoise(float deltaTime);
 
-		// Empties the GameMap (GameMap::Clear) and what the player carries with it:
-		// the inventory holds ids, and the next world hands the same ids out again.
-		// The physics world forgets its contacts for the same reason.
+		// Empties the GameMap (GameMap::Clear). The physics world forgets its
+		// contacts too, since the next world hands the same ids out again.
 		void ClearWorld();
 
 		// The collision half of the frame, after every body has moved: resolves every
@@ -153,7 +152,7 @@ namespace SceneManagement {
 	/**
 	 * The scene's work for one rendered frame, outside its simulation: the camera
 	 * (the World Editor's, or the player's while gameplay has input), the
-	 * Inventory key, and the World Editor. Runs before the frame's tick.
+	 * Back key, and the World Editor. Runs before the frame's tick.
 	 * @param scene The Scene being played
 	 * @param camera The camera the frame is drawn with
 	 */

@@ -43,6 +43,10 @@ void WorldEditor::ShowPlayerData(Player* player)
 
 		ImGui::Text("Player Scale 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.scale.x, player->rigidBody3D.scale.y, player->rigidBody3D.scale.z);
 
+		if (ImGui::Button("Player To Camera")) {
+			player->rigidBody3D.Teleport(SceneManagement::SceneManager::getInstance().camera3D.position);
+		}
+
 	}
 	ImGui::Spacing();
 
@@ -50,8 +54,8 @@ void WorldEditor::ShowPlayerData(Player* player)
 	ImGui::Checkbox("Is Alive", &player->isAlive);
 	ImGui::Text("Life Span: %f", player->lifeSpan);
 	ImGui::Text("Life End: %f", player->deathSpan);
-	ImGui::Text("Artifact Mode: %d", player->artifactMode);
-	ImGui::Text("Artifact Unlocked: %d", player->artifactUnlocked);
+	ImGui::InputInt("Artifact Mode: %d", &player->artifactMode);
+	ImGui::InputInt("Artifact Unlocked: %d", &player->artifactUnlocked);
 	ImGui::Spacing();
 
 	/// Show Player Directional Data and Flags
@@ -88,25 +92,6 @@ void WorldEditor::ShowPlayerData(Player* player)
 	ImGui::InputFloat("Player Health: ", &player->health, 1, 1);
 	ImGui::InputFloat("Player Stamina: ", &player->stamina, 1, 1);
 
-	ImGui::Separator();
-
-	// Inventory
-	ImGui::BeginChild("##Inventory");
-
-	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Inventory");
-
-	auto inventory = &player->inventory;
-
-	for (size_t i = 0; i < inventory->size(); ++i) {
-		ImGui::PushID(static_cast<int>(i));
-		const std::uint64_t itemId = inventory->at(i);
-		// The inventory holds ids; an item destroyed since it was picked up finds nothing
-		const InteractableObject* item = scene != nullptr ? scene->gameMap.FindInteractable(itemId) : nullptr;
-		ImGui::Text("Item: %s", item != nullptr ? item->name.c_str() : "(gone)");
-		ImGui::Text("ID: %llu", (unsigned long long)itemId);
-		ImGui::PopID();
-	}
-	ImGui::EndChild();
 	ImGui::End();
 
 }

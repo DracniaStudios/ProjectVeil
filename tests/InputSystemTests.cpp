@@ -109,13 +109,13 @@ static void TestTheEditorCameraLeavesControlFree()
 	Check(Input().GetAction(InputSystem::ACTION_EDITOR_DOWN)->key != KEY_LEFT_CONTROL, "Editor Down is not Left Control");
 }
 
-static void TestTheInventoryActionIsTab()
+static void TestTheBackActionIsTab()
 {
-	std::printf("the Inventory action, which also backs out of Overlays, is on Tab\n");
+	std::printf("the Back action, which backs out of Overlays, is on Tab\n");
 
-	const InputSystem::InputAction* inventory = Input().GetAction(InputSystem::ACTION_UI_INVENTORY);
-	Check(inventory->key == KEY_TAB, "Inventory is bound to Tab");
-	Check(inventory->name == "Inventory", "and is named for the controls menu");
+	const InputSystem::InputAction* back = Input().GetAction(InputSystem::ACTION_UI_BACK);
+	Check(back->key == KEY_TAB, "Back is bound to Tab");
+	Check(back->name == "Back", "and is named for the controls menu");
 }
 
 static void TestLookupsOutsideTheTableFindNothing()
@@ -247,7 +247,7 @@ int main()
 	TestNoTwoGameplayActionsShareAKey();
 	TestNoTwoGameplayActionsShareAButton();
 	TestTheEditorCameraLeavesControlFree();
-	TestTheInventoryActionIsTab();
+	TestTheBackActionIsTab();
 	TestLookupsOutsideTheTableFindNothing();
 	TestUnknownActionsAreNeverDown();
 	TestNothingIsDownWithoutInput();

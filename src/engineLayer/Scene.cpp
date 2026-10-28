@@ -40,6 +40,8 @@ namespace SceneManagement {
 		// Releases every generated model, which ~GameObject() never would
 		scene->gameMap.Clear();
 
+		AudioManager::AudioManager::getInstance().StopAudio();
+
 		if (scene->player) {
 			// The artifact is created on first use (InteractableObject.cpp) and owned by the player.
 			if (scene->player->artifact) {
@@ -58,7 +60,6 @@ namespace SceneManagement {
 	void Scene::ClearWorld() {
 		gameMap.Clear();
 		physics.Reset();
-		if (player) { player->inventory.clear(); }
 	}
 
 #pragma region Physics Management
@@ -173,6 +174,7 @@ namespace SceneManagement {
 	}
 
 	void Scene::TickMiniGame(float deltaTime)
+
 	{
 		// A game under another overlay waits: it can't be lost while it can't be seen
 		if (overlays.Top() != Overlay::MiniGame || !miniGameSession.IsRunning()) { return; }
@@ -218,6 +220,7 @@ namespace SceneManagement {
 
 			if (GameObject* target = station->FindMiniGameTarget(gameMap))
 			{
+				std::cout << "[MiniGame] Target " << station->targetId << " is now " << !target->isEnabled << "\n";
 				if (target->isEnabled) { target->onDisable(); }
 				else { target->onEnable(); }
 			}
@@ -261,11 +264,10 @@ namespace SceneManagement {
 			}
 		}
 
-		// The Inventory action opens the Inventory during gameplay and otherwise
-		// backs out of whatever overlay is on top. Backing out of a minigame quits
-		// it, so it is ended here: the stack only records that it closed.
-		if (inputSystem->IsActionPressed(InputSystem::ACTION_UI_INVENTORY)) {
-			if (scene.overlays.InventoryPressed() == Overlay::MiniGame) {
+		// The Back action backs out of whatever overlay is on top. Backing out of a
+		// minigame quits it, so it is ended here: the stack only records that it closed.
+		if (inputSystem->IsActionPressed(InputSystem::ACTION_UI_BACK)) {
+			if (scene.overlays.BackPressed() == Overlay::MiniGame) {
 				scene.QuitMiniGame();
 			}
 		}
@@ -303,6 +305,7 @@ namespace SceneManagement {
 
 		// Age out stale noise before anything emits this frame, so an event emitted
 		// now is heard by entities later in the same frame rather than next one.
+		
 		// Frozen editor time must not expire events either, hence the delta passed
 		// through unchanged only when the sim is actually running.
 		if (!editorFrozen)
