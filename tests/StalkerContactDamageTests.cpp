@@ -3,15 +3,14 @@
  *
  * Player::onCollision applied this until collision dispatch moved onto
  * Collider3D ("Collider3D Controls Collision"), which cannot see the owning
- * GameObject by design (see the comment above Collider3D::onCollisionEnter).
- * The behaviour was reconnected at the one call site that still has both real
- * GameObjects — RigidBody3D::resolveConstrains's ApplyStalkerContactDamage.
- * This guards that reconnection: touching a Stalker costs the player exactly
- * its baseDamage, once per contact, not once per solver iteration.
+ * GameObject by design. It now lives in gameLayer's ContactRules, which reads
+ * the ContactEvents Scene::SolveCollisions reports. This guards it: touching a
+ * Stalker costs the player exactly its baseDamage, once per contact, not once
+ * per solver iteration or per frame of touching.
  *
  * Like StalkerFsmTests and TriggerTests this links against the game's own
- * object files and needs a GL context for GameObject's fallback cube mesh.
- * Run under xvfb on a headless machine. See tests/run_tests.sh.
+ * object files and needs a GL context, since an entity entering the map binds
+ * a model. Run under xvfb on a headless machine. See tests/run_tests.sh.
  */
 
 #include <raylib.h>
@@ -46,7 +45,6 @@ static SceneManagement::Scene* MakeScene()
 	scene->player->type = OBJECT_PLAYER;
 	scene->player->id = PLAYER_ID;
 	scene->player->onEnable();
-	SceneManagement::SceneManager::getInstance().currentScene = scene;
 	return scene;
 }
 
@@ -56,10 +54,13 @@ static Stalker* AddStalker(SceneManagement::Scene* scene, Vector3 at, std::uint6
 	owned->id = id;
 	owned->rigidBody3D.Teleport(at);
 	// Irrelevant here and only adds drift between calls; this test drives
-	// resolveConstrains directly rather than stepping the FSM or physics.
+	// the scene's collision solve directly rather than stepping the FSM or physics.
 	owned->rigidBody3D.isStatic = true;
+	// Enabled as a spawned Stalker would be (full health and stamina), then
+	// restored so it keeps the id the assertions name
+	owned->onEnable();
 	Stalker* stalker = owned.get();
-	scene->gameMap.LoadEntity(std::move(owned));
+	scene->gameMap.RestoreEntity(std::move(owned));
 	return stalker;
 }
 
@@ -76,16 +77,16 @@ static void TestStalkerContactDamagesThePlayerOnce()
 
 	const float healthBefore = scene->player->health;
 
-	// First contact this frame.
-	scene->player->rigidBody3D.resolveConstrains(scene->player, stalker);
+	// First contact. The solver runs eight iterations over the pair this frame;
+	// the damage belongs to the contact's Enter, not to each iteration.
+	scene->SolveCollisions(8);
 	CheckNear(scene->player->health, healthBefore - stalker->baseDamage, 0.001f,
 		"first contact applies exactly the stalker's baseDamage");
 
-	// The solver runs several iterations per overlapping pair per frame;
-	// resolveConstrains must not re-apply damage on each one.
-	scene->player->rigidBody3D.resolveConstrains(scene->player, stalker);
+	// Still touching on the next frame: the same contact, no new damage.
+	scene->SolveCollisions(8);
 	CheckNear(scene->player->health, healthBefore - stalker->baseDamage, 0.001f,
-		"a second solver iteration in the same frame does not re-apply damage");
+		"staying in contact the next frame does not re-apply damage");
 
 	delete scene;
 }
@@ -99,12 +100,12 @@ static void TestNonStalkerContactDoesNotDamageThePlayer()
 	scene->player->rigidBody3D.SyncBroadPhaseBox();
 
 	// A Stalker positioned so the two colliders do not overlap: no contact,
-	// no call to ApplyStalkerContactDamage at all.
+	// so no damage at all.
 	Stalker* farStalker = AddStalker(scene, Vector3{ 1000, 1000, 1000 });
 	farStalker->rigidBody3D.SyncBroadPhaseBox();
 
 	const float healthBefore = scene->player->health;
-	scene->player->rigidBody3D.resolveConstrains(scene->player, farStalker);
+	scene->SolveCollisions(8);
 	CheckNear(scene->player->health, healthBefore, 0.001f,
 		"a stalker out of contact range leaves player health untouched");
 
@@ -113,8 +114,7 @@ static void TestNonStalkerContactDoesNotDamageThePlayer()
 
 int main()
 {
-	// GameObject's constructor uploads a fallback cube mesh, which needs a GL
-	// context.
+	// An entity binds a model when it enters the map, which needs a GL context.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-stalker-contact-damage-tests");
 

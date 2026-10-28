@@ -1,13 +1,23 @@
 #pragma once
-#ifndef MINI_GAME_DOCTOR_H
-#define MINI_GAME_DOCTOR_H
+#ifndef DOCTOR_H
+#define DOCTOR_H
 
 #include <MiniGame.h>
 
-struct Doctor : MiniGame
+// The cursor drifts on its own; hold both directions to stop it on the goal
+class Doctor : public MiniGame
 {
-	static void render(SceneManagement::Scene* scene_ptr);
-	static void update(SceneManagement::Scene* scene_ptr, float delta);
+public:
+	explicit Doctor(const MiniGameSetup& setup);
+
+protected:
+	MiniGameOutcome Update(const MiniGameInput& input, float deltaTime) override;
+	void DrawGame() const override;
+
+private:
+	// The drift per frame at 60 FPS. Its signs flip at the screen edges, so a
+	// fresh game starts from this again rather than from wherever the last ended.
+	Vector2 driftSpeed = Vector2{ 10, 10 };
 };
 
 #endif

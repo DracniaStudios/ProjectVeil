@@ -4,7 +4,7 @@ namespace Editor {
 
 void WorldEditor::ShowPlayerData(Player* player)
 {
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
+	auto scene = editedScene;
 
 	/// Begin Player Window
 	ImGui::Begin("Player Data");
@@ -17,16 +17,8 @@ void WorldEditor::ShowPlayerData(Player* player)
 	ImGui::Spacing();
 
 
-	/// Show Rigidbody Data based on space
-	if (scene->is2DActive)
-	{
-		ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody2D.isEnabled);
-		ImGui::Text("Player Position 2D: (%.2f, %.2f)", player->rigidBody2D.translation.x, player->rigidBody2D.translation.y);
-		ImGui::Text("Player Velocity 2D: (%.2f, %.2f)", player->rigidBody2D.velocity.x, player->rigidBody2D.velocity.y);
-		ImGui::Text("Player Scale 2D: (%.2f, %.2f)", player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
-
-	}
-	else
+	/// Show Rigidbody Data. Inside a MiniGame the player is that game's cursor,
+	/// shown in the Mini Game Data window instead.
 	{
 		ImGui::Checkbox("RigidBody is Enabled: ", &player->rigidBody3D.isEnabled);
 		ImGui::Text("Player Forward: (%.2f, %.2f, %.2f)", player->rigidBody3D.forward.x, player->rigidBody3D.forward.y, player->rigidBody3D.forward.z);
@@ -51,6 +43,10 @@ void WorldEditor::ShowPlayerData(Player* player)
 
 		ImGui::Text("Player Scale 3D: (%.2f, %.2f, %.2f)", player->rigidBody3D.scale.x, player->rigidBody3D.scale.y, player->rigidBody3D.scale.z);
 
+		if (ImGui::Button("Player To Camera")) {
+			player->rigidBody3D.Teleport(SceneManagement::SceneManager::getInstance().camera3D.position);
+		}
+
 	}
 	ImGui::Spacing();
 
@@ -58,8 +54,8 @@ void WorldEditor::ShowPlayerData(Player* player)
 	ImGui::Checkbox("Is Alive", &player->isAlive);
 	ImGui::Text("Life Span: %f", player->lifeSpan);
 	ImGui::Text("Life End: %f", player->deathSpan);
-	ImGui::Text("Artifact Mode: %d", player->artifactMode);
-	ImGui::Text("Artifact Unlocked: %d", player->artifactUnlocked);
+	ImGui::InputInt("Artifact Mode: %d", &player->artifactMode);
+	ImGui::InputInt("Artifact Unlocked: %d", &player->artifactUnlocked);
 	ImGui::Spacing();
 
 	/// Show Player Directional Data and Flags
@@ -96,23 +92,6 @@ void WorldEditor::ShowPlayerData(Player* player)
 	ImGui::InputFloat("Player Health: ", &player->health, 1, 1);
 	ImGui::InputFloat("Player Stamina: ", &player->stamina, 1, 1);
 
-	ImGui::Separator();
-
-	// Inventory
-	ImGui::BeginChild("##Inventory");
-
-	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Inventory");
-
-	auto inventory = &player->inventory;
-
-	for (size_t i = 0; i < inventory->size(); ++i) {
-		ImGui::PushID(static_cast<int>(i));
-		const auto& item = inventory->at(i);
-		ImGui::Text("Item: %s", item->name.c_str());
-		ImGui::Text("ID: %llu", (unsigned long long)item->id);
-		ImGui::PopID();
-	}
-	ImGui::EndChild();
 	ImGui::End();
 
 }

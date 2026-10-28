@@ -87,6 +87,206 @@ echo
 COLLIDER_STATUS=$?
 
 # ---------------------------------------------------------------------------
+# PhysicsWorld tests
+#
+# Same cheap tier as the Collider suite: the solver (PhysicsWorld.cpp) and the
+# rigid body it moves (RigidBody3D.cpp) know bodies only by id and include no
+# engine header, so they link against raylib alone. What a contact means for
+# the game (ContactRules) is engine-side and covered by the emitter and contact
+# damage suites below.
+# ---------------------------------------------------------------------------
+PHYSICS_BIN="$OUT_DIR/physics_world_tests"
+
+echo
+echo "building $PHYSICS_BIN"
+g++ -std=c++23 -Wall 	-I src/gameLayer 	-I src/engineLayer 	-I thirdparty/raylib-6.0/src 	-I "$JSON_INC" 	tests/PhysicsWorldTests.cpp 	src/gameLayer/Components/PhysicsWorld.cpp 	src/gameLayer/Components/RigidBody3D.cpp 	src/gameLayer/Components/Collider3D.cpp 	-o "$PHYSICS_BIN" 	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
+
+echo
+"$PHYSICS_BIN"
+PHYSICS_STATUS=$?
+
+# ---------------------------------------------------------------------------
+# OverlayStack tests
+#
+# Cheaper still: OverlayStack.cpp includes nothing from raylib or the engine,
+# so this links no library at all. If it ever needs one, the overlay rules have
+# leaked out of the stack.
+# ---------------------------------------------------------------------------
+OVERLAY_BIN="$OUT_DIR/overlay_stack_tests"
+
+echo
+echo "building $OVERLAY_BIN"
+g++ -std=c++23 -Wall \
+	-I src/gameLayer \
+	tests/OverlayStackTests.cpp \
+	src/gameLayer/OverlayStack.cpp \
+	-o "$OVERLAY_BIN"
+
+echo
+"$OVERLAY_BIN"
+OVERLAY_STATUS=$?
+
+# ---------------------------------------------------------------------------
+# Settings tests
+#
+# Same tier as the overlay suite, plus the JSON headers: Settings.cpp and the
+# SaveStore it keeps values through include nothing from raylib or the engine.
+# The settings are kept in memory or in a temp directory, never in saves/. If
+# this block ever needs a library, what a setting means has leaked out of it.
+# ---------------------------------------------------------------------------
+SETTINGS_BIN="$OUT_DIR/settings_tests"
+
+echo
+echo "building $SETTINGS_BIN"
+g++ -std=c++23 -Wall \
+	-I src/engineLayer \
+	-I "$JSON_INC" \
+	-DRESOURCES_PATH=\"$ROOT/resources/\" \
+	tests/SettingsTests.cpp \
+	src/engineLayer/Settings.cpp \
+	src/engineLayer/SaveStore.cpp \
+	-o "$SETTINGS_BIN"
+
+echo
+"$SETTINGS_BIN"
+SETTINGS_STATUS=$?
+
+# ---------------------------------------------------------------------------
+# UIEngine tests
+#
+# Same tier as the overlay suite: UIEngine.cpp takes its input as a snapshot
+# and records what it draws for a backend to replay, so it calls no raylib
+# function. raylib's header is included for its Rectangle, Vector2 and Color
+# types, and nothing is linked. The raylib backend (UI/RaylibBackend.cpp) is
+# left out on purpose; if this block ever needs it, hover or drawing has
+# started calling raylib again.
+# ---------------------------------------------------------------------------
+UI_BIN="$OUT_DIR/ui_engine_tests"
+
+echo
+echo "building $UI_BIN"
+g++ -std=c++23 -Wall \
+	-I src/gameLayer \
+	-I thirdparty/raylib-6.0/src \
+	tests/UIEngineTests.cpp \
+	src/gameLayer/UIEngine.cpp \
+	-o "$UI_BIN"
+
+echo
+"$UI_BIN"
+UI_STATUS=$?
+
+# ---------------------------------------------------------------------------
+# Allocator and cooldown timer tests
+#
+# Cheaper than any other tier: ArenaAllocator.h, PoolAllocator.h and helpers.h
+# are header-only and include nothing from raylib or the engine, so these link
+# no library at all. If either block ever needs one, an allocator or the timer
+# has grown a dependency it should not have.
+# ---------------------------------------------------------------------------
+ALLOCATOR_BIN="$OUT_DIR/allocator_tests"
+
+echo
+echo "building $ALLOCATOR_BIN"
+g++ -std=c++23 -Wall \
+	-I src/engineLayer \
+	tests/AllocatorTests.cpp \
+	-o "$ALLOCATOR_BIN"
+
+echo
+"$ALLOCATOR_BIN"
+ALLOCATOR_STATUS=$?
+
+COOLDOWN_BIN="$OUT_DIR/cooldown_timer_tests"
+
+echo
+echo "building $COOLDOWN_BIN"
+g++ -std=c++23 -Wall \
+	-I src/gameLayer \
+	tests/CooldownTimerTests.cpp \
+	-o "$COOLDOWN_BIN"
+
+echo
+"$COOLDOWN_BIN"
+COOLDOWN_STATUS=$?
+
+# ---------------------------------------------------------------------------
+# Random tests
+#
+# Same tier as the UIEngine suite: randomStuff.cpp calls no raylib function,
+# and raylib's header is included only for its Vector3 and Color types.
+# ---------------------------------------------------------------------------
+RANDOM_BIN="$OUT_DIR/random_tests"
+
+echo
+echo "building $RANDOM_BIN"
+g++ -std=c++23 -Wall \
+	-I src/engineLayer \
+	-I thirdparty/raylib-6.0/src \
+	tests/RandomTests.cpp \
+	src/engineLayer/randomStuff.cpp \
+	-o "$RANDOM_BIN"
+
+echo
+"$RANDOM_BIN"
+RANDOM_STATUS=$?
+
+# ---------------------------------------------------------------------------
+# InputSystem tests
+#
+# Same tier as the collider suite: InputSystem.cpp reads raylib's key and
+# gamepad state, so raylib is linked, but no window is opened and raylib then
+# reports every key up. The suite tests the action table rather than live
+# presses.
+# ---------------------------------------------------------------------------
+INPUT_BIN="$OUT_DIR/input_system_tests"
+
+echo
+echo "building $INPUT_BIN"
+g++ -std=c++23 -Wall \
+	-I src/engineLayer \
+	-I thirdparty/raylib-6.0/src \
+	tests/InputSystemTests.cpp \
+	src/engineLayer/InputSystem.cpp \
+	-o "$INPUT_BIN" \
+	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
+
+echo
+"$INPUT_BIN"
+INPUT_STATUS=$?
+
+# ---------------------------------------------------------------------------
+# MiniGame tests
+#
+# The session, all six games with scripted input, and RigidBody2D. Same tier as
+# the collider suite: a game reads its input, screen size and seed from what it
+# is handed and ends by returning an outcome, so raylib is linked for its
+# rectangle and collision helpers but nothing is initialised. If this block
+# ever needs a game header to link, the MiniGame rules have leaked out again.
+# ---------------------------------------------------------------------------
+MINIGAME_BIN="$OUT_DIR/minigame_session_tests"
+
+echo
+echo "building $MINIGAME_BIN"
+g++ -std=c++23 -Wall \
+	-I src/gameLayer \
+	-I src/engineLayer \
+	-I thirdparty/raylib-6.0/src \
+	-I "$JSON_INC" \
+	tests/MiniGameSessionTests.cpp \
+	src/gameLayer/MiniGameSession.cpp \
+	src/gameLayer/MiniGame.cpp \
+	src/gameLayer/MiniGames/*.cpp \
+	src/gameLayer/Components/RigidBody2D.cpp \
+	src/engineLayer/randomStuff.cpp \
+	-o "$MINIGAME_BIN" \
+	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
+
+echo
+"$MINIGAME_BIN"
+MINIGAME_STATUS=$?
+
+# ---------------------------------------------------------------------------
 # Stalker FSM tests
 #
 # These need the engine. Stalker::update runs Entity::update ->
@@ -103,7 +303,8 @@ if [[ ! -d "$OBJ_ROOT" ]]; then
 	echo
 	echo "skipping engine-linked suites: no compiled objects under '$OBJ_ROOT'." >&2
 	echo "                               build the game first: cmake --build $BUILD_DIR" >&2
-	exit $SOUNDFIELD_STATUS
+	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $UI_STATUS -ne 0 || $ALLOCATOR_STATUS -ne 0 || $COOLDOWN_STATUS -ne 0 || $RANDOM_STATUS -ne 0 || $INPUT_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 ]]; then exit 1; fi
+	exit 0
 fi
 
 # Every object except the one defining main. Detected rather than hardcoded, so
@@ -145,7 +346,11 @@ ENGINE_STATUS=0
 for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
              "TaskStationTests:task_station_tests" "GameMapTests:game_map_tests" \
              "StalkerContactDamageTests:stalker_contact_damage_tests" \
-             "SceneTransitionTests:scene_transition_tests"; do
+             "SceneTransitionTests:scene_transition_tests" \
+             "SaveSystemTests:save_system_tests" \
+             "DirectorTests:director_tests" "ContactRulesTests:contact_rules_tests" \
+             "EditorPickingTests:editor_picking_tests" "LightingTests:lighting_tests" \
+             "EntityTests:entity_tests"; do
 	SRC="tests/${suite%%:*}.cpp"
 	TEST_BIN="$OUT_DIR/${suite##*:}"
 
@@ -188,10 +393,11 @@ done
 # ---------------------------------------------------------------------------
 # Collider mode tests
 #
-# The shape maths is covered by collider_tests above, which needs nothing but
-# raylib. What lives in RigidBody3D::resolveConstrains -- collision pushes,
-# trigger does not -- needs real game objects, so this one links the engine on
-# the same terms as the FSM tests and reuses everything they discovered.
+# The shape maths and the solver are covered by collider_tests and
+# physics_world_tests above, which need nothing but raylib. This runs the same
+# rules -- collision pushes, trigger does not -- with real game objects through
+# Scene::SolveCollisions, so it links the engine on the same terms as the FSM
+# tests and reuses everything they discovered.
 # ---------------------------------------------------------------------------
 TRIGGER_BIN="$OUT_DIR/trigger_tests"
 echo
@@ -226,4 +432,4 @@ else
 fi
 TRIGGER_STATUS=$?
 
-if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
+if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $UI_STATUS -ne 0 || $ALLOCATOR_STATUS -ne 0 || $COOLDOWN_STATUS -ne 0 || $RANDOM_STATUS -ne 0 || $INPUT_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi

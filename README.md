@@ -52,7 +52,6 @@ CI builds are run via GitHub Actions across Linux and Windows using both GCC/Cla
 - **Physics** — custom 2D and 3D rigid body implementations (`RigidBody2D` / `RigidBody3D`) with gravity, drag, constraint resolution, and raycast-based collision checks. 3D collision is a two-phase solver: an axis-aligned broad phase gating an exact oriented-box narrow phase (15-axis separating axis test). Bodies carry a **`Collider3D`** — a collision volume sized and offset independently of the render scale, as a Box, a Sphere, or a Mesh box auto-fitted to the loaded model's bounds — in either **Collision** mode (resolves through the rigid body) or **Trigger** mode (reports the overlap and applies no physics). See [docs/ColliderSystemPlan.md](docs/ColliderSystemPlan.md).
 - **Asset Manager** — a singleton responsible for loading and looking up textures/materials by name, backing all world and UI rendering.
 - **Save System** — JSON-backed serialization for game objects, entities, and world state, with save/load of full scenes to disk.
-- **Inventory & Items** — a slot-based inventory with stackable items (starting with a set of health potions) and item-to-texture resolution.
 - **Interactable Objects** — world objects the player can interact with, including lockable containers (`LockedBox`) and objects that launch mini-games.
 - **Mini-Game Framework** — a shared `MiniGame` interface (update/draw/data) driving self-contained arcade-style mini-games:
   - Flappy Bird
@@ -81,7 +80,7 @@ Tracked informally via `Changelog.txt` as the project moves toward its next mile
 - Hardened texture/asset loading (fixing null texture loads on certain objects).
 - Reliable FMOD file detection through the audio interface.
 - Timed (non-immediate) removal/decay of game objects.
-- Expanded save system coverage (assets, inventory, and mini-game state alongside world/object data).
+- Expanded save system coverage (assets and mini-game state alongside world/object data).
 - Continued build-out of the developer tooling suite as new systems are added.
 
 ## Subject Veil — The Game

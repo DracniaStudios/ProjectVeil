@@ -4,9 +4,15 @@
 
 #include <fmod_studio.hpp>
 #include <fmod.hpp>
+#include <array>
 #include <string>
 #include <unordered_map>
 #include <GameObject.h>
+
+// GameObject.h and this header include each other, so whichever is read first
+// sees the other's types only through a declaration
+struct GameObject;
+namespace SceneManagement { struct Scene; }
 
 namespace AudioManager {
 
@@ -59,7 +65,12 @@ namespace AudioManager {
 
 		void init();
 		void loadAll();
-		void update();
+		// Sets each kind of sound's volume from Settings. Sounds already playing
+		// from files change with it; FMOD events take it when they next start.
+		void ApplySettings();
+		// Hears the world from the scene's player (nothing before the first scene
+		// is built), then lets FMOD run
+		void update(SceneManagement::Scene* scene);
 		void shutdown();
 
 		// File Audio
@@ -72,8 +83,18 @@ namespace AudioManager {
 		bool PlayEvent3D(const std::string& eventPath, GameObject& object, AudioType type = AUDIO_NONE, float volume = 1.0f);
 		bool PlayEvent3D(const std::string& eventPath, Vector3 position, AudioType type = AUDIO_NONE, float volume = 1.0f);
 
+		// End Audio
+		void StopAudio();
+
 	private:
+		// The group a file sound of that kind plays in, or nullptr when FMOD couldn't make one
+		FMOD::ChannelGroup* GroupFor(AudioType type) const;
+		// What a file sound's own channel is set to: the group carries the
+		// Settings volume, so only a sound without one carries it itself
+		float ChannelVolume(AudioType type, float volume) const;
+
 		FMOD::System* system = nullptr;
+		std::array<FMOD::ChannelGroup*, AUDIO_DIALOGUE + 1> channelGroups = {}; // By AudioType
 		std::unordered_map<std::string, FMOD::Sound*> sounds;
 		FMOD::Studio::System* studioSystem = nullptr;
 		std::vector<FMOD::Studio::Bank*> banks;

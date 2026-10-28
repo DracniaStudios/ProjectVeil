@@ -4,10 +4,7 @@
 #include <SceneManager.h>
 
 // Mesh geometry reaches collision through the collider, never straight from the
-// model. A COLLIDER_MESH collider is fitted from the model's own bounds in
-// loadVisuals() below, and SyncBroadPhaseBox builds the box from the collider
-// alone — one source of truth. A helper that built a bounding box directly from
-// a model used to live here and was deliberately removed; do not revive it.
+// model. 
 
 #pragma region GameObject
 /** Initialization **/
@@ -15,32 +12,6 @@ GameObject::GameObject()
 {
 	isEnabled = true;
 	rigidBody3D = {};
-
-	// Fallback unit cube so the object renders before assets are bound.
-	// Scale is applied through model.transform in render3D, so the mesh
-	// itself never needs to be regenerated when the object is resized
-	if (model.meshCount == 0)
-	{
-		model = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
-		ownsModel = true;
-	}
-
-	if (model.materialCount == 0) {
-		model.materials[MATERIAL_MAP_DIFFUSE] = LoadMaterialDefault();
-	}
-
-	// raylib's DrawMesh() reads material.shader, so lighting has to be written
-	// into the material — BeginShaderMode() only affects the rlgl batch and
-	// would leave models unlit. loadVisuals() repeats this on every rebind;
-	// this call covers an object drawn before its first bind. It is a no-op
-	// until LightingSystem::Init() has run.
-	Lighting::LightingSystem::getInstance().ApplyToModel(model);
-
-	// The collision box is not seeded here. It used to be assigned
-	// GetMeshBoundingBox(model.meshes[0]) — a MODEL-LOCAL box written into a
-	// WORLD-space field, which the first SyncBroadPhaseBox() overwrote anyway. The
-	// body builds its own box from its collider, and does so before anything can
-	// read it.
 	lifeSpan = 0;
 	deathSpan = 1;
 
@@ -58,9 +29,7 @@ void GameObject::disownModel()
 
 void GameObject::releaseGeneratedModel()
 {
-	// Only primitives this object generated for itself are unloadable. A named
-	// asset's model is shared by every object using it and belongs to the
-	// AssetManager, so this is a no-op there rather than a free.
+	// Only primitives this object generated for itself are unloadable.
 	if (!ownsModel) { return; }
 
 	if (model.meshCount > 0) { UnloadModel(model); }
@@ -71,12 +40,7 @@ void GameObject::releaseGeneratedModel()
 /** Asset Binding **/
 void GameObject::loadVisuals()
 {
-	// Release whatever this object generated for itself before replacing it.
-	// Every rebind used to orphan the previous cube's GPU buffers — one leak per
-	// projectile fired, per object in a loaded world, and per Entity spawned in
-	// the editor. This is safe because ownsModel is only ever true on the sole
-	// owner; see the ownership note in GameObject.h for the invariant and the
-	// two call sites that maintain it.
+	// Release whatever this object generated for itself before replacing it..
 	releaseGeneratedModel();
 
 	// Model: shared AssetManager handle when one is named, else a unit cube
@@ -246,18 +210,15 @@ void GameObject::render3D()
 
 void GameObject::update(SceneManagement::Scene* scene, float deltaTime)
 {
-	// Before the enabled check on purpose: an object that has just been disabled
-	// stops colliding, and anything sitting in its trigger volumes has therefore
-	// left them. Skipping this would leave those overlaps latched open forever.
-	if (scene != nullptr) { rigidBody3D.DispatchTriggerEvents(this, &scene->gameMap); }
-
+	// A body that has just been disabled stops taking part in the physics world,
+	// which then reports the contacts it had as ended
 	rigidBody3D.isEnabled = isEnabled;
 	if (!isEnabled)
 	{
 		// RigidBody3D::Update() is what clears canCollide for a disabled body,
-		// but returning here means it never runs — and solveCollision() filters
-		// on canCollide alone, so a disabled object stayed a solid invisible
-		// wall. onEnable() already restores the flag on the way back.
+		// but returning here means it never runs. PhysicsWorld::Solve skips a
+		// disabled body either way; this keeps anything else that asks the
+		// collider from treating it as solid. onEnable() restores the flag.
 		rigidBody3D.collider.canCollide = false;
 		return;
 	}
@@ -290,17 +251,17 @@ void GameObject::update(SceneManagement::Scene* scene, float deltaTime)
 
 void GameObject::Destroy()
 {
-	// Removal is deferred: Destroy() can be called from inside the update
-	// loop that iterates gameMap.gameObjects, and erasing there invalidates
-	// the iterators. The scene sweeps pendingDestroy objects after updating.
+	// Removal is deferred, for every kind of object: Destroy() can be called from
+	// inside the update loop that iterates the GameMap, and erasing there
+	// invalidates the iterators. GameMap::SweepDestroyed removes pendingDestroy
+	// objects after the updates.
 	isAlive = false;
 	pendingDestroy = true;
 }
 
 void GameObject::onDestroy(SceneManagement::Scene* scene)
 {
-	// Removal happens in the scene's pendingDestroy sweep (Scene_updateScene);
-	// erasing here would invalidate the update loop's iterators
+	// Called by GameMap::SweepDestroyed just before it erases this object
 	std::cout << "Destroy Object: " << name << "\n";
 
 	// The destructor is trivial and never frees GPU resources, so a generated
@@ -373,12 +334,6 @@ bool GameObject::loadCommonFromJson(Json& j)
 
 	// Flags
 	isEnabled = j.value("IsEnabled", true);
-	// "CanBeSelected" is the legacy key. isSelectable and canBeSelected were two
-	// fields carrying the same meaning and the same default; canBeSelected was the
-	// one that persisted, so every world authored before the merge stores its
-	// authored value under the old name. Without this fallback each of them would
-	// miss and silently default to true - including the floor GameMap::create()
-	// deliberately clears - and the next editor save would write the loss back out.
 	isSelectable = j.value("IsSelectable", j.value("CanBeSelected", true));
 	isDestructible = j.value("IsDestructible", true);
 

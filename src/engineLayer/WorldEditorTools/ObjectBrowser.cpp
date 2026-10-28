@@ -64,21 +64,27 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 		ImGui::TextDisabled("Completed stations are skipped by the Director");
 	}
 
-	if (object->interactType == INTERACT_MINIGAME || object->interactType == INTERACT_ITEM) {
-		ImGui::InputInt("Activator Value", &object->activator);
+	// The Target: what this station's MiniGame enables or disables when won
+	if (object->interactType == INTERACT_MINIGAME) {
+		ImGui::InputScalar("MiniGame Target", ImGuiDataType_U64, &object->targetId);
 
-		if (object->interactType == INTERACT_MINIGAME) {
-			// activator == 0 (or an id nothing resolves to) means "no explicit
-			// target" — FindWorldObject returns nullptr for that, and
-			// dereferencing it here crashed the editor on the common
-			// self-activating case (see PlacementPanel's "Activator ID" field).
-			if (GameObject* activatorObject = SceneManagement::SceneManager::getInstance().currentScene->gameMap.FindWorldObject(object->activator)) {
-				ImGui::TextDisabled("%s", activatorObject->name.c_str());
-			}
-			else {
-				ImGui::TextDisabled("None (self)");
-			}
+		// A Target id nothing resolves to is reported rather than dereferenced
+		GameObject* target = object->FindMiniGameTarget(editedScene->gameMap);
+		if (object->targetId == 0) { ImGui::TextDisabled("None (toggles itself)"); }
+		else if (target != nullptr) { ImGui::TextDisabled("%s", target->name.c_str()); }
+		else { ImGui::TextColored(ImVec4(1, 0.4f, 0.4f, 1), "Missing: nothing has id %llu", static_cast<unsigned long long>(object->targetId)); }
+
+		const bool picking = targetPickStationId == object->id;
+		if (ImGui::Button(picking ? "Click the Target in the viewport (Esc cancels)" : "Pick Target")) {
+			targetPickStationId = picking ? 0 : object->id;
+			statusMessage = picking ? "Target pick cancelled" : "Click the object this station's MiniGame toggles";
 		}
+		ImGui::SameLine();
+		if (ImGui::Button("Clear Target")) { object->targetId = 0; }
+	}
+
+	if (object->interactType == INTERACT_ITEM) {
+		ImGui::InputInt("Activator Value", &object->activator);
 		if (ImGui::Button("Self Activator")) { object->activator = object->id; }
 	}
 
@@ -123,7 +129,7 @@ void WorldEditor::showEntity(Entity* object) {
 	}
 
 	if (ImGui::Button("Teleport To Player")) {
-		object->rigidBody3D.Teleport(SceneManagement::SceneManager::getInstance().currentScene->player->getPosition());
+		object->rigidBody3D.Teleport(editedScene->player->getPosition());
 	}
 	if (ImGui::Button("Teleport To Camera")) {
 		object->rigidBody3D.Teleport(SceneManagement::SceneManager::getInstance().camera3D.position);
@@ -191,10 +197,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 	// Scale is applied through the model transform each frame — no mesh regen needed
 	if (ImGui::DragFloat3("Scale: ", &object->rigidBody3D.scale.x))
 	{
-		// Every other scale path clamps (the gizmo, ApplyTransform, SpawnStagedObject).
-		// Dragging this field negative inverts the collision box, and per
-		// EditorPicking.h an inverted box is neither pickable nor collidable — the
-		// object would become impossible to re-select in the viewport to undo it.
+		// Every other scale path clamps (the gizmo, ApplyTransform, SpawnStagedObject). 
 		object->rigidBody3D.scale = SanitizeScale(object->rigidBody3D.scale);
 	}
 	ImGui::Spacing();
@@ -246,7 +249,11 @@ void WorldEditor::showGameObject(GameObject* object) {
 		collider.shape = static_cast<ColliderShape>(shapeIndex);
 		// Switching to Mesh should show the fitted volume straight away rather than
 		// leaving the last hand-authored size sitting on screen looking authoritative
-		if (collider.shape == COLLIDER_MESH) { collider.FitToModel(object->model); }
+		if (collider.shape == COLLIDER_MESH) { 
+			collider.FitToModel(object->model);
+			object->rigidBody3D.broadPhaseBox = GetModelBoundingBox(object->model);
+		}
+
 	}
 
 	int modeIndex = static_cast<int>(collider.mode);
@@ -486,7 +493,7 @@ void WorldEditor::showSelectedObject(SceneManagement::Scene* scene) {
 
 void WorldEditor::ShowObjectBrowser()
 {
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
+	auto scene = editedScene;
 
 	/// Show Object Browser Window
 	ImGui::Begin("Object Browser");

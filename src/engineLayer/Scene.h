@@ -9,13 +9,14 @@
 #include <randomStuff.h>
 
 #include <gameMap.h>
+#include <PhysicsWorld.h>
 #include <InputSystem.h>
 #include <Player.h>
-#include <PlayerUI.h>
+#include <OverlayStack.h>
 #include <Perception/SoundField.h>
 #include <AI/Director.h>
 #include <AssetManager.h>
-#include <MiniGame.h>
+#include <MiniGameSession.h>
 #include <asserts.h>
 #include <SaveSystem.h>
 #include <Settings.h>
@@ -26,20 +27,22 @@
 #include <unordered_map>
 
 
+namespace SceneManagement { struct Scene; }
+
 /**
- * Define an update method
- * @param object_ptr The object_ptr contained in Scene Object
+ * A scene's own update, run at the start of each tick
+ * @param scene The Scene being ticked
  * @param delta The current deltaTime
  */
-typedef void (*updateSceneMethod)(float delta);
+typedef void (*updateSceneMethod)(SceneManagement::Scene& scene, float delta);
 
 /**
- * Define an draw method
- * @param object_ptr The object_ptr contained in Scene Object
+ * A scene's own drawing, under its objects (3D) or its overlays (2D)
+ * @param scene The Scene being drawn
  */
-typedef void (*drawSceneMethod2D)();
+typedef void (*drawSceneMethod2D)(SceneManagement::Scene& scene);
 
-typedef void (*drawSceneMethod3D)();
+typedef void (*drawSceneMethod3D)(SceneManagement::Scene& scene);
 
 /**
  * Struct to represent a Scene
@@ -57,9 +60,11 @@ namespace SceneManagement {
 		const char* name = "Scene";
 
 		// Flags
-		bool is2DActive = false; // 2D Mode
-		bool isMiniActive = false;// Mini Game 
 		bool limitYBounds = false; // Limit Y Bounds
+
+		// The Overlays open over this scene, which decide whether gameplay has the
+		// player's input. Empty when the scene is built; gone when it is freed.
+		OverlayStack overlays = {};
 
 		// Global Functions
 		updateSceneMethod update = nullptr;
@@ -68,27 +73,15 @@ namespace SceneManagement {
 
 		// Map Data
 		GameMap gameMap = {}; // The GameMap of the Scene
-		MiniGame* miniGame = {}; // Current Mini Game Loaded
 
-		// Two-deep history of minigame progress, kept by value.
-		//
-		// MiniGameData is heap-allocated by the MiniGame constructor and deleted by
-		// ReleaseMiniGame, so a score lives exactly as long as the overlay showing
-		// it: walking away from a half-finished station threw the progress away with
-		// no record it ever existed. These snapshots outlive the allocation, which is
-		// what makes an interruptible station possible to build on top.
-		//
-		// `current` tracks the live minigame's last known state; `previous` is the
-		// one it displaced. Both are refreshed when SetMiniGame swaps games, and
-		// `current` is captured once more on release so it holds the final state
-		// rather than a stale mid-run reading.
-		MiniGameData currentMiniGameData = {};
-		MiniGameData previousMiniGameData = {};
+		// Resolves collisions between every body in the scene, the player's included,
+		// and remembers which pairs are touching. Run through SolveCollisions.
+		Physics3D::PhysicsWorld physics = {};
 
-		// A default MiniGameData is indistinguishable from a genuine score of zero,
-		// so "played and scored nothing" needs to be tellable from "never played".
-		bool hasCurrentMiniGameData = false;
-		bool hasPreviousMiniGameData = false;
+		// The MiniGame being played, if any, and the history of how the last ones went.
+		// Start, quit and win through the Scene's methods below, which also keep the
+		// MiniGame overlay and the Task station in step with it.
+		MiniGameSession miniGameSession = MiniGameSession(CreateMiniGame);
 
 		// Perception — the only channel through which AI learns about the player.
 		// Owned by the Scene because emitters and listeners are both scene objects.
@@ -100,26 +93,43 @@ namespace SceneManagement {
 		// Entity Data
 		Player* player = {};
 
-		void SetMiniGame(int miniGame);
-		int GetLastMiniGame() const { return lastMiniGamePlayed; }
-		void ReleaseMiniGame(); // Frees MiniGame Memory Data
-		void ResetMiniGame();
+		/** MiniGames **/
+		// Starts a MiniGame at a Task station, or as a Practice run with none, and
+		// opens its overlay. False, with nothing changed, for an id that names no game.
+		bool StartMiniGame(int gameId, InteractableObject* station = nullptr);
 
-		// Copies the live minigame's data into currentMiniGameData. Called wherever
-		// the allocation is about to go away or be replaced; a no-op when nothing is
-		// running, so the last captured state stands rather than being erased.
-		void SnapshotMiniGameData();
+		// Runs the MiniGame for a frame while it is the top overlay, and applies a win
+		void TickMiniGame(float deltaTime);
+
+		// Ends the MiniGame unwon and closes its overlay. Progress stays in the history.
+		void QuitMiniGame();
+
+		// The World Editor's buttons: a fresh round, and a win applied like a real one
+		void RetryMiniGame();
+		void WinMiniGame();
 
 		// The task station whose minigame is running, or nullptr for none.
 		InteractableObject* GetRunningStation();
 
 		// Emits the running station's periodic noise into the sound field. Called
-		// once per frame from Scene_updateScene, ahead of the entity updates.
+		// once per tick from Scene_tick, ahead of the entity updates.
 		void EmitStationNoise(float deltaTime);
 
-		void ResetID();
+		// Empties the GameMap (GameMap::Clear). The physics world forgets its
+		// contacts too, since the next world hands the same ids out again.
+		void ClearWorld();
+
+		// The collision half of the frame, after every body has moved: resolves every
+		// overlapping pair of bodies, the player's included, then applies the game's
+		// contact rules (ContactRules). Returns the contacts that started or ended.
+		std::vector<Physics3D::ContactEvent> SolveCollisions(int iterations = 8);
 	private:
-		int lastMiniGamePlayed = 0;
+		// Grants the won game's reward and, at a Task station, completes it and
+		// toggles its Target. Then closes the MiniGame overlay.
+		void FinishWonMiniGame(const MiniGameResult& won);
+
+		// Closes the MiniGame overlay and frees every Task station
+		void CloseMiniGame();
 
 		// Countdown to the running station's next noise. Lives on the Scene rather
 		// than on the station because the station is a plain world object that never
@@ -140,18 +150,28 @@ namespace SceneManagement {
 	void Scene_delete(Scene* scene);
 
 	/**
-	 * Update the current Scene active
-	 * @param scene The Scene to update
-	 * @param delta The current deltaTime
+	 * The scene's work for one rendered frame, outside its simulation: the camera
+	 * (the World Editor's, or the player's while gameplay has input), the
+	 * Back key, and the World Editor. Runs before the frame's tick.
+	 * @param scene The Scene being played
+	 * @param camera The camera the frame is drawn with
 	 */
-	void Scene_updateScene(float delta);
+	void Scene_frame(Scene& scene, Camera3D& camera);
 
 	/**
-	 * Draw the current Scene active
+	 * The scene's simulation for one tick: its own update, sound, the player and
+	 * every object, the Director, collisions and the running MiniGame
+	 * @param scene The Scene to tick
+	 * @param delta The current deltaTime
+	 */
+	void Scene_tick(Scene& scene, float delta);
+
+	/**
+	 * Draw a Scene: its world (3D), then its UI and overlays (2D)
 	 * @param scene The Scene to draw
 	 */
-	void Scene_drawScene2D();
-	void Scene_drawScene3D();
+	void Scene_drawScene2D(Scene& scene);
+	void Scene_drawScene3D(Scene& scene);
 }
 
 /**

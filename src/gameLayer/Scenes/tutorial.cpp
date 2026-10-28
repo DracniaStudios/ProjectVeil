@@ -1,14 +1,14 @@
 #include "tutorial.h"
 
-void Scene_TutorialUpdate(float /*deltaTime*/)
+void Scene_TutorialUpdate(SceneManagement::Scene& /*scene*/, float /*deltaTime*/)
 {
 }
 
-void Scene_TutorialDraw2D()
+void Scene_TutorialDraw2D(SceneManagement::Scene& /*scene*/)
 {
 };
 
-void Scene_TutorialDraw3D()
+void Scene_TutorialDraw3D(SceneManagement::Scene& /*scene*/)
 {
 	// Weird Interaction Between Rendering Ray and layer Objects
 

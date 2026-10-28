@@ -6,6 +6,7 @@
 #include <SceneManager.h>
 #include <Settings.h>
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 
@@ -218,9 +219,16 @@ namespace Lighting
 	{
 		if (isReady) { return true; }
 
-		// Pull quality settings before allocating anything, so the shadow map is
-		// created at the requested resolution the first time round.
+		// Pull the player's quality before allocating anything, so the shadow map
+		// is created at the size it will be drawn at the first time round.
 		ApplySettings();
+
+		// Subscribed once, even if Init is retried after the shader fails to load
+		if (!heardSettings)
+		{
+			Settings::Settings::getInstance().Subscribe({ "Shadows", "Luminosity" }, [this] { ApplySettings(); });
+			heardSettings = true;
+		}
 
 		lightShader = LoadShader(SHADER_VS_PATH, SHADER_FS_PATH);
 		if (!IsShaderValid(lightShader))
@@ -241,11 +249,7 @@ namespace Lighting
 
 		CacheUniformLocations();
 
-		if (shadowsEnabled)
-		{
-			shadowMap = LoadShadowMapTarget(shadowMapResolution);
-			if (shadowMap.id == 0) { shadowsEnabled = false; }
-		}
+		RefreshShadowMap();
 
 		// The flashlight is a spot light that never enters `lights`
 		flashlight.name = "Flashlight";
@@ -316,23 +320,32 @@ namespace Lighting
 		uniforms.depthPass = GetShaderLocation(lightShader, "depthPass");
 	}
 
-	bool LightingSystem::ResizeShadowMap(int resolution)
+	void LightingSystem::SetShadowResolution(int resolution)
 	{
-		shadowMapResolution = static_cast<int>(Clamp(static_cast<float>(resolution), 256.0f, 8192.0f));
+		shadowResolution = std::clamp(resolution, 256, 8192);
+	}
+
+	int LightingSystem::DrawnShadowMapSize() const
+	{
+		return ShadowsDrawn() ? std::min(shadowResolution, playerShadowLimit) : 0;
+	}
+
+	void LightingSystem::RefreshShadowMap()
+	{
+		const int wanted = DrawnShadowMapSize();
+		if (wanted == GetShadowMapResolution()) { return; }
+
+		if (wanted == 0)
+		{
+			UnloadShadowMapTarget(shadowMap);
+			failedShadowMapSize = 0;
+			return;
+		}
+		if (wanted == failedShadowMapSize) { return; }
 
 		UnloadShadowMapTarget(shadowMap);
-
-		// Before Init(), or while shadows are switched off, the resolution is just
-		// remembered — Update() allocates lazily the moment it is needed.
-		if (!isReady || !shadowsEnabled) { return true; }
-
-		shadowMap = LoadShadowMapTarget(shadowMapResolution);
-		if (shadowMap.id == 0)
-		{
-			shadowsEnabled = false;
-			return false;
-		}
-		return true;
+		shadowMap = LoadShadowMapTarget(wanted);
+		failedShadowMapSize = shadowMap.id == 0 ? wanted : 0;
 	}
 #pragma endregion
 
@@ -444,14 +457,10 @@ namespace Lighting
 
 		if (!isReady) { return; }
 
-		// Lazily allocate the depth target. Shadows can be switched on at runtime —
-		// the inspector checkbox or a Settings change — after Init() skipped it,
-		// and without this the toggle would appear to do nothing.
-		if (shadowsEnabled && shadowMap.id == 0)
-		{
-			shadowMap = LoadShadowMapTarget(shadowMapResolution);
-			if (shadowMap.id == 0) { shadowsEnabled = false; }
-		}
+		// Bring the depth target in line with what is drawn. The inspector, a
+		// world load or a Settings change may have changed it since last frame,
+		// and none of them can reallocate mid-pass themselves.
+		RefreshShadowMap();
 
 		// Resolve the shadow owner before packing, so UploadLights() can map it to
 		// the packed slot the shader will actually compare against.
@@ -574,7 +583,7 @@ namespace Lighting
 		const float density = fmaxf(fogDensity, 0.0f);
 		SetShaderValue(lightShader, uniforms.fogDensity, &density, SHADER_UNIFORM_FLOAT);
 
-		const float clampedExposure = fmaxf(exposure, 0.0f);
+		const float clampedExposure = fmaxf(DrawnExposure(), 0.0f);
 		SetShaderValue(lightShader, uniforms.exposure, &clampedExposure, SHADER_UNIFORM_FLOAT);
 
 		const float specular = fmaxf(specularStrength, 0.0f);
@@ -583,7 +592,8 @@ namespace Lighting
 		const float gloss = fmaxf(shininess, 1.0f);
 		SetShaderValue(lightShader, uniforms.shininess, &gloss, SHADER_UNIFORM_FLOAT);
 
-		const float texelSize = 1.0f / static_cast<float>(shadowMapResolution > 0 ? shadowMapResolution : 1);
+		const int mapSize = GetShadowMapResolution();
+		const float texelSize = 1.0f / static_cast<float>(mapSize > 0 ? mapSize : 1);
 		SetShaderValue(lightShader, uniforms.shadowTexelSize, &texelSize, SHADER_UNIFORM_FLOAT);
 
 		const float bias = fmaxf(shadowBias, 0.0f);
@@ -596,7 +606,7 @@ namespace Lighting
 		// sampled when they are enabled, a framebuffer exists, and a directional
 		// light actually claimed it this frame. Anything else and the shader would
 		// read a stale or never-written depth texture.
-		const int shadowGate = (shadowsEnabled && shadowMap.id != 0 && shadowLightIndex >= 0) ? 1 : 0;
+		const int shadowGate = (ShadowsDrawn() && shadowMap.id != 0 && shadowLightIndex >= 0) ? 1 : 0;
 		SetShaderValue(lightShader, uniforms.shadowsEnabled, &shadowGate, SHADER_UNIFORM_INT);
 	}
 #pragma endregion
@@ -642,7 +652,7 @@ namespace Lighting
 		// Only a directional light qualifies: the map is a single orthographic
 		// depth render, which cannot represent a point light's six directions or a
 		// spot light's perspective frustum.
-		if (!shadowsEnabled || shadowMap.id == 0) { return; }
+		if (!ShadowsDrawn() || shadowMap.id == 0) { return; }
 
 		for (int i = 0; i < static_cast<int>(lights.size()); i++)
 		{
@@ -890,23 +900,17 @@ namespace Lighting
 #pragma region Settings & Save Data
 	void LightingSystem::ApplySettings()
 	{
-		auto& settings = Settings::Settings::getInstance();
+		const auto& settings = Settings::Settings::getInstance();
+		SetPlayerQuality(settings.Get<int>("Shadows"), settings.Get<float>("Luminosity"));
+	}
 
-		// Video > Shadows is authored 0-4 like every other quality selection.
-		// 0 turns shadows off; 1-4 pick a shadow map resolution.
-		const int quality = static_cast<int>(Clamp(settings.shadows.value, 0.0f, 4.0f));
-		const int resolutions[5] = { 1024, 512, 1024, 2048, 4096 };
-
-		shadowsEnabled = quality > 0;
-		shadowSoftness = (quality >= 3) ? 1.0f : 0.5f;
-
-		// Luminosity is a 0-2 multiplier, but a freshly written settings.json
-		// stores 0 for anything never touched — which would render a black frame.
-		exposure = (settings.luminosity.value > 0.0f) ? settings.luminosity.value : 1.0f;
-
-		// Only reallocate on an actual size change. Switching shadows back on with
-		// the size unchanged is handled by Update()'s lazy allocation.
-		if (resolutions[quality] != shadowMapResolution) { ResizeShadowMap(resolutions[quality]); }
+	void LightingSystem::SetPlayerQuality(int shadowQuality, float luminosity)
+	{
+		// Off, Low, Medium, High, Ultra. A world asking for less than the cap
+		// keeps its own size; quality never raises a map above what the world set.
+		constexpr int limits[5] = { 0, 512, 1024, 2048, 4096 };
+		playerShadowLimit = limits[std::clamp(shadowQuality, 0, 4)];
+		playerExposure = std::max(luminosity, 0.0f);
 	}
 
 	Json LightingSystem::formatToJson() const
@@ -927,7 +931,7 @@ namespace Lighting
 		j["ShadowBias"] = shadowBias;
 		j["ShadowDistance"] = shadowDistance;
 		j["ShadowSoftness"] = shadowSoftness;
-		j["ShadowResolution"] = shadowMapResolution;
+		j["ShadowResolution"] = shadowResolution;
 
 		// The flashlight is player state, not level data, so it is not saved here.
 		Json lightArray = Json::array();
@@ -967,12 +971,10 @@ namespace Lighting
 		shadowDistance = j.value("ShadowDistance", shadowDistance);
 		shadowSoftness = j.value("ShadowSoftness", shadowSoftness);
 
-		const int savedResolution = j.value("ShadowResolution", shadowMapResolution);
-		if (savedResolution != shadowMapResolution) { ResizeShadowMap(savedResolution); }
-
-		// Only honour "shadows on" if the framebuffer actually exists
-		const bool savedShadows = j.value("ShadowsEnabled", shadowsEnabled);
-		shadowsEnabled = savedShadows && (!isReady || shadowMap.id != 0);
+		// Kept exactly as saved, whatever the player's Shadows setting draws, so
+		// saving this world again writes back what it was authored with
+		SetShadowResolution(j.value("ShadowResolution", shadowResolution));
+		shadowsEnabled = j.value("ShadowsEnabled", shadowsEnabled);
 
 		lights.clear();
 		shadowLightIndex = -1;

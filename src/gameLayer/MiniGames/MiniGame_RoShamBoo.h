@@ -4,10 +4,19 @@
 
 #include <MiniGame.h>
 
-struct RoShamBoo : MiniGame
+// Rock Paper Scissors: pick the one card of three the game has in mind
+class RoShamBoo : public MiniGame
 {
-	static void render(SceneManagement::Scene* scene_ptr);
-	static void update(SceneManagement::Scene* scene_ptr, float deltaTime);
+public:
+	explicit RoShamBoo(const MiniGameSetup& setup);
+
+protected:
+	MiniGameOutcome Update(const MiniGameInput& input, float deltaTime) override;
+	void DrawGame() const override;
+
+private:
+	Vector2 screenSize = {};
+	MiniGameKeys held = {}; // This frame's held keys, so the card being chosen lights up
 };
 
 #endif

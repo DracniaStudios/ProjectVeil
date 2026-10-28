@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <iostream>
 #include <SceneManager.h>
+#include <Settings.h>
 
 namespace AudioManager {
 	// FMOD uses a linear scale for volume, but the user interface uses a logarithmic scale.
@@ -17,19 +18,20 @@ namespace AudioManager {
 		return pow(10.0f, logVolume / 20.0f);
 	}
 
-	void updateVolume(float& currentVolume, AudioType type) {
+	// The Settings' volume for a kind of sound: the master volume, times the kind's own
+	static float SettingsVolume(AudioType type) {
 
-		auto settings = &Settings::Settings::getInstance();
+		const auto& settings = Settings::Settings::getInstance();
 
-		currentVolume *= settings->masterVolume.value;
+		float volume = settings.Get<float>("MasterVolume");
 		switch (type) {
-		case AUDIO_MUSIC: currentVolume *= settings->musicVolume.value; break;
-		case AUDIO_SFX: currentVolume *= settings->sfxVolume.value; break;
-		case AUDIO_GAMEPLAY_SFX: currentVolume *= settings->gameplaySFX.value; break;
-		case AUDIO_DIALOGUE: currentVolume *= settings->dialogueVolume.value; break;
+		case AUDIO_MUSIC: volume *= settings.Get<float>("MusicVolume"); break;
+		case AUDIO_SFX: volume *= settings.Get<float>("SFXVolume"); break;
+		case AUDIO_GAMEPLAY_SFX: volume *= settings.Get<bool>("GameplaySFX") ? 1.0f : 0.0f; break;
+		case AUDIO_DIALOGUE: volume *= settings.Get<float>("DialogueVolume"); break;
 		default: break;
 		}
-
+		return volume;
 	}
 
 
@@ -55,6 +57,35 @@ namespace AudioManager {
 
 		// Load Core System
 		studioSystem->getCoreSystem(&system);
+
+		// One group per kind of sound, each carrying that kind's Settings volume
+		for (size_t type = 0; type < channelGroups.size(); type++)
+		{
+			if (system->createChannelGroup(nullptr, &channelGroups[type]) != FMOD_OK) { channelGroups[type] = nullptr; }
+		}
+		ApplySettings();
+
+		Settings::Settings::getInstance().Subscribe(
+			{ "MasterVolume", "MusicVolume", "SFXVolume", "GameplaySFX", "DialogueVolume" },
+			[this] { ApplySettings(); });
+	}
+
+	void AudioManager::ApplySettings()
+	{
+		for (size_t type = 0; type < channelGroups.size(); type++)
+		{
+			if (channelGroups[type]) { channelGroups[type]->setVolume(SettingsVolume(static_cast<AudioType>(type))); }
+		}
+	}
+
+	FMOD::ChannelGroup* AudioManager::GroupFor(AudioType type) const
+	{
+		return static_cast<size_t>(type) < channelGroups.size() ? channelGroups[type] : nullptr;
+	}
+
+	float AudioManager::ChannelVolume(AudioType type, float volume) const
+	{
+		return GroupFor(type) ? volume : volume * SettingsVolume(type);
 	}
 
 	void AudioManager::loadAll()
@@ -181,11 +212,10 @@ namespace AudioManager {
 		}
 	}
 
-	void AudioManager::update()
+	void AudioManager::update(SceneManagement::Scene* scene)
 	{
 		if (!studioSystem) return;
 
-		const auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 		if (scene && scene->player)
 		{
 			FMOD_3D_ATTRIBUTES listener = scene->player->getListener();
@@ -194,10 +224,26 @@ namespace AudioManager {
 		studioSystem->update();
 	}
 
+	void AudioManager::StopAudio() {
+		for (auto& [name, sound] : sounds) { sound->release(); }
+		sounds.clear();
+
+		for (FMOD::ChannelGroup*& group : channelGroups) {
+			if (group) { group->release(); }
+			group = nullptr;
+		}
+	}
+
 	void AudioManager::shutdown()
 	{
 		for (auto& [name, sound] : sounds) { sound->release(); }
 		sounds.clear();
+
+		for (FMOD::ChannelGroup*& group : channelGroups)
+		{
+			if (group) { group->release(); }
+			group = nullptr;
+		}
 
 		if (studioSystem)
 		{
@@ -223,12 +269,11 @@ namespace AudioManager {
 		}
 
 		FMOD::Channel* channel = nullptr;
-		system->playSound(it->second, nullptr, true, &channel);
+		system->playSound(it->second, GroupFor(type), true, &channel);
 		if (channel)
 		{
 			channel->setMode(FMOD_2D); // sounds are loaded as 3D; play this one flat
-			updateVolume(volume, type);
-			channel->setVolume(volume);
+			channel->setVolume(ChannelVolume(type, volume));
 			channel->setPaused(false);
 		}
 		return true;
@@ -247,15 +292,14 @@ namespace AudioManager {
 
 		// Start paused so the sound is positioned before the first audible frame
 		FMOD::Channel* channel = nullptr;
-		system->playSound(it->second, nullptr, true, &channel);
+		system->playSound(it->second, GroupFor(type), true, &channel);
 
 		if (channel)
 		{
 			FMOD_VECTOR pos = Vector3ToFMOD(object.getPosition());
 			FMOD_VECTOR vel = Vector3ToFMOD(object.getVelocity());
 			channel->set3DAttributes(&pos, &vel);
-			updateVolume(volume, type);
-			channel->setVolume(volume);
+			channel->setVolume(ChannelVolume(type, volume));
 			channel->setPaused(false);
 		}
 		return true;
@@ -274,15 +318,14 @@ namespace AudioManager {
 
 		// Start paused so the sound is positioned before the first audible frame
 		FMOD::Channel* channel = nullptr;
-		system->playSound(it->second, nullptr, true, &channel);
+		system->playSound(it->second, GroupFor(type), true, &channel);
 
 		if (channel)
 		{
 			FMOD_VECTOR pos = Vector3ToFMOD(position);
 			FMOD_VECTOR vel = Vector3ToFMOD(Vector3(0, 0, 0));
 			channel->set3DAttributes(&pos, &vel);
-			updateVolume(volume, type);
-			channel->setVolume(volume);
+			channel->setVolume(ChannelVolume(type, volume));
 			channel->setPaused(false);
 		}
 		return true;
@@ -306,8 +349,7 @@ namespace AudioManager {
 			std::cout << "[Audio Manager] Failed to create instance for \"" << eventPath << "\": " << FMOD_ErrorString(result) << "\n";
 			return false;
 		}
-		updateVolume(volume, type);
-		instance->setVolume(volume);
+		instance->setVolume(volume * SettingsVolume(type));
 		instance->start();
 		instance->release(); // Destroy when finished playing sound
 		return true;
@@ -343,8 +385,7 @@ namespace AudioManager {
 		// Position the event before it starts so the first frame is already spatialized
 		FMOD_3D_ATTRIBUTES attributes = object.get3DAttributes();
 		object.soundInstance->set3DAttributes(&attributes);
-		updateVolume(volume, type);
-		object.soundInstance->setVolume(volume);
+		object.soundInstance->setVolume(volume * SettingsVolume(type));
 		object.soundInstance->start();
 		object.soundInstance->release(); // Destroy when finished playing sound
 		return true;
@@ -378,8 +419,7 @@ namespace AudioManager {
 		attributes.up = Vector3ToFMOD(Vector3Normalize(Vector3(0, 1, 0)));
 
 		soundInstance->set3DAttributes(&attributes);
-		updateVolume(volume, type);
-		soundInstance->setVolume(volume);
+		soundInstance->setVolume(volume * SettingsVolume(type));
 		soundInstance->start();
 		soundInstance->release(); // Destroy when finished playing sound
 		return true;

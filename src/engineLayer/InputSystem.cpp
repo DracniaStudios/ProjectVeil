@@ -101,7 +101,7 @@ namespace InputSystem {
 		CreateAction(ACTION_EDITOR_DOWN, "Editor_Down", KEY_LEFT_ALT, GAMEPAD_BUTTON_LEFT_TRIGGER_1);
 
 		// UI Action
-		CreateAction(ACTION_UI_PAUSE, "Pause", KEY_TAB, GAMEPAD_BUTTON_MIDDLE_RIGHT);
+		CreateAction(ACTION_UI_BACK, "Back", KEY_TAB, GAMEPAD_BUTTON_MIDDLE_RIGHT);
 
 	}
 }

@@ -1,11 +1,7 @@
 #include "MiniGame_Maze.h"
 
-#include <SceneManager.h>
+namespace {
 
-namespace MazeSpace {
-	
-	Rectangle GetScreen() { return { getScreenScale(Rectangle{0.25f, 0.3, 0.3f, 0.5f}) }; }
-	
 	struct Cell {
 		Vector2 pos = Vector2Zero();
 		bool isActive = false;
@@ -31,9 +27,9 @@ namespace MazeSpace {
 		}
 	};
 
-	CellMap renderMap1(){
+	CellMap renderMap1(Rectangle screen){
 		CellMap map = CellMap(8);
-		
+
 		for (size_t i = 0; i < map.map.size(); i++) {
 			auto cell = &map.map[i];
 			if (cell->isActive) {
@@ -44,52 +40,49 @@ namespace MazeSpace {
 			}
 
 			Rectangle cellSize;
-			cellSize.x = GetScreen().x + (cell->pos.x * map.size);
-			cellSize.y = GetScreen().y + (cell->pos.y * map.size);
-			cellSize.width = GetScreen().x / map.size;
-			cellSize.height = GetScreen().y / map.size;
+			cellSize.x = screen.x + (cell->pos.x * map.size);
+			cellSize.y = screen.y + (cell->pos.y * map.size);
+			cellSize.width = screen.x / map.size;
+			cellSize.height = screen.y / map.size;
 
 			DrawRectangleRec(cellSize, cell->color);
 		}
 		return map;
 	}
 
-	Vector2 playerLocation = Vector2{ 0, 0 };
+	// The speed Player::update2D moved the cursor at: the player's base speed of 1,
+	// doubled while sprinting, scaled to 60 px/s
+	constexpr float kCursorSpeed = 1.0f;
+}
+
+Maze::Maze(const MiniGameSetup& setup)
+{
+	name = "Maze";
+
+	data.screen = getScreenScale(setup.screenSize, Rectangle{ 0.25f, 0.3f, 0.3f, 0.5f });
+
+	cursor.teleport(Vector2(setup.screenSize.x * 0.1f, setup.screenSize.y * 0.1f));
+	cursor.bounds = Rectangle{ 0, 0, setup.screenSize.x, setup.screenSize.y };
+}
+
+void Maze::DrawGame() const
+{
+	DrawRectangleRec(data.screen, DARKBLUE);
+	renderMap1(data.screen);
 
 }
 
-MiniGame* MiniGame_Maze(Player* player)
+MiniGameOutcome Maze::Update(const MiniGameInput& input, float deltaTime)
 {
-	auto* game = new MiniGame();
-	game->name = "Maze";
-	game->update = &Maze::update;
-	game->draw = &Maze::render;
+	// The only game that never took the cursor over, so it used to ride on
+	// Player::update2D's WASD movement. Forward is +y, down the screen, as it was there.
+	Vector2 moveDirection = Vector2Zero();
+	moveDirection.x = input.held.left ? -1.0f : input.held.right ? 1.0f : 0.0f;
+	moveDirection.y = input.held.forward ? 1.0f : input.held.backward ? -1.0f : 0.0f;
 
-	player->rigidBody2D.teleport(Vector2(GetScreenWidth() * 0.1f, GetScreenHeight() * 0.1f));
+	const float speed = input.held.sprint ? kCursorSpeed * 2 : kCursorSpeed;
+	cursor.translation += Vector3(moveDirection.x, moveDirection.y) * speed * 60.0f * deltaTime;
 
-	return game;
-}
-
-void Maze::render(SceneManagement::Scene* scene_ptr)
-{
-	using namespace MazeSpace;
-	DrawRectangleRec(GetScreen(), DARKBLUE);
-	auto map = renderMap1();
-
-}
-
-void Maze::update(SceneManagement::Scene* scene_ptr, float delta)
-{
-	auto player = scene_ptr->player;
-	auto data = scene_ptr->miniGame->data;
-	using namespace MazeSpace;
-
-	auto playerRect = Rectangle(player->rigidBody2D.translation.x, player->rigidBody2D.translation.y, player->rigidBody2D.scale.x, player->rigidBody2D.scale.y);
-
-	if (!CheckCollisionRecs(playerRect, GetScreen())) {
-
-	}
-	if (CompleteMiniGame(*data, *player, scene_ptr->gameMap, BUFF_SEARCH)) {
-		scene_ptr->ReleaseMiniGame();
-	}
+	// Nothing to win yet: its score never reaches its goal
+	return data.score >= data.scoreGoal ? MiniGameOutcome::Won : MiniGameOutcome::Running;
 }

@@ -5,36 +5,14 @@
 namespace Editor {
 
 static void NewWorld(SceneManagement::Scene& scene) {
-
-	// DestroyEntity/DestroyInteractable each already release a generated
-	// fallback model before erasing (see GameMap::DestroyGameObject()) — snapshot
-	// ids first since destroying while iterating the same map is unsafe.
-	std::vector<uint64_t> entityIds;
-	scene.gameMap.ForEachEntity([&](Entity& entity) { entityIds.push_back(entity.id); return true; });
-	for (auto id : entityIds) { scene.gameMap.DestroyEntity(id); }
-
-	std::vector<uint64_t> interactableIds;
-	scene.gameMap.ForEachInteractable([&](InteractableObject& interactable) { interactableIds.push_back(interactable.id); return true; });
-	for (auto id : interactableIds) { scene.gameMap.DestroyInteractable(id); }
-
+	// Ids start over with the new world
+	scene.ClearWorld();
 	scene.gameMap.create(Vector3(10.0f, 1.0f, 10.0f));
-
-	// Player::inventory and Player::interactObjectId are non-owning references
-	// into the interactables map just cleared above (see
-	// GameMap::removeInteractable for the same hazard) — left alone here they
-	// dangle the moment any minigame completes or the Player Inspector reads
-	// the inventory.
-	if (scene.player) {
-		scene.player->inventory.clear();
-		scene.player->interactObjectId = 0;
-	}
-
-	scene.ResetID();
 }
 
 void WorldEditor::ShowWorldSettings()
 {
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
+	auto scene = editedScene;
 
 	/// Show World Settings Window
 	ImGui::Begin("World Settings");
@@ -42,8 +20,22 @@ void WorldEditor::ShowWorldSettings()
 
 	/// Show Scene Data
 	ImGui::TextColored(ImVec4(1, 0, 1, 1), "Scene Data");
-	ImGui::Checkbox("Is 2D Active", &scene->is2DActive);
-	ImGui::Checkbox("Is Mini Game Active", &scene->isMiniActive);
+
+	// Read-only. Overlays open and close through their own rules, never by hand
+	// here, so the editor can't leave them in a state the game itself can't reach.
+	std::string openOverlays;
+	for (Overlay overlay : scene->overlays.OpenOverlays()) {
+		if (!openOverlays.empty()) { openOverlays += " > "; }
+		openOverlays += OverlayName(overlay);
+	}
+	ImGui::Text("Overlays: %s", openOverlays.empty() ? "none (gameplay has input)" : openOverlays.c_str());
+	if (ImGui::Button("Close All Overlays")) {
+		// A MiniGame overlay is only closed alongside ending its game; closing it
+		// alone would leave the game waiting with nothing on screen.
+		if (scene->miniGameSession.IsRunning()) { scene->QuitMiniGame(); }
+		scene->overlays.CloseAll();
+	}
+
 	ImGui::Checkbox("Limit Y Bounds", &scene->limitYBounds);
 	ImGui::Separator();
 
@@ -56,7 +48,7 @@ void WorldEditor::ShowWorldSettings()
 	ImGui::Text("Game Objects: %d", static_cast<int>(scene->gameMap.GameObjectCount()));
 	ImGui::Text("Entities: %d", static_cast<int>(scene->gameMap.EntityCount()));
 	ImGui::Text("Interactables: %d", static_cast<int>(scene->gameMap.InteractableCount()));
-	ImGui::Text("Next ID: %llu", static_cast<unsigned long long>(scene->gameMap.instanceHolder.idCounter));
+	ImGui::Text("Next ID: %llu", static_cast<unsigned long long>(scene->gameMap.NextId()));
 	ImGui::Separator();
 
 	if (ImGui::Button("Save Game")) { 
@@ -85,9 +77,9 @@ void WorldEditor::ShowWorldSettings()
 
 		if (ImGui::Button("New World")) {
 			NewWorld(*scene);
-			// NewWorld() renumbers every remaining object via ResetID(), exactly
-			// like Load Game/Load World — stale selection/undo state would
-			// otherwise reference ids that now belong to different objects.
+			// NewWorld() restarts the ids, exactly like Load Game/Load World —
+			// stale selection/undo state would otherwise reference ids that now
+			// belong to different objects.
 			ResetSelectionState();
 		}
 		if (ImGui::Button("Save World"))

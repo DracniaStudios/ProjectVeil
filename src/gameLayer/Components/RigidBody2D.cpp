@@ -1,25 +1,8 @@
 #include "Physics.h"
 
-#include <gameMap.h>
-#include <iostream>
-#include <SceneManager.h>
+#include <cmath>
 
 namespace Physics2D {
-	void RigidBody2D::resolveConstrains(GameMap& mapData)
-	{
-
-	}
-
-	void RigidBody2D::checkCollisionOnce(Vector2& position, GameMap& mapData)
-	{
-
-	}
-
-	Vector2 RigidBody2D::performCollisionOnOneAxis(GameMap& mapData, Vector2 position, Vector2 delta)
-	{
-		return Vector2Zero();
-	}
-
 	void RigidBody2D::updateForce(float deltaTime)
 	{
 		velocity += acceleration * deltaTime;
@@ -51,11 +34,14 @@ namespace Physics2D {
 		acceleration = {};
 
 		// Ground Rules
-
-		if (translation.y > GetScreenHeight() - scale.y) { translation.y = GetScreenHeight() - scale.y; }
-		if (translation.y < scale.y) { translation.y = scale.y; }
-		if (translation.x > GetScreenWidth() - scale.x) { translation.x = GetScreenWidth() - scale.x; }
-		if (translation.x < scale.x) { translation.x = scale.x; }
+		// Bounds rather than the window, so a body runs the same with no window open
+		if (bounds.width > 0 && bounds.height > 0)
+		{
+			if (translation.y > bounds.y + bounds.height - scale.y) { translation.y = bounds.y + bounds.height - scale.y; }
+			if (translation.y < bounds.y + scale.y) { translation.y = bounds.y + scale.y; }
+			if (translation.x > bounds.x + bounds.width - scale.x) { translation.x = bounds.x + bounds.width - scale.x; }
+			if (translation.x < bounds.x + scale.x) { translation.x = bounds.x + scale.x; }
+		}
 
 
 	}
@@ -74,21 +60,24 @@ namespace Physics2D {
 
 	}
 
+	// Both return a raylib Rectangle, whose last two fields are a size. They used
+	// to be handed the far corner instead, so every collision test against them
+	// was against a rectangle stretching from the body to twice its distance from
+	// the origin — FlappyBird's "left the green area" check could all but never fire.
 	Rectangle RigidBody2D::getRectCentered() {
 		// Calculates As Center Position
-		auto halfScale = Vector2(scale.x / 2, scale.y / 2);
-		return Rectangle(translation.x - halfScale.x,
-			translation.y - halfScale.y,
-			translation.x + halfScale.x,
-			translation.y + halfScale.y
+		return Rectangle(translation.x - scale.x / 2,
+			translation.y - scale.y / 2,
+			scale.x,
+			scale.y
 		);
 	}
 	Rectangle RigidBody2D::getRectCornered() {
 		// Calculates As Top Left Corner Position
 		return Rectangle(translation.x,
 			translation.y,
-			translation.x + scale.x,
-			translation.y + scale.y
+			scale.x,
+			scale.y
 		);
 	}
 }

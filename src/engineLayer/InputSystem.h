@@ -38,7 +38,7 @@ namespace InputSystem {
 		ACTION_EDITOR_DOWN,
 
 		// Menu Actions
-		ACTION_UI_PAUSE,
+		ACTION_UI_BACK, // Backs out of the overlay on top
 
 		MAX_ACTION
 	};

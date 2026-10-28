@@ -45,6 +45,10 @@ struct Stalker : Entity
 	float searchRadius = 6.0f;
 	// How close counts as having reached a target.
 	float arriveDistance = 1.0f;
+	// How far the entity can see the player from.
+	float sightRange = 3.0f;
+	// How close the entity must be to attack.
+	float attackRange = 1.0f;
 
 	// How far ahead the stalker looks for obstructions. Too short and it turns
 	// after it is already against the wall; too long and it swerves around

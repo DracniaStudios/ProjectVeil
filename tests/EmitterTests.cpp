@@ -11,7 +11,8 @@
  * wired later: the running task station, tampering, and physics impacts.
  *
  * Like StalkerFsmTests this links against the game's object files and needs a
- * GL context for GameObject's fallback cube. See tests/run_tests.sh.
+ * GL context, since a world object binds a model when it enters the map. See
+ * tests/run_tests.sh.
  */
 
 #include <raylib.h>
@@ -50,12 +51,11 @@ static void CheckNear(float actual, float expected, float tolerance, const std::
 static SceneManagement::Scene* MakeScene()
 {
 	SceneManagement::Scene* scene = new SceneManagement::Scene();
-	SceneManagement::SceneManager::getInstance().currentScene = scene;
 	return scene;
 }
 
-// A task station at a known position. Registered directly rather than through
-// SpawnInteractable so the id is predictable and the assertions can name it.
+// A task station at a known position. Restored rather than spawned so the id
+// is predictable and the assertions can name it.
 static InteractableObject* AddStation(SceneManagement::Scene* scene, Vector3 at, std::uint64_t id = 700)
 {
 	auto owned = std::make_unique<InteractableObject>(INTERACT_MINIGAME, MINI_GAME_FLAPPY_BIRD_ID, 0);
@@ -65,7 +65,7 @@ static InteractableObject* AddStation(SceneManagement::Scene* scene, Vector3 at,
 	owned->isInteractable = true;
 	owned->rigidBody3D.Teleport(at);
 	InteractableObject* station = owned.get();
-	scene->gameMap.LoadInteractable(std::move(owned));
+	scene->gameMap.RestoreInteractable(std::move(owned));
 	return station;
 }
 
@@ -149,21 +149,21 @@ static void TestStationNoiseIsPeriodicNotPerFrame()
 	delete scene;
 }
 
-static void TestReleasingTheMiniGameStopsTheHum()
+static void TestQuittingTheMiniGameStopsTheHum()
 {
-	std::printf("releasing the minigame frees the station\n");
+	std::printf("quitting the minigame frees the station\n");
 	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 });
 	station->isRunningMiniGame = true;
 
 	Check(scene->GetRunningStation() == station, "the station reports as occupied");
 
-	// ReleaseMiniGame is the single point that knows the minigame ended. Before
-	// this fix isRunningMiniGame was a one-way latch, so the station hummed for
-	// the rest of the session and the Director never hinted at it again.
-	scene->ReleaseMiniGame();
+	// Ending the minigame is the single point that knows it ended. Before this
+	// fix isRunningMiniGame was a one-way latch, so the station hummed for the
+	// rest of the session and the Director never hinted at it again.
+	scene->QuitMiniGame();
 
-	Check(scene->GetRunningStation() == nullptr, "releasing frees the station");
+	Check(scene->GetRunningStation() == nullptr, "quitting frees the station");
 	Check(!station->isRunningMiniGame, "the occupied flag is cleared");
 
 	scene->soundField.Clear();
@@ -198,7 +198,7 @@ static void TestInteractingWithAStationIsTampering()
 	scene->player->artifactUnlocked = MINI_GAME_RO_SHAM_BOO_ID;   // everything unlocked
 
 	InteractableObject* station = AddStation(scene, Vector3{ 3, 0, -4 });
-	station->onInteract();
+	station->onInteract(*scene);
 
 	const SoundEvent* event = FirstOfKind(scene, SOUND_TAMPER);
 	Check(event != nullptr, "interacting with a station is audible");
@@ -225,7 +225,7 @@ static void TestLockedStationStillMakesNoise()
 	// interference, and a silent failed attempt would be the safest way to play.
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 });
 	station->variation = MINI_GAME_RO_SHAM_BOO_ID;
-	station->onInteract();
+	station->onInteract(*scene);
 
 	Check(CountOfKind(scene, SOUND_TAMPER) == 1, "a locked station still makes noise");
 	Check(scene->GetRunningStation() == nullptr, "but no minigame actually started");
@@ -249,7 +249,7 @@ static GameObject* AddCrate(SceneManagement::Scene* scene, Vector3 at, Vector3 v
 	crate.rigidBody3D.scale = Vector3{ 1, 1, 1 };
 	crate.rigidBody3D.SetVelocity(velocity);
 	crate.rigidBody3D.SyncBroadPhaseBox();
-	return scene->gameMap.LoadGameObject(crate);
+	return scene->gameMap.RestoreGameObject(crate);
 }
 
 static void TestFastImpactIsAudible()
@@ -261,7 +261,7 @@ static void TestFastImpactIsAudible()
 	GameObject* wall = AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 800);
 	GameObject* crate = AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -10, 0, 0 }, false, 801);
 
-	wall->rigidBody3D.resolveConstrains(wall, crate);
+	scene->SolveCollisions();
 
 	const SoundEvent* event = FirstOfKind(scene, SOUND_IMPACT);
 	Check(event != nullptr, "a hard collision emits an impact");
@@ -269,9 +269,9 @@ static void TestFastImpactIsAudible()
 
 	Check(event->loudness > 0.5f, "a 10 u/s impact is loud");
 
-	// solveCollision visits each pair once and the wall happened to be first.
-	// Attribution has to follow the body that moved, or the noise would be
-	// credited to the static geometry that was standing still.
+	// The wall has the lower id, so it is the contact's `a`. Attribution has to
+	// follow the body that moved, or the noise would be credited to the static
+	// geometry that was standing still.
 	Check(event->sourceId == crate->id, "the impact is attributed to the moving body");
 	delete scene;
 }
@@ -286,7 +286,7 @@ static void TestRestingContactIsSilent()
 	GameObject* floor = AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 810);
 	GameObject* box = AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -0.2f, 0, 0 }, false, 811);
 
-	floor->rigidBody3D.resolveConstrains(floor, box);
+	scene->SolveCollisions();
 
 	Check(CountOfKind(scene, SOUND_IMPACT) == 0,
 		"a slow settling contact makes no perception event");
@@ -301,7 +301,7 @@ static void TestImpactScalesWithClosingSpeed()
 		SceneManagement::Scene* scene = MakeScene();
 		GameObject* wall = AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 820);
 		GameObject* crate = AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -speed, 0, 0 }, false, 821);
-		wall->rigidBody3D.resolveConstrains(wall, crate);
+		scene->SolveCollisions();
 		const SoundEvent* event = FirstOfKind(scene, SOUND_IMPACT);
 		const float loudness = event != nullptr ? event->loudness : 0.0f;
 		delete scene;
@@ -324,20 +324,21 @@ static void TestImpactIsOncePerContact()
 	GameObject* wall = AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 830);
 	GameObject* crate = AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -10, 0, 0 }, false, 831);
 
-	// The solver runs up to eight iterations per frame over the same pair. The
-	// emitter hangs off the first-contact branch precisely so that is one bang,
-	// not eight.
-	for (int i = 0; i < 8; ++i) { wall->rigidBody3D.resolveConstrains(wall, crate); }
+	// The solver runs eight iterations per frame over the same pair, and the pair
+	// stays in contact into the next frame. The noise belongs to the contact's
+	// Enter, so that is one bang, not eight or sixteen.
+	scene->SolveCollisions(8);
+	scene->SolveCollisions(8);
 
 	Check(CountOfKind(scene, SOUND_IMPACT) == 1,
-		"eight solver iterations over one contact emit one noise");
+		"two frames of eight solver iterations over one contact emit one noise");
 	delete scene;
 }
 
 int main()
 {
-	// GameObject's constructor uploads a fallback cube, so a GL context has to
-	// exist before any world object is built.
+	// A world object binds a model when it enters the map, so a GL context has
+	// to exist before any is added.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-emitter-tests");
 
@@ -346,7 +347,7 @@ int main()
 	TestIdleStationIsSilent();
 	TestRunningStationEmitsAtTheStation();
 	TestStationNoiseIsPeriodicNotPerFrame();
-	TestReleasingTheMiniGameStopsTheHum();
+	TestQuittingTheMiniGameStopsTheHum();
 	TestDisabledStationIsSilent();
 
 	TestInteractingWithAStationIsTampering();

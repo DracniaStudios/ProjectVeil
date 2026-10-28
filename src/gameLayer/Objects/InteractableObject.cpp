@@ -4,28 +4,29 @@
 #include <gameMap.h>
 
 
-void ActivateMiniGame(InteractableObject* interactable, bool bypass = false)
+void ActivateMiniGame(SceneManagement::Scene& scene, InteractableObject* interactable, bool bypass = false)
 {
 	std::cout << "[InteractableObject] Activating MiniGame: " << interactable->variation << "\n";
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
 
-	scene->soundField.Emit(interactable->getPosition(), 0.8f, SOUND_TAMPER, interactable->id);
+	scene.soundField.Emit(interactable->getPosition(), 0.8f, SOUND_TAMPER, interactable->id);
 
-	if (!bypass && scene->player->artifactUnlocked < interactable->variation) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
+	if (!bypass && scene.player->artifactUnlocked < interactable->variation) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
 
-	scene->SetMiniGame(interactable->variation);
-	// activator == 0 means "no explicit target" — the minigame should toggle
-	// the interactable that launched it rather than nothing at all.
-	scene->player->interactObjectId = interactable->activator != 0
-		? interactable->activator
-		: interactable->id;
-	interactable->isRunningMiniGame = true;
+	// The scene marks the station as occupied, and on a win finds the Target
+	// through the station itself
+	scene.StartMiniGame(interactable->variation, interactable);
 }
 
-void Unlock(InteractableObject* interactable)
+GameObject* InteractableObject::FindMiniGameTarget(GameMap& gameMap)
+{
+	if (targetId == 0) { return this; }
+	return gameMap.FindWorldObject(targetId);
+}
+
+void Unlock(SceneManagement::Scene& scene, InteractableObject* interactable)
 {
 	std::cout << "[InteractableObject] Unlocking MiniGame: " << interactable->variation << "\n";
-	auto player = SceneManagement::SceneManager::getInstance().currentScene->player;
+	auto player = scene.player;
 	player->artifactUnlocked = std::max(player->artifactUnlocked, interactable->variation);
 	player->artifactUnlocked = Clamp(player->artifactUnlocked, MINI_GAME_FLAPPY_BIRD_ID, MINI_GAME_RO_SHAM_BOO_ID);
 
@@ -55,33 +56,9 @@ void Unlock(InteractableObject* interactable)
 
 	interactable->isInteractable = false;
 
-	// Destroy() only sets pendingDestroy, which is swept for GameObjects
-	// (Scene.cpp's end-of-frame EraseGameObjectsIf); InteractableObjects live
-	// in GameMap's separate interactables map, which has no such sweep, so
-	// the flag was simply left set forever and the station never actually
-	// left the world. DestroyInteractable() is the real removal path for
-	// this container.
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
-	if (scene) { scene->gameMap.DestroyInteractable(interactable->id); }
-}
-
-void AddItemToInventory(InteractableObject* interactable)
-{
-	std::cout << "[InteractableObject] Adding Item to Inventory: " << interactable->activator << "\n";
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
-
-	// Search in vector
-	auto it = std::ranges::find(scene->player->inventory, interactable);
-
-	if (it != scene->player->inventory.end()) {
-		// Item already in inventory
-		return;
-	}
-	
-	scene->player->inventory.push_back(interactable);
-	interactable->onDisable();
-
-	std::cout << "[InteractableObject] Item added to inventory.\n";
+	// Removed at the end of the frame by GameMap::SweepDestroyed, not here: this
+	// runs inside the station's own onInteract
+	interactable->Destroy();
 }
 
 InteractableObject::InteractableObject(const InteractionType interact, int value)
@@ -98,7 +75,7 @@ InteractableObject::InteractableObject(const InteractionType interact, int varia
 	activator = activate; // Object
 }
 
-void InteractableObject::onInteract()
+void InteractableObject::onInteract(SceneManagement::Scene& scene)
 {
 	AudioManager::AudioManager::getInstance().Play3D(defaultSound, *this);
 	std::cout << "[InteractObject] Interacted with " << name << "\n";
@@ -109,14 +86,11 @@ void InteractableObject::onInteract()
 		soundInstance->setParameterByName(soundParameterName.c_str(), soundParameterValue);
 	}
 
-	// Unlock() destroys this object (GameMap::DestroyInteractable erases the
-	// owning unique_ptr immediately, no deferred sweep), so the type has to be
-	// captured before dispatch and the branches kept mutually exclusive —
-	// nothing below may touch `this` after the branch that can free it.
+	// The branches stay mutually exclusive: Unlock() marks this station for
+	// removal, and none of the others may run on a station that is going away.
 	const InteractionType type = interactType;
-	if (type == INTERACT_MINIGAME) { ActivateMiniGame(this); }
-	else if (type == INTERACT_UNLOCK) { Unlock(this); }
-	else if (type == INTERACT_ITEM) { AddItemToInventory(this); }
+	if (type == INTERACT_MINIGAME) { ActivateMiniGame(scene, this); }
+	else if (type == INTERACT_UNLOCK) { Unlock(scene, this); }
 
 }
 
@@ -127,6 +101,7 @@ Json InteractableObject::formatToJson()
 	j["InteractType"] = interactType;
 	j["Variation"] = variation;
 	j["Activator"] = activator;
+	j["TargetId"] = targetId;
 	j["IsInteractable"] = isInteractable;
 	j["IsCompleted"] = isCompleted;
 	// isRunningMiniGame is deliberately not persisted: it means "occupied right
@@ -144,6 +119,16 @@ bool InteractableObject::loadFromJson(Json& j)
 	// a save written before ActivatorValue existed load as a real-but-
 	// unresolvable id instead of "none".
 	activator = j.value("Activator", 0);
+
+	// Saves written before a station had a Target of its own kept it in Activator
+	if (j.contains("TargetId")) {
+		targetId = j.value("TargetId", std::uint64_t{ 0 });
+	}
+	else if (interactType == INTERACT_MINIGAME) {
+		targetId = static_cast<std::uint64_t>(std::max(activator, 0));
+		activator = 0;
+	}
+
 	isInteractable = j.value("IsInteractable", true);
 	isCompleted = j.value("IsCompleted", false);
 

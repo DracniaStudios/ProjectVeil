@@ -1,20 +1,19 @@
 #include "gameMap.h"
 
-#include <SceneManager.h>
+#include <asserts.h>
+#include <randomStuff.h>
+
 #include <algorithm>
 #include <iostream>
+#include <random>
 #include <vector>
 /** Map Data **/
 
 // Create GameMap and Floor Space
 void GameMap::create(Vector3 size)
 {
-	// NewWorld() reuses this on a populated map. ~GameObject() is trivial and
-	// never frees GPU resources (see DestroyGameObject()), so every object still
-	// on its generated fallback cube would otherwise leak its Model the moment
-	// this clear erases it.
-	for (auto& [id, object] : gameObjects) { object.releaseGeneratedModel(); }
-	gameObjects.clear();
+	// The editor's New World reuses a populated map, and a new world starts empty
+	Clear();
 	this->size = size;
 	auto rng = std::ranlux24_base(std::random_device{}());
 
@@ -43,148 +42,192 @@ std::uint64_t InstanceID::getIdAndIncrement()
 	return id;
 }
 
-// Load Object into Scene (Vector3)
-GameObject* GameMap::SpawnGameObject(GameObject& object)
+void GameMap::ReserveIdsBelow(std::uint64_t nextId)
 {
-	object.id = instanceHolder.getIdAndIncrement();
+	instanceHolder.idCounter = std::max(instanceHolder.idCounter, nextId);
+}
 
-	/// Set RigidBody3D Data
-	if (object.rigidBody3D.scale == Vector3Zero())
+bool GameMap::IsIdInUse(std::uint64_t id) const
+{
+	return gameObjects.contains(id) || entities.contains(id) || interactables.contains(id);
+}
+
+namespace
+{
+	// Readies a freshly stored copy of a prototype to be enabled. Disabling the copy's model.
+	void PrepareSpawnedCopy(GameObject& copy, std::uint64_t id)
 	{
-		object.rigidBody3D.scale = Vector3One();
+		copy.id = id;
+		copy.disownModel();
+		copy.pendingDestroy = false;
+
+		/// Set RigidBody3D Data
+		if (copy.rigidBody3D.scale == Vector3Zero())
+		{
+			copy.rigidBody3D.scale = Vector3One();
+		}
 	}
+
+	// What a restored object needs to take part in the world.
+	void BindRestored(GameObject& object)
+	{
+		object.rigidBody3D.collider.SetObjectID(object.id);
+		object.rigidBody3D.collider.canCollide = object.isEnabled;
+		object.loadVisuals();
+		object.rigidBody3D.SyncBroadPhaseBox();
+	}
+}
+
+// Load Object into Scene (Vector3)
+GameObject* GameMap::SpawnGameObject(const GameObject& prototype)
+{
+	const std::uint64_t id = instanceHolder.getIdAndIncrement();
+	GameObject& object = gameObjects.emplace(id, prototype).first->second;
+	PrepareSpawnedCopy(object, id);
 
 	/// Set GameMap Data
 	object.onEnable();
-	auto [it, inserted] = gameObjects.emplace(object.id, object);
 
 	std::cout << "Added Object \n";
-	return &it->second;
+	return &object;
 }
 
 
-Entity* GameMap::SpawnEntity(Entity& entity)
+Entity* GameMap::SpawnEntity(const Entity& prototype)
 {
-	// Sets Object ID and Adds To Scene
-	if (entity.type != OBJECT_PLAYER) {
+	// The id is chosen before the entity is stored, so the map key always matches
+	// entity->id, and a prototype that already carries a real id (a duplicate of
+	// a live entity) can't overwrite the entity stored under that id.
+	const std::uint64_t id = instanceHolder.getIdAndIncrement();
 
-		std::cout << "Added Object \n";
-	}
-	
-	// Assigned before insertion (as SpawnGameObject/SpawnInteractable do) so the
-	// map key always matches the stored entity's own id field. Assigning it
-	// after inserting under the old id left every entity's map key permanently
-	// out of sync with entity->id, breaking FindEntity/DestroyEntity for it —
-	// and when the caller passed in an entity that already had a real id (e.g.
-	// EditorViewport::DuplicateSelection, which copies the selected entity by
-	// value), inserting under that id clobbered the live entity already stored
-	// there, destroying it via unique_ptr's assignment before the "duplicate"
-	// ever got its own id.
-	const std::uint64_t newId = instanceHolder.getIdAndIncrement();
+	// clone() keeps the prototype's dynamic type, so a Stalker stays a Stalker
+	std::unique_ptr<Entity> owned = prototype.clone();
+	Entity* entity = owned.get();
+	entities[id] = std::move(owned);
+	PrepareSpawnedCopy(*entity, id);
 
-	// Use clone() to preserve the dynamic type of the passed-in entity (e.g., Stalker)
-	std::unique_ptr<Entity> cloned = entity.clone();
-	cloned->id = newId;
-	auto ent = cloned.get();
-	entities[newId] = std::move(cloned);
+	entity->onEnable();
 
-	ent->onEnable();
-
-	/// Set RigidBody3D Data
-	if (ent->rigidBody3D.scale == Vector3Zero())
-	{
-		ent->rigidBody3D.scale = Vector3One();
-	}
-
-	ent->setSpawnPoint(ent->getPosition());
-	ent->rigidBody3D.Teleport(ent->getSpawnPoint());
+	entity->setSpawnPoint(entity->getPosition());
+	entity->rigidBody3D.Teleport(entity->getSpawnPoint());
 
 	std::cout << "Added Entity \n";
-	return ent;
+	return entity;
 }
 
-InteractableObject* GameMap::SpawnInteractable(InteractableObject& object)
+InteractableObject* GameMap::SpawnInteractable(const InteractableObject& prototype)
 {
-	object.id = instanceHolder.getIdAndIncrement();
-	object.onEnable();
+	const std::uint64_t id = instanceHolder.getIdAndIncrement();
+	InteractableObject* interactable = (interactables[id] = std::make_unique<InteractableObject>(prototype)).get();
+	PrepareSpawnedCopy(*interactable, id);
 
-	auto interact_ptr = std::make_unique<InteractableObject>(object);
-	interactables[object.id] = std::move(interact_ptr);
+	interactable->onEnable();
 
 	std::cout << "Add Interactable \n";
-	return interactables[object.id].get();
+	return interactable;
 }
 
-GameObject* GameMap::LoadGameObject(GameObject object)
+GameObject* GameMap::RestoreGameObject(GameObject object)
 {
-	auto id = object.id;
-	auto [it, inserted] = gameObjects.insert_or_assign(id, std::move(object));
-	it->second.onEnable();
-	return &it->second;
+	const std::uint64_t id = object.id;
+	if (IsIdInUse(id))
+	{
+		std::cerr << "[GameMap] Not restoring GameObject " << id << ": another object has that id\n";
+		object.releaseGeneratedModel(); // the model loadFromJson bound would leak with it
+		return nullptr;
+	}
+
+	ReserveIdsBelow(id + 1);
+	GameObject& stored = gameObjects.emplace(id, std::move(object)).first->second;
+	BindRestored(stored);
+	return &stored;
 }
 
-void GameMap::LoadEntity(std::unique_ptr<Entity> entity)
+Entity* GameMap::RestoreEntity(std::unique_ptr<Entity> entity)
 {
-	auto id = entity->id;
-	entities[id] = std::move(entity);
-	entities[id]->onEnable();
+	const std::uint64_t id = entity->id;
+	if (IsIdInUse(id))
+	{
+		std::cerr << "[GameMap] Not restoring Entity " << id << ": another object has that id\n";
+		entity->releaseGeneratedModel();
+		return nullptr;
+	}
+
+	ReserveIdsBelow(id + 1);
+	Entity* stored = (entities[id] = std::move(entity)).get();
+	BindRestored(*stored);
+	return stored;
 }
 
-void GameMap::LoadInteractable(std::unique_ptr<InteractableObject> interactable)
+InteractableObject* GameMap::RestoreInteractable(std::unique_ptr<InteractableObject> interactable)
 {
-	auto id = interactable->id;
-	interactables[id] = std::move(interactable);
-	interactables[id]->onEnable();
+	const std::uint64_t id = interactable->id;
+	if (IsIdInUse(id))
+	{
+		std::cerr << "[GameMap] Not restoring Interactable " << id << ": another object has that id\n";
+		interactable->releaseGeneratedModel();
+		return nullptr;
+	}
+
+	ReserveIdsBelow(id + 1);
+	InteractableObject* stored = (interactables[id] = std::move(interactable)).get();
+	BindRestored(*stored);
+	return stored;
 }
 
-// Unload Object From Scene GameMap
-void GameMap::DestroyGameObject(uint64_t id) {
-	auto it = gameObjects.find(id);
-	if (it == gameObjects.end()) return;
-
-	// ~GameObject() is trivial and never frees GPU resources — release a
-	// generated fallback model/mesh here or it leaks the moment this object
-	// is erased.
-	it->second.releaseGeneratedModel();
-
-	gameObjects.erase(it);
-}
-
-// Remove Entity From Entity List
-void GameMap::DestroyEntity(uint64_t id)
+bool GameMap::Destroy(std::uint64_t id)
 {
-	// Entities live only in Scene::entities, not in gameObjects (see SpawnEntity),
-	// so there is nothing to remove from gameObjects here.
-	auto it = entities.find(id);
-	if (it == entities.end()) return;
-	// See DestroyGameObject() — the unique_ptr erase below destroys the Entity
-	// without ever freeing its generated model.
-	it->second->releaseGeneratedModel();
-	entities.erase(it);
+	GameObject* object = FindWorldObject(id);
+	if (object == nullptr) { return false; }
+	object->Destroy();
+	return true;
 }
 
-// Remove Interactable From InteractableList
-void GameMap::DestroyInteractable(uint64_t id)
+namespace
 {
-	auto it = interactables.find(id);
-	if (it == interactables.end()) return;
+	// Erases every marked object in one container. The ids are collected first and
+	// each one is erased by key after its onDestroy, so an onDestroy that adds an
+	// object can't invalidate the traversal.
+	template <class Container, class AsObject>
+	void SweepContainer(Container& container, SceneManagement::Scene* scene, AsObject asObject)
+	{
+		std::vector<std::uint64_t> marked;
+		for (auto& [id, stored] : container)
+		{
+			if (asObject(stored).pendingDestroy) { marked.push_back(id); }
+		}
 
-	auto* object = it->second.get();
+		for (std::uint64_t id : marked)
+		{
+			auto it = container.find(id);
+			if (it == container.end()) { continue; }
 
-	// Frees Memory Correctly
-	object->releaseGeneratedModel();
-	auto scene = SceneManagement::SceneManager::getInstance().currentScene;
-
-	// currentScene is null between the OUT and IN halves of a scene
-	// transition (see RigidBody3D.cpp for the same hazard).
-	// Player Inventory can hold references to InteractableObjects
-	if (scene && scene->player) {
-		std::erase(scene->player->inventory, object);
-		if (scene->player->interactObjectId == object->id) {
-			scene->player->interactObjectId = 0;
+			// onDestroy() releases the object's generated model (through onDisable),
+			// which the trivial destructor never would
+			asObject(it->second).onDestroy(scene);
+			container.erase(id);
 		}
 	}
-	interactables.erase(it);
+}
+
+void GameMap::SweepDestroyed(SceneManagement::Scene* scene)
+{
+	SweepContainer(gameObjects, scene, [](GameObject& object) -> GameObject& { return object; });
+	SweepContainer(entities, scene, [](std::unique_ptr<Entity>& entity) -> GameObject& { return *entity; });
+	SweepContainer(interactables, scene,
+		[](std::unique_ptr<InteractableObject>& interactable) -> GameObject& { return *interactable; });
+}
+
+void GameMap::Clear()
+{
+	// ~GameObject() never frees GPU resources, so every generated fallback model is
+	// released first, or it leaks the moment its object is erased
+	ForEachObject([](GameObject& object) { object.releaseGeneratedModel(); });
+
+	gameObjects.clear();
+	entities.clear();
+	interactables.clear();
+	instanceHolder = InstanceID{};
 }
 
 GameObject* GameMap::FindGameObject(uint64_t id)

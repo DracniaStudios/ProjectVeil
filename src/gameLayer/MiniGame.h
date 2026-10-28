@@ -2,21 +2,21 @@
 #ifndef MINIGAME_H
 #define MINIGAME_H
 
-#include <iostream>
 #include <raylib.h>
-#include <vector>
-#include <helpers.h>
+#include <Physics.h>
 #include <randomStuff.h>
-#include <Player.h>
-#include <gameMap.h>
 
+#include <cstdint>
+#include <memory>
+#include <random>
+#include <vector>
+
+/**
+ * A game's layout and progress. The MiniGame Inspector shows and edits it live,
+ * and the session's history keeps copies of it.
+ */
 struct MiniGameData
 {
-	MiniGameData() {
-		score = 0;
-		scoreGoal = 1;
-	}
-
 	int score = 0;
 	int scoreGoal = 1;
 
@@ -25,81 +25,77 @@ struct MiniGameData
 	Rectangle goal = {};
 };
 
-// Update Game Method
-typedef void (*updateGameMethod)(SceneManagement::Scene* scene_ptr, float deltaTime);
-typedef void (*drawGameMethod)(SceneManagement::Scene* scene_ptr);
-
-struct MiniGame
+// How a round of a MiniGame went this frame. See CONTEXT.md.
+enum class MiniGameOutcome
 {
-	MiniGame() {
-		name = "New MiniGame";
-		update = {};
-		draw = {};
-		data = new MiniGameData();
-		data->score = 0;
-		data->scoreGoal = 1;
-	}
-
-	const char* name = {};
-	updateGameMethod update = {};
-	drawGameMethod draw = {};
-	MiniGameData* data = {};
-
-	void SetGoal(const Rectangle rect) const { data->goal = rect; }
+	Running,
+	Won,
+	Lost, // The round is over; the session starts a fresh one
 };
 
-inline bool CompleteMiniGame(MiniGameData& data, Player& player, GameMap& gameMap, Buff buff, bool forceComplete = false) {
-	
-	if (data.score >= data.scoreGoal || forceComplete) {
-		if (CooldownTimer* getBuff = player.getBuff(buff); getBuff != nullptr) { getBuff->use(); }
+// The actions a MiniGame reads
+struct MiniGameKeys
+{
+	bool left = false;
+	bool right = false;
+	bool forward = false;
+	bool backward = false;
+	bool jump = false;
+	bool sprint = false;
+};
 
-		// Marked here rather than beside the `return true` below, because this is
-		// the point at which the task is objectively finished. The activator
-		// lookup that follows can fail on a world where the target was deleted,
-		// and that returns false — but the player did complete the station, and
-		// letting a missing door un-complete a finished task would leave the
-		// Director hinting at it forever.
-		if (InteractableObject* station = gameMap.FindRunningStation()) {
-			station->isCompleted = true;
-			station->isInteractable = false;
-		}
+// One frame of the player's input, read by the scene and handed to the game
+struct MiniGameInput
+{
+	MiniGameKeys held = {};    // Down this frame
+	MiniGameKeys pressed = {}; // Went down this frame
+	Vector2 screenSize = {};   // The window, for a round that starts this frame
+};
 
-		// Check for Activator Object By using ID instead of Pointer
-		GameObject* target = gameMap.FindWorldObject(player.interactObjectId);
+// What a game is built from. Everything it lays out or randomises comes from here.
+struct MiniGameSetup
+{
+	Vector2 screenSize = {};
+	std::uint32_t seed = 0;
+};
 
-		if (target != nullptr) {
-			if (target->isEnabled) {
-				target->onDisable();
-				
-			}
-			else {
-				target->onEnable();
-			}
-		}
-		else if (player.interactObjectId != 0) {
-			// Check if GameObject Is Active
-			std::cout << "[MiniGame] Activator " << player.interactObjectId
-				<< " no longer exists — nothing to open\n";
-			return false;
-		}
-		return true;
-	}
-	return false;
-}
+/**
+ * A short 2D game played inside the MiniGame overlay. See CONTEXT.md.
+ *
+ * Owns all of its state, its layout and the player's cursor, so a fresh round is
+ * a fresh instance. It never ends itself: Tick says how the round went and the
+ * MiniGameSession acts on it, after Tick has returned.
+ */
+class MiniGame
+{
+public:
+	virtual ~MiniGame() = default;
 
-/// Mini Game Constructors
+	// One frame: the cursor's physics, then the game's rules
+	MiniGameOutcome Tick(const MiniGameInput& input, float deltaTime);
+
+	// The game, then the player's cursor over it
+	void Draw() const;
+
+	const char* name = "MiniGame";
+	MiniGameData data = {};             // Layout and progress
+	Physics2D::RigidBody2D cursor = {}; // The player, inside this game
+
+protected:
+	virtual MiniGameOutcome Update(const MiniGameInput& input, float deltaTime) = 0;
+	virtual void DrawGame() const = 0;
+};
+
+/// Mini Game IDs
 #define MINI_GAME_FLAPPY_BIRD_ID 0
-MiniGame* MiniGame_FlappyBird(Player* player);
 #define MINI_GAME_CRANE_ID 1
-MiniGame* MiniGame_Crane(Player* player);
 #define MINI_GAME_DOCTOR_ID 2
-MiniGame* MiniGame_Doctor(Player* player);
 #define MINI_GAME_SIMON_SAYS_ID 3
-MiniGame* MiniGame_SimonSays(Player* player);
 #define MINI_GAME_MAZE_ID 4
-MiniGame* MiniGame_Maze(Player* player);
-#define MINI_GAME_RO_SHAM_BOO_ID 5
-MiniGame* MiniGame_RoShamBoo(Player* player);// Rock Paper Scissors
+#define MINI_GAME_RO_SHAM_BOO_ID 5 // Rock Paper Scissors
+
+// Builds a fresh game by id, or nullptr for an id that names no game
+std::unique_ptr<MiniGame> CreateMiniGame(int id, const MiniGameSetup& setup);
 
 inline const char* miniGameIdToString(int id)
 {
@@ -140,60 +136,16 @@ inline Rectangle generateObstacleRect(Rectangle screen, Rectangle rect)
 
 }
 
-// Generate a Rectangle based on ScreenSize to Percentage
-inline Rectangle getScreenScale(Rectangle rect)
+// A rectangle given as fractions of the screen, in pixels
+inline Rectangle getScreenScale(Vector2 screenSize, Rectangle rect)
 {
 	Rectangle r{};
-	r.x = GetScreenWidth() * rect.x;
-	r.y = GetScreenHeight() * rect.y;
-	r.width = GetScreenWidth() * rect.width;
-	r.height = GetScreenHeight() * rect.height;
+	r.x = screenSize.x * rect.x;
+	r.y = screenSize.y * rect.y;
+	r.width = screenSize.x * rect.width;
+	r.height = screenSize.y * rect.height;
 
 	return r;
-}
-
-// The Range is determined by the percentage of the screen (0.2, 0.5, 0.3, 0.1) (x, y, width, height)
-inline void generateObstacleHorizontal(MiniGameData* data,Rectangle range, int count = 4)
-{
-	data->obstacles = {};
-	auto rng = std::ranlux24_base(std::random_device{}());
-
-	for (int i = 0; i < count; ++i)
-	{
-		// Generate Obstacle logic here
-		float leftY = getRandomFloat(rng, range.x, range.width);
-		float leftHeight = getRandomFloat(rng, range.y, range.height);
-	
-		Rectangle left = { 0.0f, leftY, 0.05f, leftHeight };
-		data->obstacles.push_back(left);
-
-		Rectangle right = { 0.95f, leftY, 0.05f, leftHeight };
-		data->obstacles.push_back(right);
-	}
-}
-// The Range is determined by the percentage of the screen (0.2, 0.5, 0.3, 0.1) (x, y, width, height)
-inline void generateObstacleVertical(MiniGameData* data, Rectangle range, int count = 4)
-{
-	data->obstacles = {};
-	auto rng = std::ranlux24_base(std::random_device{}());
-
-	for (int i = 0; i < count; ++i)
-	{
-		// Generate obstacle logic here
-		// .2, 1.5, .1, .3
-		float topY = getRandomFloat(rng, range.x, range.y);
-		float topHeight = getRandomFloat(rng, range.width, range.height);
-
-		Rectangle top = { 0, topY, 0.05f, topHeight };
-
-		// Gen Bottom Size
-		Rectangle bottom = { top.x, top.height + 0.1f, top.width, 1.0f - top.height };
-
-		data->obstacles.push_back(top);
-
-		data->obstacles.push_back(bottom);
-
-	}
 }
 
 #endif

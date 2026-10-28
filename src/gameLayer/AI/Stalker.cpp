@@ -7,6 +7,13 @@
 #include <raymath.h>
 #include <cmath>
 
+namespace {
+	bool IsNearEntity(Vector3 entity, Vector3 position, float maxDistance) {
+		float distance = abs(Vector3Length(entity - position));
+		return distance <= maxDistance;
+	}
+}
+
 Stalker::Stalker()
 {
 	kind = ENTITYKIND_STALKER;
@@ -298,6 +305,12 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 	const float stimulusAge = scene->soundField.Now() - lastStimulusTime;
 
 	// --- States -----------------------------------------------------------
+	
+	auto player = &scene->player->rigidBody3D;
+
+	if (IsNearEntity(rigidBody3D.getPosition(), player->getPosition(), sightRange)) { state = STALKER_CHASE; }
+	if (IsNearEntity(rigidBody3D.getPosition(), player->getPosition(), attackRange)) { state = STALKER_KILL; }
+
 	switch (state)
 	{
 	case STALKER_PATROL:
@@ -378,6 +391,19 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 			TransitionTo(STALKER_SEARCH_LAST_KNOWN);
 		}
 		break;
+	}
+	case STALKER_CHASE:
+	{
+		isSprinting = true;
+		isCrouching = false;
+		if (!IsNearEntity(rigidBody3D.getPosition(), player->getPosition(), sightRange)) { TransitionTo(STALKER_SEARCH_LAST_KNOWN); }
+
+		MoveToward(player->getPosition(), currentSpeed, deltaTime, &scene->gameMap);
+		break;
+	}
+	case STALKER_KILL:
+	{
+
 	}
 
 	case STALKER_SEARCH_LAST_KNOWN:
