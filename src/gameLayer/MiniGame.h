@@ -94,9 +94,12 @@ protected:
 #define MINI_GAME_MAZE_ID 4
 #define MINI_GAME_RO_SHAM_BOO_ID 5 // Rock Paper Scissors
 
+<<<<<<< HEAD
 // Builds a fresh game by id, or nullptr for an id that names no game
 std::unique_ptr<MiniGame> CreateMiniGame(int id, const MiniGameSetup& setup);
 
+=======
+>>>>>>> origin/claude-created
 inline const char* miniGameIdToString(int id)
 {
 	switch (id)
