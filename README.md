@@ -93,16 +93,16 @@ Tracked informally via `Changelog.txt` as the project moves toward its next mile
 ProjectVeil/
 ├── src/
 │   ├── platform/         # Entry point, platform bootstrapping, asserts
-│   ├── engineLayer/      # Scene/SceneManager, Settings, SaveSystem, AssetManager,
-│   │   │                 # AudioManager, InputSystem, Lighting, Particles, allocators
+│   ├── engineLayer/      # Scene/SceneManager, Settings, SaveSystem/SaveStore, AssetManager,
+│   │   │                 # AudioManager, InputSystem, Lighting, Particles, PhysicsWorld, allocators
 │   │   └── WorldEditorTools/ # World Editor panels (inspectors, gizmo, picking)
 │   └── gameLayer/
 │       ├── AI/               # Stalker and Director
 │       ├── Components/       # RigidBody2D/3D, Collider3D, player components
-│       ├── MiniGames/        # Mini-game implementations
+│       ├── MiniGames/        # Mini-game implementations (run via MiniGameSession)
 │       ├── Objects/          # Interactable world objects
 │       ├── Perception/       # Sound events and sound field
-│       ├── UI/               # Settings UI
+│       ├── UI/               # Settings UI (screens stacked via OverlayStack)
 │       └── scenes/           # Scene constructors (Main Menu, Tutorial)
 ├── tests/                # Unit tests
 ├── resources/            # Textures, models, icons, and shaders

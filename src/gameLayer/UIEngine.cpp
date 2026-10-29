@@ -14,7 +14,7 @@ namespace UI {
 		return r;
 	}
 
-	Rectangle placeRectangleTopLeftCorner(Rectangle r, float w)
+	Rectangle placeRectangleTopLeftCorner(Rectangle r, float /*w*/)
 	{
 		r.x = 0;
 		r.y = 0;
@@ -28,7 +28,7 @@ namespace UI {
 		return r;
 	}
 
-	Rectangle placeRectangleBottomLeftCorner(Rectangle r, float w, float h)
+	Rectangle placeRectangleBottomLeftCorner(Rectangle r, float /*w*/, float h)
 	{
 		r.x = 0;
 		r.y = h - r.height;

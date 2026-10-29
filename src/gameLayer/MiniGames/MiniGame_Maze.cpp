@@ -81,7 +81,7 @@ MiniGameOutcome Maze::Update(const MiniGameInput& input, float deltaTime)
 	moveDirection.y = input.held.forward ? 1.0f : input.held.backward ? -1.0f : 0.0f;
 
 	const float speed = input.held.sprint ? kCursorSpeed * 2 : kCursorSpeed;
-	cursor.translation += Vector3(moveDirection.x, moveDirection.y) * speed * 60.0f * deltaTime;
+	cursor.translation += Vector3(moveDirection.x, moveDirection.y, 0) * speed * 60.0f * deltaTime;
 
 	// Nothing to win yet: its score never reaches its goal
 	return data.score >= data.scoreGoal ? MiniGameOutcome::Won : MiniGameOutcome::Running;

@@ -89,11 +89,6 @@ void updateArtifact(Player* player, SceneManagement::Scene& scene, float deltaTi
 	// Artifact
 	const auto camera = player->camera;
 	const auto offset = Vector3Add(camera.forward, player->rigidBody3D.left);//camera->left / 2);
-	const Ray cameraRay = Ray{
-		.position = player->getPosition(),
-		.direction = camera.forward,
-	};
-
 
 	player->artifact->rigidBody3D.translation = Vector3Add(SceneManagement::SceneManager::getInstance().camera3D.position, offset);
 	player->artifact->update(&scene, deltaTime);

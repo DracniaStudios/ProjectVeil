@@ -21,7 +21,7 @@ void Player::Interact(SceneManagement::Scene& scene)
 
 	scene.gameMap.ForEachInteractable([&](InteractableObject& obj)
 	{
-		if (!obj.isInteractable || !obj.isEnabled);
+		if (!obj.isInteractable || !obj.isEnabled) { return; }
 
 		// The collider, not the box around it, so the crosshair has to actually be
 		// on the object rather than merely within its bounds.
