@@ -4,7 +4,6 @@ namespace Editor {
 
 void WorldEditor::ShowPlayerData(Player* player)
 {
-	auto scene = editedScene;
 
 	/// Begin Player Window
 	ImGui::Begin("Player Data");

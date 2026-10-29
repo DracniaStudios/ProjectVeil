@@ -82,12 +82,12 @@ MiniGameOutcome Crane::Update(const MiniGameInput& input, float deltaTime)
 		const float step = kSpeed * 60.0f * deltaTime;
 
 		if (input.held.jump) { cursor.jump(-200); }
-		if (input.held.left) { cursor.translation += Vector3(-step, 0); }
-		if (input.held.right) { cursor.translation += Vector3(step, 0); }
+		if (input.held.left) { cursor.translation += Vector3(-step, 0, 0); }
+		if (input.held.right) { cursor.translation += Vector3(step, 0, 0); }
 
 		if (cursor.getPosition().y < data.screen.y)
 		{
-			cursor.translation = Vector3(cursor.getPosition().x, data.screen.y + cursor.scale.x);
+			cursor.translation = Vector3(cursor.getPosition().x, data.screen.y + cursor.scale.x, 0);
 		}
 
 	}

@@ -10,7 +10,7 @@ bool MiniGameSession::Start(int newGameId, std::uint64_t newStationId, Vector2 s
 {
 	// Tried on a copy of the seed sequence, so a rejected id leaves it untouched
 	std::mt19937 trialSeeds(seed);
-	std::unique_ptr<MiniGame> built = factory(newGameId, MiniGameSetup{ screenSize, trialSeeds() });
+	std::unique_ptr<MiniGame> built = factory(newGameId, MiniGameSetup{ screenSize, static_cast<uint32_t>(trialSeeds()) });
 	if (built == nullptr) { return false; }
 
 	seeds = trialSeeds;
@@ -62,7 +62,7 @@ void MiniGameSession::Draw() const
 
 void MiniGameSession::Restart(Vector2 screenSize)
 {
-	if (std::unique_ptr<MiniGame> fresh = factory(gameId, MiniGameSetup{ screenSize, seeds() }))
+	if (std::unique_ptr<MiniGame> fresh = factory(gameId, MiniGameSetup{ screenSize, static_cast<uint32_t>(seeds()) }))
 	{
 		Replace(std::move(fresh));
 	}
