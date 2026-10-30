@@ -307,6 +307,7 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 	// --- States -----------------------------------------------------------
 	
 	const auto player = scene->player;
+	if (!player) { return; }
 
 	if (IsNearEntity(rigidBody3D.getPosition(), player->rigidBody3D.getPosition(), sightRange)) { state = STALKER_CHASE; }
 	if (IsNearEntity(rigidBody3D.getPosition(), player->rigidBody3D.getPosition(), attackRange)) { state = STALKER_KILL; }
@@ -398,6 +399,13 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 		isCrouching = false;
 		if (!IsNearEntity(rigidBody3D.getPosition(), player->getPosition(), sightRange)) { TransitionTo(STALKER_SEARCH_LAST_KNOWN); }
 
+		MoveToward(player->getPosition(), currentSpeed, deltaTime, &scene->gameMap);
+		break;
+	}
+	case STALKER_KILL:
+	{
+		// Reached only inside attackRange, which sits inside sightRange, so the
+		// contact check must live here or it can never run once in reach.
 		MoveToward(player->getPosition(), currentSpeed, deltaTime, &scene->gameMap);
 
 		const ContactInfo playerContact = rigidBody3D.getContact(player->rigidBody3D);
