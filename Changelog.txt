@@ -1,7 +1,7 @@
 // Game Name: Subject Veil
-// Version: 0.4.18
-// Due: 2026-10-14 
-// Date: 2026-10-5 (Current Development Date)
+// Version: 0.4.24
+// Due: 2026-11-6 
+// Date: 2026-10-30 (Current Development Date)
 
 [Notice] World Editor doesn't use new InputSystem.
 [Notice] Create Maze Minigame
@@ -19,17 +19,14 @@
 
 [ Added ]
 
-- Added AudioManager's Stop Audio function.
+- Added new Pause Overlay & Input for Player
 
 [ Updated ]
 
-- Updated Stalker to Chase & Attack player with new States.
+- Updted EngineLayer to hold folders for scripts
 
 [ Fixed ]
 
-- Fixed an issue where Objects didn't update the BroadPhaseBox on FitToModel.
-
 [ Removed ]
 
-- Removed Asset Inspector's Folder list
-- Removed Inventory from Player.
+- Removed Raylib Projects from Folder

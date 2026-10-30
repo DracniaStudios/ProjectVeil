@@ -12,6 +12,7 @@ enum class Overlay
 	Settings,
 	Multiplayer,
 	MiniGame,
+	Pause,
 };
 
 // Display name, for the World Editor

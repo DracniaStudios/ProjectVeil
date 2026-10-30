@@ -56,6 +56,12 @@ void UpdateActions(Player* player, SceneManagement::Scene& scene) {
 	player->isFiring = inputSystem->IsActionPressed(InputSystem::ACTION_USE_ITEM)
 		|| inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2);
 
+	/// Menu Flags
+	if (inputSystem->IsActionPressed(InputSystem::ACTION_UI_PAUSE)) {
+		scene.overlays.Open(Overlay::Pause);
+	}
+
+	/// Editor Flags
 	if (!Editor::WorldEditor::getInstance().IsEnabled()) {
 		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_INTERACT)) { player->Interact(scene); }
 		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(20);

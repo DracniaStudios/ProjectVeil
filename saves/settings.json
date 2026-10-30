@@ -15,7 +15,7 @@
   "InvertedCameraXAxis": 0.0,
   "InvertedCameraYAxis": 0.0,
   "Luminosity": 1.0,
-  "MasterVolume": 0.0,
+  "MasterVolume": 0.5,
   "MonoOnly": 0.0,
   "MusicVolume": 0.4,
   "PostProcessing": 4.0,

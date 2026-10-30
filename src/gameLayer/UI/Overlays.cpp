@@ -109,6 +109,20 @@ namespace UI {
 		endPanel();
 	}
 
+	static void drawPause(OverlayStack& overlays) {
+		auto manager = &SceneManagement::SceneManager::getInstance();
+		beginPanel("Pause Menu", Rectangle{}, Rectangle{ 0.0f, 0.0f, 1.0f, 1.0f });
+
+		drawText("[Paused]");
+
+		returnButton(overlays, Overlay::Pause);
+
+		if (drawButton("Settings")) { manager->currentScene->overlays.Open(Overlay::Settings); }
+		if (drawButton("Exit To Main Menu")) { SceneManagement::SceneManager_push(manager, 0); }
+
+		endPanel();
+	}
+
 	void drawOverlays(SceneManagement::Scene& scene) {
 
 		OverlayStack& overlays = scene.overlays;
@@ -126,6 +140,7 @@ namespace UI {
 		case Overlay::Title:       drawTitle(scene); break;
 		case Overlay::Settings:    drawSettings(overlays); break;
 		case Overlay::Multiplayer: drawMultiplayer(overlays); break;
+		case Overlay::Pause: drawPause(overlays); break;
 		case Overlay::MiniGame:    scene.miniGameSession.Draw(); break;
 		}
 	}
