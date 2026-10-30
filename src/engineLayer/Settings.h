@@ -96,6 +96,7 @@ namespace Settings {
 		// are not JSON, or a newer game wrote them
 		bool Load();
 		bool Save() const;
+		void SetData();
 
 	private:
 		struct Subscriber

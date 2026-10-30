@@ -306,10 +306,10 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 
 	// --- States -----------------------------------------------------------
 	
-	auto player = &scene->player->rigidBody3D;
+	const auto player = scene->player;
 
-	if (IsNearEntity(rigidBody3D.getPosition(), player->getPosition(), sightRange)) { state = STALKER_CHASE; }
-	if (IsNearEntity(rigidBody3D.getPosition(), player->getPosition(), attackRange)) { state = STALKER_KILL; }
+	if (IsNearEntity(rigidBody3D.getPosition(), player->rigidBody3D.getPosition(), sightRange)) { state = STALKER_CHASE; }
+	if (IsNearEntity(rigidBody3D.getPosition(), player->rigidBody3D.getPosition(), attackRange)) { state = STALKER_KILL; }
 
 	switch (state)
 	{
@@ -399,11 +399,15 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 		if (!IsNearEntity(rigidBody3D.getPosition(), player->getPosition(), sightRange)) { TransitionTo(STALKER_SEARCH_LAST_KNOWN); }
 
 		MoveToward(player->getPosition(), currentSpeed, deltaTime, &scene->gameMap);
-		break;
-	}
-	case STALKER_KILL:
-	{
 
+		const ContactInfo playerContact = rigidBody3D.getContact(player->rigidBody3D);
+		if (playerContact.hit) {
+			std::cout << "Player Takes Damage \n";
+			SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), SCENE_TUTORIAL);
+			player->isEnabled = false;
+			isEnabled = false;
+		}
+		break;
 	}
 
 	case STALKER_SEARCH_LAST_KNOWN:

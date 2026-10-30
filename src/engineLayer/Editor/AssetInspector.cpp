@@ -91,6 +91,7 @@ namespace Editor {
 
 					ImGui::EndTabItem();
 				}
+				ImGui::EndTabBar();
 			}
 			ImGui::End();
 		}

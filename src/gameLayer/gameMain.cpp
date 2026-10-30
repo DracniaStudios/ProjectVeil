@@ -5,7 +5,8 @@
 #include <cmath>
 #include <optional>
 
-constexpr float maxDeltaTime = 1.0f / 30.0f; // 30 FPS
+constexpr int maxFrameRate = 60;
+constexpr float maxDeltaTime = 1.0f / maxFrameRate;
 
 // Set by request_exit(). update_game() reports it at the end of the frame, so
 // the main loop in ProjectVeil.cpp ends normally and close_game() runs once, in
@@ -42,7 +43,7 @@ bool init_game()
 	Settings::Settings::getInstance().Init();
 	AudioManager::AudioManager::getInstance().loadAll();
 	InitAudioDevice();
-
+	SetTargetFPS(maxFrameRate);
 	AssetManager::AssetManager::getInstance().loadAll();
 
 	// Lighting must come up AFTER AssetManager (so the shader can be written

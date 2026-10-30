@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <iostream>
+#include <raylib.h>
 
 namespace Settings {
 
@@ -65,7 +66,7 @@ namespace Settings {
 
 		return {
 			/* Gameplay */
-			Choice("Difficulty", "Difficulty", "Gameplay", { "Easy", "Normal", "Hard" }, 1),
+			Choice("Difficulty", "Difficulty", "Gameplay",{ "Easy", "Normal", "Hard" }, 1),
 			Toggle("InvertedCameraYAxis", "Invert Camera Y", "Gameplay", false),
 			Toggle("InvertedCameraXAxis", "Invert Camera X", "Gameplay", false),
 			Range("CameraSpeed", "Camera Speed", "Gameplay", 0.25, 2.0, 0.25, 1.0, true),
@@ -74,8 +75,9 @@ namespace Settings {
 			Toggle("HideClueVFX", "Hide Clue Effects", "Gameplay", false),
 
 			/* Display */
-			Choice("Resolution", "Resolution", "Display", { "1280x720", "1600x900", "1920x1080", "2560x1440", "3840x2160" }, 1),
+			Choice("Resolution", "Resolution", "Display",{ "1280x720", "1600x900", "1920x1080", "2560x1440", "3840x2160" }, 1),
 			Range("RenderResolution", "Render Resolution", "Display", 0.5, 1.0, 0.25, 1.0, true),
+			Choice("FrameRate", "Frame Rate", "Display", { "30", "60", "120", "240", "360" }, 1),
 			// The lighting's exposure; 0 would render a black frame
 			Range("Luminosity", "Luminosity", "Display", 0.25, 2.0, 0.25, 1.0, true),
 			Choice("DisplayMode", "Display Mode", "Display", { "Windowed", "Borderless", "Fullscreen" }, 0),

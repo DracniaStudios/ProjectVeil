@@ -17,10 +17,10 @@ int main()
 	//SetConfigFlags(FLAG_WINDOW_MAXIMIZED);
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 
-	SetTargetFPS(60); // set in settings
-
 	InitWindow(1600, 900, "Project: Veil"); // set in settings
 
+	SetWindowMinSize(1280, 720);
+	SetWindowMaxSize(3840, 2160);
 #pragma region ImGui
 	rlImGuiSetup(true);
 	ImGui_ImplRaylib_Init();
