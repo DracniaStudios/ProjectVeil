@@ -270,6 +270,11 @@ void Stalker::render3D()
 	// stale last-known position stays visible while the stalker sweeps away
 	// from it.
 	if (hasLastKnown) { DrawSphereWires(lastKnownPosition, 0.6f, 6, 6, MAROON); }
+
+	for (const auto& events : SceneManagement::SceneManager::getInstance().currentScene->soundField.Events()) {
+		DrawSphereWires(events.position, 0.5f, 6, 6, PINK);
+	}
+
 }
 
 void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
@@ -397,20 +402,14 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 	{
 		isSprinting = true;
 		isCrouching = false;
-		if (!IsNearEntity(rigidBody3D.getPosition(), player->getPosition(), sightRange)) { TransitionTo(STALKER_SEARCH_LAST_KNOWN); }
+		if (!IsNearEntity(rigidBody3D.getPosition(), player->getPosition(), sightRange)) { TransitionTo(STALKER_HUNT); }
 
-		MoveToward(player->getPosition(), currentSpeed, deltaTime, &scene->gameMap);
-		break;
-	}
-	case STALKER_KILL:
-	{
-		// Reached only inside attackRange, which sits inside sightRange, so the
-		// contact check must live here or it can never run once in reach.
 		MoveToward(player->getPosition(), currentSpeed, deltaTime, &scene->gameMap);
 
 		const ContactInfo playerContact = rigidBody3D.getContact(player->rigidBody3D);
 		if (playerContact.hit) {
 			std::cout << "Player Takes Damage \n";
+			scene->overlays.Open(Overlay::Jumpscare);
 			SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), SCENE_TUTORIAL);
 			player->isEnabled = false;
 			isEnabled = false;

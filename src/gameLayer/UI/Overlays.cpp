@@ -123,6 +123,13 @@ namespace UI {
 		endPanel();
 	}
 
+	static void drawJumpScare(OverlayStack& overlays) {
+		beginPanel("JumpScare Menu", Rectangle{}, Rectangle{ 0.0f, 0.0f, 1.0f, 1.0f });
+
+		drawText("[Jumpscare]");
+		endPanel();
+	}
+
 	void drawOverlays(SceneManagement::Scene& scene) {
 
 		OverlayStack& overlays = scene.overlays;
@@ -142,6 +149,7 @@ namespace UI {
 		case Overlay::Multiplayer: drawMultiplayer(overlays); break;
 		case Overlay::Pause: drawPause(overlays); break;
 		case Overlay::MiniGame:    scene.miniGameSession.Draw(); break;
+		case Overlay::Jumpscare:    drawJumpScare(overlays); break;
 		}
 	}
 }

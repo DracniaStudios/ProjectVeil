@@ -13,6 +13,7 @@ enum class Overlay
 	Multiplayer,
 	MiniGame,
 	Pause,
+	Jumpscare,
 };
 
 // Display name, for the World Editor

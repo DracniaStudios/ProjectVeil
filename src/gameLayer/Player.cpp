@@ -5,6 +5,8 @@
 #include <SceneManager.h>
 #include <WorldEditor.h>
 
+// !!! Warning: Emit Functions Counts on Player Translation and Move Direction instead of Velocity !!!
+
 /* Static Functions */
 #pragma region Static Functions
 void SetMoveDirection(Player* player, float deltaTime) {
@@ -146,12 +148,13 @@ static void EmitFootsteps(Player* player, SceneManagement::Scene& scene, float d
 {
 	// Vertical motion is jumping and falling, not walking; only horizontal
 	// travel makes footfalls.
-	const Vector3 velocity = player->rigidBody3D.GetVelocity();
+	const Vector3 velocity =  Vector3(player->moveDirection.x, 0, player->moveDirection.y);
 	const float planarSpeed = Vector2Length(Vector2{ velocity.x, velocity.z });
 
 	constexpr float kMovingThreshold = 0.5f;
 	if (planarSpeed < kMovingThreshold)
 	{
+		std::cout << "[Player.cpp] Reset Footstep Timer From Landing\n";
 		// Land the next step immediately on moving off again, so starting to
 		// walk is audible rather than free for the first half-stride.
 		player->footstepTimer = 0.0f;
@@ -160,13 +163,15 @@ static void EmitFootsteps(Player* player, SceneManagement::Scene& scene, float d
 
 	float interval = 0.45f;
 	float loudness = 0.5f;
-	if (player->isCrouching)      { interval = 0.70f; loudness = 0.15f; }
+	if (player->isCrouching) { return; }
 	else if (player->isSprinting) { interval = 0.28f; loudness = 1.0f; }
 
+	std::cout << "[Player.cpp] Calculate Footstep Timer\n";
 	player->footstepTimer -= deltaTime;
 	if (player->footstepTimer > 0.0f) { return; }
 	player->footstepTimer = interval;
 
+	std::cout << "[Player.cpp] Emit Foot Step\n";
 	scene.soundField.Emit(player->getPosition(), loudness, SOUND_FOOTSTEP, player->id);
 }
 
