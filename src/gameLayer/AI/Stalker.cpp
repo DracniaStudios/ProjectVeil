@@ -271,10 +271,24 @@ void Stalker::render3D()
 	// from it.
 	if (hasLastKnown) { DrawSphereWires(lastKnownPosition, 0.6f, 6, 6, MAROON); }
 
-	for (const auto& events : SceneManagement::SceneManager::getInstance().currentScene->soundField.Events()) {
-		DrawSphereWires(events.position, 0.5f, 6, 6, PINK);
+	if (const auto* currentScene = SceneManagement::SceneManager::getInstance().currentScene)
+	{
+		for (const auto& event : currentScene->soundField.Events()) {
+			DrawSphereWires(event.position, 0.5f, 6, 6, PINK);
+		}
 	}
+}
 
+// Shared by CHASE and KILL: contact with the player ends the run.
+static void KillPlayerOnContact(Stalker* self, SceneManagement::Scene* scene, const auto& player)
+{
+	const ContactInfo playerContact = self->rigidBody3D.getContact(player->rigidBody3D);
+	if (!playerContact.hit) { return; }
+	std::cout << "Player Takes Damage \n";
+	scene->overlays.Open(Overlay::Jumpscare);
+	SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), SCENE_TUTORIAL);
+	player->isEnabled = false;
+	self->isEnabled = false;
 }
 
 void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
@@ -406,14 +420,15 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 
 		MoveToward(player->getPosition(), currentSpeed, deltaTime, &scene->gameMap);
 
-		const ContactInfo playerContact = rigidBody3D.getContact(player->rigidBody3D);
-		if (playerContact.hit) {
-			std::cout << "Player Takes Damage \n";
-			scene->overlays.Open(Overlay::Jumpscare);
-			SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), SCENE_TUTORIAL);
-			player->isEnabled = false;
-			isEnabled = false;
-		}
+		KillPlayerOnContact(this, scene, player);
+		break;
+	}
+	case STALKER_KILL:
+	{
+		// Reached only inside attackRange, which sits inside sightRange, so the
+		// contact check must live here or it can never run once in reach.
+		MoveToward(player->getPosition(), currentSpeed, deltaTime, &scene->gameMap);
+		KillPlayerOnContact(this, scene, player);
 		break;
 	}
 

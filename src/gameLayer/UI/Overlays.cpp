@@ -123,7 +123,7 @@ namespace UI {
 		endPanel();
 	}
 
-	static void drawJumpScare(OverlayStack& overlays) {
+	static void drawJumpScare(OverlayStack&) {
 		beginPanel("JumpScare Menu", Rectangle{}, Rectangle{ 0.0f, 0.0f, 1.0f, 1.0f });
 
 		drawText("[Jumpscare]");
