@@ -315,7 +315,6 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 	if (!player) { return; }
 
 	if (IsNearEntity(rigidBody3D.getPosition(), player->rigidBody3D.getPosition(), sightRange)) { state = STALKER_CHASE; }
-	if (IsNearEntity(rigidBody3D.getPosition(), player->rigidBody3D.getPosition(), attackRange)) { state = STALKER_KILL; }
 
 	switch (state)
 	{
@@ -406,6 +405,7 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 
 		MoveToward(player->getPosition(), currentSpeed, deltaTime, &scene->gameMap);
 
+		/* Kill the Player (Resets) */
 		const ContactInfo playerContact = rigidBody3D.getContact(player->rigidBody3D);
 		if (playerContact.hit) {
 			std::cout << "Player Takes Damage \n";
