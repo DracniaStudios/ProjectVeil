@@ -1,0 +1,505 @@
+cmake_minimum_required(VERSION 3.16)
+
+# A no-op build prints nothing (rowan-new#110). The per-target "Built target" lines are
+# the only output a rebuild with nothing to do produces, and they carry no information; a
+# real build still prints its [ x%] progress lines, and errors are untouched. This sits
+# above project() because CMAKE_TARGET_MESSAGES initializes the TARGET_MESSAGES global
+# property there and has no effect if set after it, and under the same top-level test as
+# SERIALIZE_TOP_LEVEL below, so a consumer that pulls this library in through FetchContent
+# keeps its own messages.
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    set(CMAKE_TARGET_MESSAGES OFF)
+endif()
+
+project(serialize VERSION 2.1.3 LANGUAGES CXX)
+
+include(GNUInstallDirs)
+
+# is this the top level project, or pulled in via add_subdirectory / FetchContent?
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+    set(SERIALIZE_TOP_LEVEL TRUE)
+else()
+    set(SERIALIZE_TOP_LEVEL FALSE)
+endif()
+
+option(SERIALIZE_BUILD_TESTS "Build serialize tests and example" ${SERIALIZE_TOP_LEVEL})
+option(SERIALIZE_INSTALL "Generate serialize install rules" ${SERIALIZE_TOP_LEVEL})
+option(SERIALIZE_FUZZ "Build the libFuzzer harness (requires clang)" OFF)
+
+# header-only library: consumers get the include path and nothing else — no compile flags leak
+add_library(serialize INTERFACE)
+add_library(serialize::serialize ALIAS serialize)
+target_include_directories(serialize INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+if(SERIALIZE_INSTALL)
+    include(CMakePackageConfigHelpers)
+    install(FILES serialize.h serialize_utf.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+    install(TARGETS serialize EXPORT serialize-targets)
+    install(EXPORT serialize-targets
+        FILE serialize-config.cmake
+        NAMESPACE serialize::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/serialize
+    )
+    # SameMajorVersion states API compatibility and says nothing about the wire.
+    # Wire agreement between two endpoints is the format version at the head of
+    # STANDARD.md, which a library release states separately.
+    write_basic_package_version_file(
+        ${CMAKE_CURRENT_BINARY_DIR}/serialize-config-version.cmake
+        COMPATIBILITY SameMajorVersion
+        ARCH_INDEPENDENT
+    )
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/serialize-config-version.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/serialize
+    )
+endif()
+
+# everything below builds the executables in this repo. flags here are scoped to those targets only.
+
+if(SERIALIZE_TOP_LEVEL AND NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+
+if(SERIALIZE_BUILD_TESTS OR SERIALIZE_FUZZ)
+    # STRICT floating point, deliberately. These executables are the gates that certify
+    # the wire: the golden and conformance vectors pin exact bytes and exact decoded bit
+    # patterns. The historical premake flags carried -ffast-math (MSVC /fp:fast) here,
+    # which licenses contraction, reassociation and reciprocal approximation in exactly
+    # the arithmetic those vectors exist to pin — measured on arm64, it changed both the
+    # quantized integer (writer) and the decoded float (reader) of compressed_float.
+    # A proof of byte-exactness earned under flags that permit different bytes is not a
+    # proof, so every target here builds strict:
+    #   - GCC/Clang: -ffp-contract=off. Not just "no -ffast-math" — GCC's default is
+    #     -ffp-contract=fast, and clang's default =on still fuses single expressions.
+    #   - MSVC: /fp:precise. Since VS 2022 this no longer implies contraction
+    #     (there is no /fp:contract in these flags, so contraction stays off).
+    # Consumers are unaffected either way — the library target above is INTERFACE-only
+    # and none of these flags leak. The wire itself no longer depends on any of this:
+    # the quantization's roundings are pinned in-source by SERIALIZE_FLOAT_FORCE_ROUND,
+    # and the -ffp-contract=fast test target below proves the bytes hold at the loosest
+    # contraction setting. The strict flags remain the estate's
+    # standing policy for network libraries (belt), and -ffast-math stays unsupported —
+    # reciprocal approximation breaks the vectors and no barrier can repair it.
+    if(MSVC)
+        # 4127/4244 are opted back in here: the header now push/pops them, and this repo's own
+        # executables use the same implicit-narrowing style as the header
+        # /utf-8: this header has no BOM, and MSVC otherwise decodes a BOM-less UTF-8
+        # source as the local ANSI code page — mangling non-ASCII characters and warning
+        # C4819. The test data is written as explicit code points so behaviour never
+        # depends on this, but the comments and the copyright line still need it.
+        set(SERIALIZE_DEV_FLAGS /W4 /utf-8 /fp:precise /GR- /wd4127 /wd4244)
+    else()
+        set(SERIALIZE_DEV_FLAGS -Wall -Wextra -ffp-contract=off -fno-rtti)
+    endif()
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+endif()
+
+if(SERIALIZE_BUILD_TESTS)
+    # "test" as a target name is reserved by CTest, so the target is serialize_test but the binary is still bin/test
+    add_executable(serialize_test test.cpp serialize.h)
+    target_compile_definitions(serialize_test PRIVATE SERIALIZE_ENABLE_TESTS=1)
+    set_target_properties(serialize_test PROPERTIES OUTPUT_NAME test)
+
+    add_executable(example example.cpp serialize.h)
+
+    # The shared conformance corpus, run through this library's reader. The vector files are named
+    # on the command line rather than discovered at run time, because a directory walk is not
+    # portable across this repo's three platforms and the glob belongs at configure time anyway.
+    # GLOB so a new operation's file is picked up by re-running cmake; CONFIGURE_DEPENDS so an
+    # added or removed file re-runs it on the next build.
+    file(GLOB SERIALIZE_CONFORMANCE_VECTORS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/conformance/*.txt)
+    if(NOT SERIALIZE_CONFORMANCE_VECTORS)
+        message(FATAL_ERROR "conformance/ holds no vector files. The corpus is the conformance instrument; an empty one is a broken checkout, not a pass.")
+    endif()
+    add_executable(serialize_conformance conformance.cpp serialize.h)
+    set_target_properties(serialize_conformance PROPERTIES OUTPUT_NAME conformance)
+
+    # The write side debug assertions, observed rather than aborted on: asserts.cpp defines
+    # serialize_assert itself, so the assertions are live in Release too and this target is
+    # registered unconditionally.
+    add_executable(serialize_asserts asserts.cpp serialize.h)
+    set_target_properties(serialize_asserts PROPERTIES OUTPUT_NAME asserts)
+
+    # the buffer edges, differentially: tight multiple-of-8 write buffers with a canary, and read
+    # slack of 0x00 and 0xFF that must never change a value or a decision (edge.cpp)
+    add_executable(serialize_edge edge.cpp serialize.h)
+    set_target_properties(serialize_edge PROPERTIES OUTPUT_NAME edge CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON)
+
+    # serialize_utf.h, the wstring migration helper: wide text to UTF-8 and back, outside the
+    # format and outside serialize.h's stream API
+    add_executable(serialize_utf utf.cpp serialize.h serialize_utf.h)
+    set_target_properties(serialize_utf PROPERTIES OUTPUT_NAME utf)
+
+    foreach(target serialize_test example serialize_conformance serialize_asserts serialize_utf serialize_edge)
+        target_link_libraries(${target} PRIVATE serialize)
+        target_compile_options(${target} PRIVATE ${SERIALIZE_DEV_FLAGS})
+        target_compile_definitions(${target} PRIVATE
+            $<$<CONFIG:Debug>:SERIALIZE_DEBUG>
+            $<$<NOT:$<CONFIG:Debug>>:SERIALIZE_RELEASE>
+        )
+    endforeach()
+
+    enable_testing()
+    add_test(NAME test COMMAND serialize_test)
+    add_test(NAME conformance COMMAND serialize_conformance ${SERIALIZE_CONFORMANCE_VECTORS})
+
+    # NEGATIVE CONTROLS. The corpus is the conformance instrument, and an instrument nobody has
+    # seen go red is a claim rather than a measurement. Each control below is a deliberately
+    # broken input the gate MUST reject; ctest's WILL_FAIL inverts the verdict, so a control test
+    # passes exactly when the gate it guards goes red. If one of these ever starts failing, the
+    # gate has stopped discriminating and every green result it has produced is worth
+    # re-examining.
+
+    # Control 1: a corpus file whose operation has no runner. STANDARD.md requires a suite to run
+    # every vector in the corpus, so a runner that quietly skips what it does not understand
+    # reports green over a rule nobody checked. The vector lives in conformance-controls/, which
+    # the corpus glob above deliberately does not reach. The Go checker is run against the same
+    # file in CI, because the contract binds both gates and not only this one.
+    add_test(NAME conformance-control-unknown-operation
+             COMMAND serialize_conformance ${CMAKE_CURRENT_SOURCE_DIR}/conformance-controls/unknown-operation.txt)
+    set_tests_properties(conformance-control-unknown-operation PROPERTIES WILL_FAIL TRUE)
+
+    # Control 2: a reader with ONE LINE of a refusal rule deleted, built from a scratch copy of
+    # the header and run against the real corpus. This is the control that answers "would the
+    # corpus notice if the implementation were wrong?" — and it answers it per rule, because each
+    # sabotage names the rule it deletes and conformance-controls/<control>.expected names EXACTLY
+    # the vectors that rule owns. The control passes only when the sabotaged reader fails those
+    # vectors and no others: a sabotage that breaks more than its rule, or less, is a control that
+    # measures something other than what it claims.
+    #
+    # The scratch copy is generated at configure time and the sabotage is a string replacement, so
+    # a needle that stops matching is a FATAL_ERROR rather than a silent no-op: a control that has
+    # quietly stopped sabotaging anything is worse than no control at all. conformance.cpp is
+    # copied alongside the sabotaged header because it includes "serialize.h" with quotes, which
+    # resolves against the including file's own directory first.
+    #
+    # Each replacement keeps the sabotaged line compiling warning-free and reading every variable
+    # the deleted rule read: the added conjunct is false exactly when the rule would have fired.
+    set(SERIALIZE_CONTROL_NAMES
+        align-padding ranged-reconstruction ranged-range fixed-degenerate-terminal
+        float-finite double-finite compressed-float-finite
+        end-trailing-data end-padding
+        int-relative-canonical
+        string-embedded-nul string-utf8 string-utf8-surrogate
+        int64-through-double object-terminal
+        wrong-reason
+        object-latch-rejected reject-reason)
+
+    set(SERIALIZE_CONTROL_RULE_align-padding "readers must verify that the alignment padding bits are zero")
+    set(SERIALIZE_CONTROL_NEEDLE_align-padding
+        "                if ( value != 0 )")
+    set(SERIALIZE_CONTROL_PATCH_align-padding
+        "                if ( value == 0xFFFFFFFF ) // NEGATIVE CONTROL: this rule is deleted on purpose")
+
+    # Two controls over the ranged int, one per rule, because the two rules fail differently: the
+    # reconstruction decides what an accepted offset means, and the range check decides which
+    # offsets are accepted at all. Each is a single line with no second guard behind it.
+    set(SERIALIZE_CONTROL_RULE_ranged-reconstruction "a ranged int decodes to its offset plus min")
+    set(SERIALIZE_CONTROL_NEEDLE_ranged-reconstruction
+        "            value = int32_t( unsigned_value + uint32_t(min) );")
+    set(SERIALIZE_CONTROL_PATCH_ranged-reconstruction
+        "            value = int32_t( unsigned_value ); // NEGATIVE CONTROL: min is dropped on purpose")
+
+    # the widened right hand side is at least 0xFFFFFFFF and the offset is at most 0xFFFFFFFF
+    set(SERIALIZE_CONTROL_RULE_ranged-range "a ranged int whose offset is past the span is refused")
+    set(SERIALIZE_CONTROL_NEEDLE_ranged-range
+        "            if ( unsigned_value > uint32_t(max) - uint32_t(min) )")
+    set(SERIALIZE_CONTROL_PATCH_ranged-range
+        "            if ( uint64_t(unsigned_value) > uint64_t( uint32_t(max) - uint32_t(min) ) + 0xFFFFFFFFull ) // NEGATIVE CONTROL: this rule is deleted on purpose")
+
+    # The degenerate fixed point field, which consumes no bits and would otherwise always succeed.
+    # The needle appears in both FixedPointSerializer specializations and both are sabotaged.
+    set(SERIALIZE_CONTROL_RULE_fixed-degenerate-terminal "every read consults the failure state, zero bit reads included")
+    set(SERIALIZE_CONTROL_NEEDLE_fixed-degenerate-terminal
+        "                if ( !stream.SerializeInteger( degenerate, 0, 0 ) )")
+    set(SERIALIZE_CONTROL_PATCH_fixed-degenerate-terminal
+        "                if ( !stream.SerializeInteger( degenerate, 0, 0 ) && degenerate != 0 ) // NEGATIVE CONTROL: this rule is deleted on purpose")
+
+    # The finite rule, once per width and once for the compressed float decode. Zero is finite, so
+    # the added conjunct never holds
+    set(SERIALIZE_CONTROL_RULE_float-finite "a float read refuses NaN and the infinities")
+    set(SERIALIZE_CONTROL_NEEDLE_float-finite
+        "            if ( !float_bits_are_finite( int_value ) )")
+    set(SERIALIZE_CONTROL_PATCH_float-finite
+        "            if ( !float_bits_are_finite( int_value ) && int_value == 0u ) // NEGATIVE CONTROL: this rule is deleted on purpose")
+
+    set(SERIALIZE_CONTROL_RULE_double-finite "a double read refuses NaN and the infinities")
+    set(SERIALIZE_CONTROL_NEEDLE_double-finite
+        "            if ( !double_bits_are_finite( int_value ) )")
+    set(SERIALIZE_CONTROL_PATCH_double-finite
+        "            if ( !double_bits_are_finite( int_value ) && int_value == 0u ) // NEGATIVE CONTROL: this rule is deleted on purpose")
+
+    set(SERIALIZE_CONTROL_RULE_compressed-float-finite "a compressed float decode that is not finite is refused")
+    set(SERIALIZE_CONTROL_NEEDLE_compressed-float-finite
+        "            if ( !float_bits_are_finite( decoded_bits ) )")
+    set(SERIALIZE_CONTROL_PATCH_compressed-float-finite
+        "            if ( !float_bits_are_finite( decoded_bits ) && decoded_bits == 0u ) // NEGATIVE CONTROL: this rule is deleted on purpose")
+
+    # The end's two rules. Without the trailing data rule the end checks only the low bits of
+    # whatever remains, so a stream with whole bytes left passes when those bits are zero
+    set(SERIALIZE_CONTROL_RULE_end-trailing-data "an end refuses a whole byte after the object")
+    set(SERIALIZE_CONTROL_NEEDLE_end-trailing-data
+        "            if ( remaining >= 8 )")
+    set(SERIALIZE_CONTROL_PATCH_end-trailing-data
+        "            if ( remaining >= 8 && m_reader.GetBitsRead() < 0 ) // NEGATIVE CONTROL: this rule is deleted on purpose")
+
+    set(SERIALIZE_CONTROL_RULE_end-padding "an end refuses non-zero padding in the final byte")
+    set(SERIALIZE_CONTROL_NEEDLE_end-padding
+        "                if ( padding != 0 )")
+    set(SERIALIZE_CONTROL_PATCH_end-padding
+        "                if ( padding == 0xFFFFFFFF ) // NEGATIVE CONTROL: this rule is deleted on purpose")
+
+    set(SERIALIZE_CONTROL_RULE_int-relative-canonical "the absolute tier refuses a difference a bounded tier carries")
+    set(SERIALIZE_CONTROL_NEEDLE_int-relative-canonical
+        "            if ( reconstructed >= 0 && reconstructed <= serialize_int_relative_max && reconstructed > int64_t( previous ) && reconstructed - int64_t( previous ) <= 69914 )")
+    set(SERIALIZE_CONTROL_PATCH_int-relative-canonical
+        "            if ( reconstructed >= 0 && reconstructed <= serialize_int_relative_max && reconstructed > int64_t( previous ) && reconstructed - int64_t( previous ) <= 69914 && reconstructed < 0 ) // NEGATIVE CONTROL: this rule is deleted on purpose")
+
+    set(SERIALIZE_CONTROL_RULE_string-embedded-nul "a string read refuses a zero byte among its payload")
+    set(SERIALIZE_CONTROL_NEEDLE_string-embedded-nul
+        "                if ( string[i] == '\\0' )")
+    set(SERIALIZE_CONTROL_PATCH_string-embedded-nul
+        "                if ( string[i] == '\\0' && i < 0 ) // NEGATIVE CONTROL: this rule is deleted on purpose")
+
+    set(SERIALIZE_CONTROL_RULE_string-utf8 "a string read refuses a payload that is not well formed UTF-8")
+    set(SERIALIZE_CONTROL_NEEDLE_string-utf8
+        "            if ( !serialize_string_is_valid_utf8( string, length ) )")
+    set(SERIALIZE_CONTROL_PATCH_string-utf8
+        "            if ( !serialize_string_is_valid_utf8( string, length ) && length < 0 ) // NEGATIVE CONTROL: this rule is deleted on purpose")
+
+    # one clause of the UTF-8 rule alone: the encoded surrogates, ED A0 80 through ED BF BF
+    set(SERIALIZE_CONTROL_RULE_string-utf8-surrogate "a string read refuses an encoded surrogate code point")
+    set(SERIALIZE_CONTROL_NEEDLE_string-utf8-surrogate
+        "                if ( lead == 0xED && byte1 >= 0xA0 )")
+    set(SERIALIZE_CONTROL_PATCH_string-utf8-surrogate
+        "                if ( lead == 0xED && byte1 >= 0xA0 && byte1 > 0xFF ) // NEGATIVE CONTROL: this rule is deleted on purpose")
+
+    # A reader whose ranged 64 bit integer passes through a double, as a port backed by a double
+    # number type would: every integer up to 2^53 survives, and the wide vectors past it do not
+    set(SERIALIZE_CONTROL_RULE_int64-through-double "a 64 bit value is carried exactly, never through a double")
+    set(SERIALIZE_CONTROL_NEEDLE_int64-through-double
+        "            value = int64_t( unsigned_value + uint64_t(min) );")
+    set(SERIALIZE_CONTROL_PATCH_int64-through-double
+        "            { const double through_double = double( int64_t( unsigned_value + uint64_t(min) ) ); value = through_double >= 9223372036854775807.0 ? 9223372036854775807LL : int64_t( through_double ); } // NEGATIVE CONTROL: the value goes through a double on purpose")
+
+    # The refusal reason. This reader refuses every stream the real one refuses, and names the
+    # wrong rule for one of them: a vector states its reason, and a refusal under the wrong rule
+    # is a disagreement about the format, however red the stream ends up
+    # The entry check is the only one that fires for an object that reads nothing: an empty
+    # nested object after a refusal reaches its callback without it, and the conformance runner
+    # reports a callback reached on a poisoned stream as accepted.
+    set(SERIALIZE_CONTROL_RULE_object-terminal "a nested object on a failed stream refuses before its callback runs")
+    set(SERIALIZE_CONTROL_NEEDLE_object-terminal
+        "            if ( serialize::serialize_stream_failed( stream ) )                             \\")
+    set(SERIALIZE_CONTROL_PATCH_object-terminal
+        "            if ( serialize::serialize_stream_failed( stream ) && !serialize::serialize_stream_failed( stream ) ) /* NEGATIVE CONTROL: this rule is deleted on purpose */ \\")
+
+    set(SERIALIZE_CONTROL_RULE_wrong-reason "a refusal names the rule that refused it")
+    set(SERIALIZE_CONTROL_NEEDLE_wrong-reason
+        "                    return serialize_fail( stream, REFUSAL_EMBEDDED_NUL );")
+    set(SERIALIZE_CONTROL_PATCH_wrong-reason
+        "                    return serialize_fail( stream, REFUSAL_INVALID_UTF8 ); // NEGATIVE CONTROL: the wrong reason on purpose")
+
+    # The rejected rule, twice, one per way a caller refuses (STANDARD.md, "Refusal reasons";
+    # tla/ReadStreamLatch.tla). The first puts serialize_latch_failure back to what it did before
+    # 2.1: it poisons the stream and records nothing, so a nested object whose Serialize returns
+    # false on its own leaves the refused stream reporting none. The stream is still terminal, so
+    # what goes red is the reason, which is exactly the rule.
+    set(SERIALIZE_CONTROL_RULE_object-latch-rejected "a nested object that refuses on its own latches rejected")
+    set(SERIALIZE_CONTROL_NEEDLE_object-latch-rejected
+        "        static SERIALIZE_ALWAYS_INLINE bool Latch( ReadStream & stream ) { return stream.Fail( REFUSAL_REJECTED ); }")
+    set(SERIALIZE_CONTROL_PATCH_object-latch-rejected
+        "        static SERIALIZE_ALWAYS_INLINE bool Latch( ReadStream & stream ) { stream.m_reader.PoisonPosition(); return false; } // NEGATIVE CONTROL: the 2.0 latch, recording no reason, on purpose")
+
+    # The second makes serialize_reject refuse under a wire rule's name. The stream still fails
+    # and stays failed; only the reason is wrong, and the caller's decision is reported as if the
+    # bytes had broken a rule of the format
+    set(SERIALIZE_CONTROL_RULE_reject-reason "serialize_reject refuses as rejected")
+    set(SERIALIZE_CONTROL_NEEDLE_reject-reason
+        "            return serialize::serialize_fail( stream, serialize::REFUSAL_REJECTED );        \\")
+    set(SERIALIZE_CONTROL_PATCH_reject-reason
+        "            return serialize::serialize_fail( stream, serialize::REFUSAL_VALUE_OUT_OF_RANGE ); /* NEGATIVE CONTROL: the wrong reason on purpose */ \\")
+
+    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/serialize.h SERIALIZE_HEADER_TEXT)
+    foreach(control ${SERIALIZE_CONTROL_NAMES})
+        set(needle "${SERIALIZE_CONTROL_NEEDLE_${control}}")
+        string(REPLACE "${needle}" "${SERIALIZE_CONTROL_PATCH_${control}}"
+               SERIALIZE_SABOTAGED_TEXT "${SERIALIZE_HEADER_TEXT}")
+        if(SERIALIZE_SABOTAGED_TEXT STREQUAL SERIALIZE_HEADER_TEXT)
+            message(FATAL_ERROR
+                "conformance control '${control}' found nothing to sabotage in serialize.h. The line it "
+                "deletes has moved or changed, so the control is no longer proving that deleting "
+                "'${SERIALIZE_CONTROL_RULE_${control}}' turns the corpus red. Update the needle in "
+                "CMakeLists.txt; do not delete the control.")
+        endif()
+        set(expected ${CMAKE_CURRENT_SOURCE_DIR}/conformance-controls/${control}.expected)
+        if(NOT EXISTS ${expected})
+            message(FATAL_ERROR "conformance control '${control}' has no ${expected} naming the vectors its rule owns.")
+        endif()
+        set(dir ${CMAKE_BINARY_DIR}/conformance-controls/${control})
+        file(MAKE_DIRECTORY ${dir})
+        file(WRITE ${dir}/serialize.h "${SERIALIZE_SABOTAGED_TEXT}")
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/conformance.cpp ${dir}/conformance.cpp COPYONLY)
+
+        add_executable(serialize_conformance_control_${control} ${dir}/conformance.cpp ${dir}/serialize.h)
+        set_target_properties(serialize_conformance_control_${control} PROPERTIES OUTPUT_NAME conformance-control-${control})
+        target_compile_options(serialize_conformance_control_${control} PRIVATE ${SERIALIZE_DEV_FLAGS})
+        # The controls always build UNCHECKED. A reader with a rule deleted produces values a
+        # checked build asserts on, and an abort is a hard ctest failure rather than the corpus's
+        # verdict. What must go red here is the corpus, cleanly.
+        target_compile_definitions(serialize_conformance_control_${control} PRIVATE SERIALIZE_RELEASE NDEBUG)
+        add_test(NAME conformance-control-${control}
+                 COMMAND serialize_conformance_control_${control} --expect-failures ${expected} ${SERIALIZE_CONFORMANCE_VECTORS})
+    endforeach()
+    add_test(NAME asserts COMMAND serialize_asserts)
+    add_test(NAME utf COMMAND serialize_utf)
+    add_test(NAME edge COMMAND serialize_edge)
+
+    # THE SAME SUITE A SECOND TIME AT -ffp-contract=on, AND A THIRD TIME AT
+    # -ffp-contract=fast. This is not belt and braces; these are the only builds in which the
+    # compressed float's FMA discipline has teeth.
+    #
+    # That discipline is a pair of locals pinned by SERIALIZE_FLOAT_FORCE_ROUND, which keep
+    # the quantization's two roundings distinct under EVERY contraction mode -- that is what
+    # makes the wire bits independent of the consumer's compiler flags (issues #92/#95).
+    # Whether DAMAGING the discipline is visible depends entirely on the contraction setting,
+    # measured on clang 21 / arm64 by falsifying the audited home and rebuilding, all four
+    # falsifications, all three modes:
+    #
+    #                                  =off    =on     =fast
+    #    reader barrier deleted        PASS    PASS    RED (nonzero-min vector)
+    #    reader folded to one stmt     PASS    RED     RED
+    #    writer barrier deleted        PASS    PASS    RED (writer-fusion vector)
+    #    writer folded to one stmt     PASS    RED     RED
+    #
+    # =off is blind to all four: contraction is forbidden everywhere, so every spelling
+    # computes the same thing. =on sees the one-expression folds and cannot see a deleted
+    # barrier -- statement-local contraction never fuses through any local. =fast sees
+    # everything, because it is the mode in which only the barrier stands between the two
+    # roundings and one. So the targets above stay at -ffp-contract=off, because that is the
+    # certification build, and these two add back every row of the discrimination it costs.
+    # The =fast build is also the consumer reality check: it is GCC's default at every
+    # optimization level, and the exact build in which arm64 consumers shipped divergent
+    # wire before the barrier existed. mas-bandwidth/schema#82; serialize.c#38 is the =on
+    # build in the C port.
+    #
+    # The contract flag comes AFTER ${SERIALIZE_DEV_FLAGS} so it wins over the =off in there,
+    # including when CI overrides CMAKE_CXX_FLAGS wholesale (the sanitizers job does). Nothing
+    # new is asked of the compiler: the dev flags already spell -ffp-contract, so any compiler
+    # that can build the suite at all can build these. MSVC is excluded because cl has no such
+    # flag -- and needs none: it is the one configuration in the matrix that never receives
+    # -ffp-contract=off, so the first build is already the library's default-contraction
+    # behaviour executed rather than reasoned about.
+    #
+    # The binary reports whether contraction is actually LIVE on the target -- x86-64 without
+    # FMA cannot fuse however the flag is set, so on such hosts the =fast leg exercises
+    # nothing beyond =off and the real coverage comes from FMA targets (the macos arm64 legs
+    # in CI, and any arm64 or -mfma consumer build). It also detects the one compiler trap
+    # here: GCC before 14 mapped -ffp-contract=on onto =fast, so on gcc 13 asking for
+    # statement-local contraction gets cross-statement contraction instead.
+    # SERIALIZE_TEST_FP_CONTRACT_REQUESTED_ON tells the binary this build asked for =on, and
+    # it stands down with a printed reason instead of certifying a discipline it is not
+    # running; the =fast target carries the cross-statement coverage on such a toolchain.
+    if(NOT MSVC)
+        add_executable(serialize_test_fp_contract_on test.cpp serialize.h)
+        set_target_properties(serialize_test_fp_contract_on PROPERTIES OUTPUT_NAME test-fp-contract-on)
+        target_link_libraries(serialize_test_fp_contract_on PRIVATE serialize)
+        target_compile_options(serialize_test_fp_contract_on PRIVATE ${SERIALIZE_DEV_FLAGS} -ffp-contract=on)
+        target_compile_definitions(serialize_test_fp_contract_on PRIVATE
+            SERIALIZE_ENABLE_TESTS=1
+            SERIALIZE_TEST_FP_CONTRACT="-ffp-contract=on"
+            SERIALIZE_TEST_FP_CONTRACT_REQUESTED_ON=1
+            $<$<CONFIG:Debug>:SERIALIZE_DEBUG>
+            $<$<NOT:$<CONFIG:Debug>>:SERIALIZE_RELEASE>
+        )
+        add_test(NAME test-fp-contract-on COMMAND serialize_test_fp_contract_on)
+
+        add_executable(serialize_test_fp_contract_fast test.cpp serialize.h)
+        set_target_properties(serialize_test_fp_contract_fast PROPERTIES OUTPUT_NAME test-fp-contract-fast)
+        target_link_libraries(serialize_test_fp_contract_fast PRIVATE serialize)
+        target_compile_options(serialize_test_fp_contract_fast PRIVATE ${SERIALIZE_DEV_FLAGS} -ffp-contract=fast)
+        target_compile_definitions(serialize_test_fp_contract_fast PRIVATE
+            SERIALIZE_ENABLE_TESTS=1
+            SERIALIZE_TEST_FP_CONTRACT="-ffp-contract=fast"
+            $<$<CONFIG:Debug>:SERIALIZE_DEBUG>
+            $<$<NOT:$<CONFIG:Debug>>:SERIALIZE_RELEASE>
+        )
+        add_test(NAME test-fp-contract-fast COMMAND serialize_test_fp_contract_fast)
+
+        # The fuzz harness, replayed. fuzz.cpp is the libFuzzer target (SERIALIZE_FUZZ below); built with
+        # SERIALIZE_FUZZ_REPLAY it carries a main that feeds the same target a fixed, generated set of
+        # inputs, so ctest runs its four passes (hostile read, InitializePadded, sentinel destinations,
+        # round trip) on every platform and every build type, without clang or libFuzzer. No clock, no
+        # files: the generator is a fixed xorshift.
+        add_executable(serialize_fuzz_replay fuzz.cpp serialize.h)
+        set_target_properties(serialize_fuzz_replay PROPERTIES OUTPUT_NAME fuzz-replay CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON)
+        target_link_libraries(serialize_fuzz_replay PRIVATE serialize)
+        target_compile_options(serialize_fuzz_replay PRIVATE ${SERIALIZE_DEV_FLAGS})
+        target_compile_definitions(serialize_fuzz_replay PRIVATE
+            SERIALIZE_FUZZ_REPLAY=1
+            $<$<CONFIG:Debug>:SERIALIZE_DEBUG>
+            $<$<NOT:$<CONFIG:Debug>>:SERIALIZE_RELEASE>
+        )
+        add_test(NAME fuzz-replay COMMAND serialize_fuzz_replay)
+
+        # The differential generator (tools/diff/diffgen.cpp): live outputs of this reference, in the
+        # corpus's own format, for the nightly cross-port differential (.github/workflows/nightly-diff.yml).
+        # It is never part of the corpus. Here it proves itself: whatever it prints, this reference's own
+        # conformance runner must accept, writer checks and terminality checks included, so a record the
+        # reference would fail never reaches a port. The two tests share a fixture so ctest -j orders them.
+        # conformance.cpp is included by diffgen.cpp (the step machine), so it is a dependency and not a source
+        add_executable(serialize_diffgen tools/diff/diffgen.cpp serialize.h)
+        set_source_files_properties(tools/diff/diffgen.cpp PROPERTIES OBJECT_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/conformance.cpp)
+        set_target_properties(serialize_diffgen PROPERTIES OUTPUT_NAME diffgen CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON)
+        target_link_libraries(serialize_diffgen PRIVATE serialize)
+        target_compile_options(serialize_diffgen PRIVATE ${SERIALIZE_DEV_FLAGS})
+        target_compile_definitions(serialize_diffgen PRIVATE
+            $<$<CONFIG:Debug>:SERIALIZE_DEBUG>
+            $<$<NOT:$<CONFIG:Debug>>:SERIALIZE_RELEASE>
+        )
+        add_test(NAME diff-generate COMMAND serialize_diffgen 1 1500 ${CMAKE_BINARY_DIR}/diff-selfcheck.txt)
+        add_test(NAME diff-selfcheck COMMAND serialize_conformance ${CMAKE_BINARY_DIR}/diff-selfcheck.txt)
+        set_tests_properties(diff-generate PROPERTIES FIXTURES_SETUP diff_vectors)
+        set_tests_properties(diff-selfcheck PROPERTIES FIXTURES_REQUIRED diff_vectors)
+
+        # NEGATIVE CONTROL for every check of the fuzz target. Each build sabotages exactly one check
+        # (SERIALIZE_FUZZ_CONTROL, documented at the top of fuzz.cpp) and the test passes only when the
+        # replay traps in the pass that owns that check, by name: a harness that has never been seen to
+        # fail is a claim, not a measurement, and a control that trapped somewhere else measures the
+        # wrong thing. If the replay stops failing, the check has stopped discriminating.
+        set(SERIALIZE_FUZZ_CONTROLS "1:sentinel" "2:hostile" "3:padded" "4:roundtrip" "5:canary" "6:trailing")
+        foreach(control ${SERIALIZE_FUZZ_CONTROLS})
+            string(REPLACE ":" ";" control_parts ${control})
+            list(GET control_parts 0 control_number)
+            list(GET control_parts 1 control_pass)
+            set(control_target serialize_fuzz_control_${control_pass})
+            add_executable(${control_target} fuzz.cpp serialize.h)
+            set_target_properties(${control_target} PROPERTIES OUTPUT_NAME fuzz-control-${control_pass} CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON)
+            target_link_libraries(${control_target} PRIVATE serialize)
+            target_compile_options(${control_target} PRIVATE ${SERIALIZE_DEV_FLAGS})
+            target_compile_definitions(${control_target} PRIVATE
+                SERIALIZE_FUZZ_REPLAY=1
+                SERIALIZE_FUZZ_CONTROL=${control_number}
+                $<$<CONFIG:Debug>:SERIALIZE_DEBUG>
+                $<$<NOT:$<CONFIG:Debug>>:SERIALIZE_RELEASE>
+            )
+            add_test(NAME fuzz-control-${control_pass} COMMAND ${control_target})
+            set_tests_properties(fuzz-control-${control_pass} PROPERTIES
+                PASS_REGULAR_EXPRESSION "fuzz_check failed: pass ${control_pass},")
+        endforeach()
+    endif()
+endif()
+
+# libFuzzer harness for the read side. requires clang. build in Debug so asserts stay live.
+if(SERIALIZE_FUZZ)
+    add_executable(fuzz fuzz.cpp serialize.h)
+    target_link_libraries(fuzz PRIVATE serialize)
+    target_compile_options(fuzz PRIVATE ${SERIALIZE_DEV_FLAGS} -fsanitize=fuzzer,address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer)
+    target_link_options(fuzz PRIVATE -fsanitize=fuzzer,address,undefined)
+    target_compile_definitions(fuzz PRIVATE
+        $<$<CONFIG:Debug>:SERIALIZE_DEBUG>
+        $<$<NOT:$<CONFIG:Debug>>:SERIALIZE_RELEASE>
+    )
+endif()

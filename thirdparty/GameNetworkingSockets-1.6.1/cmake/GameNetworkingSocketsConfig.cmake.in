@@ -1,0 +1,7 @@
+# Stub for the installed-package template that upstream ships here.
+#
+# src/CMakeLists.txt runs configure_package_config_file() on this path whether or
+# not anything is installed, and the upstream cmake/ folder is not vendored. This
+# build never installs GameNetworkingSockets, so the file generated from this
+# template is never read.
+@PACKAGE_INIT@

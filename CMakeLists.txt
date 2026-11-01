@@ -49,6 +49,17 @@ add_subdirectory(thirdparty/FastNoise2-1.1.1)
 add_subdirectory(thirdparty/json-3.12.0) #Soon to me Customizable
 add_subdirectory(thirdparty/fmod-2.3.14)
 add_subdirectory(thirdparty/steam-1.64)
+add_subdirectory(thirdparty/entt-4.0.0) # Header only ECS, exposes EnTT::EnTT
+add_subdirectory(thirdparty/flecs-4.1.6) # C ECS built as a static library, exposes flecs::flecs
+add_subdirectory(thirdparty/serialize-2.1.3) # Header only bitpacked wire serialization, exposes serialize::serialize
+
+# GameNetworkingSockets needs protobuf. If CMake cannot find one it is fetched at
+# configure time (see thirdparty/GameNetworkingSockets-1.6.1/CMakeLists.txt), so
+# turn this off to configure without network access.
+option(VEIL_BUILD_GNS "Build GameNetworkingSockets" ON)
+if (VEIL_BUILD_GNS)
+	add_subdirectory(thirdparty/GameNetworkingSockets-1.6.1)
+endif()
 
 file (GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
@@ -120,7 +131,15 @@ rlimgui
 FastNoise2 
 nlohmann_json 
 FMOD
-STEAM)
+STEAM
+EnTT::EnTT
+flecs::flecs
+serialize::serialize)
+
+# Only defined when GameNetworkingSockets could be built on this machine
+if (TARGET GameNetworkingSockets::static)
+	target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE GameNetworkingSockets::static)
+endif()
 
 
 # TODO: Add tests and install targets if needed.

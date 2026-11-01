@@ -38,6 +38,10 @@ The engine favors a lightweight, data-oriented `GameObject` / `Entity` model ove
 | Editor UI | [Dear ImGui (docking)](https://github.com/ocornut/imgui) via [rlImgui](https://github.com/raylib-extras/rlImGui) |
 | Procedural Noise | [FastNoise2](https://github.com/Auburn/FastNoise2) |
 | Serialization | [nlohmann/json](https://github.com/nlohmann/json) |
+| Network Serialization | [serialize](https://github.com/mas-bandwidth/serialize) |
+| Entity Component System | [EnTT](https://github.com/skypjack/entt), [Flecs](https://github.com/SanderMertens/flecs) |
+| Networking | [GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets) |
+| Multiplayer Backend | [SpacetimeDB](https://spacetimedb.com/) (external server, not vendored in `thirdparty/`) |
 | Audio | [FMOD](https://www.fmod.com/) |
 
 CI builds are run via GitHub Actions across Linux and Windows using both GCC/Clang and MSVC toolchains.
@@ -109,7 +113,7 @@ ProjectVeil/
 ├── tests/                # Unit tests
 ├── resources/            # Textures, models, icons, and shaders
 ├── saves/                # Serialized world save data
-└── thirdparty/           # Vendored dependencies (raylib, imgui, FastNoise2, json, FMOD, rlImgui)
+└── thirdparty/           # Vendored dependencies (raylib, imgui, FastNoise2, json, FMOD, rlImgui, EnTT, Flecs, serialize, GameNetworkingSockets)
 ```
 
 ## Building
@@ -125,3 +129,5 @@ cmake --build --preset linux-debug
 ```
 
 Resources are copied to the build output directory automatically as a post-build step, and the `RESOURCES_PATH` macro points to the source `resources/` directory in non-production builds.
+
+GameNetworkingSockets needs protobuf. If CMake cannot find one installed, the first configure downloads protobuf 3.21.12 (about 5 MB, hash-checked) into the build directory. Configure with `-DVEIL_BUILD_GNS=OFF` to skip GameNetworkingSockets entirely, for example when offline. Include its headers as `<gns/steamnetworkingsockets.h>`: the Steamworks SDK ships same-named files under `steam/`, so the upstream `<steam/...>` spelling is deliberately not available.
