@@ -61,7 +61,7 @@ CI builds are run via GitHub Actions across Linux and Windows using both GCC/Cla
   - Timed Simon Says
   - Maze
   - Ro-Sham-Boo (Rock, Paper, Scissors)
-- **Overlay Stack & Mini-Game Session** — `OverlayStack` layers UI overlays over the active scene, and `MiniGameSession` owns the running mini-game (built by id via `CreateMiniGame`), its seed sequence, and restart/switch handling.
+- **Overlay Stack & Mini-Game Session** — `OverlayStack` layers UI overlays (pause, mini-game, jumpscare) over the active scene, and `MiniGameSession` owns the running mini-game (built by id via `CreateMiniGame`), its seed sequence, and restart/switch handling.
 - **Physics World & Save Store** — `PhysicsWorld` drives body stepping for a scene's `GameMap`, and `SaveStore` backs the save pipeline.
 - **Particle System** — a lightweight particle emitter for world/UI effects.
 - **Developer Tools** — an in-game ImGui-based developer window with dedicated inspectors:
@@ -104,7 +104,7 @@ ProjectVeil/
 │       ├── MiniGames/        # Mini-game implementations
 │       ├── Objects/          # Interactable world objects
 │       ├── Perception/       # Sound events and sound field
-│       ├── UI/               # Settings UI, pause overlay (OverlayStack)
+│       ├── UI/               # Settings UI, pause and jumpscare overlays (OverlayStack)
 │       └── scenes/           # Scene constructors (Main Menu, Tutorial)
 ├── tests/                # Unit tests
 ├── resources/            # Textures, models, icons, and shaders
