@@ -423,14 +423,6 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 		KillPlayerOnContact(this, scene, player);
 		break;
 	}
-	case STALKER_KILL:
-	{
-		// Reached only inside attackRange, which sits inside sightRange, so the
-		// contact check must live here or it can never run once in reach.
-		MoveToward(player->getPosition(), currentSpeed, deltaTime, &scene->gameMap);
-		KillPlayerOnContact(this, scene, player);
-		break;
-	}
 
 	case STALKER_SEARCH_LAST_KNOWN:
 	{
