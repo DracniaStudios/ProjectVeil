@@ -10,6 +10,8 @@ const char* OverlayName(Overlay overlay)
 	case Overlay::Settings:    return "Settings";
 	case Overlay::Multiplayer: return "Multiplayer";
 	case Overlay::MiniGame:    return "MiniGame";
+	case Overlay::Pause:       return "Pause";
+	case Overlay::Jumpscare:   return "Jumpscare";
 	}
 	return "Unknown";
 }
