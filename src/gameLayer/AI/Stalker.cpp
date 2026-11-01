@@ -329,7 +329,6 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 	if (!player) { return; }
 
 	if (IsNearEntity(rigidBody3D.getPosition(), player->rigidBody3D.getPosition(), sightRange)) { state = STALKER_CHASE; }
-	if (IsNearEntity(rigidBody3D.getPosition(), player->rigidBody3D.getPosition(), attackRange)) { state = STALKER_KILL; }
 
 	switch (state)
 	{
