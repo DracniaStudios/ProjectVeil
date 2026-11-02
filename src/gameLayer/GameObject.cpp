@@ -208,7 +208,7 @@ void GameObject::render3D()
 	}
 }
 
-void GameObject::update(SceneManagement::Scene* scene, float deltaTime)
+void GameObject::update(SceneManagement::Scene* /*scene*/, float deltaTime)
 {
 	// A body that has just been disabled stops taking part in the physics world,
 	// which then reports the contacts it had as ended
@@ -259,7 +259,7 @@ void GameObject::Destroy()
 	pendingDestroy = true;
 }
 
-void GameObject::onDestroy(SceneManagement::Scene* scene)
+void GameObject::onDestroy(SceneManagement::Scene* /*scene*/)
 {
 	// Called by GameMap::SweepDestroyed just before it erases this object
 	std::cout << "Destroy Object: " << name << "\n";

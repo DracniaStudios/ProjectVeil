@@ -2,7 +2,7 @@
 
 namespace Editor {
 
-void WorldEditor::ShowMiniGameData(Player* player)
+void WorldEditor::ShowMiniGameData(Player* /*player*/)
 {
 	auto scene = editedScene;
 
