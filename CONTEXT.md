@@ -72,8 +72,30 @@ _Avoid_: save file, savegame
 A level as authored in the World Editor: its objects and lighting, with no player and nothing in flight. Loading one replaces the world and leaves the player as they were.
 _Avoid_: scene, map file, level file
 
+**World state**:
+Which Task stations in a world are completed. The Host keeps it between sessions. Each Target's state follows from it and is never stored.
+_Avoid_: progress, world save (that is the authored level)
+
+**World store**:
+Where a world's state is kept: the World save files in single-player, a SpacetimeDB database for a Host. Only the server reads or writes it.
+_Avoid_: database, backend, save system
+
 ### Settings
 
 **Setting**:
 One of the player's own choices about how the game plays, looks and sounds, shared by every scene and kept apart from any save. It adjusts how a world is shown or heard, never the world itself.
 _Avoid_: option, preference, config
+
+### Multiplayer
+
+**Host**:
+The game that runs the server in its own process and plays on it as Slot 0. Other players join it by address.
+_Avoid_: server (the headless veil-server comes later), listen server, owner
+
+**Slot**:
+A player's place on the Host, numbered from 0 and given when they join. The simulation knows players only by Slot, never as "local".
+_Avoid_: player id, player index
+
+**Full wipe**:
+Putting a round back to its start after a catch: every player to spawn, the World state and Director memory cleared, the stalker back to Patrol. Objects keep their ids, so it is not a Clear.
+_Avoid_: reset, restart, respawn

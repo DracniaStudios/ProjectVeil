@@ -79,7 +79,7 @@ float Stalker::PlanarDistanceTo(Vector3 target) const
 	return Vector2Distance(Vector2{ self.x, self.z }, Vector2{ target.x, target.z });
 }
 
-// Rotation about the vertical axis. Steering is planar, so this is the only
+// Rotation about the vertical axis. Steering is planar, so this is the only 
 // rotation the avoidance needs.
 static Vector3 RotateAroundY(Vector3 v, float radians)
 {
