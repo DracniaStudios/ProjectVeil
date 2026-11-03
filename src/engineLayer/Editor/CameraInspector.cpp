@@ -2,7 +2,7 @@
 
 namespace Editor {
 
-void WorldEditor::ShowCameraData(Player* player)
+void WorldEditor::ShowCameraData(Player* /*player*/)
 {
 	const auto camera = &SceneManagement::SceneManager::getInstance().camera3D;
 	/// Show Camera Data Window

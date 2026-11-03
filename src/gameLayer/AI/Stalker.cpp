@@ -176,7 +176,7 @@ Vector3 Stalker::SteerAround(Vector3 desired, const GameMap* map) const
 	return bestDirection;
 }
 
-void Stalker::MoveToward(Vector3 target, float speed, float deltaTime, const GameMap* map)
+void Stalker::MoveToward(Vector3 target, float speed, float /*deltaTime*/, const GameMap* map)
 {
 	Vector3 delta = Vector3Subtract(target, getPosition());
 	delta.y = 0.0f; // steering is planar; gravity owns the vertical axis
