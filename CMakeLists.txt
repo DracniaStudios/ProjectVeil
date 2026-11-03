@@ -68,6 +68,12 @@ file (GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src
 # --join (MultiplayerSplitPlan.md N7). Never in a production build (Q5, Q12).
 option(VEIL_DEV_NET "Development multiplayer menu (Start Server / Join Server)" ON)
 
+# Without GameNetworkingSockets there is no GnsTransport: single-player still
+# works through Loopback, and Start Server / Join say why they can't run
+if (NOT TARGET GameNetworkingSockets::static)
+	list(FILTER MY_SOURCES EXCLUDE REGEX "/src/net/gns/")
+endif()
+
 # Add source to this project's executable.
 add_executable("${PROJECT_NAME}")
 
@@ -157,6 +163,7 @@ endif()
 # Only defined when GameNetworkingSockets could be built on this machine
 if (TARGET GameNetworkingSockets::static)
 	target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE GameNetworkingSockets::static)
+	target_compile_definitions("${CMAKE_PROJECT_NAME}" PRIVATE VEIL_HAS_GNS=1)
 endif()
 
 
