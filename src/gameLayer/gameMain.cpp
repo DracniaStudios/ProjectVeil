@@ -1,12 +1,21 @@
 #include "gameMain.h"
 
 #include <WorldEditor.h>
+#include <Client/CommandSampler.h>
+#include <sim/FixedTick.h>
 
 #include <cmath>
 #include <optional>
 
+// The rate frames are drawn at. The simulation runs at Sim::kTickRate whatever
+// this is (DedicatedServerPlan.md Step 1.2).
 constexpr int maxFrameRate = 60;
-constexpr float maxDeltaTime = 1.0f / maxFrameRate;
+
+// Turns each frame's time into whole simulation ticks
+static Sim::FixedTickClock tickClock;
+
+// Counts the ticks this client has sampled a command for
+static std::uint32_t clientTick = 0;
 
 // Set by request_exit(). update_game() reports it at the end of the frame, so
 // the main loop in ProjectVeil.cpp ends normally and close_game() runs once, in
@@ -77,8 +86,7 @@ bool init_game()
 
 bool update_game()
 {
-	/// Limit Frame Rate
-	const float deltaTime = fminf(GetFrameTime(), maxDeltaTime);
+	const float frameTime = GetFrameTime();
 
 	// Nothing draws a sky, so the clear colour *is* the horizon. Clearing to the
 	// fog colour lets distant geometry dissolve into the background instead of
@@ -88,11 +96,26 @@ bool update_game()
 	// Update Input System
 	InputSystem::InputSystem::getInstance().Update();
 
-	/// Update and Draw Scene. The frame's work (fade, camera, editor) comes first,
-	/// so the tick simulates with the camera the player is now looking through.
 	auto* manager = &SceneManagement::SceneManager::getInstance();
-	SceneManagement::SceneManager_frame(manager, deltaTime);
-	SceneManagement::SceneManager_tick(manager, deltaTime);
+
+	// Input is sampled once per frame into the pending PlayerCommand (Step 1.3).
+	// While an overlay or the World Editor has the input, the command is empty.
+	auto& sampler = Client::CommandSampler::getInstance();
+	if (const auto scene = manager->currentScene) {
+		if (scene->player != nullptr) { sampler.SetLookBase(scene->player->lookYaw, scene->player->lookPitch); }
+		sampler.SampleFrame(scene->overlays.GameplayHasInput() && !Editor::WorldEditor::getInstance().IsEnabled());
+	}
+
+	/// Update and Draw Scene. The frame's work (fade, camera, editor) comes first,
+	/// so the ticks simulate with the camera the player is now looking through.
+	SceneManagement::SceneManager_frame(manager, fminf(frameTime, Sim::kMaxFrameTime));
+
+	// Simulation: zero or more fixed ticks this frame, one command each
+	const int ticks = tickClock.Advance(frameTime);
+	for (int tick = 0; tick < ticks; ++tick) {
+		const Sim::PlayerCommand command = sampler.Consume(++clientTick);
+		SceneManagement::SceneManager_tick(manager, Sim::kTickDelta, std::span<const Sim::PlayerCommand>(&command, 1));
+	}
 
 	SceneManagement::SceneManager_draw(manager);
 

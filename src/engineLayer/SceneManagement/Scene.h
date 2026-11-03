@@ -21,8 +21,11 @@
 #include <SaveSystem.h>
 #include <Settings.h>
 
+#include <sim/PlayerCommand.h>
+
 #include <stdlib.h>
 #include <iostream>
+#include <span>
 #include <string>
 #include <unordered_map>
 
@@ -93,12 +96,18 @@ namespace SceneManagement {
 		// Entity Data
 		Player* player = {};
 
+		// The flashlight state last handed to the LightingSystem, so Scene_frame
+		// only applies the local player's switch when it changes. Client state.
+		bool drawnFlashlight = false;
+
 		/** MiniGames **/
 		// Starts a MiniGame at a Task station, or as a Practice run with none, and
 		// opens its overlay. False, with nothing changed, for an id that names no game.
 		bool StartMiniGame(int gameId, InteractableObject* station = nullptr);
 
-		// Runs the MiniGame for a frame while it is the top overlay, and applies a win
+		// Runs the MiniGame for a rendered frame while it is the top overlay, and
+		// applies a win. Per frame, not per tick: the MiniGame is the client's
+		// screen, and it reads the player's keys the way a menu does.
 		void TickMiniGame(float deltaTime);
 
 		// Ends the MiniGame unwon and closes its overlay. Progress stays in the history.
@@ -123,6 +132,20 @@ namespace SceneManagement {
 		// overlapping pair of bodies, the player's included, then applies the game's
 		// contact rules (ContactRules). Returns the contacts that started or ended.
 		std::vector<Physics3D::ContactEvent> SolveCollisions(int iterations = 8);
+
+		/** Catches **/
+		// Raises a catch for every enabled player an enabled stalker is touching or
+		// is within its catchRadius of. Runs after the tick's collisions, outside the
+		// stalker's FSM, so a catch happens the same way in every state.
+		void CheckCatches();
+
+		// Records that a player was caught this tick. Recording the same player twice
+		// in one tick is one catch (rule C-1).
+		void RaiseCatch(std::uint64_t playerId);
+
+		// The players caught during the current tick, in the order they were caught.
+		// Emptied once the tick's round evaluation has run.
+		const std::vector<std::uint64_t>& CaughtThisTick() const { return caughtThisTick; }
 	private:
 		// Grants the won game's reward and, at a Task station, completes it and
 		// toggles its Target. Then closes the MiniGame overlay.
@@ -135,6 +158,14 @@ namespace SceneManagement {
 		// than on the station because the station is a plain world object that never
 		// ticks — the minigame it launched is what is actually running.
 		float stationNoiseTimer = 0.0f;
+
+		// See CaughtThisTick
+		std::vector<std::uint64_t> caughtThisTick;
+
+	public:
+		// Ends the round for the catches this tick collected, once, at the end of
+		// the tick (rule C-1). Called by Scene_tick.
+		void ResolveCatches();
 	} Scene;
 
 	/**
@@ -151,20 +182,24 @@ namespace SceneManagement {
 
 	/**
 	 * The scene's work for one rendered frame, outside its simulation: the camera
-	 * (the World Editor's, or the player's while gameplay has input), the
-	 * Back key, and the World Editor. Runs before the frame's tick.
+	 * (the World Editor's, or the player's while gameplay has input), the Back and
+	 * Pause keys, the local flashlight, the running MiniGame and the World
+	 * Editor. Runs before the frame's ticks.
 	 * @param scene The Scene being played
 	 * @param camera The camera the frame is drawn with
+	 * @param frameTime The time this frame took
 	 */
-	void Scene_frame(Scene& scene, Camera3D& camera);
+	void Scene_frame(Scene& scene, Camera3D& camera, float frameTime);
 
 	/**
 	 * The scene's simulation for one tick: its own update, sound, the player and
-	 * every object, the Director, collisions and the running MiniGame
+	 * every object, the Director and collisions. Reads no input device.
 	 * @param scene The Scene to tick
-	 * @param delta The current deltaTime
+	 * @param delta The tick's length (Sim::kTickDelta)
+	 * @param commands This tick's command for the player; a player with none
+	 *                 is driven by an empty command
 	 */
-	void Scene_tick(Scene& scene, float delta);
+	void Scene_tick(Scene& scene, float delta, std::span<const Sim::PlayerCommand> commands = {});
 
 	/**
 	 * Draw a Scene: its world (3D), then its UI and overlays (2D)

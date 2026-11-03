@@ -5,7 +5,13 @@
 #include <UIEngine.h>
 #include <UI/Overlays.h>
 #include <ContactRules.h>
+#include <LightingSystem.h>
+#include <Client/CommandSampler.h>
+#include <AI/Stalker.h>
+#include <SceneManager.h>
 
+#include <algorithm>
+#include <cmath>
 #include <iterator>
 #include <optional>
 #include <random>
@@ -77,6 +83,54 @@ namespace SceneManagement {
 		const std::vector<Physics3D::ContactEvent> events = physics.Solve(bodies, iterations);
 		ContactRules::Apply(*this, events);
 		return events;
+	}
+#pragma endregion
+
+#pragma region Catches
+
+	void Scene::RaiseCatch(std::uint64_t playerId)
+	{
+		if (std::find(caughtThisTick.begin(), caughtThisTick.end(), playerId) != caughtThisTick.end()) { return; }
+		caughtThisTick.push_back(playerId);
+	}
+
+	void Scene::CheckCatches()
+	{
+		// How far apart in height a stalker and a player can be and still count as
+		// close: a player on a ledge above the stalker is out of reach
+		constexpr float kCatchHeight = 1.5f;
+
+		gameMap.ForEachEntity([&](Entity& entity) {
+			if (entity.kind != ENTITYKIND_STALKER || !entity.isEnabled) { return; }
+			const Stalker& stalker = static_cast<const Stalker&>(entity);
+
+			const auto check = [&](Player& candidate) {
+				if (!candidate.isEnabled) { return; }
+
+				const Vector3 a = stalker.getPosition();
+				const Vector3 b = candidate.getPosition();
+				const float planar = Vector2Distance(Vector2{ a.x, a.z }, Vector2{ b.x, b.z });
+				const bool inReach = planar <= stalker.catchRadius && std::fabs(a.y - b.y) <= kCatchHeight;
+
+				if (inReach || physics.IsTouching(stalker.id, candidate.id)) { RaiseCatch(candidate.id); }
+			};
+			if (player != nullptr) { check(*player); }
+		});
+	}
+
+	void Scene::ResolveCatches()
+	{
+		if (caughtThisTick.empty()) { return; }
+		caughtThisTick.clear();
+
+		// Contact with the stalker ends the run
+		std::cout << "[Scene] Player caught\n";
+		overlays.Open(Overlay::Jumpscare);
+		SceneManager_push(&SceneManager::getInstance(), SCENE_TUTORIAL);
+		if (player != nullptr) { player->isEnabled = false; }
+		gameMap.ForEachEntity([](Entity& entity) {
+			if (entity.kind == ENTITYKIND_STALKER) { entity.isEnabled = false; }
+		});
 	}
 #pragma endregion
 
@@ -243,25 +297,34 @@ namespace SceneManagement {
 
 #pragma region Scene Update
 	/** Scene Functions **/
-	void Scene_frame(Scene& scene, Camera3D& camera) {
+	void Scene_frame(Scene& scene, Camera3D& camera, float frameTime) {
 
 		auto worldEditor = &Editor::WorldEditor::getInstance();
 		auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 		// Swap Editor and Player Camera. The editor camera ignores overlays, so the
 		// Main Menu world can still be flown around under its Title; the player's
-		// camera only follows the mouse while gameplay has the player's input.
-		// Ahead of the tick, so the player moves the way the camera now faces.
+		// camera only follows the player while gameplay has the player's input.
+		// It looks along the player's simulated look plus the mouse movement no
+		// tick has consumed yet, so turning never waits for a tick.
 		if (worldEditor->IsEnabled()) {
 			worldEditor->editorCamera.Update(&camera);
 		}
 		else if (scene.overlays.GameplayHasInput()) {
 			if (scene.player != nullptr) {
-				scene.player->camera.UpdateCameraFPS(&camera, scene.player->rigidBody3D);
+				const auto& sampler = Client::CommandSampler::getInstance();
+				PlayerCamera::PlaceCamera(&camera, scene.player->EyePosition(), sampler.ViewYaw(), sampler.ViewPitch());
 			}
 			else {
 				std::cerr << "No Camera Detected \n";
 			}
+		}
+
+		// The flashlight follows the local player's own switch, applied only when
+		// that changes, so the World Editor's Flashlight checkbox still works in between
+		if (scene.player != nullptr && scene.player->flashlightOn != scene.drawnFlashlight) {
+			scene.drawnFlashlight = scene.player->flashlightOn;
+			Lighting::LightingSystem::getInstance().SetFlashlightEnabled(scene.drawnFlashlight);
 		}
 
 		// The Back action backs out of whatever overlay is on top. Backing out of a
@@ -272,11 +335,20 @@ namespace SceneManagement {
 			}
 		}
 
+		// Pause opens over gameplay only, and never from inside the World Editor
+		if (!worldEditor->IsEnabled() && scene.overlays.GameplayHasInput()
+			&& inputSystem->IsActionPressed(InputSystem::ACTION_UI_PAUSE)) {
+			scene.overlays.Open(Overlay::Pause);
+		}
+
+		/** Update MiniGame **/
+		scene.TickMiniGame(frameTime);
+
 		// World Editor (includes the developer tool windows)
 		worldEditor->update(scene);
 	}
 
-	void Scene_tick(Scene& scene, float delta) {
+	void Scene_tick(Scene& scene, float delta, std::span<const Sim::PlayerCommand> commands) {
 
 		auto worldEditor = &Editor::WorldEditor::getInstance();
 		if (scene.update) { scene.update(scene, delta); }
@@ -320,18 +392,20 @@ namespace SceneManagement {
 		}
 
 		/** Update Player **/
+		// Every tick, whatever is on screen: the simulation never reads an overlay.
+		// Under an overlay or the World Editor the client sends empty commands, so
+		// the player stands still until it closes.
 		if (auto player = scene.player) {
 			if (editorFrozen)
 			{
 				player->rigidBody3D.SyncBroadPhaseBox();
 			}
-			else if (scene.overlays.GameplayHasInput())
+			else
 			{
-				if (!worldEditor->IsEnabled()) { player->update3D(scene, delta); };
+				const Sim::PlayerCommand command = commands.empty() ? Sim::PlayerCommand{} : commands[0];
+				player->update3D(scene, command, delta);
 				clampObject(*player, scene.limitYBounds);
 			}
-			// Under any overlay the player stands still until it closes; inside a
-			// MiniGame the player is the game's own cursor
 		}
 
 		/* Update GameObjects */
@@ -387,8 +461,12 @@ namespace SceneManagement {
 		// snapped flush against.
 		if (!editorFrozen) { scene.SolveCollisions(8); }
 
-		/** Update MiniGame **/
-		scene.TickMiniGame(delta);
+		/* Catches */
+		// After the collisions, so contact means what the solver left touching, and
+		// outside every FSM, so a catch happens the same way in all four states.
+		// The round is decided once, at the very end of the tick (rule C-1).
+		if (!editorFrozen) { scene.CheckCatches(); }
+		scene.ResolveCatches();
 	}
 
 	void Scene_drawScene2D(Scene& scene) {

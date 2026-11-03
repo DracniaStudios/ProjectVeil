@@ -350,7 +350,7 @@ for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
              "SaveSystemTests:save_system_tests" \
              "DirectorTests:director_tests" "ContactRulesTests:contact_rules_tests" \
              "EditorPickingTests:editor_picking_tests" "LightingTests:lighting_tests" \
-             "EntityTests:entity_tests"; do
+             "EntityTests:entity_tests" "FixedTickTests:fixed_tick_tests"; do
 	SRC="tests/${suite%%:*}.cpp"
 	TEST_BIN="$OUT_DIR/${suite##*:}"
 
@@ -360,6 +360,7 @@ for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
 		-I src/gameLayer \
 		-I src/engineLayer \
 		-I src/platform \
+		-I src \
 		-I thirdparty/raylib-6.0/src \
 		-I "$JSON_INC" \
 		-I "$FMOD_STUDIO_INC" \
@@ -406,6 +407,7 @@ g++ -std=c++23 \
 	-I src/gameLayer \
 	-I src/engineLayer \
 	-I src/platform \
+	-I src \
 	-I thirdparty/raylib-6.0/src \
 	-I "$JSON_INC" \
 	-I "$FMOD_STUDIO_INC" \

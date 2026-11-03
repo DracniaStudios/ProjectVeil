@@ -5,12 +5,13 @@
 #include <SceneManager.h>
 #include <WorldEditor.h>
 
+#include <cmath>
+
 // !!! Warning: Emit Functions Counts on Player Translation and Move Direction instead of Velocity !!!
 
 /* Static Functions */
 #pragma region Static Functions
-void SetMoveDirection(Player* player, float deltaTime) {
-	auto inputSystem = &InputSystem::InputSystem::getInstance();
+void SetMoveDirection(Player* player, const Sim::PlayerCommand& command, float deltaTime) {
 
 	/// Player Movement
 	auto& speed = player->currentSpeed;
@@ -28,19 +29,17 @@ void SetMoveDirection(Player* player, float deltaTime) {
 		jumpPower *= 2;
 	}
 
-	// Player Movement Input
+	// Player Movement Input, already reduced to -1, 0 or +1 per axis
 	player->moveDirection = Vector2Zero();
-	player->moveDirection.x = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_LEFT) ? -1.0 :
-		inputSystem->IsActionDown(InputSystem::ACTION_MOVE_RIGHT) ? 1.0f : 0;
-	player->moveDirection.y = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_FORWARD) ? 1.0 :
-		inputSystem->IsActionDown(InputSystem::ACTION_MOVE_BACKWARD) ? -1.0f : 0;
+	player->moveDirection.x = command.moveX < 0 ? -1.0f : command.moveX > 0 ? 1.0f : 0.0f;
+	player->moveDirection.y = command.moveY < 0 ? -1.0f : command.moveY > 0 ? 1.0f : 0.0f;
 
 	// Movement was applied as a flat `speed * 0.1f` per frame, so how fast the
 	// player walked was decided by the monitor: identical inputs covered 2.4x
 	// the distance at 144 FPS that they did at 60. Scaling by deltaTime and
 	// multiplying back up by 60 keeps the tuning that was authored against the
-	// 60 FPS SetTargetFPS default while making it frame-rate independent — the
-	// same correction Player::update2D already carries.
+	// 60 FPS SetTargetFPS default. With the fixed tick, deltaTime is always
+	// Sim::kTickDelta, so this is one 60th of the authored per-second speed.
 	const float step = speed * 0.1f * 60.0f * deltaTime;
 
 	if (player->moveDirection.y > 0) { player->rigidBody3D.translation += player->rigidBody3D.forward * step; }
@@ -49,56 +48,46 @@ void SetMoveDirection(Player* player, float deltaTime) {
 	if (player->moveDirection.x > 0) { player->rigidBody3D.translation += player->rigidBody3D.right * step; }
 }
 
-void UpdateActions(Player* player, SceneManagement::Scene& scene) {
-	auto inputSystem = &InputSystem::InputSystem::getInstance();
+void UpdateActions(Player* player, SceneManagement::Scene& scene, const Sim::PlayerCommand& command) {
 
 	/// Player Flags
-	player->isCrouching = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_CROUCH);
-	player->isSprinting = inputSystem->IsActionDown(InputSystem::ACTION_MOVE_SPRINT);
-	player->isFiring = inputSystem->IsActionPressed(InputSystem::ACTION_USE_ITEM)
-		|| inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2);
+	player->isCrouching = Sim::HasButton(command, Sim::BUTTON_CROUCH);
+	player->isSprinting = Sim::HasButton(command, Sim::BUTTON_SPRINT);
+	player->isFiring = Sim::HasButton(command, Sim::BUTTON_USE_ITEM)
+		|| Sim::HasButton(command, Sim::BUTTON_USE_ITEM2);
 
-	/// Menu Flags
-	if (inputSystem->IsActionPressed(InputSystem::ACTION_UI_PAUSE)) {
-		scene.overlays.Open(Overlay::Pause);
-	}
+	// The Pause overlay is the client's to open (Scene_frame): the simulation
+	// never touches an overlay. The World Editor's suppression is the client's
+	// too: while it is open, the client sends commands with nothing pressed.
+	if (Sim::HasButton(command, Sim::BUTTON_INTERACT)) { player->Interact(scene); }
+	if (Sim::HasButton(command, Sim::BUTTON_JUMP)) player->rigidBody3D.Jump(20);
 
-	/// Editor Flags
-	if (!Editor::WorldEditor::getInstance().IsEnabled()) {
-		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_INTERACT)) { player->Interact(scene); }
-		if (inputSystem->IsActionPressed(InputSystem::ACTION_MOVE_JUMP)) player->rigidBody3D.Jump(20);
-
-		// The flashlight is owned by LightingSystem and follows whichever camera
-		// is active, so the player only owns the toggle. Sitting inside this
-		// block keeps it suppressed while the World Editor has focus, matching
-		// fire/interact/jump.
-		if (inputSystem->IsActionPressed(InputSystem::ACTION_USE_FLASHLIGHT)) { Lighting::LightingSystem::getInstance().ToggleFlashlight(); }
-	}
+	// The player's own switch. Lighting draws whichever player is local
+	// (Scene_frame), so the simulation never reaches into the renderer.
+	if (Sim::HasButton(command, Sim::BUTTON_FLASHLIGHT)) { player->flashlightOn = !player->flashlightOn; }
 }
 
-void updateArtifact(Player* player, SceneManagement::Scene& scene, float deltaTime) {
-
-	auto inputSystem = &InputSystem::InputSystem::getInstance();
+void updateArtifact(Player* player, SceneManagement::Scene& scene, const Sim::PlayerCommand& command, float deltaTime) {
 
 	// Artifact Actions
-	player->artifactMode += inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT_RIGHT) ? 1
-		: inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT_LEFT) ? -1
+	player->artifactMode += Sim::HasButton(command, Sim::BUTTON_ARTIFACT_R) ? 1
+		: Sim::HasButton(command, Sim::BUTTON_ARTIFACT_L) ? -1
 		: 0;
 	player->artifactMode = static_cast<int>(Clamp(static_cast<float>(player->artifactMode), -1, player->artifactUnlocked));
 	
 	/*
 	// A Practice run: the game's buff, but no station completed and no Target toggled
-	if (!scene.miniGameSession.IsRunning() && inputSystem->IsActionPressed(InputSystem::ACTION_USE_ARTIFACT))
+	if (!scene.miniGameSession.IsRunning() && Sim::HasButton(command, Sim::BUTTON_ARTIFACT))
 	{
 		scene.StartMiniGame(player->artifactMode);
 	}
 	*/
 
-	// Artifact
+	// Artifact, held in front of the eye and to the left
 	const auto camera = player->camera;
 	const auto offset = Vector3Add(camera.forward, player->rigidBody3D.left);//camera->left / 2);
 
-	player->artifact->rigidBody3D.translation = Vector3Add(SceneManagement::SceneManager::getInstance().camera3D.position, offset);
+	player->artifact->rigidBody3D.translation = Vector3Add(player->EyePosition(), offset);
 	player->artifact->update(&scene, deltaTime);
 }
 
@@ -154,7 +143,6 @@ static void EmitFootsteps(Player* player, SceneManagement::Scene& scene, float d
 	constexpr float kMovingThreshold = 0.5f;
 	if (planarSpeed < kMovingThreshold)
 	{
-		std::cout << "[Player.cpp] Reset Footstep Timer From Landing\n";
 		// Land the next step immediately on moving off again, so starting to
 		// walk is audible rather than free for the first half-stride.
 		player->footstepTimer = 0.0f;
@@ -166,26 +154,56 @@ static void EmitFootsteps(Player* player, SceneManagement::Scene& scene, float d
 	if (player->isCrouching) { return; }
 	else if (player->isSprinting) { interval = 0.28f; loudness = 1.0f; }
 
-	std::cout << "[Player.cpp] Calculate Footstep Timer\n";
 	player->footstepTimer -= deltaTime;
 	if (player->footstepTimer > 0.0f) { return; }
 	player->footstepTimer = interval;
 
-	std::cout << "[Player.cpp] Emit Foot Step\n";
 	scene.soundField.Emit(player->getPosition(), loudness, SOUND_FOOTSTEP, player->id);
 }
 
-void Player::update3D(SceneManagement::Scene& scene, float deltaTime)
+void Player::ApplyLook(float yawDelta, float pitchDelta)
+{
+	// Never trust the size of a turn: a NaN or a huge delta would leave the
+	// player looking nowhere (rule P-6 clamps every delta to a half turn).
+	constexpr float kHalfTurn = 3.14159265358979323846f;
+	const auto clampDelta = [](float delta) {
+		if (!std::isfinite(delta)) { return 0.0f; }
+		return Clamp(delta, -kHalfTurn, kHalfTurn);
+	};
+
+	lookYaw = std::remainder(lookYaw + clampDelta(yawDelta), 2.0f * kHalfTurn);
+	lookPitch = Clamp(lookPitch + clampDelta(pitchDelta), -kPitchLimit, kPitchLimit);
+	camera.SetLook(lookYaw, lookPitch, rigidBody3D);
+}
+
+void Player::SetLookAngles(float yaw, float pitch)
+{
+	lookYaw = 0.0f;
+	lookPitch = 0.0f;
+	ApplyLook(yaw, pitch);
+}
+
+Vector3 Player::EyePosition() const
+{
+	// Half the body's height above its centre; crouching halves that again
+	Vector3 offset = Vector3(0, rigidBody3D.scale.y / 2, 0);
+	if (isCrouching) { offset.y /= 2; }
+	return Vector3Add(rigidBody3D.translation, offset);
+}
+
+void Player::update3D(SceneManagement::Scene& scene, const Sim::PlayerCommand& command, float deltaTime)
 {
 	if (!isEnabled) return;
-	if (!scene.overlays.GameplayHasInput()) { return; }
 
 	/// Player Scale
 	rigidBody3D.scale = Vector3(1, 2, 1);
 
-	UpdateActions(this, scene);
+	// Look first, so this tick's movement goes the way the player now faces
+	ApplyLook(command.yawDelta, command.pitchDelta);
 
-	SetMoveDirection(this, deltaTime);
+	UpdateActions(this, scene, command);
+
+	SetMoveDirection(this, command, deltaTime);
 
 	/// Update RigidBody3D Physics. Its collisions come afterwards, from
 	/// Scene::SolveCollisions over every body at once.
@@ -195,7 +213,9 @@ void Player::update3D(SceneManagement::Scene& scene, float deltaTime)
 	// actually reached this frame, not the one they started it at.
 	EmitFootsteps(this, scene, deltaTime);
 
-	if (artifact) { updateArtifact(this, scene, deltaTime); }
+	camera.position = EyePosition();
+
+	if (artifact) { updateArtifact(this, scene, command, deltaTime); }
 
 	stamina = Clamp(stamina, 0, getMaxStamina());
 	health = Clamp(health, 0, getMaxHealth());

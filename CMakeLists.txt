@@ -109,6 +109,9 @@ elseif(APPLE OR UNIX) # macOS / Linux
 endif()
 
 # Add Mass Unit System
+# src/ itself, so the networking split's folders are named in every include:
+# <sim/...>, <net/...>, <Client/...> (MultiplayerSplitPlan.md)
+target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/")
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/Assets")
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/Audio")
