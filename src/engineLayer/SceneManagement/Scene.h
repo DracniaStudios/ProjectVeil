@@ -22,6 +22,9 @@
 #include <Settings.h>
 
 #include <sim/PlayerCommand.h>
+#include <sim/Slots.h>
+
+#include <array>
 
 #include <stdlib.h>
 #include <iostream>
@@ -50,9 +53,6 @@ typedef void (*drawSceneMethod3D)(SceneManagement::Scene& scene);
 /**
  * Struct to represent a Scene
  */
-
- // Force Player ID
-constexpr static std::uint64_t PLAYER_ID = 1;
 
 namespace SceneManagement {
 
@@ -93,17 +93,57 @@ namespace SceneManagement {
 		// Applies pressure from world facts only. Never reads player position.
 		Director director = {};
 
-		// Entity Data
-		Player* player = {};
+		/** Players **/
+		// Every player in the scene, by Slot; an empty Slot is nullptr. Slot 0 is
+		// built with the scene, and a Host adds the others as they join. The
+		// simulation knows players only by Slot, never as "local" (rule R2): the
+		// client's own player is Client::LocalPlayer(scene).
+		std::array<Player*, Sim::kMaxPlayers> players = {};
+
+		// Builds the player for an empty Slot at its spawn point and enables it.
+		// Returns the player already there if the Slot is taken, or nullptr for a
+		// Slot outside 0..kMaxPlayers-1.
+		Player* AddPlayer(int slot);
+
+		// Frees a Slot's player, with the artifact it carries. Nothing for an empty Slot.
+		void RemovePlayer(int slot);
+
+		// The player in a Slot, or nullptr
+		Player* PlayerInSlot(int slot) const { return Sim::IsValidSlot(slot) ? players[slot] : nullptr; }
+
+		// The player with this object id, or nullptr if no player has it
+		Player* FindPlayer(std::uint64_t id) const;
+
+		int PlayerCount() const;
+
+		// Applies fn(slot, player) to every player, in Slot order
+		template <class F>
+		void ForEachPlayer(F&& fn)
+		{
+			for (int slot = 0; slot < Sim::kMaxPlayers; ++slot)
+			{
+				if (players[slot] != nullptr) { fn(slot, *players[slot]); }
+			}
+		}
+
+		// Where the scene's players spawn. Each Slot stands a little apart from
+		// the last, so players who join together don't spawn inside one another.
+		Vector3 SpawnPointFor(int slot) const;
+
+		// Moves the scene's spawn point, and every player to its own spawn
+		void SetSpawnPoint(Vector3 point);
+		Vector3 GetSpawnPoint() const { return spawnPoint; }
 
 		// The flashlight state last handed to the LightingSystem, so Scene_frame
 		// only applies the local player's switch when it changes. Client state.
 		bool drawnFlashlight = false;
 
 		/** MiniGames **/
-		// Starts a MiniGame at a Task station, or as a Practice run with none, and
-		// opens its overlay. False, with nothing changed, for an id that names no game.
-		bool StartMiniGame(int gameId, InteractableObject* station = nullptr);
+		// Starts a MiniGame for a player at a Task station, or as a Practice run with
+		// none, and opens its overlay. False, with nothing changed, for an id that
+		// names no game. The player is who the win's reward goes to; with none, the
+		// player in Slot 0.
+		bool StartMiniGame(int gameId, InteractableObject* station = nullptr, Player* by = nullptr);
 
 		// Runs the MiniGame for a rendered frame while it is the top overlay, and
 		// applies a win. Per frame, not per tick: the MiniGame is the client's
@@ -161,6 +201,12 @@ namespace SceneManagement {
 
 		// See CaughtThisTick
 		std::vector<std::uint64_t> caughtThisTick;
+
+		// Where Slot 0 spawns; see SpawnPointFor
+		Vector3 spawnPoint = { 0, 5, 2 };
+
+		// The player the running MiniGame belongs to, by object id
+		std::uint64_t miniGamePlayerId = 0;
 
 	public:
 		// Ends the round for the catches this tick collected, once, at the end of

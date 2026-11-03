@@ -107,9 +107,9 @@ void WorldEditor::ShowStalkerData()
 		// Authoring is "walk there, then press the button". Typing coordinates
 		// for a patrol route is unusable, and the player is the only cursor the
 		// editor has that is already grounded in the world.
-		if (ImGui::Button("Add Waypoint At Player") && scene->player)
+		if (Player* local = Client::LocalPlayer(*scene); ImGui::Button("Add Waypoint At Player") && local)
 		{
-			stalker->waypoints.push_back(scene->player->getPosition());
+			stalker->waypoints.push_back(local->getPosition());
 			stalker->displayRoute = true;
 			statusMessage = "Added waypoint " + std::to_string(stalker->waypoints.size());
 		}

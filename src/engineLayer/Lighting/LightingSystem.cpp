@@ -5,6 +5,7 @@
 #include <AssetManager.h>
 #include <SceneManager.h>
 #include <Settings.h>
+#include <Client/LocalPlayer.h>
 
 #include <algorithm>
 #include <cmath>
@@ -387,11 +388,10 @@ namespace Lighting
 
 		scene->gameMap.ForEachObject([&](GameObject& object) { ApplyToModel(object.model); });
 
-		if (scene->player != nullptr)
-		{
-			ApplyToModel(scene->player->model);
-			if (scene->player->artifact != nullptr) { ApplyToModel(scene->player->artifact->model); }
-		}
+		scene->ForEachPlayer([&](int, Player& player) {
+			ApplyToModel(player.model);
+			if (player.artifact != nullptr) { ApplyToModel(player.artifact->model); }
+		});
 	}
 #pragma endregion
 
@@ -635,14 +635,13 @@ namespace Lighting
 
 		scene->gameMap.ForEachObject(drawCaster);
 
-		if (scene->player != nullptr)
-		{
-			drawCaster(*scene->player);
+		scene->ForEachPlayer([&](int, Player& player) {
+			drawCaster(player);
 
 			// The artifact hovers a unit in front of the camera; Scene_new() clears
 			// its castsShadow flag so it cannot smear a shadow across the view.
-			if (scene->player->artifact != nullptr) { drawCaster(*scene->player->artifact); }
-		}
+			if (player.artifact != nullptr) { drawCaster(*player.artifact); }
+		});
 	}
 
 	void LightingSystem::SelectShadowLight()
@@ -675,8 +674,9 @@ namespace Lighting
 		const Light& light = lights[shadowLightIndex];
 		const Vector3 lightDirection = SafeNormalize(light.direction, Vector3{ 0.0f, -1.0f, 0.0f });
 
-		// Centre the finite map on the player so it follows the play area
-		const Vector3 focus = (scene->player != nullptr) ? scene->player->getPosition() : Vector3Zero();
+		// Centre the finite map on this game's own player so it follows the play area
+		const Player* local = Client::LocalPlayer(*scene);
+		const Vector3 focus = (local != nullptr) ? local->getPosition() : Vector3Zero();
 
 		Camera3D lightCamera = {};
 		lightCamera.projection = CAMERA_ORTHOGRAPHIC;

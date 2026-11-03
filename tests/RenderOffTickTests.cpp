@@ -56,8 +56,8 @@ static void TestTenThousandTicksWithRenderingOff()
 	std::printf("10,000 ticks of chunk_1 with rendering off\n");
 
 	SceneManagement::Scene* scene = SceneManagement::Scene_new();
-	scene->player->setSpawnPoint(Vector3(20, 2, 0));
-	scene->player->rigidBody3D.Teleport(Vector3(20, 2, 0));
+	scene->PlayerInSlot(0)->setSpawnPoint(Vector3(20, 2, 0));
+	scene->PlayerInSlot(0)->rigidBody3D.Teleport(Vector3(20, 2, 0));
 	const bool loaded = SaveSystem::LoadWorld("chunk_1", *scene);
 	Check(loaded, "the World save loads");
 
@@ -65,7 +65,7 @@ static void TestTenThousandTicksWithRenderingOff()
 	Check(stalker != nullptr, "the World save has a stalker");
 	if (!loaded || stalker == nullptr) { SceneManagement::Scene_delete(scene); return; }
 
-	const Vector3 playerStart = scene->player->getPosition();
+	const Vector3 playerStart = scene->PlayerInSlot(0)->getPosition();
 	const Vector3 stalkerStart = stalker->getPosition();
 	const float soundStart = scene->soundField.Now();
 	const float directorStart = scene->director.Now();
@@ -99,9 +99,9 @@ static void TestTenThousandTicksWithRenderingOff()
 	const float simulated = kTicks * Sim::kTickDelta;
 	Check(std::fabs((scene->soundField.Now() - soundStart) - simulated) < 0.5f, "the sound field clock advanced by the simulated time");
 	Check(std::fabs((scene->director.Now() - directorStart) - simulated) < 0.5f, "the Director's clock advanced by the simulated time");
-	Check(Finite(scene->player->getPosition()), "the player's position stays finite");
-	Check(Vector3Distance(playerStart, scene->player->getPosition()) > 1.0f || scene->player->lookYaw != 0.0f, "the player moved under its commands");
-	Check(std::fabs(scene->player->lookYaw) > 0.1f, "the player's look turned under its commands");
+	Check(Finite(scene->PlayerInSlot(0)->getPosition()), "the player's position stays finite");
+	Check(Vector3Distance(playerStart, scene->PlayerInSlot(0)->getPosition()) > 1.0f || scene->PlayerInSlot(0)->lookYaw != 0.0f, "the player moved under its commands");
+	Check(std::fabs(scene->PlayerInSlot(0)->lookYaw) > 0.1f, "the player's look turned under its commands");
 	Check(stalkerTravel > 5.0f, "the stalker moved along its route (travelled " + std::to_string(stalkerTravel) + ")");
 	if (Stalker* s = FindStalker(*scene)) { Check(Finite(s->getPosition()), "the stalker's position stays finite"); }
 

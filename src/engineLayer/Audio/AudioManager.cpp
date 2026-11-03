@@ -6,6 +6,7 @@
 #include <iostream>
 #include <SceneManager.h>
 #include <Settings.h>
+#include <Client/LocalPlayer.h>
 
 namespace AudioManager {
 	// FMOD uses a linear scale for volume, but the user interface uses a logarithmic scale.
@@ -216,9 +217,9 @@ namespace AudioManager {
 	{
 		if (!studioSystem) return;
 
-		if (scene && scene->player)
+		if (Player* local = scene ? Client::LocalPlayer(*scene) : nullptr)
 		{
-			FMOD_3D_ATTRIBUTES listener = scene->player->getListener();
+			FMOD_3D_ATTRIBUTES listener = local->getListener();
 			studioSystem->setListenerAttributes(0, &listener);
 		}
 		studioSystem->update();

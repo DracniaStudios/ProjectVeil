@@ -193,12 +193,11 @@ static void TestInteractingWithAStationIsTampering()
 {
 	std::printf("working a station emits a tamper noise\n");
 	SceneManagement::Scene* scene = MakeScene();
-	scene->player = new Player();
-	scene->player->id = PLAYER_ID;
-	scene->player->artifactUnlocked = MINI_GAME_RO_SHAM_BOO_ID;   // everything unlocked
+	scene->AddPlayer(0);
+	scene->PlayerInSlot(0)->artifactUnlocked = MINI_GAME_RO_SHAM_BOO_ID;   // everything unlocked
 
 	InteractableObject* station = AddStation(scene, Vector3{ 3, 0, -4 });
-	station->onInteract(*scene);
+	station->onInteract(*scene, *scene->PlayerInSlot(0));
 
 	const SoundEvent* event = FirstOfKind(scene, SOUND_TAMPER);
 	Check(event != nullptr, "interacting with a station is audible");
@@ -216,16 +215,15 @@ static void TestLockedStationStillMakesNoise()
 {
 	std::printf("a failed attempt is still audible\n");
 	SceneManagement::Scene* scene = MakeScene();
-	scene->player = new Player();
-	scene->player->id = PLAYER_ID;
-	scene->player->artifactUnlocked = MINI_GAME_FLAPPY_BIRD_ID;
+	scene->AddPlayer(0);
+	scene->PlayerInSlot(0)->artifactUnlocked = MINI_GAME_FLAPPY_BIRD_ID;
 
 	// A variation the player has not unlocked: ActivateMiniGame bails before
 	// starting anything. Rattling a station you cannot open is still
 	// interference, and a silent failed attempt would be the safest way to play.
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 });
 	station->variation = MINI_GAME_RO_SHAM_BOO_ID;
-	station->onInteract(*scene);
+	station->onInteract(*scene, *scene->PlayerInSlot(0));
 
 	Check(CountOfKind(scene, SOUND_TAMPER) == 1, "a locked station still makes noise");
 	Check(scene->GetRunningStation() == nullptr, "but no minigame actually started");

@@ -394,11 +394,10 @@ static void TestContactCatchesInEveryState()
 		const std::string name = stalkerStateToString(state);
 
 		SceneManagement::Scene* scene = MakeScene();
-		scene->player = new Player();
-		scene->player->type = OBJECT_PLAYER;
-		scene->player->onEnable();
-		scene->player->id = 1;
-		scene->player->rigidBody3D.Teleport(Vector3{ 0.5f, 0, 0 });
+		scene->AddPlayer(0);
+		scene->PlayerInSlot(0)->type = OBJECT_PLAYER;
+		scene->PlayerInSlot(0)->onEnable();
+		scene->PlayerInSlot(0)->rigidBody3D.Teleport(Vector3{ 0.5f, 0, 0 });
 
 		Stalker* stalker = AddStalker(scene, Vector3{ 0, 0, 0 });
 		stalker->state = state;
@@ -406,7 +405,7 @@ static void TestContactCatchesInEveryState()
 		stalker->hasLastKnown = true;
 
 		scene->CheckCatches();
-		Check(scene->CaughtThisTick().size() == 1 && scene->CaughtThisTick()[0] == 1, "a player within catchRadius is caught in " + name);
+		Check(scene->CaughtThisTick().size() == 1 && scene->CaughtThisTick()[0] == Sim::PlayerIdForSlot(0), "a player within catchRadius is caught in " + name);
 
 		scene->CheckCatches();
 		Check(scene->CaughtThisTick().size() == 1, "and checking twice in one tick is still one catch (" + name + ")");
@@ -420,31 +419,28 @@ static void TestContactCatchesInEveryState()
 		Check(empty->CaughtThisTick().empty(), "the FSM's update raises no catch itself (" + name + ")");
 		delete empty;
 
-		delete scene->player;
-		scene->player = nullptr;
+		scene->RemovePlayer(0);
 		delete scene;
 	}
 
 	// Out of reach is not a catch, in any state
 	SceneManagement::Scene* scene = MakeScene();
-	scene->player = new Player();
-	scene->player->type = OBJECT_PLAYER;
-	scene->player->onEnable();
-	scene->player->id = 1;
-	scene->player->rigidBody3D.Teleport(Vector3{ 4, 0, 0 });
+	scene->AddPlayer(0);
+	scene->PlayerInSlot(0)->type = OBJECT_PLAYER;
+	scene->PlayerInSlot(0)->onEnable();
+	scene->PlayerInSlot(0)->rigidBody3D.Teleport(Vector3{ 4, 0, 0 });
 	Stalker* stalker = AddStalker(scene, Vector3{ 0, 0, 0 });
 	stalker->state = STALKER_HUNT;
 	scene->CheckCatches();
 	Check(scene->CaughtThisTick().empty(), "a player out of reach is not caught");
 
 	// A disabled stalker catches nobody
-	scene->player->rigidBody3D.Teleport(Vector3{ 0.5f, 0, 0 });
+	scene->PlayerInSlot(0)->rigidBody3D.Teleport(Vector3{ 0.5f, 0, 0 });
 	stalker->isEnabled = false;
 	scene->CheckCatches();
 	Check(scene->CaughtThisTick().empty(), "a disabled stalker catches nobody");
 
-	delete scene->player;
-	scene->player = nullptr;
+	scene->RemovePlayer(0);
 	delete scene;
 }
 

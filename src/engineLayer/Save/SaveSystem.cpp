@@ -121,9 +121,10 @@ namespace SaveSystem
 
 		// Player. No 2D position: the player only has one inside a MiniGame, as that
 		// game's cursor, and a running MiniGame is never saved.
-		if (gameScope && scene.player != nullptr)
+		// A Game save is single-player's, so its player is Slot 0's
+		if (gameScope && scene.PlayerInSlot(0) != nullptr)
 		{
-			j["Player"] = scene.player->formatToJson();
+			j["Player"] = scene.PlayerInSlot(0)->formatToJson();
 		}
 
 		return j;
@@ -317,11 +318,11 @@ namespace SaveSystem
 		if (save.contains("Interactables")) { RestoreInteractables(save["Interactables"], scene.gameMap); }
 
 		// Player
-		if (gameScope && save.contains("Player") && scene.player != nullptr)
+		if (gameScope && save.contains("Player") && scene.PlayerInSlot(0) != nullptr)
 		{
 			// Older saves also carry Pos2X / Pos2Y, the 2D position the player no longer
 			// has; they are ignored.
-			if (!scene.player->loadFromJson(save["Player"]))
+			if (!scene.PlayerInSlot(0)->loadFromJson(save["Player"]))
 			{
 				std::cerr << "Failed to load Player data.\n";
 			}

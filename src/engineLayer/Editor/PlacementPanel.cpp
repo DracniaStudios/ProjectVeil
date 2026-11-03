@@ -196,11 +196,12 @@ void WorldEditor::ShowPlacementPanel()
 		placementKind == PLACE_ENTITY ? "Spawn Entity" :
 		placementKind == PLACE_INTERACTABLE ? "Spawn Interactable" : "Spawn Game Object";
 	if (ImGui::Button(spawnLabel)) { SpawnStagedObject(stagingObject.getPosition()); }
-	if (scene->player != nullptr && ImGui::Button("Spawn At Player"))
+	Player* local = Client::LocalPlayer(*scene);
+	if (local != nullptr && ImGui::Button("Spawn At Player"))
 	{
 		Vector3 position = Vector3Add(
-			scene->player->rigidBody3D.translation,
-			Vector3Scale(scene->player->camera.forward, 3.0f)
+			local->rigidBody3D.translation,
+			Vector3Scale(local->camera.forward, 3.0f)
 		);
 		SpawnStagedObject(position);
 	}

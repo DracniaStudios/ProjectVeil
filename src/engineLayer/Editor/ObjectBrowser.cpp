@@ -128,8 +128,8 @@ void WorldEditor::showEntity(Entity* object) {
 		ImGui::PopID();
 	}
 
-	if (ImGui::Button("Teleport To Player")) {
-		object->rigidBody3D.Teleport(editedScene->player->getPosition());
+	if (Player* local = Client::LocalPlayer(*editedScene); local != nullptr && ImGui::Button("Teleport To Player")) {
+		object->rigidBody3D.Teleport(local->getPosition());
 	}
 	if (ImGui::Button("Teleport To Camera")) {
 		object->rigidBody3D.Teleport(SceneManagement::SceneManager::getInstance().camera3D.position);

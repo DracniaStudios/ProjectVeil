@@ -13,7 +13,7 @@ namespace Editor {
 	{
 		if (PRODUCTION_BUILD == 1) { return; }
 
-		Player* player = editedScene->player;
+		Player* player = Client::LocalPlayer(*editedScene);
 
 		if (IsKeyPressed(KEY_F1))
 		{

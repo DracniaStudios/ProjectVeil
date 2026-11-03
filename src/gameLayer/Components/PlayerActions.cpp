@@ -40,7 +40,7 @@ void Player::Interact(SceneManagement::Scene& scene)
 
 	if (closest != nullptr)
 	{
-		closest->onInteract(scene);
+		closest->onInteract(scene, *this);
 		return;
 	}
 

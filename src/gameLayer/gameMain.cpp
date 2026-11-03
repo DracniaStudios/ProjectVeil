@@ -2,6 +2,7 @@
 
 #include <WorldEditor.h>
 #include <Client/CommandSampler.h>
+#include <Client/LocalPlayer.h>
 #include <sim/FixedTick.h>
 
 #include <cmath>
@@ -102,7 +103,7 @@ bool update_game()
 	// While an overlay or the World Editor has the input, the command is empty.
 	auto& sampler = Client::CommandSampler::getInstance();
 	if (const auto scene = manager->currentScene) {
-		if (scene->player != nullptr) { sampler.SetLookBase(scene->player->lookYaw, scene->player->lookPitch); }
+		if (Player* local = Client::LocalPlayer(*scene)) { sampler.SetLookBase(local->lookYaw, local->lookPitch); }
 		sampler.SampleFrame(scene->overlays.GameplayHasInput() && !Editor::WorldEditor::getInstance().IsEnabled());
 	}
 

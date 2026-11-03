@@ -79,7 +79,7 @@ void updateArtifact(Player* player, SceneManagement::Scene& scene, const Sim::Pl
 	// A Practice run: the game's buff, but no station completed and no Target toggled
 	if (!scene.miniGameSession.IsRunning() && Sim::HasButton(command, Sim::BUTTON_ARTIFACT))
 	{
-		scene.StartMiniGame(player->artifactMode);
+		scene.StartMiniGame(player->artifactMode, nullptr, player);
 	}
 	*/
 
@@ -97,7 +97,7 @@ void Player::onEnable()
 {
 	maxHealth = 100.0f;
 
-	id = PLAYER_ID;
+	// The id is the Slot's (Scene::AddPlayer), never assigned here
 	rng =std::ranlux24_base(std::random_device{}());
 	display3DModel = false;
 	

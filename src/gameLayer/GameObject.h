@@ -11,6 +11,7 @@
 
 namespace SceneManagement { struct Scene; }
 struct GameMap;
+struct Player;
 
 enum ObjectType
 {
@@ -188,7 +189,8 @@ public:
 	};
 	// Plays the station's sound and does what its type says: starts its MiniGame,
 	// or unlocks the next one
-	virtual void onInteract(SceneManagement::Scene& scene);
+	// A player interacted with this (Player::Interact): `by` is who did
+	virtual void onInteract(SceneManagement::Scene& scene, Player& by);
 
 	// Save Data
 	Json formatToJson() override;

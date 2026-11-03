@@ -7,6 +7,7 @@
 #include <ContactRules.h>
 #include <LightingSystem.h>
 #include <Client/CommandSampler.h>
+#include <Client/LocalPlayer.h>
 #include <AI/Stalker.h>
 #include <SceneManager.h>
 
@@ -22,16 +23,8 @@ namespace SceneManagement {
 		Scene* scene = new Scene;
 		scene->gameMap = {};
 
-		// Default Settings For Scene
-		scene->player = new Player;
-		scene->player->type = OBJECT_PLAYER;
-		scene->player->id = PLAYER_ID;
-
-		// Player Spawn
-		scene->player->setSpawnPoint(Vector3{ 0, 5, 2 });
-		scene->player->rigidBody3D.Teleport(scene->player->getSpawnPoint());
-
-		scene->player->onEnable();
+		// Slot 0: the single-player player, and the Host's own
+		scene->AddPlayer(0);
 
 		// Not made current here: SceneManager does that once the scene is fully
 		// built, and everything that builds it is handed the scene itself
@@ -48,18 +41,74 @@ namespace SceneManagement {
 
 		AudioManager::AudioManager::getInstance().StopAudio();
 
-		if (scene->player) {
-			// The artifact is created on first use (InteractableObject.cpp) and owned by the player.
-			if (scene->player->artifact) {
-				scene->player->artifact->releaseGeneratedModel();
-				delete scene->player->artifact;
-			}
-			scene->player->releaseGeneratedModel();
-			delete scene->player;
-		}
+		for (int slot = 0; slot < Sim::kMaxPlayers; ++slot) { scene->RemovePlayer(slot); }
 
 		delete scene;
 	}
+
+#pragma region Players
+
+	Player* Scene::AddPlayer(int slot)
+	{
+		if (!Sim::IsValidSlot(slot)) { return nullptr; }
+		if (players[slot] != nullptr) { return players[slot]; }
+
+		Player* player = new Player;
+		player->type = OBJECT_PLAYER;
+		player->id = Sim::PlayerIdForSlot(slot);
+		player->setSpawnPoint(SpawnPointFor(slot));
+		player->rigidBody3D.Teleport(player->getSpawnPoint());
+		player->onEnable();
+
+		players[slot] = player;
+		return player;
+	}
+
+	void Scene::RemovePlayer(int slot)
+	{
+		Player* player = PlayerInSlot(slot);
+		if (player == nullptr) { return; }
+
+		// The artifact is created on first use (InteractableObject.cpp) and owned by the player.
+		if (player->artifact) {
+			player->artifact->releaseGeneratedModel();
+			delete player->artifact;
+		}
+		player->releaseGeneratedModel();
+		delete player;
+		players[slot] = nullptr;
+	}
+
+	Player* Scene::FindPlayer(std::uint64_t id) const
+	{
+		const int slot = Sim::SlotForPlayerId(id);
+		Player* player = PlayerInSlot(slot);
+		return (player != nullptr && player->id == id) ? player : nullptr;
+	}
+
+	int Scene::PlayerCount() const
+	{
+		int count = 0;
+		for (const Player* player : players) { if (player != nullptr) { ++count; } }
+		return count;
+	}
+
+	Vector3 Scene::SpawnPointFor(int slot) const
+	{
+		// One body width and a half apart, along +X
+		constexpr float kSlotSpacing = 1.5f;
+		return Vector3Add(spawnPoint, Vector3{ kSlotSpacing * static_cast<float>(slot), 0.0f, 0.0f });
+	}
+
+	void Scene::SetSpawnPoint(Vector3 point)
+	{
+		spawnPoint = point;
+		ForEachPlayer([&](int slot, Player& player) {
+			player.setSpawnPoint(SpawnPointFor(slot));
+			player.rigidBody3D.Teleport(player.getSpawnPoint());
+		});
+	}
+#pragma endregion
 
 
 
@@ -76,9 +125,9 @@ namespace SceneManagement {
 		// Every body in the scene in one list, so every pair follows the same rules
 		// whatever kind of object owns each body
 		std::vector<Physics3D::PhysicsBody> bodies;
-		bodies.reserve(gameMap.GameObjectCount() + gameMap.EntityCount() + gameMap.InteractableCount() + 1);
+		bodies.reserve(gameMap.GameObjectCount() + gameMap.EntityCount() + gameMap.InteractableCount() + Sim::kMaxPlayers);
 		gameMap.ForEachObject([&](GameObject& object) { bodies.push_back({ object.id, &object.rigidBody3D }); });
-		if (player != nullptr) { bodies.push_back({ player->id, &player->rigidBody3D }); }
+		ForEachPlayer([&](int, Player& player) { bodies.push_back({ player.id, &player.rigidBody3D }); });
 
 		const std::vector<Physics3D::ContactEvent> events = physics.Solve(bodies, iterations);
 		ContactRules::Apply(*this, events);
@@ -114,7 +163,7 @@ namespace SceneManagement {
 
 				if (inReach || physics.IsTouching(stalker.id, candidate.id)) { RaiseCatch(candidate.id); }
 			};
-			if (player != nullptr) { check(*player); }
+			ForEachPlayer([&](int, Player& player) { check(player); });
 		});
 	}
 
@@ -127,7 +176,7 @@ namespace SceneManagement {
 		std::cout << "[Scene] Player caught\n";
 		overlays.Open(Overlay::Jumpscare);
 		SceneManager_push(&SceneManager::getInstance(), SCENE_TUTORIAL);
-		if (player != nullptr) { player->isEnabled = false; }
+		ForEachPlayer([](int, Player& player) { player.isEnabled = false; });
 		gameMap.ForEachEntity([](Entity& entity) {
 			if (entity.kind == ENTITYKIND_STALKER) { entity.isEnabled = false; }
 		});
@@ -207,8 +256,10 @@ namespace SceneManagement {
 		}
 	}
 
-	bool Scene::StartMiniGame(int gameId, InteractableObject* station)
+	bool Scene::StartMiniGame(int gameId, InteractableObject* station, Player* by)
 	{
+		if (by == nullptr) { by = PlayerInSlot(0); }
+
 		const std::uint64_t stationId = station != nullptr ? station->id : 0;
 		if (!miniGameSession.Start(gameId, stationId, WindowSize(), std::random_device{}()))
 		{
@@ -222,7 +273,8 @@ namespace SceneManagement {
 		stationNoiseTimer = 0.0f;
 		if (station != nullptr) { station->isRunningMiniGame = true; }
 
-		player->artifactMode = gameId;
+		miniGamePlayerId = by != nullptr ? by->id : 0;
+		if (by != nullptr) { by->artifactMode = gameId; }
 		overlays.Open(Overlay::MiniGame);
 		return true;
 	}
@@ -258,8 +310,11 @@ namespace SceneManagement {
 	{
 		if (const std::optional<MiniGameReward> reward = RewardFor(won.gameId))
 		{
-			if (reward->heal > 0.0f) { player->applyHealthValue(reward->heal, false); }
-			if (CooldownTimer* buff = player->getBuff(reward->buff)) { buff->use(); }
+			if (Player* player = FindPlayer(miniGamePlayerId))
+			{
+				if (reward->heal > 0.0f) { player->applyHealthValue(reward->heal, false); }
+				if (CooldownTimer* buff = player->getBuff(reward->buff)) { buff->use(); }
+			}
 		}
 
 		// A Practice run has no station: it completes nothing and toggles nothing
@@ -311,9 +366,9 @@ namespace SceneManagement {
 			worldEditor->editorCamera.Update(&camera);
 		}
 		else if (scene.overlays.GameplayHasInput()) {
-			if (scene.player != nullptr) {
+			if (Player* local = Client::LocalPlayer(scene)) {
 				const auto& sampler = Client::CommandSampler::getInstance();
-				PlayerCamera::PlaceCamera(&camera, scene.player->EyePosition(), sampler.ViewYaw(), sampler.ViewPitch());
+				PlayerCamera::PlaceCamera(&camera, local->EyePosition(), sampler.ViewYaw(), sampler.ViewPitch());
 			}
 			else {
 				std::cerr << "No Camera Detected \n";
@@ -322,8 +377,9 @@ namespace SceneManagement {
 
 		// The flashlight follows the local player's own switch, applied only when
 		// that changes, so the World Editor's Flashlight checkbox still works in between
-		if (scene.player != nullptr && scene.player->flashlightOn != scene.drawnFlashlight) {
-			scene.drawnFlashlight = scene.player->flashlightOn;
+		Player* local = Client::LocalPlayer(scene);
+		if (local != nullptr && local->flashlightOn != scene.drawnFlashlight) {
+			scene.drawnFlashlight = local->flashlightOn;
 			Lighting::LightingSystem::getInstance().SetFlashlightEnabled(scene.drawnFlashlight);
 		}
 
@@ -395,18 +451,16 @@ namespace SceneManagement {
 		// Every tick, whatever is on screen: the simulation never reads an overlay.
 		// Under an overlay or the World Editor the client sends empty commands, so
 		// the player stands still until it closes.
-		if (auto player = scene.player) {
+		scene.ForEachPlayer([&](int slot, Player& player) {
 			if (editorFrozen)
 			{
-				player->rigidBody3D.SyncBroadPhaseBox();
+				player.rigidBody3D.SyncBroadPhaseBox();
+				return;
 			}
-			else
-			{
-				const Sim::PlayerCommand command = commands.empty() ? Sim::PlayerCommand{} : commands[0];
-				player->update3D(scene, command, delta);
-				clampObject(*player, scene.limitYBounds);
-			}
-		}
+			const Sim::PlayerCommand command = slot < static_cast<int>(commands.size()) ? commands[slot] : Sim::PlayerCommand{};
+			player.update3D(scene, command, delta);
+			clampObject(player, scene.limitYBounds);
+		});
 
 		/* Update GameObjects */
 		scene.gameMap.ForEachGameObject([&](GameObject& object) {
@@ -485,7 +539,7 @@ namespace SceneManagement {
 
 		// Over the overlays, the reticle during gameplay. Inside a MiniGame the
 		// player is the game's own cursor, which the game draws.
-		if (scene.player != nullptr && scene.overlays.GameplayHasInput()) { scene.player->render2D(); }
+		if (Player* local = Client::LocalPlayer(scene); local != nullptr && scene.overlays.GameplayHasInput()) { local->render2D(); }
 
 		UI::endFrame();
 	}
@@ -497,7 +551,7 @@ namespace SceneManagement {
 
 		scene.gameMap.ForEachObject([](GameObject& object) { object.render3D(); });
 
-		if (scene.player != nullptr) { scene.player->render3D(); }
+		scene.ForEachPlayer([](int, Player& player) { player.render3D(); });
 	}
 }
 #pragma endregion

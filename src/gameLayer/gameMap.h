@@ -9,7 +9,8 @@
 
 inline constexpr int OBJECT_LIMIT = 10000;
 
-// The first id a GameMap hands out: 0 means "no object" and 1 is the player.
+// The first id a GameMap hands out: 0 means "no object". 1 was the single
+// player's id; players now take ids from Sim::kFirstPlayerId by Slot (sim/Slots.h).
 inline constexpr std::uint64_t FIRST_OBJECT_ID = 2;
 
 struct InstanceID

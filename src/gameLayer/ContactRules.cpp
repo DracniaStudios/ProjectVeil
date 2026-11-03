@@ -9,10 +9,10 @@ namespace ContactRules
 	{
 		const char* groundImpactSound = "Jump_Landing_With_Small_Coins";
 
-		// The object a body id belongs to: the player lives outside the GameMap
+		// The object a body id belongs to: players live outside the GameMap
 		GameObject* Resolve(SceneManagement::Scene& scene, std::uint64_t id)
 		{
-			if (scene.player != nullptr && scene.player->id == id) { return scene.player; }
+			if (Player* player = scene.FindPlayer(id)) { return player; }
 			return scene.gameMap.FindWorldObject(id);
 		}
 

@@ -2,19 +2,20 @@
 
 #include <SceneManager.h>
 #include <gameMap.h>
+#include <Player.h>
 
 
-void ActivateMiniGame(SceneManagement::Scene& scene, InteractableObject* interactable, bool bypass = false)
+void ActivateMiniGame(SceneManagement::Scene& scene, InteractableObject* interactable, Player& by, bool bypass = false)
 {
 	std::cout << "[InteractableObject] Activating MiniGame: " << interactable->variation << "\n";
 
 	scene.soundField.Emit(interactable->getPosition(), 0.8f, SOUND_TAMPER, interactable->id);
 
-	if (!bypass && scene.player->artifactUnlocked < interactable->variation) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
+	if (!bypass && by.artifactUnlocked < interactable->variation) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
 
 	// The scene marks the station as occupied, and on a win finds the Target
 	// through the station itself
-	scene.StartMiniGame(interactable->variation, interactable);
+	scene.StartMiniGame(interactable->variation, interactable, &by);
 }
 
 GameObject* InteractableObject::FindMiniGameTarget(GameMap& gameMap)
@@ -23,10 +24,10 @@ GameObject* InteractableObject::FindMiniGameTarget(GameMap& gameMap)
 	return gameMap.FindWorldObject(targetId);
 }
 
-void Unlock(SceneManagement::Scene& scene, InteractableObject* interactable)
+void Unlock(SceneManagement::Scene& /*scene*/, InteractableObject* interactable, Player& by)
 {
 	std::cout << "[InteractableObject] Unlocking MiniGame: " << interactable->variation << "\n";
-	auto player = scene.player;
+	auto player = &by;
 	player->artifactUnlocked = std::max(player->artifactUnlocked, interactable->variation);
 	player->artifactUnlocked = Clamp(player->artifactUnlocked, MINI_GAME_FLAPPY_BIRD_ID, MINI_GAME_RO_SHAM_BOO_ID);
 
@@ -75,7 +76,7 @@ InteractableObject::InteractableObject(const InteractionType interact, int varia
 	activator = activate; // Object
 }
 
-void InteractableObject::onInteract(SceneManagement::Scene& scene)
+void InteractableObject::onInteract(SceneManagement::Scene& scene, Player& by)
 {
 	AudioManager::AudioManager::getInstance().Play3D(defaultSound, *this);
 	std::cout << "[InteractObject] Interacted with " << name << "\n";
@@ -89,8 +90,8 @@ void InteractableObject::onInteract(SceneManagement::Scene& scene)
 	// The branches stay mutually exclusive: Unlock() marks this station for
 	// removal, and none of the others may run on a station that is going away.
 	const InteractionType type = interactType;
-	if (type == INTERACT_MINIGAME) { ActivateMiniGame(scene, this); }
-	else if (type == INTERACT_UNLOCK) { Unlock(scene, this); }
+	if (type == INTERACT_MINIGAME) { ActivateMiniGame(scene, this, by); }
+	else if (type == INTERACT_UNLOCK) { Unlock(scene, this, by); }
 
 }
 

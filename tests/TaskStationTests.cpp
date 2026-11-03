@@ -40,11 +40,10 @@ static void Check(bool condition, const std::string& what)
 static SceneManagement::Scene* MakeScene()
 {
 	SceneManagement::Scene* scene = new SceneManagement::Scene();
-	scene->player = new Player();
-	scene->player->id = PLAYER_ID;
+	scene->AddPlayer(0);
 	// Everything unlocked, so ActivateMiniGame never bails at the unlock gate
 	// and these cases are about station state rather than progression.
-	scene->player->artifactUnlocked = MINI_GAME_RO_SHAM_BOO_ID;
+	scene->PlayerInSlot(0)->artifactUnlocked = MINI_GAME_RO_SHAM_BOO_ID;
 	return scene;
 }
 
@@ -79,7 +78,7 @@ static void TestWinningCompletesTheStation()
 	std::printf("winning a station's minigame completes the station\n");
 	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 901);
-	station->onInteract(*scene);
+	station->onInteract(*scene, *scene->PlayerInSlot(0));
 
 	Check(scene->GetRunningStation() == station, "the station is occupied while it runs");
 	Check(scene->overlays.Top() == Overlay::MiniGame, "the MiniGame overlay is up");
@@ -101,7 +100,7 @@ static void TestQuittingLeavesTheStationOutstanding()
 	std::printf("walking away leaves the station outstanding\n");
 	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 902);
-	station->onInteract(*scene);
+	station->onInteract(*scene, *scene->PlayerInSlot(0));
 
 	scene->QuitMiniGame();
 
@@ -131,7 +130,7 @@ static void TestWinningTogglesTheTarget()
 	Check(station->FindMiniGameTarget(scene->gameMap) == door, "the station names its Target");
 	Check(door->isEnabled, "the door starts enabled");
 
-	station->onInteract(*scene);
+	station->onInteract(*scene, *scene->PlayerInSlot(0));
 	scene->WinMiniGame();
 
 	door = scene->gameMap.FindGameObject(950);
@@ -150,7 +149,7 @@ static void TestMissingTargetStillCompletes()
 
 	Check(station->FindMiniGameTarget(scene->gameMap) == nullptr, "a missing Target is reported, not guessed");
 
-	station->onInteract(*scene);
+	station->onInteract(*scene, *scene->PlayerInSlot(0));
 	scene->WinMiniGame();
 
 	// A deleted door must not un-complete finished work, or the Director would
@@ -172,7 +171,7 @@ static void TestPracticeRunCompletesNothing()
 	Check(scene->GetRunningStation() == nullptr, "no station is occupied");
 	scene->WinMiniGame();
 
-	CooldownTimer* range = scene->player->getBuff(BUFF_RANGE);
+	CooldownTimer* range = scene->PlayerInSlot(0)->getBuff(BUFF_RANGE);
 	Check(range != nullptr && range->remaining_time() > 0, "winning Crane grants the Range buff");
 	Check(!station->isCompleted, "no station is completed");
 	door = scene->gameMap.FindGameObject(951);
