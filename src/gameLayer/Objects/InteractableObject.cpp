@@ -130,6 +130,7 @@ Json InteractableObject::formatToJson()
 	j["TargetId"] = targetId;
 	j["IsInteractable"] = isInteractable;
 	j["IsCompleted"] = isCompleted;
+	j["MinimumSeconds"] = minimumSeconds;
 	// isRunningMiniGame is deliberately not persisted: it means "occupied right
 	// now", and a save reloaded later has nobody standing at the station.
 	return j;
@@ -157,6 +158,8 @@ bool InteractableObject::loadFromJson(Json& j)
 
 	isInteractable = j.value("IsInteractable", true);
 	isCompleted = j.value("IsCompleted", false);
+	minimumSeconds = j.value("MinimumSeconds", kDefaultMinimumSeconds);
+	if (!(minimumSeconds >= 0.0f)) { minimumSeconds = kDefaultMinimumSeconds; } // also rejects NaN
 
 	// A station is never occupied on load, whatever was happening when the save
 	// was written — the same reason the Stalker drops its lastKnownPosition.

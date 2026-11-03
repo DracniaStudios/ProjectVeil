@@ -183,6 +183,12 @@ public:
 	// Distinct from isRunningMiniGame, which is only "occupied right now".
 	bool isCompleted = false;
 
+	// The shortest a real win of this station's MiniGame can take, in seconds.
+	// The server refuses a Complete that arrives sooner after its grant (rule
+	// S-3). Static data: part of the World save and of its content hash.
+	static constexpr float kDefaultMinimumSeconds = 3.0f;
+	float minimumSeconds = kDefaultMinimumSeconds;
+
 	virtual void render3D() override {
 		GameObject::render3D();
 	};

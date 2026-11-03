@@ -139,6 +139,13 @@ STEAM
 EnTT::EnTT
 serialize::serialize)
 
+# cpp-httplib (header only, MIT): the Host's HTTP line to SpacetimeDB. Only
+# src/net/spacetime/ may include it (rule R8, MultiplayerSplitPlan.md Q54).
+target_include_directories("${CMAKE_PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/cpp-httplib-0.64.0")
+if (WIN32)
+	target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE ws2_32) # cpp-httplib sockets, with or without GNS
+endif()
+
 # Only defined when GameNetworkingSockets could be built on this machine
 if (TARGET GameNetworkingSockets::static)
 	target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE GameNetworkingSockets::static)

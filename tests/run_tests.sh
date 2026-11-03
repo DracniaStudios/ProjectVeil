@@ -353,7 +353,8 @@ for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
              "EntityTests:entity_tests" "FixedTickTests:fixed_tick_tests" \
              "RenderOffTickTests:render_off_tick_tests" \
              "PlayerPoolTests:player_pool_tests" \
-             "RoundTests:round_tests"; do
+             "RoundTests:round_tests" \
+             "WorldStoreTests:world_store_tests"; do
 	SRC="tests/${suite%%:*}.cpp"
 	TEST_BIN="$OUT_DIR/${suite##*:}"
 

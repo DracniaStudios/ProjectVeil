@@ -64,6 +64,13 @@ tools/
 # Additive Files
 saves/backup.json
 saves/settings.json
+# Networking split (MultiplayerSplitPlan.md §5.2, W-10, W-11): the Host's
+# SpacetimeDB token, its temp file during the atomic write, and the one-Host lock
+saves/dev_identity.json
+saves/dev_identity.json.tmp
+saves/host.lock
+# Dev multiplayer settings: this machine's last Join address and world id
+saves/dev_net.json
 veil-digest.py
 CLAUDE.md
 

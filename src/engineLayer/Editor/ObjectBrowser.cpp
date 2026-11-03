@@ -58,6 +58,8 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 		ImGui::TextDisabled("%s", miniGameIdToString(object->variation));
 		ImGui::Checkbox("MiniGame Running", &object->isRunningMiniGame);
 		ImGui::Checkbox("Completed", &object->isCompleted);
+		ImGui::DragFloat("Minimum Seconds", &object->minimumSeconds, 0.1f, 0.0f, 600.0f);
+		ImGui::TextDisabled("A win sooner than this after the claim is refused");
 		// Worth stating outright: the Director stops hinting toward a station the
 		// moment this is ticked, so it doubles as the switch for testing whether
 		// hinting moves on to the next outstanding objective.
