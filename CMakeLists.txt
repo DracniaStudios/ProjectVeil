@@ -50,7 +50,8 @@ add_subdirectory(thirdparty/json-3.12.0) #Soon to me Customizable
 add_subdirectory(thirdparty/fmod-2.3.14)
 add_subdirectory(thirdparty/steam-1.64)
 add_subdirectory(thirdparty/entt-4.0.0) # Header only ECS, exposes EnTT::EnTT
-add_subdirectory(thirdparty/flecs-4.1.6) # C ECS built as a static library, exposes flecs::flecs
+# thirdparty/flecs-4.1.6 stays vendored but is not built or linked: EnTT is the
+# ECS (MultiplayerSplitPlan.md Q45)
 add_subdirectory(thirdparty/serialize-2.1.3) # Header only bitpacked wire serialization, exposes serialize::serialize
 
 # GameNetworkingSockets needs protobuf. If CMake cannot find one it is fetched at
@@ -136,7 +137,6 @@ nlohmann_json
 FMOD
 STEAM
 EnTT::EnTT
-flecs::flecs
 serialize::serialize)
 
 # Only defined when GameNetworkingSockets could be built on this machine
