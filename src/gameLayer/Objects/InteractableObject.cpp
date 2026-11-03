@@ -5,17 +5,14 @@
 #include <Player.h>
 
 
-void ActivateMiniGame(SceneManagement::Scene& scene, InteractableObject* interactable, Player& by, bool bypass = false)
+// Interacting with a Task station is a claim on it (rule S-3). The server's
+// StationTable decides; the MiniGame screen opens on the client that gets the
+// grant (Client::PresentEvent). The unlock gate and the activation noise are
+// the claim's.
+void ActivateMiniGame(SceneManagement::Scene& scene, InteractableObject* interactable, Player& by)
 {
-	std::cout << "[InteractableObject] Activating MiniGame: " << interactable->variation << "\n";
-
-	scene.soundField.Emit(interactable->getPosition(), 0.8f, SOUND_TAMPER, interactable->id);
-
-	if (!bypass && by.artifactUnlocked < interactable->variation) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
-
-	// The scene marks the station as occupied, and on a win finds the Target
-	// through the station itself
-	scene.StartMiniGame(interactable->variation, interactable, &by);
+	std::cout << "[InteractableObject] Claiming station " << interactable->id << " (MiniGame " << interactable->variation << ")\n";
+	scene.ClaimStation(scene.StationIndexOf(interactable->id), Sim::SlotForPlayerId(by.id));
 }
 
 GameObject* InteractableObject::FindMiniGameTarget(GameMap& gameMap)

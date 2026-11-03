@@ -22,6 +22,15 @@ namespace Sim {
 	// What happened at a Task station (§5.3 StationEvent)
 	enum class StationEventKind : std::uint8_t { Granted, Denied, Released, Completed, Count };
 
+	// What a client asks of a Task station (§5.3 StationRequest). The Slot is the
+	// connection's, never part of the request (P-5).
+	enum class StationAction : std::uint8_t { Claim, Release, Complete, Count };
+
+	struct StationRequest {
+		StationAction action = StationAction::Claim;
+		int stationIndex = -1;
+	};
+
 	struct GameEvent {
 		GameEventType    type         = GameEventType::PlayerCaught;
 		int              slot         = -1;

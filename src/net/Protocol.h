@@ -51,7 +51,7 @@ namespace Net {
 	inline constexpr int kLastMsgType  = 9;
 
 	enum class RejectReason : std::uint8_t { VersionMismatch, WorldMismatch, ServerFull, Count };
-	enum class StationAction : std::uint8_t { Claim, Release, Complete, Count };
+	using StationAction = Sim::StationAction;
 	enum class StalkerGait : std::uint8_t { Still, Walk, Sprint, Count };
 
 	const char* RejectReasonName(RejectReason reason);

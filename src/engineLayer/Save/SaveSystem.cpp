@@ -400,6 +400,9 @@ namespace SaveSystem
 		scene.authoredWorld = std::move(authored);
 		scene.worldName = fileName;
 
+		// The StationTable and the content hash, from the world exactly as loaded
+		scene.OnWorldLoaded();
+
 		std::cout << "[Save System] Loaded World: " << store.PathOf(fileName)
 			<< " (" << scene.gameMap.GameObjectCount() << " objects, "
 			<< scene.gameMap.InteractableCount() << " interactables, "

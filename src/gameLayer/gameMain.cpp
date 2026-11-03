@@ -4,6 +4,8 @@
 #include <Client/CommandSampler.h>
 #include <Client/LocalPlayer.h>
 #include <Client/RoundPresenter.h>
+#include <Client/Session.h>
+#include <Client/DevOptions.h>
 #include <sim/FixedTick.h>
 
 #include <cmath>
@@ -80,6 +82,10 @@ bool init_game()
 
 	SceneManagement::SceneManager_init(&SceneManagement::SceneManager::getInstance());
 
+	// Single-player runs through the same server code as a Host, joined to this
+	// client by Loopback: no socket, no SpacetimeDB (S4, MultiplayerSplitPlan.md N2)
+	Client::Session::getInstance().StartOffline();
+
 	// Go To Main Menu
 	//SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), SCENE_MAIN_MENU);
 	
@@ -89,6 +95,9 @@ bool init_game()
 bool update_game()
 {
 	const float frameTime = GetFrameTime();
+
+	// A scripted dev run ends cleanly, so its log is complete
+	if (Client::Dev().quitAfterSeconds > 0.0 && GetTime() >= Client::Dev().quitAfterSeconds) { request_exit(); }
 
 	// Nothing draws a sky, so the clear colour *is* the horizon. Clearing to the
 	// fog colour lets distant geometry dissolve into the background instead of
@@ -100,11 +109,17 @@ bool update_game()
 
 	auto* manager = &SceneManagement::SceneManager::getInstance();
 
+	// A joined client's world moves to the Host's latest Snapshots before the
+	// camera is placed in it
+	auto& session = Client::Session::getInstance();
+	session.Frame(*manager, GetTime());
+
 	// Input is sampled once per frame into the pending PlayerCommand (Step 1.3).
 	// While an overlay or the World Editor has the input, the command is empty.
 	auto& sampler = Client::CommandSampler::getInstance();
 	if (const auto scene = manager->currentScene) {
-		if (Player* local = Client::LocalPlayer(*scene)) { sampler.SetLookBase(local->lookYaw, local->lookPitch); }
+		float yaw = 0.0f, pitch = 0.0f;
+		if (session.LocalLook(*scene, yaw, pitch)) { sampler.SetLookBase(yaw, pitch); }
 		sampler.SampleFrame(scene->overlays.GameplayHasInput() && !Editor::WorldEditor::getInstance().IsEnabled());
 	}
 
@@ -112,16 +127,13 @@ bool update_game()
 	/// so the ticks simulate with the camera the player is now looking through.
 	SceneManagement::SceneManager_frame(manager, fminf(frameTime, Sim::kMaxFrameTime));
 
-	// Simulation: zero or more fixed ticks this frame, one command each
+	// Simulation: zero or more fixed ticks this frame, one command each. The
+	// session sends it, runs the server's tick (single-player, Host) and reads
+	// what came back.
 	const int ticks = tickClock.Advance(frameTime);
 	for (int tick = 0; tick < ticks; ++tick) {
 		const Sim::PlayerCommand command = sampler.Consume(++clientTick);
-		SceneManagement::SceneManager_tick(manager, Sim::kTickDelta, std::span<const Sim::PlayerCommand>(&command, 1));
-
-		// What the tick reported about the round, shown on this client's screen
-		if (const auto scene = manager->currentScene) {
-			for (const Sim::GameEvent& event : scene->TakeEvents()) { Client::PresentEvent(*scene, event); }
-		}
+		session.Tick(*manager, command);
 	}
 
 	SceneManagement::SceneManager_draw(manager);
@@ -148,6 +160,9 @@ void close_game()
 	
 	f << "\n CLOSED\n";
 	f.close();
+
+	// Networking stops before the window and the GL context go (§5.6)
+	Client::Session::getInstance().Shutdown();
 
 	// Materials only hold a copy of the Shader struct, so every model's shader
 	// id dangles once this runs — it has to be the last engine call. ProjectVeil.cpp

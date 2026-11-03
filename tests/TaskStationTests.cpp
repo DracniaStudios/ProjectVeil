@@ -2,6 +2,11 @@
  * Tests for Task station state: what winning, quitting and Practice runs do to
  * a station and its Target, through the Scene's MiniGame methods.
  *
+ * Stations are server-owned (MultiplayerSplitPlan.md G7): interacting claims,
+ * the server grants, the client's MiniGame screen opens on the grant, and a win
+ * asks the server to Complete. Pump plays both halves of that exchange with no
+ * transport in between, the way Loopback does in single-player.
+ *
  * A station had no way to say it had ever been finished until it carried its
  * own completion flag. The Director reads that flag to tell an outstanding
  * objective from a done one, so a regression here is a regression in what the
@@ -20,6 +25,7 @@
 #include <SceneManager.h>
 #include <AI/Director.h>
 #include <AI/Stalker.h>
+#include <Client/RoundPresenter.h>
 
 #include <cstdio>
 #include <string>
@@ -47,6 +53,26 @@ static SceneManagement::Scene* MakeScene()
 	return scene;
 }
 
+// The server takes the client's station requests (Slot 0's), then the client
+// shows the server's events, until nothing is left to pass along
+static void Pump(SceneManagement::Scene* scene)
+{
+	for (int round = 0; round < 4; ++round)
+	{
+		for (const Sim::StationRequest& request : scene->TakeStationRequests())
+		{
+			switch (request.action)
+			{
+			case Sim::StationAction::Claim:    scene->ClaimStation(request.stationIndex, 0); break;
+			case Sim::StationAction::Release:  scene->ReleaseStation(request.stationIndex, 0); break;
+			case Sim::StationAction::Complete: scene->CompleteStation(request.stationIndex, 0); break;
+			default: break;
+			}
+		}
+		for (const Sim::GameEvent& event : scene->TakeEvents()) { Client::PresentEvent(*scene, event); }
+	}
+}
+
 static InteractableObject* AddStation(SceneManagement::Scene* scene, Vector3 at, int miniGameId,
                                       std::uint64_t id)
 {
@@ -56,6 +82,7 @@ static InteractableObject* AddStation(SceneManagement::Scene* scene, Vector3 at,
 	owned->isEnabled = true;
 	owned->isInteractable = true;
 	owned->rigidBody3D.Teleport(at);
+	owned->minimumSeconds = 0.0f; // these cases are about state, not how fast a win is
 	InteractableObject* station = owned.get();
 	scene->gameMap.RestoreInteractable(std::move(owned));
 	return station;
@@ -79,11 +106,13 @@ static void TestWinningCompletesTheStation()
 	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 901);
 	station->onInteract(*scene, *scene->PlayerInSlot(0));
+	Pump(scene);
 
 	Check(scene->GetRunningStation() == station, "the station is occupied while it runs");
 	Check(scene->overlays.Top() == Overlay::MiniGame, "the MiniGame overlay is up");
 
 	scene->WinMiniGame();
+	Pump(scene);
 
 	Check(station->isCompleted, "winning completes the station");
 	Check(!station->isInteractable, "a completed station can't be started again");
@@ -101,8 +130,10 @@ static void TestQuittingLeavesTheStationOutstanding()
 	SceneManagement::Scene* scene = MakeScene();
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 902);
 	station->onInteract(*scene, *scene->PlayerInSlot(0));
+	Pump(scene);
 
 	scene->QuitMiniGame();
+	Pump(scene);
 
 	Check(!station->isCompleted, "quitting does not complete the station");
 	Check(!station->isRunningMiniGame, "but it does free it");
@@ -131,7 +162,9 @@ static void TestWinningTogglesTheTarget()
 	Check(door->isEnabled, "the door starts enabled");
 
 	station->onInteract(*scene, *scene->PlayerInSlot(0));
+	Pump(scene);
 	scene->WinMiniGame();
+	Pump(scene);
 
 	door = scene->gameMap.FindGameObject(950);
 	Check(door != nullptr && !door->isEnabled, "the Target is toggled");
@@ -150,7 +183,9 @@ static void TestMissingTargetStillCompletes()
 	Check(station->FindMiniGameTarget(scene->gameMap) == nullptr, "a missing Target is reported, not guessed");
 
 	station->onInteract(*scene, *scene->PlayerInSlot(0));
+	Pump(scene);
 	scene->WinMiniGame();
+	Pump(scene);
 
 	// A deleted door must not un-complete finished work, or the Director would
 	// keep hinting at it forever
@@ -160,7 +195,7 @@ static void TestMissingTargetStillCompletes()
 
 static void TestPracticeRunCompletesNothing()
 {
-	std::printf("a Practice run grants the buff but completes and toggles nothing\n");
+	std::printf("a Practice run stays on the client: no buff, no completion, no toggle (S-5)\n");
 	SceneManagement::Scene* scene = MakeScene();
 	GameObject* door = AddDoor(scene, 951);
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 }, MINI_GAME_CRANE_ID, 905);
@@ -170,9 +205,10 @@ static void TestPracticeRunCompletesNothing()
 	Check(scene->StartMiniGame(MINI_GAME_CRANE_ID), "the practice game starts");
 	Check(scene->GetRunningStation() == nullptr, "no station is occupied");
 	scene->WinMiniGame();
+	Pump(scene);
 
 	CooldownTimer* range = scene->PlayerInSlot(0)->getBuff(BUFF_RANGE);
-	Check(range != nullptr && range->remaining_time() > 0, "winning Crane grants the Range buff");
+	Check(range == nullptr || range->remaining_time() <= 0, "a Practice win grants no buff: rewards are the server's, for stations");
 	Check(!station->isCompleted, "no station is completed");
 	door = scene->gameMap.FindGameObject(951);
 	Check(door != nullptr && door->isEnabled, "and no door is toggled");

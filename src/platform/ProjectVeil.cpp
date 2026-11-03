@@ -3,10 +3,15 @@
 
 #include "ProjectVeil.h"
 
+#include <Client/DevOptions.h>
+
 using namespace std;
 
-int main()
+int main(int argc, char** argv)
 {
+	// Dev builds only: --host, --join, --quit-after and the rest (Client/DevOptions.h)
+	Client::ParseDevOptions(argc, argv);
+
 #if PRODUCTION_BUILD == 1
 	std::cout << "Production Build \n";
 	SetTraceLogLevel(LOG_FATAL);
@@ -18,6 +23,7 @@ int main()
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 
 	InitWindow(1600, 900, "Project: Veil"); // set in settings
+	if (Client::Dev().windowX >= 0) { SetWindowPosition(Client::Dev().windowX, 60); }
 
 	SetWindowMinSize(1280, 720);
 	SetWindowMaxSize(3840, 2160);

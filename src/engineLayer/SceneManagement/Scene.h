@@ -25,6 +25,7 @@
 #include <sim/Slots.h>
 #include <sim/Rules.h>
 #include <sim/GameEvents.h>
+#include <sim/StationTable.h>
 
 #include <array>
 
@@ -143,24 +144,67 @@ namespace SceneManagement {
 		// Seconds the Jumpscare stays up (Client::UpdatePresentation). Client state.
 		float jumpscareSeconds = 0.0f;
 
-		/** MiniGames **/
-		// Starts a MiniGame for a player at a Task station, or as a Practice run with
-		// none, and opens its overlay. False, with nothing changed, for an id that
-		// names no game. The player is who the win's reward goes to; with none, the
-		// player in Slot 0.
+		/** Task stations: the server's half (rules S-1 to S-7) **/
+		// The World save's Task stations, the only truth for completion (S-1)
+		Sim::StationTable stations;
+
+		// Ticks this scene has simulated; a claim's minimum time is counted in them
+		std::uint32_t simTick = 0;
+
+		// The World save's content hash (World::ContentHash), taken as it loads
+		std::uint64_t contentHash = 0;
+
+		// Builds the StationTable and the content hash from the World save just
+		// loaded. Called by SaveSystem::LoadWorld.
+		void OnWorldLoaded();
+
+		// The table index of a station id, or -1. A station the table doesn't know
+		// yet (placed in the World Editor) rebuilds the table.
+		int StationIndexOf(std::uint64_t stationId);
+
+		/**
+		 * A Slot asks for a Task station (S-3). Granted when the station is in the
+		 * table, not completed and not held, the Slot's player is close enough and
+		 * holds no other station, and the unlock gate passes. A grant makes the
+		 * activation noise and starts the minimum-time count. Either way a
+		 * StationEvent goes to the outbox.
+		 */
+		bool ClaimStation(int index, int slot);
+
+		// Only the holder can Complete, and not sooner than the station's minimum
+		// seconds after the grant (S-3, S-4). Completing applies the reward to the
+		// holder (S-5) and derives the Targets (S-6).
+		bool CompleteStation(int index, int slot);
+
+		// Only the holder can Release. Nothing for anyone else.
+		bool ReleaseStation(int index, int slot);
+
+		// Frees whatever a Slot holds: on disconnect, catch or wipe (S-4)
+		void ReleaseStationsHeldBy(int slot, bool report);
+
+		/** MiniGames: the client's half **/
+		// Starts the MiniGame screen for a Task station the server granted, or a
+		// Practice run with none, and opens its overlay. False, with nothing
+		// changed, for an id that names no game.
 		bool StartMiniGame(int gameId, InteractableObject* station = nullptr, Player* by = nullptr);
 
-		// Runs the MiniGame for a rendered frame while it is the top overlay, and
-		// applies a win. Per frame, not per tick: the MiniGame is the client's
+		// Runs the MiniGame for a rendered frame while it is the top overlay. A win
+		// at a station asks the server to Complete it; a Practice win changes
+		// nothing (S-5). Per frame, not per tick: the MiniGame is the client's
 		// screen, and it reads the player's keys the way a menu does.
 		void TickMiniGame(float deltaTime);
 
-		// Ends the MiniGame unwon and closes its overlay. Progress stays in the history.
+		// Ends the MiniGame unwon and closes its overlay, and asks the server to
+		// Release the station. Progress stays in the history.
 		void QuitMiniGame();
 
-		// The World Editor's buttons: a fresh round, and a win applied like a real one
+		// The World Editor's buttons: a fresh round, and a win sent like a real one
 		void RetryMiniGame();
 		void WinMiniGame();
+
+		// What this client asks of the stations, for its connection to send
+		std::vector<Sim::StationRequest> stationRequests;
+		std::vector<Sim::StationRequest> TakeStationRequests() { std::vector<Sim::StationRequest> taken; taken.swap(stationRequests); return taken; }
 
 		// The task station whose minigame is running, or nullptr for none.
 		InteractableObject* GetRunningStation();
@@ -229,12 +273,14 @@ namespace SceneManagement {
 		// buffs, no artifact, looking down +Z
 		void ResetPlayerToSpawn(int slot);
 	private:
-		// Grants the won game's reward and, at a Task station, completes it and
-		// toggles its Target. Then closes the MiniGame overlay.
+		// A won MiniGame: a station's asks the server to Complete it
 		void FinishWonMiniGame(const MiniGameResult& won);
 
-		// Closes the MiniGame overlay and frees every Task station
+		// Closes the MiniGame overlay
 		void CloseMiniGame();
+
+		// Reports a StationEvent
+		void ReportStation(Sim::StationEventKind kind, int index, int slot);
 
 		// Countdown to the running station's next noise. Lives on the Scene rather
 		// than on the station because the station is a plain world object that never

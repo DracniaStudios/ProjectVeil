@@ -18,6 +18,7 @@
 #include <raylib.h>
 
 #include <Scene.h>
+#include <Client/RoundPresenter.h>
 #include <SceneManager.h>
 #include <Perception/SoundField.h>
 
@@ -153,15 +154,26 @@ static void TestQuittingTheMiniGameStopsTheHum()
 {
 	std::printf("quitting the minigame frees the station\n");
 	SceneManagement::Scene* scene = MakeScene();
+	scene->AddPlayer(0);
+	scene->PlayerInSlot(0)->artifactUnlocked = MINI_GAME_RO_SHAM_BOO_ID;
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 });
-	station->isRunningMiniGame = true;
+
+	// Claimed and granted: the server's StationTable holds it, and the client's
+	// MiniGame screen opens on the grant (G7)
+	station->onInteract(*scene, *scene->PlayerInSlot(0));
+	for (const Sim::GameEvent& event : scene->TakeEvents()) { Client::PresentEvent(*scene, event); }
 
 	Check(scene->GetRunningStation() == station, "the station reports as occupied");
 
 	// Ending the minigame is the single point that knows it ended. Before this
 	// fix isRunningMiniGame was a one-way latch, so the station hummed for the
-	// rest of the session and the Director never hinted at it again.
+	// rest of the session and the Director never hinted at it again. Quitting
+	// asks the server to release it.
 	scene->QuitMiniGame();
+	for (const Sim::StationRequest& request : scene->TakeStationRequests())
+	{
+		if (request.action == Sim::StationAction::Release) { scene->ReleaseStation(request.stationIndex, 0); }
+	}
 
 	Check(scene->GetRunningStation() == nullptr, "quitting frees the station");
 	Check(!station->isRunningMiniGame, "the occupied flag is cleared");

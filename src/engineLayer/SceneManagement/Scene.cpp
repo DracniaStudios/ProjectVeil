@@ -11,6 +11,9 @@
 #include <Client/RoundPresenter.h>
 #include <AI/Stalker.h>
 #include <SceneManager.h>
+#include <World/WorldKey.h>
+#include <sim/FixedTick.h>
+#include <net/Protocol.h>
 
 #include <algorithm>
 #include <cmath>
@@ -270,6 +273,7 @@ namespace SceneManagement {
 		// Any MiniGame in progress belongs to the round that just ended
 		miniGameSession.Quit();
 		overlays.Close(Overlay::MiniGame);
+		stationRequests.clear();
 		miniGamePlayerId = 0;
 		stationNoiseTimer = 0.0f;
 
@@ -287,6 +291,10 @@ namespace SceneManagement {
 		});
 
 		for (int slot = 0; slot < Sim::kMaxPlayers; ++slot) { ResetPlayerToSpawn(slot); }
+
+		// No station completed through play, no holders: the World state is empty
+		stations.Wipe();
+		stations.WriteToMap(gameMap);
 
 		director.Clear();
 		soundField.Clear();
@@ -380,12 +388,7 @@ namespace SceneManagement {
 			return false;
 		}
 
-		// A start replaces any game already running, so the station that one held is
-		// free now; only the new one is occupied.
-		gameMap.ForEachInteractable([](InteractableObject& interactable) { interactable.isRunningMiniGame = false; });
-		stationNoiseTimer = 0.0f;
-		if (station != nullptr) { station->isRunningMiniGame = true; }
-
+		// The screen only: which station is held is the server's (StationTable)
 		miniGamePlayerId = by != nullptr ? by->id : 0;
 		if (by != nullptr) { by->artifactMode = gameId; }
 		overlays.Open(Overlay::MiniGame);
@@ -393,7 +396,6 @@ namespace SceneManagement {
 	}
 
 	void Scene::TickMiniGame(float deltaTime)
-
 	{
 		// A game under another overlay waits: it can't be lost while it can't be seen
 		if (overlays.Top() != Overlay::MiniGame || !miniGameSession.IsRunning()) { return; }
@@ -404,8 +406,17 @@ namespace SceneManagement {
 
 	void Scene::QuitMiniGame()
 	{
+		const std::uint64_t stationId = miniGameSession.StationId();
+		const bool running = miniGameSession.IsRunning();
 		miniGameSession.Quit();
 		CloseMiniGame();
+
+		// Walking away from a station gives it back
+		if (running && stationId != 0)
+		{
+			const int index = stations.IndexOf(stationId);
+			if (index >= 0) { stationRequests.push_back({ Sim::StationAction::Release, index }); }
+		}
 	}
 
 	void Scene::RetryMiniGame()
@@ -421,35 +432,12 @@ namespace SceneManagement {
 
 	void Scene::FinishWonMiniGame(const MiniGameResult& won)
 	{
-		if (const std::optional<MiniGameReward> reward = RewardFor(won.gameId))
+		// A Practice run stays on this client and changes nothing on the server
+		// (S-5). A station's win is the server's to judge: it asks to Complete.
+		if (won.stationId != 0)
 		{
-			if (Player* player = FindPlayer(miniGamePlayerId))
-			{
-				if (reward->heal > 0.0f) { player->applyHealthValue(reward->heal, false); }
-				if (CooldownTimer* buff = player->getBuff(reward->buff)) { buff->use(); }
-			}
-		}
-
-		// A Practice run has no station: it completes nothing and toggles nothing
-		InteractableObject* station = won.stationId != 0 ? gameMap.FindInteractable(won.stationId) : nullptr;
-		if (station != nullptr)
-		{
-			// Marked before the Target is looked up, because this is the point at which
-			// the task is objectively finished. Letting a deleted door un-complete a
-			// finished task would leave the Director hinting at it forever.
-			station->isCompleted = true;
-			station->isInteractable = false;
-
-			if (GameObject* target = station->FindMiniGameTarget(gameMap))
-			{
-				std::cout << "[MiniGame] Target " << station->targetId << " is now " << !target->isEnabled << "\n";
-				if (target->isEnabled) { target->onDisable(); }
-				else { target->onEnable(); }
-			}
-			else
-			{
-				std::cout << "[MiniGame] Target " << station->targetId << " no longer exists — nothing to open\n";
-			}
+			const int index = stations.IndexOf(won.stationId);
+			if (index >= 0) { stationRequests.push_back({ Sim::StationAction::Complete, index }); }
 		}
 
 		CloseMiniGame();
@@ -458,8 +446,146 @@ namespace SceneManagement {
 	void Scene::CloseMiniGame()
 	{
 		overlays.Close(Overlay::MiniGame);
-		gameMap.ForEachInteractable([](InteractableObject& interactable) { interactable.isRunningMiniGame = false; });
+	}
+
+	void Scene::OnWorldLoaded()
+	{
+		if (!stations.Build(gameMap))
+		{
+			std::cerr << "[Scene] The World save has more Task stations than the protocol carries (" << Net::kMaxStations << "); none will work\n";
+		}
+		stations.WriteToMap(gameMap);
+		contentHash = World::ContentHash(*this);
+	}
+
+	int Scene::StationIndexOf(std::uint64_t stationId)
+	{
+		int index = stations.IndexOf(stationId);
+		if (index < 0)
+		{
+			stations.Build(gameMap);
+			index = stations.IndexOf(stationId);
+		}
+		return index;
+	}
+
+	void Scene::ReportStation(Sim::StationEventKind kind, int index, int slot)
+	{
+		Sim::GameEvent event = {};
+		event.type = Sim::GameEventType::StationEvent;
+		event.stationEvent = kind;
+		event.stationIndex = index;
+		event.slot = slot;
+		event.roundEpoch = roundEpoch;
+		outbox.push_back(event);
+	}
+
+	bool Scene::ClaimStation(int index, int slot)
+	{
+		// How close a player must stand to claim a station (its interact reach,
+		// buffed, plus the station's own size)
+		constexpr float kClaimReach = 12.0f;
+
+		Player* player = PlayerInSlot(slot);
+		const auto deny = [&](const char* why) {
+			std::cout << "[Station] Slot " << slot << " denied station " << index << ": " << why << "\n";
+			if (stations.IsValidIndex(index)) { ReportStation(Sim::StationEventKind::Denied, index, slot); }
+			return false;
+		};
+
+		if (!stations.IsValidIndex(index)) { return deny("not in the table"); }
+		Sim::StationEntry& entry = stations.At(index);
+
+		InteractableObject* station = gameMap.FindInteractable(entry.id);
+		if (station == nullptr || !station->isEnabled) { return deny("the station is gone"); }
+
+		// Starting a station is loud, and so is rattling one that won't start: a
+		// silent failed attempt would be the safest way to play (decision 15)
+		soundField.Emit(station->getPosition(), 0.8f, SOUND_TAMPER, station->id);
+
+		if (player == nullptr || !player->isEnabled) { return deny("no player in that Slot"); }
+		if (entry.holder == slot) { return false; } // asking twice changes nothing
+		if (entry.Completed()) { return deny("already completed"); }
+		if (entry.InUse()) { return deny("held by another Slot"); }
+		if (stations.HeldBy(slot) >= 0) { return deny("the Slot holds another station"); }
+		if (std::find(caughtThisTick.begin(), caughtThisTick.end(), player->id) != caughtThisTick.end()) { return deny("the Slot was caught"); }
+
+		const Vector3 a = player->getPosition();
+		const Vector3 b = station->getPosition();
+		if (Vector2Distance(Vector2{ a.x, a.z }, Vector2{ b.x, b.z }) > kClaimReach) { return deny("too far away"); }
+
+		// The unlock gate, on the server: the artifact tier must reach the game
+		if (player->artifactUnlocked < entry.game) { return deny("MiniGame not unlocked"); }
+
+		entry.holder = slot;
+		entry.grantedTick = simTick;
+		stations.WriteToMap(gameMap);
 		stationNoiseTimer = 0.0f;
+
+		ReportStation(Sim::StationEventKind::Granted, index, slot);
+		return true;
+	}
+
+	bool Scene::CompleteStation(int index, int slot)
+	{
+		if (!stations.IsValidIndex(index)) { return false; }
+		Sim::StationEntry& entry = stations.At(index);
+
+		if (entry.holder != slot)
+		{
+			std::cout << "[Station] Slot " << slot << " can't complete station " << index << ": it isn't the holder\n";
+			ReportStation(Sim::StationEventKind::Denied, index, slot);
+			return false;
+		}
+
+		// Timed on the server, in ticks, from the grant (S-3)
+		const float held = static_cast<float>(simTick - entry.grantedTick) / Sim::kTickRate;
+		if (held < entry.minimumSeconds)
+		{
+			std::cout << "[Station] Slot " << slot << " completed station " << index << " after " << held
+				<< " s, under its minimum of " << entry.minimumSeconds << " s: refused\n";
+			ReportStation(Sim::StationEventKind::Denied, index, slot);
+			return false;
+		}
+
+		entry.holder = -1;
+		entry.completedInWorld = true;
+		stations.WriteToMap(gameMap);
+
+		// The reward is the server's to give (S-5)
+		if (Player* player = PlayerInSlot(slot))
+		{
+			if (const std::optional<MiniGameReward> reward = RewardFor(entry.game))
+			{
+				if (reward->heal > 0.0f) { player->applyHealthValue(reward->heal, false); }
+				if (CooldownTimer* buff = player->getBuff(reward->buff)) { buff->use(); }
+			}
+		}
+
+		std::cout << "[Station] Slot " << slot << " completed station " << entry.id << "\n";
+		ReportStation(Sim::StationEventKind::Completed, index, slot);
+		return true;
+	}
+
+	bool Scene::ReleaseStation(int index, int slot)
+	{
+		if (!stations.IsValidIndex(index)) { return false; }
+		Sim::StationEntry& entry = stations.At(index);
+		if (entry.holder != slot) { return false; }
+
+		entry.holder = -1;
+		stations.WriteToMap(gameMap);
+		ReportStation(Sim::StationEventKind::Released, index, slot);
+		return true;
+	}
+
+	void Scene::ReleaseStationsHeldBy(int slot, bool report)
+	{
+		const int index = stations.HeldBy(slot);
+		if (index < 0) { return; }
+		stations.At(index).holder = -1;
+		stations.WriteToMap(gameMap);
+		if (report) { ReportStation(Sim::StationEventKind::Released, index, slot); }
 	}
 #pragma endregion
 
@@ -521,6 +647,8 @@ namespace SceneManagement {
 	}
 
 	void Scene_tick(Scene& scene, float delta, std::span<const Sim::PlayerCommand> commands) {
+
+		++scene.simTick;
 
 		auto worldEditor = &Editor::WorldEditor::getInstance();
 		if (scene.update) { scene.update(scene, delta); }

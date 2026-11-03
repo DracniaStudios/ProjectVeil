@@ -32,7 +32,31 @@ namespace Client {
 			break;
 
 		case Sim::GameEventType::StationEvent:
+		{
+			if (event.slot != LocalSlot() || !scene.stations.IsValidIndex(event.stationIndex)) { break; }
+			const Sim::StationEntry& entry = scene.stations.At(event.stationIndex);
+
+			switch (event.stationEvent)
+			{
+			case Sim::StationEventKind::Granted:
+				// Ours: the MiniGame screen opens. The server times it from now.
+				scene.StartMiniGame(entry.game, scene.gameMap.FindInteractable(entry.id), LocalPlayer(scene));
+				break;
+			case Sim::StationEventKind::Denied:
+				std::cout << "[Client] Station " << entry.id << " denied\n";
+				break;
+			case Sim::StationEventKind::Released:
+				// Taken back by the server (a catch, a wipe): the screen goes too
+				if (scene.miniGameSession.IsRunning() && scene.miniGameSession.StationId() == entry.id) { scene.QuitMiniGame(); }
+				break;
+			case Sim::StationEventKind::Completed:
+				std::cout << "[Client] Station " << entry.id << " completed\n";
+				break;
+			default:
+				break;
+			}
 			break;
+		}
 		}
 	}
 
