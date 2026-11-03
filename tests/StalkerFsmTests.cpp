@@ -26,6 +26,7 @@
 #include <SceneManager.h>
 #include <AI/Stalker.h>
 #include <Perception/SoundField.h>
+#include <Client/StalkerWarnings.h>
 
 #include <cmath>
 #include <cstdio>
@@ -555,6 +556,63 @@ static void TestDirectorHintIsOnePatrolDetour()
 	delete scene;
 }
 
+// G4 (decisions 15, 16): a station starting is heard room-wide and investigated
+// faster; it is never a reason to hunt
+static void TestStationActivationIsAFastInvestigation()
+{
+	std::printf("a station starting is heard room-wide and investigated at task speed\n");
+
+	// Far away and behind a wall: an ordinary noise wouldn't get through
+	SceneManagement::Scene* scene = MakeScene();
+	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
+	AddBlock(scene, Vector3{ 30, 0, 0 }, Vector3{ 1, 5, 20 });
+	scene->soundField.Emit(Vector3{ 60, 0, 0 }, 0.8f, SOUND_STATION_ACTIVATION, 999);
+	Step(scene, s, 0.016f);
+	CheckState(*s, STALKER_INVESTIGATE, "a station 60 units away behind a wall is still heard: investigate");
+	Check(s->investigatingActivation, "as an activation");
+
+	SceneManagement::Scene* quiet = MakeScene();
+	Stalker* q = AddStalker(quiet, Vector3{ 0, 0, 0 });
+	AddBlock(quiet, Vector3{ 30, 0, 0 }, Vector3{ 1, 5, 20 });
+	quiet->soundField.Emit(Vector3{ 60, 0, 0 }, 0.8f, SOUND_FOOTSTEP, 999);
+	Step(quiet, q, 0.016f);
+	CheckState(*q, STALKER_PATROL, "the same noise as a footstep is not heard");
+	delete quiet;
+
+	Check(scene->soundField.AudibleLoudnessAt(Vector3{ 0, 0, 0 }, scene->soundField.Events().back(), &scene->gameMap) == 0.8f, "an activation reaches the stalker at full loudness");
+	delete scene;
+
+	// Investigated faster than an ordinary noise of the same loudness
+	const auto distanceAfter = [](SoundKind kind) {
+		SceneManagement::Scene* sc = MakeScene();
+		Stalker* st = AddStalker(sc, Vector3{ 0, 0, 0 });
+		st->rigidBody3D.isStatic = false;
+		st->rigidBody3D.SetGravity(0.0f, 0.0f, 0.0f);
+		sc->soundField.Emit(Vector3{ 8, 0, 0 }, kind == SOUND_FOOTSTEP ? 0.3f : 0.8f, kind, 999);
+		for (int i = 0; i < 30; ++i) { Step(sc, st, 0.016f); st->rigidBody3D.Update(0.016f); }
+		const float travelled = st->getPosition().x;
+		const bool investigating = st->state == STALKER_INVESTIGATE;
+		delete sc;
+		return investigating ? travelled : -1.0f;
+	};
+	const float normal = distanceAfter(SOUND_FOOTSTEP);
+	const float task = distanceAfter(SOUND_STATION_ACTIVATION);
+	Check(normal > 0.0f && task > normal * 1.3f, "an activation is investigated at taskSpeedMultiplier (" + std::to_string(task) + " vs " + std::to_string(normal) + ")");
+}
+
+// G4 (decision 6): warnings start at catchRadius + closingSpeed * lead
+static void TestWarningRadius()
+{
+	std::printf("the audio warnings start at the decision 6 radius\n");
+	using Client::StalkerWarning;
+	Check(Client::WarningRadius(1.0f, 4.0f, 1.5f) == 7.0f, "1 + 4 * 1.5 = 7");
+	Check(Client::WarningFor(6.9f, 4.0f, 6.0f, 1.0f, 1.5f) == StalkerWarning::Footsteps, "a moving stalker inside its radius: footsteps");
+	Check(Client::WarningFor(7.1f, 4.0f, 6.0f, 1.0f, 1.5f) == StalkerWarning::None, "just outside: nothing");
+	Check(Client::WarningFor(12.0f, 10.0f, 6.0f, 1.0f, 1.5f) == StalkerWarning::Footsteps, "a faster stalker is heard from farther away");
+	Check(Client::WarningFor(9.9f, 0.0f, 6.0f, 1.0f, 1.5f) == StalkerWarning::Breathing, "a standing stalker: breathing, at the player's walk speed");
+	Check(Client::WarningFor(10.1f, 0.0f, 6.0f, 1.0f, 1.5f) == StalkerWarning::None, "outside that: nothing");
+}
+
 int main()
 {
 	// An entity binds a model when it enters the map, so a GL context has to
@@ -580,6 +638,8 @@ int main()
 	TestUnreachableLastKnownFallsBack();
 	TestSearchTimerStartsOnArrival();
 	TestDirectorHintIsOnePatrolDetour();
+	TestStationActivationIsAFastInvestigation();
+	TestWarningRadius();
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 

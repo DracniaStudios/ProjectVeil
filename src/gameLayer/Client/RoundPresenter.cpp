@@ -2,6 +2,7 @@
 
 #include <Scene.h>
 #include <Client/LocalPlayer.h>
+#include <Client/StalkerWarnings.h>
 
 #include <iostream>
 
@@ -33,8 +34,16 @@ namespace Client {
 
 		case Sim::GameEventType::StationEvent:
 		{
-			if (event.slot != LocalSlot() || !scene.stations.IsValidIndex(event.stationIndex)) { break; }
+			if (!scene.stations.IsValidIndex(event.stationIndex)) { break; }
 			const Sim::StationEntry& entry = scene.stations.At(event.stationIndex);
+
+			// Everyone hears a station start, wherever it is (G4)
+			if (event.stationEvent == Sim::StationEventKind::Granted)
+			{
+				if (const InteractableObject* station = scene.gameMap.FindInteractable(entry.id)) { PlayStationActivation(station->getPosition()); }
+			}
+
+			if (event.slot != LocalSlot()) { break; }
 
 			switch (event.stationEvent)
 			{

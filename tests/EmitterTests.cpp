@@ -211,7 +211,7 @@ static void TestInteractingWithAStationIsTampering()
 	InteractableObject* station = AddStation(scene, Vector3{ 3, 0, -4 });
 	station->onInteract(*scene, *scene->PlayerInSlot(0));
 
-	const SoundEvent* event = FirstOfKind(scene, SOUND_TAMPER);
+	const SoundEvent* event = FirstOfKind(scene, SOUND_STATION_ACTIVATION);
 	Check(event != nullptr, "interacting with a station is audible");
 	if (event == nullptr) { delete scene; return; }
 
@@ -219,7 +219,7 @@ static void TestInteractingWithAStationIsTampering()
 	CheckNear(event->position.x, 3.0f, 0.001f, "the noise is at the station");
 	CheckNear(event->position.z, -4.0f, 0.001f, "the noise is at the station");
 	Check(event->sourceId == station->id, "the noise is attributed to the station");
-	Check(CountOfKind(scene, SOUND_TAMPER) == 1, "tampering is one-shot, not continuous");
+	Check(CountOfKind(scene, SOUND_STATION_ACTIVATION) == 1, "the activation is one-shot, not continuous");
 	delete scene;
 }
 
@@ -237,7 +237,7 @@ static void TestLockedStationStillMakesNoise()
 	station->variation = MINI_GAME_RO_SHAM_BOO_ID;
 	station->onInteract(*scene, *scene->PlayerInSlot(0));
 
-	Check(CountOfKind(scene, SOUND_TAMPER) == 1, "a locked station still makes noise");
+	Check(CountOfKind(scene, SOUND_STATION_ACTIVATION) == 1, "a locked station still makes noise");
 	Check(scene->GetRunningStation() == nullptr, "but no minigame actually started");
 	delete scene;
 }

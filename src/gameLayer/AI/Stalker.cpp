@@ -50,6 +50,7 @@ void Stalker::TransitionTo(StalkerState next)
 	state = next;
 	timeInState = 0.0f;
 	ResetApproach();
+	if (next != STALKER_INVESTIGATE) { investigatingActivation = false; }
 
 	// A search walks to the last known position before it sweeps (decision 8)
 	if (next == STALKER_SEARCH_LAST_KNOWN)
@@ -381,7 +382,11 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 
 		if (didHear)
 		{
-			TransitionTo(heardLoudness >= huntThreshold ? STALKER_HUNT : STALKER_INVESTIGATE);
+			// A station starting is investigated, fast, never hunted: it is where a
+			// task is, not where anyone is known to be (decisions 15, 16)
+			const bool activation = heard.kind == SOUND_STATION_ACTIVATION;
+			TransitionTo(heardLoudness >= huntThreshold && !activation ? STALKER_HUNT : STALKER_INVESTIGATE);
+			if (activation) { investigatingActivation = true; }
 			break;
 		}
 
@@ -420,19 +425,22 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 		isSprinting = false;
 		isCrouching = false;
 
-		// A louder noise mid-investigation escalates rather than re-targets.
-		if (didHear && heardLoudness >= huntThreshold)
+		// A louder noise mid-investigation escalates rather than re-targets. A
+		// station starting doesn't: it re-targets the investigation, at task speed.
+		if (didHear && heard.kind == SOUND_STATION_ACTIVATION) { investigatingActivation = true; }
+		else if (didHear && heardLoudness >= huntThreshold)
 		{
 			TransitionTo(STALKER_HUNT);
 			break;
 		}
+		else if (didHear) { investigatingActivation = false; }
 
 		if (!hasLastKnown) { TransitionTo(STALKER_PATROL); break; }
 
 		// Investigation moves at base pace — the stalker is curious, not
 		// alerted, and the slower approach is what gives the player room to
 		// reposition after a single noise.
-		MoveToward(lastKnownPosition, currentSpeed * 0.75f, deltaTime, &scene->gameMap);
+		MoveToward(lastKnownPosition, currentSpeed * 0.75f * (investigatingActivation ? taskSpeedMultiplier : 1.0f), deltaTime, &scene->gameMap);
 
 		if (PlanarDistanceTo(lastKnownPosition) <= arriveDistance)
 		{
@@ -478,7 +486,9 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 
 		if (didHear)
 		{
-			TransitionTo(heardLoudness >= huntThreshold ? STALKER_HUNT : STALKER_INVESTIGATE);
+			const bool activation = heard.kind == SOUND_STATION_ACTIVATION;
+			TransitionTo(heardLoudness >= huntThreshold && !activation ? STALKER_HUNT : STALKER_INVESTIGATE);
+			if (activation) { investigatingActivation = true; }
 			break;
 		}
 
@@ -532,6 +542,8 @@ Json Stalker::formatToJson()
 	j["SearchRadius"] = searchRadius;
 	j["ArriveDistance"] = arriveDistance;
 	j["CatchRadius"] = catchRadius;
+	j["WarningLeadSeconds"] = warningLeadSeconds;
+	j["TaskSpeedMultiplier"] = taskSpeedMultiplier;
 	j["AvoidProbeDistance"] = avoidProbeDistance;
 	j["CurrentWaypoint"] = currentWaypoint;
 
@@ -564,6 +576,9 @@ bool Stalker::loadFromJson(Json& j)
 	searchRadius = j.value("SearchRadius", searchRadius);
 	arriveDistance = j.value("ArriveDistance", arriveDistance);
 	catchRadius = j.value("CatchRadius", catchRadius);
+	warningLeadSeconds = j.value("WarningLeadSeconds", warningLeadSeconds);
+	taskSpeedMultiplier = j.value("TaskSpeedMultiplier", taskSpeedMultiplier);
+	investigatingActivation = false;
 	avoidProbeDistance = j.value("AvoidProbeDistance", avoidProbeDistance);
 	currentWaypoint = j.value("CurrentWaypoint", currentWaypoint);
 

@@ -83,6 +83,8 @@ void WorldEditor::ShowStalkerData()
 		ImGui::DragFloat("Search duration", &stalker->searchDuration, 0.1f, 0.0f, 60.0f);
 		ImGui::DragFloat("Search radius", &stalker->searchRadius, 0.1f, 0.0f, 50.0f);
 		ImGui::DragFloat("Catch Radius", &stalker->catchRadius, 0.05f, 0.0f, 10.0f);
+		ImGui::DragFloat("Warning Lead (s)", &stalker->warningLeadSeconds, 0.05f, 0.0f, 10.0f);
+		ImGui::DragFloat("Task Speed Multiplier", &stalker->taskSpeedMultiplier, 0.05f, 1.0f, 4.0f);
 		ImGui::DragFloat("Base speed", &stalker->baseSpeed, 0.1f, 0.0f, 20.0f);
 		// How far ahead it looks for walls. Too short and it turns after it is
 		// already against one; too long and it swerves around geometry it was

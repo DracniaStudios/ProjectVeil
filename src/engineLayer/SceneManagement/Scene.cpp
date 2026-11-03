@@ -9,6 +9,7 @@
 #include <Client/CommandSampler.h>
 #include <Client/LocalPlayer.h>
 #include <Client/RoundPresenter.h>
+#include <Client/StalkerWarnings.h>
 #include <AI/Stalker.h>
 #include <SceneManager.h>
 #include <World/WorldKey.h>
@@ -501,7 +502,7 @@ namespace SceneManagement {
 
 		// Starting a station is loud, and so is rattling one that won't start: a
 		// silent failed attempt would be the safest way to play (decision 15)
-		soundField.Emit(station->getPosition(), 0.8f, SOUND_TAMPER, station->id);
+		soundField.Emit(station->getPosition(), 0.8f, SOUND_STATION_ACTIVATION, station->id);
 
 		if (player == nullptr || !player->isEnabled) { return deny("no player in that Slot"); }
 		if (entry.holder == slot) { return false; } // asking twice changes nothing
@@ -641,6 +642,9 @@ namespace SceneManagement {
 
 		// The Jumpscare comes down on its own once its time is up
 		Client::UpdatePresentation(scene, frameTime);
+
+		// The stalker's footsteps and breathing, before it is close enough to catch
+		Client::UpdateStalkerWarnings(scene, frameTime);
 
 		// World Editor (includes the developer tool windows)
 		worldEditor->update(scene);

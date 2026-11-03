@@ -49,6 +49,13 @@ struct Stalker : Entity
 	// centre on the ground plane (VerticalSliceDecisions tunable catchRadius).
 	// Touching catches whatever this is. Checked outside the FSM.
 	float catchRadius = 1.0f;
+	// How much warning a player gets before contact, in seconds: the audio
+	// warnings start at catchRadius + closingSpeed * this (decision 6)
+	float warningLeadSeconds = 1.5f;
+	// How much faster the stalker investigates a station starting than any other
+	// noise (stalkerTaskSpeedMultiplier, decision 16). A parameter on Investigate,
+	// not a state: it tightens the window to finish a task in one sitting.
+	float taskSpeedMultiplier = 1.5f;
 
 	// How far ahead the stalker looks for obstructions. Too short and it turns
 	// after it is already against the wall; too long and it swerves around
@@ -64,6 +71,10 @@ struct Stalker : Entity
 	/** Runtime state **/
 	StalkerState state = STALKER_PATROL;
 	float timeInState = 0.0f;
+
+	// The investigation under way is of a station starting, so it runs at
+	// taskSpeedMultiplier
+	bool investigatingActivation = false;
 
 	// Where the last heard noise came from. This is the stalker's entire model
 	// of the player: a stale point, never a live position.
