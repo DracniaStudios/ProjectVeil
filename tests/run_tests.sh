@@ -358,7 +358,8 @@ for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
              "NetProtocolTests:net_protocol_tests" \
              "ServerClientTests:server_client_tests" \
              "GnsTransportTests:gns_transport_tests" \
-             "SpacetimeWorldStoreTests:spacetime_world_store_tests"; do
+             "SpacetimeWorldStoreTests:spacetime_world_store_tests" \
+             "GameMapEcsTests:game_map_ecs_tests"; do
 	SRC="tests/${suite%%:*}.cpp"
 	TEST_BIN="$OUT_DIR/${suite##*:}"
 
