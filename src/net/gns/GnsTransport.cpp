@@ -301,11 +301,13 @@ namespace Net::Gns {
 	void SetFakeNetwork(int lagMs, float lossPercent)
 	{
 		if (!IsRunning()) { return; }
+		// On what this process sends only: with both games set the same, every
+		// packet is delayed once, so the setting is the latency each way
 		Utils()->SetGlobalConfigValueInt32(k_ESteamNetworkingConfig_FakePacketLag_Send, lagMs);
-		Utils()->SetGlobalConfigValueInt32(k_ESteamNetworkingConfig_FakePacketLag_Recv, lagMs);
+		Utils()->SetGlobalConfigValueInt32(k_ESteamNetworkingConfig_FakePacketLag_Recv, 0);
 		Utils()->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketLoss_Send, lossPercent);
-		Utils()->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketLoss_Recv, lossPercent);
-		std::cout << "[GNS] Faked network: " << lagMs << " ms each way, " << lossPercent << "% loss each way\n";
+		Utils()->SetGlobalConfigValueFloat(k_ESteamNetworkingConfig_FakePacketLoss_Recv, 0.0f);
+		std::cout << "[GNS] Faked network: " << lagMs << " ms and " << lossPercent << "% loss on everything this game sends\n";
 	}
 
 	std::unique_ptr<INetTransport> CreateTransport()

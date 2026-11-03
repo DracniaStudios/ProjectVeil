@@ -1,5 +1,7 @@
 #include "WorldEditor.h"
 
+#include <Client/Session.h>
+
 namespace Editor {
 
 	void WorldEditor::update(SceneManagement::Scene& scene)
@@ -15,7 +17,18 @@ namespace Editor {
 
 		Player* player = Client::LocalPlayer(*editedScene);
 
-		if (IsKeyPressed(KEY_F1))
+		// Editing the world while others play in it would change the World save
+		// under them: the editor stays shut while a session is networked (N7)
+		if (Client::Session::getInstance().IsNetworked() && isEditorActive)
+		{
+			isEditorActive = false;
+		}
+
+		if (IsKeyPressed(KEY_F1) && Client::Session::getInstance().IsNetworked())
+		{
+			std::cout << "[WorldEditor] Not while a multiplayer session is running\n";
+		}
+		else if (IsKeyPressed(KEY_F1))
 		{
 			isEditorActive = !isEditorActive;
 

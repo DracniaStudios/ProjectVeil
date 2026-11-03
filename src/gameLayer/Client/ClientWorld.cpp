@@ -165,6 +165,8 @@ namespace Client {
 			maxPlayers = welcome->maxPlayers;
 			state = ConnectionState::Welcomed;
 			SetLocalSlot(slot);
+			// A remote client's own player exists before the first Snapshot moves it
+			if (remote && scene != nullptr) { scene->AddPlayer(slot); }
 			std::cout << "[Client] Welcomed as Slot " << slot << " of " << maxPlayers << "\n";
 			return;
 		}

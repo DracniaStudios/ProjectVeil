@@ -93,6 +93,15 @@ int main(int argc, char** argv)
 		rlImGuiEnd();
 		EndDrawing();
 
+		// --screenshot-at: once, after a whole frame is drawn
+		if (Client::Dev().screenshotAtSeconds > 0.0 && GetTime() >= Client::Dev().screenshotAtSeconds)
+		{
+			Client::Dev().screenshotAtSeconds = 0.0;
+			const std::string file = "veil_" + Client::Dev().name + ".png";
+			TakeScreenshot(file.c_str());
+			std::cout << "[Dev] Screenshot " << file << "\n";
+		}
+
 		if (!gameRunning) { break; }
 	}
 

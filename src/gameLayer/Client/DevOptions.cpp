@@ -12,6 +12,23 @@ namespace Client {
 		return options;
 	}
 
+	Sim::PlayerCommand BotCommand(std::uint32_t sequence, std::uint32_t clientTick)
+	{
+		Sim::PlayerCommand command;
+		command.sequence = sequence;
+		command.clientTick = clientTick;
+
+		// A 12 s loop: walk 4 s, turn 1 s, sprint 3 s, stand 2 s, crouch-walk 2 s
+		const std::uint32_t t = clientTick % (12 * 60);
+		if (t < 4 * 60) { command.moveY = 1; }
+		else if (t < 5 * 60) { command.yawDelta = 0.025f; }
+		else if (t < 8 * 60) { command.moveY = 1; command.buttons = Sim::BUTTON_SPRINT; }
+		else if (t < 10 * 60) { }
+		else { command.moveY = 1; command.buttons = Sim::BUTTON_CROUCH; command.yawDelta = -0.01f; }
+		if (clientTick % (5 * 60) == 0) { command.buttons |= Sim::BUTTON_FLASHLIGHT; }
+		return command;
+	}
+
 	void ParseDevOptions(int argc, char** argv)
 	{
 #if defined(VEIL_DEV_NET) && !(defined(PRODUCTION_BUILD) && PRODUCTION_BUILD == 1)
@@ -29,6 +46,7 @@ namespace Client {
 			else if (arg == "--fake-loss" && hasValue) { dev.fakeLossPercent = static_cast<float>(std::atof(argv[++i])); }
 			else if (arg == "--quit-after" && hasValue) { dev.quitAfterSeconds = std::atof(argv[++i]); }
 			else if (arg == "--window-x" && hasValue) { dev.windowX = std::atoi(argv[++i]); }
+			else if (arg == "--screenshot-at" && hasValue) { dev.screenshotAtSeconds = std::atof(argv[++i]); }
 			else { std::cerr << "[Dev] Unknown switch ignored: " << arg << "\n"; }
 		}
 #else

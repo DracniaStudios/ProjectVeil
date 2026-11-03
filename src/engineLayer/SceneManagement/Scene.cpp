@@ -796,6 +796,17 @@ namespace SceneManagement {
 		scene.gameMap.ForEachObject([](GameObject& object) { object.render3D(); });
 
 		scene.ForEachPlayer([](int, Player& player) { player.render3D(); });
+
+		// Other players are a placeholder capsule (Step 4.6); real models,
+		// animation and their flashlights are multiplayer-update work
+		scene.ForEachPlayer([](int slot, Player& player) {
+			if (slot == Client::LocalSlot() || !player.isEnabled) { return; }
+			const Vector3 at = player.getPosition();
+			const float half = player.isCrouching ? 0.25f : 0.5f;
+			const Color colour = player.flashlightOn ? Color{ 230, 220, 160, 255 } : Color{ 150, 160, 175, 255 };
+			DrawCapsule(Vector3{ at.x, at.y - half, at.z }, Vector3{ at.x, at.y + half, at.z }, 0.45f, 8, 6, colour);
+			DrawLine3D(Vector3{ at.x, at.y + half, at.z }, Vector3Add(Vector3{ at.x, at.y + half, at.z }, Vector3Scale(player.camera.forward, 0.8f)), BLACK);
+		});
 	}
 }
 #pragma endregion

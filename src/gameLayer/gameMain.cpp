@@ -127,12 +127,16 @@ bool update_game()
 	/// so the ticks simulate with the camera the player is now looking through.
 	SceneManagement::SceneManager_frame(manager, fminf(frameTime, Sim::kMaxFrameTime));
 
+	// The development multiplayer windows (Join, Network)
+	session.DrawUi();
+
 	// Simulation: zero or more fixed ticks this frame, one command each. The
 	// session sends it, runs the server's tick (single-player, Host) and reads
 	// what came back.
 	const int ticks = tickClock.Advance(frameTime);
 	for (int tick = 0; tick < ticks; ++tick) {
-		const Sim::PlayerCommand command = sampler.Consume(++clientTick);
+		Sim::PlayerCommand command = sampler.Consume(++clientTick);
+		if (Client::Dev().bot) { command = Client::BotCommand(command.sequence, clientTick); }
 		session.Tick(*manager, command);
 	}
 

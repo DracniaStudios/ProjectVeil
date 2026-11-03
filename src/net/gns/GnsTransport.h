@@ -29,8 +29,9 @@ namespace Net::Gns {
 
 	bool IsRunning();
 
-	// Faked latency (ms, each way) and loss (percent, each way) for every
-	// connection, through GNS's own network simulation (Step 4.11, N8). Dev builds.
+	// Faked latency (ms) and loss (percent) on everything this process sends,
+	// through GNS's own network simulation (Step 4.11, N8). Set the same on both
+	// games and it is the latency and loss each way. Dev builds.
 	void SetFakeNetwork(int lagMs, float lossPercent);
 
 	// A transport: server side (Listen) or client side (Connect), not both.
