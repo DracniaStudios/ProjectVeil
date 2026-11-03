@@ -87,8 +87,19 @@ namespace Net::Spacetime {
 	Obtained ObtainIdentity(HttpClient& client, const std::filesystem::path& file, Identity& out, std::string& error);
 
 	/** /sql results **/
-	// The rows of the first statement's result, each a JSON array in column
-	// order, and the column names. False for anything that isn't that shape.
+	// One statement's result: its column names and its rows, each a JSON array
+	// in column order
+	struct SqlResult
+	{
+		std::vector<std::string> columns;
+		std::vector<nlohmann::json> rows;
+	};
+
+	// Every statement's result, in order. False for anything that isn't that
+	// shape, never an empty success.
+	bool ParseSqlResults(std::string_view body, std::vector<SqlResult>& out);
+
+	// The first statement's result only
 	bool ParseSqlRows(std::string_view body, std::vector<std::string>& columns, std::vector<nlohmann::json>& rows);
 }
 

@@ -151,34 +151,54 @@ namespace Net::Spacetime {
 		return Obtained::Minted;
 	}
 
+	namespace {
+		bool ParseOneResult(const nlohmann::json& result, SqlResult& out)
+		{
+			if (!result.is_object() || !result.contains("schema") || !result.contains("rows")) { return false; }
+
+			const nlohmann::json& schema = result["schema"];
+			if (!schema.is_object() || !schema.contains("elements") || !schema["elements"].is_array()) { return false; }
+			for (const auto& element : schema["elements"])
+			{
+				// {"name":{"some":"world_key"}, ...}
+				if (!element.is_object() || !element.contains("name")) { return false; }
+				const auto& name = element["name"];
+				if (name.is_object() && name.contains("some") && name["some"].is_string()) { out.columns.push_back(name["some"].get<std::string>()); }
+				else { out.columns.emplace_back(); }
+			}
+
+			if (!result["rows"].is_array()) { return false; }
+			for (const auto& row : result["rows"])
+			{
+				if (!row.is_array() || row.size() != out.columns.size()) { return false; }
+				out.rows.push_back(row);
+			}
+			return true;
+		}
+	}
+
+	bool ParseSqlResults(std::string_view body, std::vector<SqlResult>& out)
+	{
+		out.clear();
+		const nlohmann::json json = nlohmann::json::parse(body, nullptr, false);
+		if (json.is_discarded() || !json.is_array() || json.empty()) { return false; }
+		for (const auto& result : json)
+		{
+			SqlResult parsed;
+			if (!ParseOneResult(result, parsed)) { out.clear(); return false; }
+			out.push_back(std::move(parsed));
+		}
+		return true;
+	}
+
 	bool ParseSqlRows(std::string_view body, std::vector<std::string>& columns, std::vector<nlohmann::json>& rows)
 	{
 		columns.clear();
 		rows.clear();
-
-		const nlohmann::json json = nlohmann::json::parse(body, nullptr, false);
-		if (json.is_discarded() || !json.is_array() || json.empty()) { return false; }
-
-		const nlohmann::json& result = json[0];
-		if (!result.is_object() || !result.contains("schema") || !result.contains("rows")) { return false; }
-
-		const nlohmann::json& schema = result["schema"];
-		if (!schema.is_object() || !schema.contains("elements") || !schema["elements"].is_array()) { return false; }
-		for (const auto& element : schema["elements"])
-		{
-			// {"name":{"some":"world_key"}, ...}
-			if (!element.is_object() || !element.contains("name")) { return false; }
-			const auto& name = element["name"];
-			if (name.is_object() && name.contains("some") && name["some"].is_string()) { columns.push_back(name["some"].get<std::string>()); }
-			else { columns.emplace_back(); }
-		}
-
-		if (!result["rows"].is_array()) { return false; }
-		for (const auto& row : result["rows"])
-		{
-			if (!row.is_array() || row.size() != columns.size()) { return false; }
-			rows.push_back(row);
-		}
+		std::vector<SqlResult> results;
+		if (!ParseSqlResults(body, results)) { return false; }
+		columns = std::move(results[0].columns);
+		rows = std::move(results[0].rows);
 		return true;
 	}
 }
