@@ -8,6 +8,7 @@
 #include <LightingSystem.h>
 #include <Client/CommandSampler.h>
 #include <Client/LocalPlayer.h>
+#include <Client/RoundPresenter.h>
 #include <AI/Stalker.h>
 #include <SceneManager.h>
 
@@ -167,19 +168,131 @@ namespace SceneManagement {
 		});
 	}
 
-	void Scene::ResolveCatches()
+	void Scene::CheckEscapes()
 	{
-		if (caughtThisTick.empty()) { return; }
-		caughtThisTick.clear();
+		gameMap.ForEachInteractable([&](InteractableObject& exit) {
+			if (exit.interactType != INTERACT_EXIT || !exit.IsExitUnlocked(gameMap)) { return; }
 
-		// Contact with the stalker ends the run
-		std::cout << "[Scene] Player caught\n";
-		overlays.Open(Overlay::Jumpscare);
-		SceneManager_push(&SceneManager::getInstance(), SCENE_TUTORIAL);
-		ForEachPlayer([](int, Player& player) { player.isEnabled = false; });
-		gameMap.ForEachEntity([](Entity& entity) {
-			if (entity.kind == ENTITYKIND_STALKER) { entity.isEnabled = false; }
+			const BoundingBox volume = exit.rigidBody3D.broadPhaseBox;
+			ForEachPlayer([&](int, Player& player) {
+				if (!player.isEnabled) { return; }
+				const bool inside = CheckCollisionBoxes(volume, player.rigidBody3D.broadPhaseBox)
+					|| physics.IsTouching(exit.id, player.id);
+				if (inside && std::find(escapedThisTick.begin(), escapedThisTick.end(), player.id) == escapedThisTick.end())
+				{
+					escapedThisTick.push_back(player.id);
+				}
+			});
 		});
+	}
+
+	void Scene::ResolveRound()
+	{
+		if (caughtThisTick.empty() && escapedThisTick.empty()) { return; }
+
+		// A round already won counts nothing more until the scene is rebuilt
+		if (roundWon)
+		{
+			caughtThisTick.clear();
+			escapedThisTick.clear();
+			return;
+		}
+
+		Sim::RoundState state = {};
+		state.playersInRound = PlayerCount();
+		state.playersCaught = static_cast<int>(caughtThisTick.size());
+		state.playersEscaped = static_cast<int>(escapedThisTick.size());
+
+		// Every catch is reported, even when one of them is enough to end the round
+		for (const std::uint64_t id : caughtThisTick)
+		{
+			Sim::GameEvent caught = {};
+			caught.type = Sim::GameEventType::PlayerCaught;
+			caught.slot = Sim::SlotForPlayerId(id);
+			caught.roundEpoch = roundEpoch;
+			outbox.push_back(caught);
+			std::cout << "[Round] Slot " << caught.slot << " caught\n";
+		}
+		caughtThisTick.clear();
+		escapedThisTick.clear();
+
+		const Sim::RoundOutcome outcome = Sim::EvaluateRound(state);
+		if (outcome == Sim::RoundOutcome::Ongoing) { return; }
+
+		Sim::GameEvent over = {};
+		over.type = Sim::GameEventType::RoundOver;
+		over.outcome = outcome;
+		over.roundEpoch = roundEpoch;
+		outbox.push_back(over);
+		std::cout << "[Round] Round " << roundEpoch << " over: " << Sim::RoundOutcomeName(outcome) << "\n";
+
+		if (outcome == Sim::RoundOutcome::Caught) { FullWipe(); }
+		else if (outcome == Sim::RoundOutcome::Escaped) { roundWon = true; }
+
+		++roundEpoch;
+	}
+
+	void Scene::ResetPlayerToSpawn(int slot)
+	{
+		Player* player = PlayerInSlot(slot);
+		if (player == nullptr) { return; }
+
+		// The artifact is what the Unlock pickups built; the pickups come back with
+		// the world, so it goes
+		if (player->artifact != nullptr)
+		{
+			player->artifact->releaseGeneratedModel();
+			delete player->artifact;
+			player->artifact = nullptr;
+		}
+		player->artifactUnlocked = -1;
+		player->artifactMode = 0;
+
+		player->onEnable(); // full health and stamina, fresh buffs
+		player->isEnabled = true;
+		player->isCrouching = false;
+		player->isSprinting = false;
+		player->isFiring = false;
+		player->flashlightOn = false;
+		player->footstepTimer = 0.0f;
+		player->moveDirection = Vector2Zero();
+
+		player->setSpawnPoint(SpawnPointFor(slot));
+		player->rigidBody3D.Teleport(player->getSpawnPoint());
+		player->rigidBody3D.SetVelocity(Vector3Zero());
+		player->SetLookAngles(0.0f, 0.0f);
+	}
+
+	void Scene::FullWipe()
+	{
+		std::cout << "[Round] Full wipe\n";
+
+		// Any MiniGame in progress belongs to the round that just ended
+		miniGameSession.Quit();
+		overlays.Close(Overlay::MiniGame);
+		miniGamePlayerId = 0;
+		stationNoiseTimer = 0.0f;
+
+		// The world as authored, every object under its own id. Without a World
+		// save (a scene built in code) the world stays as it is.
+		SaveSystem::RestoreAuthoredObjects(*this);
+
+		// Stalkers go back to Patrol whatever the World save recorded
+		gameMap.ForEachEntity([](Entity& entity) {
+			if (entity.kind != ENTITYKIND_STALKER) { return; }
+			Stalker& stalker = static_cast<Stalker&>(entity);
+			stalker.state = STALKER_PATROL;
+			stalker.timeInState = 0.0f;
+			stalker.hasLastKnown = false;
+		});
+
+		for (int slot = 0; slot < Sim::kMaxPlayers; ++slot) { ResetPlayerToSpawn(slot); }
+
+		director.Clear();
+		soundField.Clear();
+		caughtThisTick.clear();
+		escapedThisTick.clear();
+		roundWon = false;
 	}
 #pragma endregion
 
@@ -400,6 +513,9 @@ namespace SceneManagement {
 		/** Update MiniGame **/
 		scene.TickMiniGame(frameTime);
 
+		// The Jumpscare comes down on its own once its time is up
+		Client::UpdatePresentation(scene, frameTime);
+
 		// World Editor (includes the developer tool windows)
 		worldEditor->update(scene);
 	}
@@ -519,8 +635,8 @@ namespace SceneManagement {
 		// After the collisions, so contact means what the solver left touching, and
 		// outside every FSM, so a catch happens the same way in all four states.
 		// The round is decided once, at the very end of the tick (rule C-1).
-		if (!editorFrozen) { scene.CheckCatches(); }
-		scene.ResolveCatches();
+		if (!editorFrozen) { scene.CheckCatches(); scene.CheckEscapes(); }
+		scene.ResolveRound();
 	}
 
 	void Scene_drawScene2D(Scene& scene) {

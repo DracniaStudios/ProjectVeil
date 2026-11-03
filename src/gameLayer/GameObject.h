@@ -141,7 +141,11 @@ enum InteractionType
 	INTERACT_NONE = 0,
 	INTERACT_MINIGAME,
 	INTERACT_UNLOCK,
-	INTERACT_ITEM
+	INTERACT_ITEM,
+	// The room's way out (MultiplayerSplitPlan.md C-3, Q61): a volume a player
+	// escapes through once it is unlocked. targetId names its lock, a Target a
+	// station opens; with none, it unlocks once every Task station is completed.
+	INTERACT_EXIT
 };
 
 struct InteractableObject : public GameObject
@@ -162,6 +166,11 @@ public:
 	// The object this station's MiniGame toggles: its Target, or the station itself
 	// when it has none. nullptr when the Target no longer exists.
 	GameObject* FindMiniGameTarget(GameMap& gameMap);
+
+	// An Exit's lock is open: its lock Target is gone or disabled, or, with no
+	// lock named, every Task station in the map is completed. False for anything
+	// that isn't an enabled Exit.
+	bool IsExitUnlocked(const GameMap& gameMap) const;
 
 	bool isInteractable = true;
 	bool isRunningMiniGame = false;
@@ -210,6 +219,7 @@ inline const char* interactTypeToString(InteractionType type) {
 		case INTERACT_MINIGAME: return "Mini Game";
 		case INTERACT_UNLOCK: return "Unlock";
 		case INTERACT_ITEM: return "Item";
+		case INTERACT_EXIT: return "Exit";
 		default: return "None";
 	}
 }

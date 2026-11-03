@@ -3,6 +3,7 @@
 #include <WorldEditor.h>
 #include <Client/CommandSampler.h>
 #include <Client/LocalPlayer.h>
+#include <Client/RoundPresenter.h>
 #include <sim/FixedTick.h>
 
 #include <cmath>
@@ -116,6 +117,11 @@ bool update_game()
 	for (int tick = 0; tick < ticks; ++tick) {
 		const Sim::PlayerCommand command = sampler.Consume(++clientTick);
 		SceneManagement::SceneManager_tick(manager, Sim::kTickDelta, std::span<const Sim::PlayerCommand>(&command, 1));
+
+		// What the tick reported about the round, shown on this client's screen
+		if (const auto scene = manager->currentScene) {
+			for (const Sim::GameEvent& event : scene->TakeEvents()) { Client::PresentEvent(*scene, event); }
+		}
 	}
 
 	SceneManagement::SceneManager_draw(manager);

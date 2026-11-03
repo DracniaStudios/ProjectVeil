@@ -24,6 +24,31 @@ GameObject* InteractableObject::FindMiniGameTarget(GameMap& gameMap)
 	return gameMap.FindWorldObject(targetId);
 }
 
+bool InteractableObject::IsExitUnlocked(const GameMap& gameMap) const
+{
+	if (interactType != INTERACT_EXIT || !isEnabled) { return false; }
+
+	if (targetId != 0)
+	{
+		// The lock is a Target like any door: open once disabled, or deleted
+		const GameObject* lock = nullptr;
+		gameMap.ForEachGameObject([&](const GameObject& object) { if (object.id == targetId) { lock = &object; } });
+		gameMap.ForEachInteractable([&](const InteractableObject& object) { if (object.id == targetId) { lock = &object; } });
+		gameMap.ForEachEntity([&](const Entity& object) { if (object.id == targetId) { lock = &object; } });
+		return lock == nullptr || !lock->isEnabled;
+	}
+
+	// No lock named: the task is every Task station
+	bool anyStation = false;
+	bool allDone = true;
+	gameMap.ForEachInteractable([&](const InteractableObject& station) {
+		if (station.interactType != INTERACT_MINIGAME) { return; }
+		anyStation = true;
+		allDone = allDone && station.isCompleted;
+	});
+	return anyStation && allDone;
+}
+
 void Unlock(SceneManagement::Scene& /*scene*/, InteractableObject* interactable, Player& by)
 {
 	std::cout << "[InteractableObject] Unlocking MiniGame: " << interactable->variation << "\n";

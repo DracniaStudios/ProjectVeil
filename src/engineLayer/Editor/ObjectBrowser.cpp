@@ -83,6 +83,17 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 		if (ImGui::Button("Clear Target")) { object->targetId = 0; }
 	}
 
+	if (object->interactType == INTERACT_EXIT) {
+		ImGui::InputScalar("Exit Lock", ImGuiDataType_U64, &object->targetId);
+		if (object->targetId == 0) { ImGui::TextDisabled("None: unlocks once every Task station is completed"); }
+		else if (GameObject* lock = editedScene->gameMap.FindWorldObject(object->targetId)) { ImGui::TextDisabled("%s", lock->name.c_str()); }
+		else { ImGui::TextColored(ImVec4(1, 0.4f, 0.4f, 1), "Missing: nothing has id %llu", static_cast<unsigned long long>(object->targetId)); }
+		ImGui::Text("Unlocked: %s", object->IsExitUnlocked(editedScene->gameMap) ? "yes" : "no");
+		if (!object->rigidBody3D.collider.isTrigger()) {
+			ImGui::TextColored(ImVec4(1, 0.8f, 0.2f, 1), "Not a trigger: players can't walk into it");
+		}
+	}
+
 	if (object->interactType == INTERACT_ITEM) {
 		ImGui::InputInt("Activator Value", &object->activator);
 		if (ImGui::Button("Self Activator")) { object->activator = object->id; }

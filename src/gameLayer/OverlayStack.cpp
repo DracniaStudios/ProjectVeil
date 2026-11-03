@@ -12,6 +12,7 @@ const char* OverlayName(Overlay overlay)
 	case Overlay::MiniGame:    return "MiniGame";
 	case Overlay::Pause:       return "Pause";
 	case Overlay::Jumpscare:   return "Jumpscare";
+	case Overlay::EndCard:     return "End Card";
 	}
 	return "Unknown";
 }

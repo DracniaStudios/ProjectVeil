@@ -23,6 +23,8 @@
 
 #include <sim/PlayerCommand.h>
 #include <sim/Slots.h>
+#include <sim/Rules.h>
+#include <sim/GameEvents.h>
 
 #include <array>
 
@@ -138,6 +140,9 @@ namespace SceneManagement {
 		// only applies the local player's switch when it changes. Client state.
 		bool drawnFlashlight = false;
 
+		// Seconds the Jumpscare stays up (Client::UpdatePresentation). Client state.
+		float jumpscareSeconds = 0.0f;
+
 		/** MiniGames **/
 		// Starts a MiniGame for a player at a Task station, or as a Practice run with
 		// none, and opens its overlay. False, with nothing changed, for an id that
@@ -186,6 +191,43 @@ namespace SceneManagement {
 		// The players caught during the current tick, in the order they were caught.
 		// Emptied once the tick's round evaluation has run.
 		const std::vector<std::uint64_t>& CaughtThisTick() const { return caughtThisTick; }
+
+		/** Escape (rule C-3, Q61) **/
+		// Records an escape for every enabled player inside an unlocked Exit. Runs
+		// after the catches, so a catch in the same tick wins (Sim::EvaluateRound).
+		void CheckEscapes();
+
+		/** The round **/
+		// The World save this scene was built from, as authored (SaveSystem::LoadWorld),
+		// and its name. The Full wipe restores from it; the content hash reads it.
+		Json authoredWorld;
+		std::string worldName;
+
+		// +1 every time a round ends (rule C-1). A client seeing a new epoch drops
+		// the round it was in at once (rule P-8).
+		std::uint32_t roundEpoch = 0;
+
+		// Set once a round ends in an escape: the round is over until the scene is
+		// rebuilt or wiped, so no later catch or escape counts.
+		bool roundWon = false;
+
+		// Facts for the clients, collected during the tick: PlayerCaught,
+		// RoundOver and StationEvent. The server sends and empties it every tick;
+		// a scene with no server running just drops them (TakeEvents).
+		std::vector<Sim::GameEvent> outbox;
+		std::vector<Sim::GameEvent> TakeEvents() { std::vector<Sim::GameEvent> taken; taken.swap(outbox); return taken; }
+
+		/**
+		 * The Full wipe (rule C-2, CONTEXT.md): every World-save object goes back to
+		 * its authored state under its own id, every player to spawn defaults, the
+		 * Director's memory and the sound field are cleared, the stalker is back to
+		 * Patrol and any MiniGame is closed. Not a Clear: ids are kept.
+		 */
+		void FullWipe();
+
+		// One player back to how it spawned: at its spawn point, full health, no
+		// buffs, no artifact, looking down +Z
+		void ResetPlayerToSpawn(int slot);
 	private:
 		// Grants the won game's reward and, at a Task station, completes it and
 		// toggles its Target. Then closes the MiniGame overlay.
@@ -208,10 +250,15 @@ namespace SceneManagement {
 		// The player the running MiniGame belongs to, by object id
 		std::uint64_t miniGamePlayerId = 0;
 
+		// Players inside an unlocked Exit this tick
+		std::vector<std::uint64_t> escapedThisTick;
+
 	public:
-		// Ends the round for the catches this tick collected, once, at the end of
-		// the tick (rule C-1). Called by Scene_tick.
-		void ResolveCatches();
+		// Decides the round once, at the end of the tick, from the catches and
+		// escapes the tick collected (rule C-1): reports each catch, and on any
+		// outcome but Ongoing reports RoundOver, Full-wipes after a catch, and
+		// moves roundEpoch on. Called by Scene_tick.
+		void ResolveRound();
 	} Scene;
 
 	/**

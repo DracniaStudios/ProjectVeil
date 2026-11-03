@@ -390,7 +390,15 @@ namespace SaveSystem
 	{
 		const FileSaveStore store(WORLD_SAVE_PATH);
 		std::cout << "[Save System] Attempt Loading World: " << store.PathOf(fileName);
-		if (!Load(store, fileName, scene, SaveScope::World, { LightingParticipant() })) { return false; }
+		Json save;
+		if (!store.Read(fileName, save)) { return false; }
+
+		// Kept as authored before Apply touches it: the Full wipe restores from it,
+		// and the content hash reads its static fields
+		Json authored = save;
+		if (!Apply(save, scene, SaveScope::World, { LightingParticipant() })) { return false; }
+		scene.authoredWorld = std::move(authored);
+		scene.worldName = fileName;
 
 		std::cout << "[Save System] Loaded World: " << store.PathOf(fileName)
 			<< " (" << scene.gameMap.GameObjectCount() << " objects, "
@@ -398,6 +406,21 @@ namespace SaveSystem
 			<< scene.gameMap.EntityCount() << " entities, next id "
 			<< scene.gameMap.NextId() << ")\n";
 
+		return true;
+	}
+
+	bool RestoreAuthoredObjects(SceneManagement::Scene& scene)
+	{
+		if (!scene.authoredWorld.is_object()) { return false; }
+
+		// A copy, because loading an object reads its section non-const
+		Json world = scene.authoredWorld;
+
+		scene.ClearWorld();
+		scene.gameMap.ReserveIdsBelow(world.value("IdCounter", scene.gameMap.NextId()));
+		if (world.contains("Objects")) { RestoreGameObjects(world["Objects"], scene.gameMap); }
+		if (world.contains("Entities")) { RestoreEntities(world["Entities"], scene.gameMap); }
+		if (world.contains("Interactables")) { RestoreInteractables(world["Interactables"], scene.gameMap); }
 		return true;
 	}
 

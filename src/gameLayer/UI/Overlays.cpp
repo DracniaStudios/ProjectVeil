@@ -130,6 +130,19 @@ namespace UI {
 		endPanel();
 	}
 
+	// The round is won (Q61): any player escaped through the unlocked exit
+	static void drawEndCard(OverlayStack&) {
+		auto manager = &SceneManagement::SceneManager::getInstance();
+		beginPanel("End Card", Rectangle{}, Rectangle{ 0.0f, 0.0f, 1.0f, 1.0f });
+
+		drawText("[Escaped]");
+		drawText("You got out.");
+
+		if (drawButton("Main Menu")) { SceneManagement::SceneManager_push(manager, SCENE_MAIN_MENU); }
+
+		endPanel();
+	}
+
 	void drawOverlays(SceneManagement::Scene& scene) {
 
 		OverlayStack& overlays = scene.overlays;
@@ -150,6 +163,7 @@ namespace UI {
 		case Overlay::Pause: drawPause(overlays); break;
 		case Overlay::MiniGame:    scene.miniGameSession.Draw(); break;
 		case Overlay::Jumpscare:    drawJumpScare(overlays); break;
+		case Overlay::EndCard:      drawEndCard(overlays); break;
 		}
 	}
 }
