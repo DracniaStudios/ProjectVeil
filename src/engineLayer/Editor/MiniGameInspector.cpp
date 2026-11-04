@@ -28,7 +28,7 @@ void WorldEditor::ShowMiniGameData(Player* /*player*/)
 
 		// Through the Scene, so the overlay opens and the game it replaces ends
 		// properly. Launched from here it is a Practice run: no station to complete.
-		scene->StartMiniGame(currentGameID);
+		scene->StartMiniGame(currentGameID, nullptr, Client::LocalPlayer(*scene));
 	}
 	ImGui::Separator();
 

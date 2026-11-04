@@ -18,6 +18,7 @@
 #include <raylib.h>
 
 #include <Scene.h>
+#include <Client/RoundPresenter.h>
 #include <SceneManager.h>
 #include <Perception/SoundField.h>
 
@@ -153,15 +154,26 @@ static void TestQuittingTheMiniGameStopsTheHum()
 {
 	std::printf("quitting the minigame frees the station\n");
 	SceneManagement::Scene* scene = MakeScene();
+	scene->AddPlayer(0);
+	scene->PlayerInSlot(0)->artifactUnlocked = MINI_GAME_RO_SHAM_BOO_ID;
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 });
-	station->isRunningMiniGame = true;
+
+	// Claimed and granted: the server's StationTable holds it, and the client's
+	// MiniGame screen opens on the grant (G7)
+	station->onInteract(*scene, *scene->PlayerInSlot(0));
+	for (const Sim::GameEvent& event : scene->TakeEvents()) { Client::PresentEvent(*scene, event); }
 
 	Check(scene->GetRunningStation() == station, "the station reports as occupied");
 
 	// Ending the minigame is the single point that knows it ended. Before this
 	// fix isRunningMiniGame was a one-way latch, so the station hummed for the
-	// rest of the session and the Director never hinted at it again.
+	// rest of the session and the Director never hinted at it again. Quitting
+	// asks the server to release it.
 	scene->QuitMiniGame();
+	for (const Sim::StationRequest& request : scene->TakeStationRequests())
+	{
+		if (request.action == Sim::StationAction::Release) { scene->ReleaseStation(request.stationIndex, 0); }
+	}
 
 	Check(scene->GetRunningStation() == nullptr, "quitting frees the station");
 	Check(!station->isRunningMiniGame, "the occupied flag is cleared");
@@ -193,14 +205,13 @@ static void TestInteractingWithAStationIsTampering()
 {
 	std::printf("working a station emits a tamper noise\n");
 	SceneManagement::Scene* scene = MakeScene();
-	scene->player = new Player();
-	scene->player->id = PLAYER_ID;
-	scene->player->artifactUnlocked = MINI_GAME_RO_SHAM_BOO_ID;   // everything unlocked
+	scene->AddPlayer(0);
+	scene->PlayerInSlot(0)->artifactUnlocked = MINI_GAME_RO_SHAM_BOO_ID;   // everything unlocked
 
 	InteractableObject* station = AddStation(scene, Vector3{ 3, 0, -4 });
-	station->onInteract(*scene);
+	station->onInteract(*scene, *scene->PlayerInSlot(0));
 
-	const SoundEvent* event = FirstOfKind(scene, SOUND_TAMPER);
+	const SoundEvent* event = FirstOfKind(scene, SOUND_STATION_ACTIVATION);
 	Check(event != nullptr, "interacting with a station is audible");
 	if (event == nullptr) { delete scene; return; }
 
@@ -208,7 +219,7 @@ static void TestInteractingWithAStationIsTampering()
 	CheckNear(event->position.x, 3.0f, 0.001f, "the noise is at the station");
 	CheckNear(event->position.z, -4.0f, 0.001f, "the noise is at the station");
 	Check(event->sourceId == station->id, "the noise is attributed to the station");
-	Check(CountOfKind(scene, SOUND_TAMPER) == 1, "tampering is one-shot, not continuous");
+	Check(CountOfKind(scene, SOUND_STATION_ACTIVATION) == 1, "the activation is one-shot, not continuous");
 	delete scene;
 }
 
@@ -216,18 +227,17 @@ static void TestLockedStationStillMakesNoise()
 {
 	std::printf("a failed attempt is still audible\n");
 	SceneManagement::Scene* scene = MakeScene();
-	scene->player = new Player();
-	scene->player->id = PLAYER_ID;
-	scene->player->artifactUnlocked = MINI_GAME_FLAPPY_BIRD_ID;
+	scene->AddPlayer(0);
+	scene->PlayerInSlot(0)->artifactUnlocked = MINI_GAME_FLAPPY_BIRD_ID;
 
 	// A variation the player has not unlocked: ActivateMiniGame bails before
 	// starting anything. Rattling a station you cannot open is still
 	// interference, and a silent failed attempt would be the safest way to play.
 	InteractableObject* station = AddStation(scene, Vector3{ 0, 0, 0 });
 	station->variation = MINI_GAME_RO_SHAM_BOO_ID;
-	station->onInteract(*scene);
+	station->onInteract(*scene, *scene->PlayerInSlot(0));
 
-	Check(CountOfKind(scene, SOUND_TAMPER) == 1, "a locked station still makes noise");
+	Check(CountOfKind(scene, SOUND_STATION_ACTIVATION) == 1, "a locked station still makes noise");
 	Check(scene->GetRunningStation() == nullptr, "but no minigame actually started");
 	delete scene;
 }

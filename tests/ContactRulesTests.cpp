@@ -57,10 +57,9 @@ static void CheckNear(float actual, float expected, float tolerance, const std::
 static SceneManagement::Scene* MakeScene()
 {
 	SceneManagement::Scene* scene = new SceneManagement::Scene();
-	scene->player = new Player();
-	scene->player->type = OBJECT_PLAYER;
-	scene->player->id = PLAYER_ID;
-	scene->player->onEnable(); // full health
+	scene->AddPlayer(0);
+	scene->PlayerInSlot(0)->type = OBJECT_PLAYER;
+	scene->PlayerInSlot(0)->onEnable(); // full health
 	return scene;
 }
 
@@ -126,11 +125,11 @@ static void TestAProjectileHurtsThePlayerAndIsSpent()
 	std::printf("a projectile hitting the player costs it the projectile's damage, and is spent\n");
 	SceneManagement::Scene* scene = MakeScene();
 	GameObject* projectile = AddObject(scene, OBJECT_PROJECTILE, Vector3{ 0, 1, 0 }, 600, 2.5f);
-	const float before = scene->player->health;
+	const float before = scene->PlayerInSlot(0)->health;
 
-	Apply(scene, { Enter(PLAYER_ID, projectile->id) });
+	Apply(scene, { Enter(Sim::PlayerIdForSlot(0), projectile->id) });
 
-	CheckNear(scene->player->health, before - 2.5f, 0.001f, "the player loses the projectile's baseDamage");
+	CheckNear(scene->PlayerInSlot(0)->health, before - 2.5f, 0.001f, "the player loses the projectile's baseDamage");
 	Check(projectile->pendingDestroy && !projectile->isAlive, "the projectile is spent");
 	delete scene;
 }
@@ -161,13 +160,13 @@ static void TestAProjectileStrikingTheWorldHurtsNothing()
 	GameObject* wall = AddObject(scene, OBJECT_GENERIC, Vector3{ 0, 0, 0 }, 610);
 	GameObject* item = AddObject(scene, OBJECT_ITEM, Vector3{ 2, 0, 0 }, 611);
 	GameObject* projectile = AddObject(scene, OBJECT_PROJECTILE, Vector3{ 0, 1, 0 }, 612, 5.0f);
-	const float playerBefore = scene->player->health;
+	const float playerBefore = scene->PlayerInSlot(0)->health;
 
 	Apply(scene, { Enter(wall->id, projectile->id), Enter(projectile->id, item->id) });
 
 	Check(!wall->pendingDestroy && !item->pendingDestroy, "neither the wall nor the item is destroyed");
 	Check(!projectile->pendingDestroy, "the projectile is not spent on scenery; it decays on its own");
-	CheckNear(scene->player->health, playerBefore, 0.001f, "and the player is untouched");
+	CheckNear(scene->PlayerInSlot(0)->health, playerBefore, 0.001f, "and the player is untouched");
 	delete scene;
 }
 
@@ -191,13 +190,13 @@ static void TestTheStalkerHurtsThePlayerFromEitherSide()
 	SceneManagement::Scene* scene = MakeScene();
 	Entity* stalker = AddEntity(scene, std::make_unique<Stalker>(), 710);
 	stalker->baseDamage = 2.0f;
-	const float before = scene->player->health;
+	const float before = scene->PlayerInSlot(0)->health;
 
-	Apply(scene, { Enter(stalker->id, PLAYER_ID) });
-	CheckNear(scene->player->health, before - 2.0f, 0.001f, "the Stalker as `a` costs its baseDamage");
+	Apply(scene, { Enter(stalker->id, Sim::PlayerIdForSlot(0)) });
+	CheckNear(scene->PlayerInSlot(0)->health, before - 2.0f, 0.001f, "the Stalker as `a` costs its baseDamage");
 
-	Apply(scene, { Enter(PLAYER_ID, stalker->id) });
-	CheckNear(scene->player->health, before - 4.0f, 0.001f, "the Stalker as `b` costs it again, for a new contact");
+	Apply(scene, { Enter(Sim::PlayerIdForSlot(0), stalker->id) });
+	CheckNear(scene->PlayerInSlot(0)->health, before - 4.0f, 0.001f, "the Stalker as `b` costs it again, for a new contact");
 
 	CheckNear(stalker->health, stalker->getMaxHealth(), 0.001f, "the Stalker takes nothing back");
 	delete scene;
@@ -209,10 +208,10 @@ static void TestOnlyTheStalkerHurtsOnContact()
 	SceneManagement::Scene* scene = MakeScene();
 	Entity* plain = AddEntity(scene, std::make_unique<Entity>(), 720);
 	plain->baseDamage = 5.0f;
-	const float before = scene->player->health;
+	const float before = scene->PlayerInSlot(0)->health;
 
-	Apply(scene, { Enter(PLAYER_ID, plain->id) });
-	CheckNear(scene->player->health, before, 0.001f, "a plain entity does no contact damage");
+	Apply(scene, { Enter(Sim::PlayerIdForSlot(0), plain->id) });
+	CheckNear(scene->PlayerInSlot(0)->health, before, 0.001f, "a plain entity does no contact damage");
 
 	// The Stalker touching something other than the player hurts nobody
 	Entity* stalker = AddEntity(scene, std::make_unique<Stalker>(), 721);
@@ -230,17 +229,17 @@ static void TestOnlyTheStartOfAContactCounts()
 	Entity* stalker = AddEntity(scene, std::make_unique<Stalker>(), 730);
 	GameObject* projectile = AddObject(scene, OBJECT_PROJECTILE, Vector3{ 0, 1, 0 }, 731);
 	GameObject* crate = AddObject(scene, OBJECT_GENERIC, Vector3{ 3, 0, 0 }, 732);
-	const float before = scene->player->health;
+	const float before = scene->PlayerInSlot(0)->health;
 
 	std::vector<ContactEvent> exits = {
-		Enter(stalker->id, PLAYER_ID),
-		Enter(projectile->id, PLAYER_ID),
-		Enter(crate->id, PLAYER_ID, 20.0f),
+		Enter(stalker->id, Sim::PlayerIdForSlot(0)),
+		Enter(projectile->id, Sim::PlayerIdForSlot(0)),
+		Enter(crate->id, Sim::PlayerIdForSlot(0), 20.0f),
 	};
 	for (ContactEvent& event : exits) { event.phase = ContactPhase::Exit; }
 	Apply(scene, exits);
 
-	CheckNear(scene->player->health, before, 0.001f, "no damage on Exit");
+	CheckNear(scene->PlayerInSlot(0)->health, before, 0.001f, "no damage on Exit");
 	Check(!projectile->pendingDestroy, "no projectile spent on Exit");
 	Check(ImpactCount(scene) == 0, "no impact noise on Exit");
 	delete scene;
@@ -258,15 +257,15 @@ static void TestContactsWithMissingBodiesAreSkipped()
 	scene->gameMap.SweepDestroyed(scene);
 	Check(scene->gameMap.FindWorldObject(goneId) == nullptr, "the destroyed projectile has left the map");
 
-	const float before = scene->player->health;
-	Apply(scene, { Enter(goneId, PLAYER_ID), Enter(PLAYER_ID, 99999), Enter(projectile->id, PLAYER_ID) });
+	const float before = scene->PlayerInSlot(0)->health;
+	Apply(scene, { Enter(goneId, Sim::PlayerIdForSlot(0)), Enter(Sim::PlayerIdForSlot(0), 99999), Enter(projectile->id, Sim::PlayerIdForSlot(0)) });
 
-	CheckNear(scene->player->health, before - 1.5f, 0.001f, "only the projectile still in the world does damage");
+	CheckNear(scene->PlayerInSlot(0)->health, before - 1.5f, 0.001f, "only the projectile still in the world does damage");
 
 	// A scene with no player at all
 	SceneManagement::Scene* empty = new SceneManagement::Scene();
 	GameObject* stray = AddObject(empty, OBJECT_PROJECTILE, Vector3{ 0, 1, 0 }, 742);
-	Apply(empty, { Enter(PLAYER_ID, stray->id) });
+	Apply(empty, { Enter(Sim::PlayerIdForSlot(0), stray->id) });
 	Check(!stray->pendingDestroy, "with no player, a contact naming the player is skipped");
 
 	delete empty;
@@ -334,16 +333,16 @@ static void TestATriggerIsPassedThroughSilently()
 	GameObject* zone = AddObject(scene, OBJECT_GENERIC, Vector3{ 0, 0, 0 }, 770);
 	GameObject* crate = AddObject(scene, OBJECT_GENERIC, Vector3{ 0, 1, 0 }, 771);
 	Entity* stalker = AddEntity(scene, std::make_unique<Stalker>(), 772);
-	const float before = scene->player->health;
+	const float before = scene->PlayerInSlot(0)->health;
 
 	ContactEvent throughZone = Enter(zone->id, crate->id, 30.0f, crate->id);
 	throughZone.isTrigger = true;
-	ContactEvent caught = Enter(stalker->id, PLAYER_ID, 30.0f);
+	ContactEvent caught = Enter(stalker->id, Sim::PlayerIdForSlot(0), 30.0f);
 	caught.isTrigger = true;
 	Apply(scene, { throughZone, caught });
 
 	Check(ImpactCount(scene) == 0, "a fast trigger contact is silent");
-	CheckNear(scene->player->health, before - stalker->baseDamage, 0.001f,
+	CheckNear(scene->PlayerInSlot(0)->health, before - stalker->baseDamage, 0.001f,
 		"but the Stalker still hurts through a trigger contact");
 	delete scene;
 }

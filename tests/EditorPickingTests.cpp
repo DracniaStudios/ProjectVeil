@@ -19,8 +19,8 @@
 
 #include <Scene.h>
 #include <SceneManager.h>
-#include <WorldEditorTools/EditorGizmo.h>
-#include <WorldEditorTools/EditorPicking.h>
+#include <Editor/EditorGizmo.h>
+#include <Editor/EditorPicking.h>
 
 #include <cfloat>
 #include <cmath>

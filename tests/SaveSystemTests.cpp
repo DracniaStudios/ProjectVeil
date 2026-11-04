@@ -9,11 +9,13 @@
  *
  * Same tier as GameMapTests.cpp: loading Restores objects, which binds a model,
  * which needs a GL context, so a window is opened and this links against the
- * game's own object files. See tests/run_tests.sh.
+ * game's own object files. See tests/run_tests.sh, which points
+ * VEIL_RESOURCES_DIR at the repo's resources/ (the saves/ folder beside it).
  */
 
 #include <raylib.h>
 
+#include <ResourcePaths.h>
 #include <Scene.h>
 #include <SceneManager.h>
 #include <SaveSystem.h>
@@ -45,8 +47,8 @@ using Json = nlohmann::json;
 
 static const char* TEST_SAVE = "__save_system_tests";
 
-static fs::path WorldFile() { return fs::path(RESOURCES_PATH "scenes/") / (std::string(TEST_SAVE) + ".json"); }
-static fs::path GameFile() { return fs::path(RESOURCES_PATH "../saves/") / (std::string(TEST_SAVE) + ".json"); }
+static fs::path WorldFile() { return ResourcePaths::Resources() / "scenes" / (std::string(TEST_SAVE) + ".json"); }
+static fs::path GameFile() { return ResourcePaths::Saves() / (std::string(TEST_SAVE) + ".json"); }
 
 // Removes the test save and the backup and temp files a save leaves beside it
 static void RemoveTestFiles()
@@ -66,7 +68,7 @@ static void WriteFile(const fs::path& path, const std::string& text)
 	file << text;
 }
 
-// Scene_new() so scene->player exists
+// Scene_new() so scene->PlayerInSlot(0) exists
 static SceneManagement::Scene* MakeScene()
 {
 	return SceneManagement::Scene_new();
@@ -212,18 +214,18 @@ static void TestWorldSaveLeavesOutTheMomentAndThePlayer(const Store& store)
 	projectile.type = OBJECT_PROJECTILE;
 	saved->gameMap.SpawnGameObject(projectile);
 	saved->limitYBounds = true;
-	saved->player->health = 1.0f;
+	saved->PlayerInSlot(0)->health = 1.0f;
 	Check(store.saveWorld(*saved), "the world saves");
 
 	SceneManagement::Scene* loaded = MakeScene();
-	loaded->player->rigidBody3D.Teleport(Vector3{ 7, 2, 7 });
-	const float playerHealth = loaded->player->health;
+	loaded->PlayerInSlot(0)->rigidBody3D.Teleport(Vector3{ 7, 2, 7 });
+	const float playerHealth = loaded->PlayerInSlot(0)->health;
 	Check(store.loadWorld(*loaded), "and loads");
 
 	Check(CountOfType(loaded->gameMap, OBJECT_PROJECTILE) == 0, "the projectile was not saved");
-	Check(loaded->player->rigidBody3D.translation.x == 7 && loaded->player->rigidBody3D.translation.z == 7,
+	Check(loaded->PlayerInSlot(0)->rigidBody3D.translation.x == 7 && loaded->PlayerInSlot(0)->rigidBody3D.translation.z == 7,
 		"the player stays where they were");
-	Check(loaded->player->health == playerHealth, "and keeps their own health");
+	Check(loaded->PlayerInSlot(0)->health == playerHealth, "and keeps their own health");
 	Check(!loaded->limitYBounds, "the scene's flags are left alone");
 
 	delete saved;
@@ -240,8 +242,8 @@ static void TestGameRoundTripKeepsTheMomentAndThePlayer(const Store& store)
 	projectile.type = OBJECT_PROJECTILE;
 	saved->gameMap.SpawnGameObject(projectile);
 	saved->limitYBounds = true;
-	saved->player->rigidBody3D.Teleport(Vector3{ -6, 1, 9 });
-	saved->player->health = 2.0f;
+	saved->PlayerInSlot(0)->rigidBody3D.Teleport(Vector3{ -6, 1, 9 });
+	saved->PlayerInSlot(0)->health = 2.0f;
 	Check(store.saveGame(*saved), "the game saves");
 
 	SceneManagement::Scene* loaded = MakeScene();
@@ -253,11 +255,11 @@ static void TestGameRoundTripKeepsTheMomentAndThePlayer(const Store& store)
 		"every kind comes back under its own id");
 	Check(CountOfType(loaded->gameMap, OBJECT_PROJECTILE) == 1, "the projectile in flight comes back");
 	Check(loaded->limitYBounds, "the scene's flags come back");
-	Check(loaded->player->rigidBody3D.translation.x == -6 && loaded->player->rigidBody3D.translation.z == 9,
+	Check(loaded->PlayerInSlot(0)->rigidBody3D.translation.x == -6 && loaded->PlayerInSlot(0)->rigidBody3D.translation.z == 9,
 		"the player is where they were");
-	Check(loaded->player->health == 2.0f, "and as hurt as they were");
-	Check(loaded->player->id == PLAYER_ID, "and is still the player");
-	Check(loaded->gameMap.FindEntity(PLAYER_ID) == nullptr, "and is not also a world entity");
+	Check(loaded->PlayerInSlot(0)->health == 2.0f, "and as hurt as they were");
+	Check(loaded->PlayerInSlot(0)->id == Sim::PlayerIdForSlot(0), "and is still the player");
+	Check(loaded->gameMap.FindEntity(Sim::PlayerIdForSlot(0)) == nullptr, "and is not also a world entity");
 
 	delete saved;
 	delete loaded;
@@ -537,7 +539,7 @@ static void TestTheScopeDecidesWhatASaveHolds()
 static void TestTheShippedWorldsStillLoad()
 {
 	std::printf("the World saves the game ships load every object they hold\n");
-	const SaveSystem::FileSaveStore worlds(RESOURCES_PATH "scenes/");
+	const SaveSystem::FileSaveStore worlds(ResourcePaths::Resources() / "scenes");
 
 	for (const char* name : { "mainMenu", "chunk_1" })
 	{

@@ -128,6 +128,6 @@ cmake --preset linux-debug   # or macos-debug, x64-debug, x86-debug
 cmake --build --preset linux-debug
 ```
 
-Resources are copied to the build output directory automatically as a post-build step, and the `RESOURCES_PATH` macro points to the source `resources/` directory in non-production builds.
+Resources are copied to the build output directory automatically as a post-build step, and the game reads `resources/` and `saves/` from beside its own executable at run time. No path is compiled in, so a build folder copied to another machine uses that machine's files. Scenes edited in the World Editor are saved into the build folder's copy, and the next link overwrites them from the repo's `resources/`; to author Worlds straight into the tracked files (and keep using the repo's `saves/`), set `VEIL_RESOURCES_DIR` to the repo's `resources/` folder before launching.
 
 GameNetworkingSockets needs protobuf. If CMake cannot find one installed, the first configure downloads protobuf 3.21.12 (about 5 MB, hash-checked) into the build directory. Configure with `-DVEIL_BUILD_GNS=OFF` to skip GameNetworkingSockets entirely, for example when offline. Include its headers as `<gns/steamnetworkingsockets.h>`: the Steamworks SDK ships same-named files under `steam/`, so the upstream `<steam/...>` spelling is deliberately not available.

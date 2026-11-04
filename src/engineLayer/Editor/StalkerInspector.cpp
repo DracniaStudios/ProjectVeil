@@ -82,8 +82,9 @@ void WorldEditor::ShowStalkerData()
 		ImGui::DragFloat("Hunt patience", &stalker->huntPatience, 0.1f, 0.0f, 30.0f);
 		ImGui::DragFloat("Search duration", &stalker->searchDuration, 0.1f, 0.0f, 60.0f);
 		ImGui::DragFloat("Search radius", &stalker->searchRadius, 0.1f, 0.0f, 50.0f);
-		ImGui::DragFloat("Sight Range", &stalker->sightRange, 0.1f, 0.0f, 10.0f);
-		ImGui::DragFloat("Attack Range", &stalker->attackRange, 0.1f, 0.0f, 10.0f);
+		ImGui::DragFloat("Catch Radius", &stalker->catchRadius, 0.05f, 0.0f, 10.0f);
+		ImGui::DragFloat("Warning Lead (s)", &stalker->warningLeadSeconds, 0.05f, 0.0f, 10.0f);
+		ImGui::DragFloat("Task Speed Multiplier", &stalker->taskSpeedMultiplier, 0.05f, 1.0f, 4.0f);
 		ImGui::DragFloat("Base speed", &stalker->baseSpeed, 0.1f, 0.0f, 20.0f);
 		// How far ahead it looks for walls. Too short and it turns after it is
 		// already against one; too long and it swerves around geometry it was
@@ -108,9 +109,9 @@ void WorldEditor::ShowStalkerData()
 		// Authoring is "walk there, then press the button". Typing coordinates
 		// for a patrol route is unusable, and the player is the only cursor the
 		// editor has that is already grounded in the world.
-		if (ImGui::Button("Add Waypoint At Player") && scene->player)
+		if (Player* local = Client::LocalPlayer(*scene); ImGui::Button("Add Waypoint At Player") && local)
 		{
-			stalker->waypoints.push_back(scene->player->getPosition());
+			stalker->waypoints.push_back(local->getPosition());
 			stalker->displayRoute = true;
 			statusMessage = "Added waypoint " + std::to_string(stalker->waypoints.size());
 		}

@@ -50,7 +50,8 @@ add_subdirectory(thirdparty/json-3.12.0) #Soon to me Customizable
 add_subdirectory(thirdparty/fmod-2.3.14)
 add_subdirectory(thirdparty/steam-1.64)
 add_subdirectory(thirdparty/entt-4.0.0) # Header only ECS, exposes EnTT::EnTT
-add_subdirectory(thirdparty/flecs-4.1.6) # C ECS built as a static library, exposes flecs::flecs
+# thirdparty/flecs-4.1.6 stays vendored but is not built or linked: EnTT is the
+# ECS (MultiplayerSplitPlan.md Q45)
 add_subdirectory(thirdparty/serialize-2.1.3) # Header only bitpacked wire serialization, exposes serialize::serialize
 
 # GameNetworkingSockets needs protobuf. If CMake cannot find one it is fetched at
@@ -63,6 +64,16 @@ endif()
 
 file (GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
+# The development multiplayer menu and switches: Start Server, Join, --host,
+# --join (MultiplayerSplitPlan.md N7). Never in a production build (Q5, Q12).
+option(VEIL_DEV_NET "Development multiplayer menu (Start Server / Join Server)" ON)
+
+# Without GameNetworkingSockets there is no GnsTransport: single-player still
+# works through Loopback, and Start Server / Join say why they can't run
+if (NOT TARGET GameNetworkingSockets::static)
+	list(FILTER MY_SOURCES EXCLUDE REGEX "/src/net/gns/")
+endif()
+
 # Add source to this project's executable.
 add_executable("${PROJECT_NAME}")
 
@@ -70,19 +81,21 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET "${PROJECT_NAME}" PROPERTY CXX_STANDARD 23)
 endif()
 
-# Define Absolute Project Path
+# No resource path is compiled in: the game finds resources/ and saves/ beside its
+# executable at run time (src/engineLayer/ResourcePaths.h), so a build copied to
+# another machine reads its own files.
 if (PRODUCTION_BUILD)
-	# Setup the ASSETS_PATH macro to the final assets directory when you share the project
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="./resources/")
 	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC PRODUCTION_BUILD=1)
 else()
-	# This is useful to get an ASSETS_PATH in your IDE during development but you should comment this if you compile a release version
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/")
 	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC PRODUCTION_BUILD=0)
 endif()
 
 # Add Sources To Executable
 target_sources("${CMAKE_PROJECT_NAME}" PRIVATE ${MY_SOURCES})
+
+if (VEIL_DEV_NET AND NOT PRODUCTION_BUILD)
+	target_compile_definitions("${CMAKE_PROJECT_NAME}" PRIVATE VEIL_DEV_NET=1)
+endif()
 
 # Removes Terminal/Console from Production Build
 if(MSVC) # If using the VS compiler...
@@ -109,6 +122,9 @@ elseif(APPLE OR UNIX) # macOS / Linux
 endif()
 
 # Add Mass Unit System
+# src/ itself, so the networking split's folders are named in every include:
+# <sim/...>, <net/...>, <Client/...> (MultiplayerSplitPlan.md)
+target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/")
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/Assets")
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/Audio")
@@ -133,12 +149,19 @@ nlohmann_json
 FMOD
 STEAM
 EnTT::EnTT
-flecs::flecs
 serialize::serialize)
+
+# cpp-httplib (header only, MIT): the Host's HTTP line to SpacetimeDB. Only
+# src/net/spacetime/ may include it (rule R8, MultiplayerSplitPlan.md Q54).
+target_include_directories("${CMAKE_PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/cpp-httplib-0.64.0")
+if (WIN32)
+	target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE ws2_32) # cpp-httplib sockets, with or without GNS
+endif()
 
 # Only defined when GameNetworkingSockets could be built on this machine
 if (TARGET GameNetworkingSockets::static)
 	target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE GameNetworkingSockets::static)
+	target_compile_definitions("${CMAKE_PROJECT_NAME}" PRIVATE VEIL_HAS_GNS=1)
 endif()
 
 

@@ -1,0 +1,29 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "wasm",
+      "displayName": "SpacetimeDB module (Emscripten)",
+      "description": "Builds lib.wasm with the Emscripten toolchain. SpacetimeDB modules cannot be built with MSVC.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CROSSCOMPILING_EMULATOR": "$env{EMSDK_NODE}"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "intelliSenseMode": "windows-clang-x86"
+        }
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "wasm",
+      "displayName": "SpacetimeDB module (Emscripten)",
+      "configurePreset": "wasm"
+    }
+  ]
+}

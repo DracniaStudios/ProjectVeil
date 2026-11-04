@@ -2,19 +2,17 @@
 
 #include <SceneManager.h>
 #include <gameMap.h>
+#include <Player.h>
 
 
-void ActivateMiniGame(SceneManagement::Scene& scene, InteractableObject* interactable, bool bypass = false)
+// Interacting with a Task station is a claim on it (rule S-3). The server's
+// StationTable decides; the MiniGame screen opens on the client that gets the
+// grant (Client::PresentEvent). The unlock gate and the activation noise are
+// the claim's.
+void ActivateMiniGame(SceneManagement::Scene& scene, InteractableObject* interactable, Player& by)
 {
-	std::cout << "[InteractableObject] Activating MiniGame: " << interactable->variation << "\n";
-
-	scene.soundField.Emit(interactable->getPosition(), 0.8f, SOUND_TAMPER, interactable->id);
-
-	if (!bypass && scene.player->artifactUnlocked < interactable->variation) { std::cout << "[InteractableObject] Minigame Not Unlocked \n"; return; }
-
-	// The scene marks the station as occupied, and on a win finds the Target
-	// through the station itself
-	scene.StartMiniGame(interactable->variation, interactable);
+	std::cout << "[InteractableObject] Claiming station " << interactable->id << " (MiniGame " << interactable->variation << ")\n";
+	scene.ClaimStation(scene.StationIndexOf(interactable->id), Sim::SlotForPlayerId(by.id));
 }
 
 GameObject* InteractableObject::FindMiniGameTarget(GameMap& gameMap)
@@ -23,10 +21,35 @@ GameObject* InteractableObject::FindMiniGameTarget(GameMap& gameMap)
 	return gameMap.FindWorldObject(targetId);
 }
 
-void Unlock(SceneManagement::Scene& scene, InteractableObject* interactable)
+bool InteractableObject::IsExitUnlocked(const GameMap& gameMap) const
+{
+	if (interactType != INTERACT_EXIT || !isEnabled) { return false; }
+
+	if (targetId != 0)
+	{
+		// The lock is a Target like any door: open once disabled, or deleted
+		const GameObject* lock = nullptr;
+		gameMap.ForEachGameObject([&](const GameObject& object) { if (object.id == targetId) { lock = &object; } });
+		gameMap.ForEachInteractable([&](const InteractableObject& object) { if (object.id == targetId) { lock = &object; } });
+		gameMap.ForEachEntity([&](const Entity& object) { if (object.id == targetId) { lock = &object; } });
+		return lock == nullptr || !lock->isEnabled;
+	}
+
+	// No lock named: the task is every Task station
+	bool anyStation = false;
+	bool allDone = true;
+	gameMap.ForEachInteractable([&](const InteractableObject& station) {
+		if (station.interactType != INTERACT_MINIGAME) { return; }
+		anyStation = true;
+		allDone = allDone && station.isCompleted;
+	});
+	return anyStation && allDone;
+}
+
+void Unlock(SceneManagement::Scene& /*scene*/, InteractableObject* interactable, Player& by)
 {
 	std::cout << "[InteractableObject] Unlocking MiniGame: " << interactable->variation << "\n";
-	auto player = scene.player;
+	auto player = &by;
 	player->artifactUnlocked = std::max(player->artifactUnlocked, interactable->variation);
 	player->artifactUnlocked = Clamp(player->artifactUnlocked, MINI_GAME_FLAPPY_BIRD_ID, MINI_GAME_RO_SHAM_BOO_ID);
 
@@ -75,7 +98,7 @@ InteractableObject::InteractableObject(const InteractionType interact, int varia
 	activator = activate; // Object
 }
 
-void InteractableObject::onInteract(SceneManagement::Scene& scene)
+void InteractableObject::onInteract(SceneManagement::Scene& scene, Player& by)
 {
 	AudioManager::AudioManager::getInstance().Play3D(defaultSound, *this);
 	std::cout << "[InteractObject] Interacted with " << name << "\n";
@@ -89,8 +112,8 @@ void InteractableObject::onInteract(SceneManagement::Scene& scene)
 	// The branches stay mutually exclusive: Unlock() marks this station for
 	// removal, and none of the others may run on a station that is going away.
 	const InteractionType type = interactType;
-	if (type == INTERACT_MINIGAME) { ActivateMiniGame(scene, this); }
-	else if (type == INTERACT_UNLOCK) { Unlock(scene, this); }
+	if (type == INTERACT_MINIGAME) { ActivateMiniGame(scene, this, by); }
+	else if (type == INTERACT_UNLOCK) { Unlock(scene, this, by); }
 
 }
 
@@ -104,6 +127,7 @@ Json InteractableObject::formatToJson()
 	j["TargetId"] = targetId;
 	j["IsInteractable"] = isInteractable;
 	j["IsCompleted"] = isCompleted;
+	j["MinimumSeconds"] = minimumSeconds;
 	// isRunningMiniGame is deliberately not persisted: it means "occupied right
 	// now", and a save reloaded later has nobody standing at the station.
 	return j;
@@ -131,6 +155,8 @@ bool InteractableObject::loadFromJson(Json& j)
 
 	isInteractable = j.value("IsInteractable", true);
 	isCompleted = j.value("IsCompleted", false);
+	minimumSeconds = j.value("MinimumSeconds", kDefaultMinimumSeconds);
+	if (!(minimumSeconds >= 0.0f)) { minimumSeconds = kDefaultMinimumSeconds; } // also rejects NaN
 
 	// A station is never occupied on load, whatever was happening when the save
 	// was written — the same reason the Stalker drops its lastKnownPosition.

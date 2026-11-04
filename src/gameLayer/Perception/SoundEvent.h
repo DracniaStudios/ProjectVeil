@@ -14,6 +14,9 @@ enum SoundKind
 	SOUND_TAMPER,    // the player interfering with a station
 	SOUND_IMPACT,    // physics collision
 	SOUND_VOICE,
+	// A Task station starting (or refusing to). Heard from anywhere in the room,
+	// with no falloff or occlusion (VerticalSliceDecisions decision 15)
+	SOUND_STATION_ACTIVATION,
 	SOUND_KIND_COUNT
 };
 
@@ -26,6 +29,7 @@ inline const char* soundKindToString(int kind)
 	case SOUND_TAMPER:   return "Tamper";
 	case SOUND_IMPACT:   return "Impact";
 	case SOUND_VOICE:    return "Voice";
+	case SOUND_STATION_ACTIVATION: return "Activation";
 	default:             return "Unknown";
 	}
 }

@@ -5,7 +5,19 @@
 #include <UIEngine.h>
 #include <UI/Overlays.h>
 #include <ContactRules.h>
+#include <LightingSystem.h>
+#include <Client/CommandSampler.h>
+#include <Client/LocalPlayer.h>
+#include <Client/RoundPresenter.h>
+#include <Client/StalkerWarnings.h>
+#include <AI/Stalker.h>
+#include <SceneManager.h>
+#include <World/WorldKey.h>
+#include <sim/FixedTick.h>
+#include <net/Protocol.h>
 
+#include <algorithm>
+#include <cmath>
 #include <iterator>
 #include <optional>
 #include <random>
@@ -16,16 +28,8 @@ namespace SceneManagement {
 		Scene* scene = new Scene;
 		scene->gameMap = {};
 
-		// Default Settings For Scene
-		scene->player = new Player;
-		scene->player->type = OBJECT_PLAYER;
-		scene->player->id = PLAYER_ID;
-
-		// Player Spawn
-		scene->player->setSpawnPoint(Vector3{ 0, 5, 2 });
-		scene->player->rigidBody3D.Teleport(scene->player->getSpawnPoint());
-
-		scene->player->onEnable();
+		// Slot 0: the single-player player, and the Host's own
+		scene->AddPlayer(0);
 
 		// Not made current here: SceneManager does that once the scene is fully
 		// built, and everything that builds it is handed the scene itself
@@ -42,18 +46,74 @@ namespace SceneManagement {
 
 		AudioManager::AudioManager::getInstance().StopAudio();
 
-		if (scene->player) {
-			// The artifact is created on first use (InteractableObject.cpp) and owned by the player.
-			if (scene->player->artifact) {
-				scene->player->artifact->releaseGeneratedModel();
-				delete scene->player->artifact;
-			}
-			scene->player->releaseGeneratedModel();
-			delete scene->player;
-		}
+		for (int slot = 0; slot < Sim::kMaxPlayers; ++slot) { scene->RemovePlayer(slot); }
 
 		delete scene;
 	}
+
+#pragma region Players
+
+	Player* Scene::AddPlayer(int slot)
+	{
+		if (!Sim::IsValidSlot(slot)) { return nullptr; }
+		if (players[slot] != nullptr) { return players[slot]; }
+
+		Player* player = new Player;
+		player->type = OBJECT_PLAYER;
+		player->id = Sim::PlayerIdForSlot(slot);
+		player->setSpawnPoint(SpawnPointFor(slot));
+		player->rigidBody3D.Teleport(player->getSpawnPoint());
+		player->onEnable();
+
+		players[slot] = player;
+		return player;
+	}
+
+	void Scene::RemovePlayer(int slot)
+	{
+		Player* player = PlayerInSlot(slot);
+		if (player == nullptr) { return; }
+
+		// The artifact is created on first use (InteractableObject.cpp) and owned by the player.
+		if (player->artifact) {
+			player->artifact->releaseGeneratedModel();
+			delete player->artifact;
+		}
+		player->releaseGeneratedModel();
+		delete player;
+		players[slot] = nullptr;
+	}
+
+	Player* Scene::FindPlayer(std::uint64_t id) const
+	{
+		const int slot = Sim::SlotForPlayerId(id);
+		Player* player = PlayerInSlot(slot);
+		return (player != nullptr && player->id == id) ? player : nullptr;
+	}
+
+	int Scene::PlayerCount() const
+	{
+		int count = 0;
+		for (const Player* player : players) { if (player != nullptr) { ++count; } }
+		return count;
+	}
+
+	Vector3 Scene::SpawnPointFor(int slot) const
+	{
+		// One body width and a half apart, along +X
+		constexpr float kSlotSpacing = 1.5f;
+		return Vector3Add(spawnPoint, Vector3{ kSlotSpacing * static_cast<float>(slot), 0.0f, 0.0f });
+	}
+
+	void Scene::SetSpawnPoint(Vector3 point)
+	{
+		spawnPoint = point;
+		ForEachPlayer([&](int slot, Player& player) {
+			player.setSpawnPoint(SpawnPointFor(slot));
+			player.rigidBody3D.Teleport(player.getSpawnPoint());
+		});
+	}
+#pragma endregion
 
 
 
@@ -70,13 +130,178 @@ namespace SceneManagement {
 		// Every body in the scene in one list, so every pair follows the same rules
 		// whatever kind of object owns each body
 		std::vector<Physics3D::PhysicsBody> bodies;
-		bodies.reserve(gameMap.GameObjectCount() + gameMap.EntityCount() + gameMap.InteractableCount() + 1);
+		bodies.reserve(gameMap.GameObjectCount() + gameMap.EntityCount() + gameMap.InteractableCount() + Sim::kMaxPlayers);
 		gameMap.ForEachObject([&](GameObject& object) { bodies.push_back({ object.id, &object.rigidBody3D }); });
-		if (player != nullptr) { bodies.push_back({ player->id, &player->rigidBody3D }); }
+		ForEachPlayer([&](int, Player& player) { bodies.push_back({ player.id, &player.rigidBody3D }); });
 
 		const std::vector<Physics3D::ContactEvent> events = physics.Solve(bodies, iterations);
 		ContactRules::Apply(*this, events);
 		return events;
+	}
+#pragma endregion
+
+#pragma region Catches
+
+	void Scene::RaiseCatch(std::uint64_t playerId)
+	{
+		if (std::find(caughtThisTick.begin(), caughtThisTick.end(), playerId) != caughtThisTick.end()) { return; }
+		caughtThisTick.push_back(playerId);
+	}
+
+	void Scene::CheckCatches()
+	{
+		// How far apart in height a stalker and a player can be and still count as
+		// close: a player on a ledge above the stalker is out of reach
+		constexpr float kCatchHeight = 1.5f;
+
+		gameMap.ForEachEntity([&](Entity& entity) {
+			if (entity.kind != ENTITYKIND_STALKER || !entity.isEnabled) { return; }
+			const Stalker& stalker = static_cast<const Stalker&>(entity);
+
+			const auto check = [&](Player& candidate) {
+				if (!candidate.isEnabled) { return; }
+
+				const Vector3 a = stalker.getPosition();
+				const Vector3 b = candidate.getPosition();
+				const float planar = Vector2Distance(Vector2{ a.x, a.z }, Vector2{ b.x, b.z });
+				const bool inReach = planar <= stalker.catchRadius && std::fabs(a.y - b.y) <= kCatchHeight;
+
+				if (inReach || physics.IsTouching(stalker.id, candidate.id)) { RaiseCatch(candidate.id); }
+			};
+			ForEachPlayer([&](int, Player& player) { check(player); });
+		});
+	}
+
+	void Scene::CheckEscapes()
+	{
+		gameMap.ForEachInteractable([&](InteractableObject& exit) {
+			if (exit.interactType != INTERACT_EXIT || !exit.IsExitUnlocked(gameMap)) { return; }
+
+			const BoundingBox volume = exit.rigidBody3D.broadPhaseBox;
+			ForEachPlayer([&](int, Player& player) {
+				if (!player.isEnabled) { return; }
+				const bool inside = CheckCollisionBoxes(volume, player.rigidBody3D.broadPhaseBox)
+					|| physics.IsTouching(exit.id, player.id);
+				if (inside && std::find(escapedThisTick.begin(), escapedThisTick.end(), player.id) == escapedThisTick.end())
+				{
+					escapedThisTick.push_back(player.id);
+				}
+			});
+		});
+	}
+
+	void Scene::ResolveRound()
+	{
+		if (caughtThisTick.empty() && escapedThisTick.empty()) { return; }
+
+		// A round already won counts nothing more until the scene is rebuilt
+		if (roundWon)
+		{
+			caughtThisTick.clear();
+			escapedThisTick.clear();
+			return;
+		}
+
+		Sim::RoundState state = {};
+		state.playersInRound = PlayerCount();
+		state.playersCaught = static_cast<int>(caughtThisTick.size());
+		state.playersEscaped = static_cast<int>(escapedThisTick.size());
+
+		// Every catch is reported, even when one of them is enough to end the round
+		for (const std::uint64_t id : caughtThisTick)
+		{
+			Sim::GameEvent caught = {};
+			caught.type = Sim::GameEventType::PlayerCaught;
+			caught.slot = Sim::SlotForPlayerId(id);
+			caught.roundEpoch = roundEpoch;
+			outbox.push_back(caught);
+			std::cout << "[Round] Slot " << caught.slot << " caught\n";
+		}
+		caughtThisTick.clear();
+		escapedThisTick.clear();
+
+		const Sim::RoundOutcome outcome = Sim::EvaluateRound(state);
+		if (outcome == Sim::RoundOutcome::Ongoing) { return; }
+
+		Sim::GameEvent over = {};
+		over.type = Sim::GameEventType::RoundOver;
+		over.outcome = outcome;
+		over.roundEpoch = roundEpoch;
+		outbox.push_back(over);
+		std::cout << "[Round] Round " << roundEpoch << " over: " << Sim::RoundOutcomeName(outcome) << "\n";
+
+		if (outcome == Sim::RoundOutcome::Caught) { FullWipe(); }
+		else if (outcome == Sim::RoundOutcome::Escaped) { roundWon = true; }
+
+		++roundEpoch;
+	}
+
+	void Scene::ResetPlayerToSpawn(int slot)
+	{
+		Player* player = PlayerInSlot(slot);
+		if (player == nullptr) { return; }
+
+		// The artifact is what the Unlock pickups built; the pickups come back with
+		// the world, so it goes
+		if (player->artifact != nullptr)
+		{
+			player->artifact->releaseGeneratedModel();
+			delete player->artifact;
+			player->artifact = nullptr;
+		}
+		player->artifactUnlocked = -1;
+		player->artifactMode = 0;
+
+		player->onEnable(); // full health and stamina, fresh buffs
+		player->isEnabled = true;
+		player->isCrouching = false;
+		player->isSprinting = false;
+		player->isFiring = false;
+		player->flashlightOn = false;
+		player->footstepTimer = 0.0f;
+		player->moveDirection = Vector2Zero();
+
+		player->setSpawnPoint(SpawnPointFor(slot));
+		player->rigidBody3D.Teleport(player->getSpawnPoint());
+		player->rigidBody3D.SetVelocity(Vector3Zero());
+		player->SetLookAngles(0.0f, 0.0f);
+	}
+
+	void Scene::FullWipe()
+	{
+		std::cout << "[Round] Full wipe\n";
+
+		// Any MiniGame in progress belongs to the round that just ended
+		miniGameSession.Quit();
+		overlays.Close(Overlay::MiniGame);
+		stationRequests.clear();
+		miniGamePlayerId = 0;
+		stationNoiseTimer = 0.0f;
+
+		// The world as authored, every object under its own id. Without a World
+		// save (a scene built in code) the world stays as it is.
+		SaveSystem::RestoreAuthoredObjects(*this);
+
+		// Stalkers go back to Patrol whatever the World save recorded
+		gameMap.ForEachEntity([](Entity& entity) {
+			if (entity.kind != ENTITYKIND_STALKER) { return; }
+			Stalker& stalker = static_cast<Stalker&>(entity);
+			stalker.state = STALKER_PATROL;
+			stalker.timeInState = 0.0f;
+			stalker.hasLastKnown = false;
+		});
+
+		for (int slot = 0; slot < Sim::kMaxPlayers; ++slot) { ResetPlayerToSpawn(slot); }
+
+		// No station completed through play, no holders: the World state is empty
+		stations.Wipe();
+		stations.WriteToMap(gameMap);
+
+		director.Clear();
+		soundField.Clear();
+		caughtThisTick.clear();
+		escapedThisTick.clear();
+		roundWon = false;
 	}
 #pragma endregion
 
@@ -153,8 +378,10 @@ namespace SceneManagement {
 		}
 	}
 
-	bool Scene::StartMiniGame(int gameId, InteractableObject* station)
+	bool Scene::StartMiniGame(int gameId, InteractableObject* station, Player* by)
 	{
+		if (by == nullptr) { by = PlayerInSlot(0); }
+
 		const std::uint64_t stationId = station != nullptr ? station->id : 0;
 		if (!miniGameSession.Start(gameId, stationId, WindowSize(), std::random_device{}()))
 		{
@@ -162,19 +389,14 @@ namespace SceneManagement {
 			return false;
 		}
 
-		// A start replaces any game already running, so the station that one held is
-		// free now; only the new one is occupied.
-		gameMap.ForEachInteractable([](InteractableObject& interactable) { interactable.isRunningMiniGame = false; });
-		stationNoiseTimer = 0.0f;
-		if (station != nullptr) { station->isRunningMiniGame = true; }
-
-		player->artifactMode = gameId;
+		// The screen only: which station is held is the server's (StationTable)
+		miniGamePlayerId = by != nullptr ? by->id : 0;
+		if (by != nullptr) { by->artifactMode = gameId; }
 		overlays.Open(Overlay::MiniGame);
 		return true;
 	}
 
 	void Scene::TickMiniGame(float deltaTime)
-
 	{
 		// A game under another overlay waits: it can't be lost while it can't be seen
 		if (overlays.Top() != Overlay::MiniGame || !miniGameSession.IsRunning()) { return; }
@@ -185,8 +407,17 @@ namespace SceneManagement {
 
 	void Scene::QuitMiniGame()
 	{
+		const std::uint64_t stationId = miniGameSession.StationId();
+		const bool running = miniGameSession.IsRunning();
 		miniGameSession.Quit();
 		CloseMiniGame();
+
+		// Walking away from a station gives it back
+		if (running && stationId != 0)
+		{
+			const int index = stations.IndexOf(stationId);
+			if (index >= 0) { stationRequests.push_back({ Sim::StationAction::Release, index }); }
+		}
 	}
 
 	void Scene::RetryMiniGame()
@@ -202,32 +433,12 @@ namespace SceneManagement {
 
 	void Scene::FinishWonMiniGame(const MiniGameResult& won)
 	{
-		if (const std::optional<MiniGameReward> reward = RewardFor(won.gameId))
+		// A Practice run stays on this client and changes nothing on the server
+		// (S-5). A station's win is the server's to judge: it asks to Complete.
+		if (won.stationId != 0)
 		{
-			if (reward->heal > 0.0f) { player->applyHealthValue(reward->heal, false); }
-			if (CooldownTimer* buff = player->getBuff(reward->buff)) { buff->use(); }
-		}
-
-		// A Practice run has no station: it completes nothing and toggles nothing
-		InteractableObject* station = won.stationId != 0 ? gameMap.FindInteractable(won.stationId) : nullptr;
-		if (station != nullptr)
-		{
-			// Marked before the Target is looked up, because this is the point at which
-			// the task is objectively finished. Letting a deleted door un-complete a
-			// finished task would leave the Director hinting at it forever.
-			station->isCompleted = true;
-			station->isInteractable = false;
-
-			if (GameObject* target = station->FindMiniGameTarget(gameMap))
-			{
-				std::cout << "[MiniGame] Target " << station->targetId << " is now " << !target->isEnabled << "\n";
-				if (target->isEnabled) { target->onDisable(); }
-				else { target->onEnable(); }
-			}
-			else
-			{
-				std::cout << "[MiniGame] Target " << station->targetId << " no longer exists — nothing to open\n";
-			}
+			const int index = stations.IndexOf(won.stationId);
+			if (index >= 0) { stationRequests.push_back({ Sim::StationAction::Complete, index }); }
 		}
 
 		CloseMiniGame();
@@ -236,32 +447,180 @@ namespace SceneManagement {
 	void Scene::CloseMiniGame()
 	{
 		overlays.Close(Overlay::MiniGame);
-		gameMap.ForEachInteractable([](InteractableObject& interactable) { interactable.isRunningMiniGame = false; });
+	}
+
+	void Scene::OnWorldLoaded()
+	{
+		if (!stations.Build(gameMap))
+		{
+			std::cerr << "[Scene] The World save has more Task stations than the protocol carries (" << Net::kMaxStations << "); none will work\n";
+		}
+		stations.WriteToMap(gameMap);
+		contentHash = World::ContentHash(*this);
+	}
+
+	int Scene::StationIndexOf(std::uint64_t stationId)
+	{
+		int index = stations.IndexOf(stationId);
+		if (index < 0)
+		{
+			stations.Build(gameMap);
+			index = stations.IndexOf(stationId);
+		}
+		return index;
+	}
+
+	void Scene::ReportStation(Sim::StationEventKind kind, int index, int slot)
+	{
+		Sim::GameEvent event = {};
+		event.type = Sim::GameEventType::StationEvent;
+		event.stationEvent = kind;
+		event.stationIndex = index;
+		event.slot = slot;
+		event.roundEpoch = roundEpoch;
+		outbox.push_back(event);
+	}
+
+	bool Scene::ClaimStation(int index, int slot)
+	{
+		// How close a player must stand to claim a station (its interact reach,
+		// buffed, plus the station's own size)
+		constexpr float kClaimReach = 12.0f;
+
+		Player* player = PlayerInSlot(slot);
+		const auto deny = [&](const char* why) {
+			std::cout << "[Station] Slot " << slot << " denied station " << index << ": " << why << "\n";
+			if (stations.IsValidIndex(index)) { ReportStation(Sim::StationEventKind::Denied, index, slot); }
+			return false;
+		};
+
+		if (!stations.IsValidIndex(index)) { return deny("not in the table"); }
+		Sim::StationEntry& entry = stations.At(index);
+
+		InteractableObject* station = gameMap.FindInteractable(entry.id);
+		if (station == nullptr || !station->isEnabled) { return deny("the station is gone"); }
+
+		// Starting a station is loud, and so is rattling one that won't start: a
+		// silent failed attempt would be the safest way to play (decision 15)
+		soundField.Emit(station->getPosition(), 0.8f, SOUND_STATION_ACTIVATION, station->id);
+
+		if (player == nullptr || !player->isEnabled) { return deny("no player in that Slot"); }
+		if (entry.holder == slot) { return false; } // asking twice changes nothing
+		if (entry.Completed()) { return deny("already completed"); }
+		if (entry.InUse()) { return deny("held by another Slot"); }
+		if (stations.HeldBy(slot) >= 0) { return deny("the Slot holds another station"); }
+		if (std::find(caughtThisTick.begin(), caughtThisTick.end(), player->id) != caughtThisTick.end()) { return deny("the Slot was caught"); }
+
+		const Vector3 a = player->getPosition();
+		const Vector3 b = station->getPosition();
+		if (Vector2Distance(Vector2{ a.x, a.z }, Vector2{ b.x, b.z }) > kClaimReach) { return deny("too far away"); }
+
+		// The unlock gate, on the server: the artifact tier must reach the game
+		if (player->artifactUnlocked < entry.game) { return deny("MiniGame not unlocked"); }
+
+		entry.holder = slot;
+		entry.grantedTick = simTick;
+		stations.WriteToMap(gameMap);
 		stationNoiseTimer = 0.0f;
+
+		ReportStation(Sim::StationEventKind::Granted, index, slot);
+		return true;
+	}
+
+	bool Scene::CompleteStation(int index, int slot)
+	{
+		if (!stations.IsValidIndex(index)) { return false; }
+		Sim::StationEntry& entry = stations.At(index);
+
+		if (entry.holder != slot)
+		{
+			std::cout << "[Station] Slot " << slot << " can't complete station " << index << ": it isn't the holder\n";
+			ReportStation(Sim::StationEventKind::Denied, index, slot);
+			return false;
+		}
+
+		// Timed on the server, in ticks, from the grant (S-3)
+		const float held = static_cast<float>(simTick - entry.grantedTick) / Sim::kTickRate;
+		if (held < entry.minimumSeconds)
+		{
+			std::cout << "[Station] Slot " << slot << " completed station " << index << " after " << held
+				<< " s, under its minimum of " << entry.minimumSeconds << " s: refused\n";
+			ReportStation(Sim::StationEventKind::Denied, index, slot);
+			return false;
+		}
+
+		entry.holder = -1;
+		entry.completedInWorld = true;
+		stations.WriteToMap(gameMap);
+
+		// The reward is the server's to give (S-5)
+		if (Player* player = PlayerInSlot(slot))
+		{
+			if (const std::optional<MiniGameReward> reward = RewardFor(entry.game))
+			{
+				if (reward->heal > 0.0f) { player->applyHealthValue(reward->heal, false); }
+				if (CooldownTimer* buff = player->getBuff(reward->buff)) { buff->use(); }
+			}
+		}
+
+		std::cout << "[Station] Slot " << slot << " completed station " << entry.id << "\n";
+		ReportStation(Sim::StationEventKind::Completed, index, slot);
+		return true;
+	}
+
+	bool Scene::ReleaseStation(int index, int slot)
+	{
+		if (!stations.IsValidIndex(index)) { return false; }
+		Sim::StationEntry& entry = stations.At(index);
+		if (entry.holder != slot) { return false; }
+
+		entry.holder = -1;
+		stations.WriteToMap(gameMap);
+		ReportStation(Sim::StationEventKind::Released, index, slot);
+		return true;
+	}
+
+	void Scene::ReleaseStationsHeldBy(int slot, bool report)
+	{
+		const int index = stations.HeldBy(slot);
+		if (index < 0) { return; }
+		stations.At(index).holder = -1;
+		stations.WriteToMap(gameMap);
+		if (report) { ReportStation(Sim::StationEventKind::Released, index, slot); }
 	}
 #pragma endregion
 
 #pragma region Scene Update
 	/** Scene Functions **/
-	void Scene_frame(Scene& scene, Camera3D& camera) {
+	void Scene_frame(Scene& scene, Camera3D& camera, float frameTime) {
 
 		auto worldEditor = &Editor::WorldEditor::getInstance();
 		auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 		// Swap Editor and Player Camera. The editor camera ignores overlays, so the
 		// Main Menu world can still be flown around under its Title; the player's
-		// camera only follows the mouse while gameplay has the player's input.
-		// Ahead of the tick, so the player moves the way the camera now faces.
+		// camera only follows the player while gameplay has the player's input.
+		// It looks along the player's simulated look plus the mouse movement no
+		// tick has consumed yet, so turning never waits for a tick.
 		if (worldEditor->IsEnabled()) {
 			worldEditor->editorCamera.Update(&camera);
 		}
 		else if (scene.overlays.GameplayHasInput()) {
-			if (scene.player != nullptr) {
-				scene.player->camera.UpdateCameraFPS(&camera, scene.player->rigidBody3D);
+			if (Player* local = Client::LocalPlayer(scene)) {
+				const auto& sampler = Client::CommandSampler::getInstance();
+				PlayerCamera::PlaceCamera(&camera, local->EyePosition(), sampler.ViewYaw(), sampler.ViewPitch());
 			}
 			else {
 				std::cerr << "No Camera Detected \n";
 			}
+		}
+
+		// The flashlight follows the local player's own switch, applied only when
+		// that changes, so the World Editor's Flashlight checkbox still works in between
+		Player* local = Client::LocalPlayer(scene);
+		if (local != nullptr && local->flashlightOn != scene.drawnFlashlight) {
+			scene.drawnFlashlight = local->flashlightOn;
+			Lighting::LightingSystem::getInstance().SetFlashlightEnabled(scene.drawnFlashlight);
 		}
 
 		// The Back action backs out of whatever overlay is on top. Backing out of a
@@ -272,11 +631,28 @@ namespace SceneManagement {
 			}
 		}
 
+		// Pause opens over gameplay only, and never from inside the World Editor
+		if (!worldEditor->IsEnabled() && scene.overlays.GameplayHasInput()
+			&& inputSystem->IsActionPressed(InputSystem::ACTION_UI_PAUSE)) {
+			scene.overlays.Open(Overlay::Pause);
+		}
+
+		/** Update MiniGame **/
+		scene.TickMiniGame(frameTime);
+
+		// The Jumpscare comes down on its own once its time is up
+		Client::UpdatePresentation(scene, frameTime);
+
+		// The stalker's footsteps and breathing, before it is close enough to catch
+		Client::UpdateStalkerWarnings(scene, frameTime);
+
 		// World Editor (includes the developer tool windows)
 		worldEditor->update(scene);
 	}
 
-	void Scene_tick(Scene& scene, float delta) {
+	void Scene_tick(Scene& scene, float delta, std::span<const Sim::PlayerCommand> commands) {
+
+		++scene.simTick;
 
 		auto worldEditor = &Editor::WorldEditor::getInstance();
 		if (scene.update) { scene.update(scene, delta); }
@@ -320,19 +696,19 @@ namespace SceneManagement {
 		}
 
 		/** Update Player **/
-		if (auto player = scene.player) {
+		// Every tick, whatever is on screen: the simulation never reads an overlay.
+		// Under an overlay or the World Editor the client sends empty commands, so
+		// the player stands still until it closes.
+		scene.ForEachPlayer([&](int slot, Player& player) {
 			if (editorFrozen)
 			{
-				player->rigidBody3D.SyncBroadPhaseBox();
+				player.rigidBody3D.SyncBroadPhaseBox();
+				return;
 			}
-			else if (scene.overlays.GameplayHasInput())
-			{
-				if (!worldEditor->IsEnabled()) { player->update3D(scene, delta); };
-				clampObject(*player, scene.limitYBounds);
-			}
-			// Under any overlay the player stands still until it closes; inside a
-			// MiniGame the player is the game's own cursor
-		}
+			const Sim::PlayerCommand command = slot < static_cast<int>(commands.size()) ? commands[slot] : Sim::PlayerCommand{};
+			player.update3D(scene, command, delta);
+			clampObject(player, scene.limitYBounds);
+		});
 
 		/* Update GameObjects */
 		scene.gameMap.ForEachGameObject([&](GameObject& object) {
@@ -387,8 +763,12 @@ namespace SceneManagement {
 		// snapped flush against.
 		if (!editorFrozen) { scene.SolveCollisions(8); }
 
-		/** Update MiniGame **/
-		scene.TickMiniGame(delta);
+		/* Catches */
+		// After the collisions, so contact means what the solver left touching, and
+		// outside every FSM, so a catch happens the same way in all four states.
+		// The round is decided once, at the very end of the tick (rule C-1).
+		if (!editorFrozen) { scene.CheckCatches(); scene.CheckEscapes(); }
+		scene.ResolveRound();
 	}
 
 	void Scene_drawScene2D(Scene& scene) {
@@ -407,7 +787,7 @@ namespace SceneManagement {
 
 		// Over the overlays, the reticle during gameplay. Inside a MiniGame the
 		// player is the game's own cursor, which the game draws.
-		if (scene.player != nullptr && scene.overlays.GameplayHasInput()) { scene.player->render2D(); }
+		if (Player* local = Client::LocalPlayer(scene); local != nullptr && scene.overlays.GameplayHasInput()) { local->render2D(); }
 
 		UI::endFrame();
 	}
@@ -419,7 +799,18 @@ namespace SceneManagement {
 
 		scene.gameMap.ForEachObject([](GameObject& object) { object.render3D(); });
 
-		if (scene.player != nullptr) { scene.player->render3D(); }
+		scene.ForEachPlayer([](int, Player& player) { player.render3D(); });
+
+		// Other players are a placeholder capsule (Step 4.6); real models,
+		// animation and their flashlights are multiplayer-update work
+		scene.ForEachPlayer([](int slot, Player& player) {
+			if (slot == Client::LocalSlot() || !player.isEnabled) { return; }
+			const Vector3 at = player.getPosition();
+			const float half = player.isCrouching ? 0.25f : 0.5f;
+			const Color colour = player.flashlightOn ? Color{ 230, 220, 160, 255 } : Color{ 150, 160, 175, 255 };
+			DrawCapsule(Vector3{ at.x, at.y - half, at.z }, Vector3{ at.x, at.y + half, at.z }, 0.45f, 8, 6, colour);
+			DrawLine3D(Vector3{ at.x, at.y + half, at.z }, Vector3Add(Vector3{ at.x, at.y + half, at.z }, Vector3Scale(player.camera.forward, 0.8f)), BLACK);
+		});
 	}
 }
 #pragma endregion
