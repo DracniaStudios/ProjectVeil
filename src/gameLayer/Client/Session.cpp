@@ -1,5 +1,6 @@
 #include "Session.h"
 
+#include <ResourcePaths.h>
 #include <Scene.h>
 #include <SceneManager.h>
 #include <Client/ClientWorld.h>
@@ -26,7 +27,7 @@
 namespace Client {
 
 	namespace {
-		std::filesystem::path SavesDir() { return std::filesystem::path(RESOURCES_PATH) / ".." / "saves"; }
+		const std::filesystem::path& SavesDir() { return ResourcePaths::Saves(); }
 
 		std::unique_ptr<Net::INetTransport> MakeGnsTransport()
 		{

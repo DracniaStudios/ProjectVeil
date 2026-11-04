@@ -81,14 +81,12 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET "${PROJECT_NAME}" PROPERTY CXX_STANDARD 23)
 endif()
 
-# Define Absolute Project Path
+# No resource path is compiled in: the game finds resources/ and saves/ beside its
+# executable at run time (src/engineLayer/ResourcePaths.h), so a build copied to
+# another machine reads its own files.
 if (PRODUCTION_BUILD)
-	# Setup the ASSETS_PATH macro to the final assets directory when you share the project
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="./resources/")
 	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC PRODUCTION_BUILD=1)
 else()
-	# This is useful to get an ASSETS_PATH in your IDE during development but you should comment this if you compile a release version
-	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/resources/")
 	target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC PRODUCTION_BUILD=0)
 endif()
 

@@ -1,5 +1,6 @@
 #include <Settings.h>
 
+#include <ResourcePaths.h>
 #include <SaveStore.h>
 #include <algorithm>
 #include <cstdio>
@@ -10,7 +11,6 @@ namespace Settings {
 
 	using Json = nlohmann::json;
 	constexpr int VERSION = 1;
-	constexpr const char* SETTINGS_DIRECTORY = RESOURCES_PATH "../saves/";
 	constexpr const char* STORE_NAME = "settings";
 
 #pragma region Descriptors
@@ -191,7 +191,7 @@ namespace Settings {
 
 	Settings& Settings::getInstance()
 	{
-		static SaveSystem::FileSaveStore store(SETTINGS_DIRECTORY);
+		static SaveSystem::FileSaveStore store(ResourcePaths::Saves());
 		static Settings instance(store);
 		return instance;
 	}

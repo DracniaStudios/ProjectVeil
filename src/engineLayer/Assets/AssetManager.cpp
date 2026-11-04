@@ -1,5 +1,7 @@
 #include "AssetManager.h"
 
+#include <ResourcePaths.h>
+
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
@@ -84,10 +86,11 @@ namespace AssetManager {
 
 	// Load All Folders in "recursive" mode and repeat Load Folders for each direction
 
-	// Load all supported texture/model files found under RESOURCES_PATH/folder
+	// Load all supported texture/model files found under <resources>/folder
 	void AssetManager::loadFolder(const char* folder)
 	{
-		const fs::path root = fs::path(RESOURCES_PATH) / folder;
+		const fs::path& resources = ResourcePaths::Resources();
+		const fs::path root = resources / folder;
 
 		std::error_code errorCode;
 		if (!fs::is_directory(root, errorCode))
@@ -101,12 +104,12 @@ namespace AssetManager {
 		for (const auto& entry : fs::directory_iterator(root, errorCode))
 		{
 			// If the entry is a directory, recursively load its contents.
-			// Recurse with a path relative to RESOURCES_PATH (not the absolute
+			// Recurse with a path relative to the resources folder (not the absolute
 			// filesystem path) so `folder`/`asset.folder` stay stable across
 			// machines and don't leak the local build path into the editor UI.
 			if (entry.is_directory())
 			{
-				const std::string subFolder = entry.path().lexically_relative(fs::path(RESOURCES_PATH)).string();
+				const std::string subFolder = entry.path().lexically_relative(resources).string();
 				loadFolder(subFolder.c_str());
 			}
 

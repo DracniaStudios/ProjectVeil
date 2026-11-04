@@ -17,6 +17,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+# The test executables sit in the build's tests/ folder, nowhere near a copy of
+# resources/, so say where the repo's is (src/engineLayer/ResourcePaths.h).
+# saves/ is the folder beside it.
+export VEIL_RESOURCES_DIR="$ROOT/resources"
+
 BUILD_DIR="${1:-out/build/linux-debug}"
 
 if [[ ! -d "$BUILD_DIR" ]]; then
@@ -141,15 +146,38 @@ echo "building $SETTINGS_BIN"
 g++ -std=c++23 -Wall \
 	-I src/engineLayer \
 	-I "$JSON_INC" \
-	-DRESOURCES_PATH=\"$ROOT/resources/\" \
 	tests/SettingsTests.cpp \
 	src/engineLayer/Settings.cpp \
+	src/engineLayer/ResourcePaths.cpp \
 	src/engineLayer/SaveStore.cpp \
 	-o "$SETTINGS_BIN"
 
 echo
 "$SETTINGS_BIN"
 SETTINGS_STATUS=$?
+
+# ---------------------------------------------------------------------------
+# ResourcePaths tests
+#
+# Where the game finds resources/ and saves/. The answer is resolved once per
+# process, so the binary runs twice: once beside its own executable, once with
+# VEIL_RESOURCES_DIR set. It links ResourcePaths.cpp and nothing else.
+# ---------------------------------------------------------------------------
+RESOURCE_PATHS_BIN="$OUT_DIR/resource_paths_tests"
+
+echo
+echo "building $RESOURCE_PATHS_BIN"
+g++ -std=c++23 -Wall \
+	-I src/engineLayer \
+	tests/ResourcePathsTests.cpp \
+	src/engineLayer/ResourcePaths.cpp \
+	-o "$RESOURCE_PATHS_BIN"
+
+echo
+"$RESOURCE_PATHS_BIN" --default
+RESOURCE_PATHS_STATUS=$?
+echo
+"$RESOURCE_PATHS_BIN" --override || RESOURCE_PATHS_STATUS=1
 
 # ---------------------------------------------------------------------------
 # UIEngine tests
@@ -303,7 +331,7 @@ if [[ ! -d "$OBJ_ROOT" ]]; then
 	echo
 	echo "skipping engine-linked suites: no compiled objects under '$OBJ_ROOT'." >&2
 	echo "                               build the game first: cmake --build $BUILD_DIR" >&2
-	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $UI_STATUS -ne 0 || $ALLOCATOR_STATUS -ne 0 || $COOLDOWN_STATUS -ne 0 || $RANDOM_STATUS -ne 0 || $INPUT_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 ]]; then exit 1; fi
+	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $RESOURCE_PATHS_STATUS -ne 0 || $UI_STATUS -ne 0 || $ALLOCATOR_STATUS -ne 0 || $COOLDOWN_STATUS -ne 0 || $RANDOM_STATUS -ne 0 || $INPUT_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 ]]; then exit 1; fi
 	exit 0
 fi
 
@@ -378,7 +406,6 @@ for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
 		-I thirdparty/rlImgui \
 		-I thirdparty/FastNoise2-1.1.1/include \
 		-I thirdparty/steam-1.64/public \
-		-DRESOURCES_PATH=\"$ROOT/resources/\" \
 		"$SRC" \
 		"${GAME_OBJECTS[@]}" \
 		"${IMGUI_LIBS[@]}" \
@@ -425,7 +452,6 @@ g++ -std=c++23 \
 	-I thirdparty/rlImgui \
 	-I thirdparty/FastNoise2-1.1.1/include \
 	-I thirdparty/steam-1.64/public \
-	-DRESOURCES_PATH=\"$ROOT/resources/\" \
 	tests/TriggerTests.cpp \
 	"${GAME_OBJECTS[@]}" \
 	"${IMGUI_LIBS[@]}" \
@@ -443,4 +469,4 @@ else
 fi
 TRIGGER_STATUS=$?
 
-if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $UI_STATUS -ne 0 || $ALLOCATOR_STATUS -ne 0 || $COOLDOWN_STATUS -ne 0 || $RANDOM_STATUS -ne 0 || $INPUT_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
+if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $RESOURCE_PATHS_STATUS -ne 0 || $UI_STATUS -ne 0 || $ALLOCATOR_STATUS -ne 0 || $COOLDOWN_STATUS -ne 0 || $RANDOM_STATUS -ne 0 || $INPUT_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi

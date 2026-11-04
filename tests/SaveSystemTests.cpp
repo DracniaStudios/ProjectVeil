@@ -9,11 +9,13 @@
  *
  * Same tier as GameMapTests.cpp: loading Restores objects, which binds a model,
  * which needs a GL context, so a window is opened and this links against the
- * game's own object files. See tests/run_tests.sh.
+ * game's own object files. See tests/run_tests.sh, which points
+ * VEIL_RESOURCES_DIR at the repo's resources/ (the saves/ folder beside it).
  */
 
 #include <raylib.h>
 
+#include <ResourcePaths.h>
 #include <Scene.h>
 #include <SceneManager.h>
 #include <SaveSystem.h>
@@ -45,8 +47,8 @@ using Json = nlohmann::json;
 
 static const char* TEST_SAVE = "__save_system_tests";
 
-static fs::path WorldFile() { return fs::path(RESOURCES_PATH "scenes/") / (std::string(TEST_SAVE) + ".json"); }
-static fs::path GameFile() { return fs::path(RESOURCES_PATH "../saves/") / (std::string(TEST_SAVE) + ".json"); }
+static fs::path WorldFile() { return ResourcePaths::Resources() / "scenes" / (std::string(TEST_SAVE) + ".json"); }
+static fs::path GameFile() { return ResourcePaths::Saves() / (std::string(TEST_SAVE) + ".json"); }
 
 // Removes the test save and the backup and temp files a save leaves beside it
 static void RemoveTestFiles()
@@ -537,7 +539,7 @@ static void TestTheScopeDecidesWhatASaveHolds()
 static void TestTheShippedWorldsStillLoad()
 {
 	std::printf("the World saves the game ships load every object they hold\n");
-	const SaveSystem::FileSaveStore worlds(RESOURCES_PATH "scenes/");
+	const SaveSystem::FileSaveStore worlds(ResourcePaths::Resources() / "scenes");
 
 	for (const char* name : { "mainMenu", "chunk_1" })
 	{

@@ -1,6 +1,7 @@
 #include "AudioManager.h"
 
 #include <fmod_errors.h>
+#include <ResourcePaths.h>
 #include <algorithm>
 #include <filesystem>
 #include <iostream>
@@ -101,7 +102,7 @@ namespace AudioManager {
 
 		// Load Audio File By Name
 		{
-			const fs::path audioDir = RESOURCES_PATH "audio";
+			const fs::path audioDir = ResourcePaths::Resources() / "audio";
 
 			if (!fs::exists(audioDir))
 			{
@@ -148,7 +149,7 @@ namespace AudioManager {
 
 		// Load Audio By Bank
 		{
-			const fs::path bankDir = RESOURCES_PATH "audio/banks";
+			const fs::path bankDir = ResourcePaths::Resources() / "audio" / "banks";
 
 			if (!fs::exists(bankDir)) {
 				std::cout << "[Audio Manager] No Bank Directory found at " << bankDir.string() << "\n";

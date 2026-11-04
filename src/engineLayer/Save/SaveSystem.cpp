@@ -4,14 +4,16 @@
 #include <filesystem>
 #include <fstream>
 #include <LightingSystem.h>
+#include <ResourcePaths.h>
 #include <Scene.h>
 
 // 3 added the "Lighting" section. The loader only rejects files NEWER than
 // this, so version 2 saves (which have no lights) still load.
 constexpr int VERSION = 3;
 
-constexpr const char* GAME_SAVE_PATH = RESOURCES_PATH "../saves/";
-constexpr const char* WORLD_SAVE_PATH = RESOURCES_PATH "scenes/";
+// Game saves live in saves/, World saves in resources/scenes/: both beside the executable
+static const std::filesystem::path& GameSaveDirectory() { return ResourcePaths::Saves(); }
+static std::filesystem::path WorldSaveDirectory() { return ResourcePaths::Resources() / "scenes"; }
 
 namespace SaveSystem
 {
@@ -355,7 +357,7 @@ namespace SaveSystem
 	{
 		if (scene == nullptr) { return false; }
 
-		FileSaveStore store(GAME_SAVE_PATH);
+		FileSaveStore store(GameSaveDirectory());
 		if (!Save(store, fileName, *scene, SaveScope::Game, { LightingParticipant() })) { return false; }
 
 		const fs::path path = store.PathOf(fileName);
@@ -366,7 +368,7 @@ namespace SaveSystem
 
 	bool LoadGame(const char* fileName, SceneManagement::Scene& scene)
 	{
-		const FileSaveStore store(GAME_SAVE_PATH);
+		const FileSaveStore store(GameSaveDirectory());
 		if (!Load(store, fileName, scene, SaveScope::Game, { LightingParticipant() })) { return false; }
 
 		const fs::path path = store.PathOf(fileName);
@@ -379,7 +381,7 @@ namespace SaveSystem
 	{
 		if (scene == nullptr) { return false; }
 
-		FileSaveStore store(WORLD_SAVE_PATH);
+		FileSaveStore store(WorldSaveDirectory());
 		if (!Save(store, fileName, *scene, SaveScope::World, { LightingParticipant() })) { return false; }
 
 		std::cout << "[Save System] Saved World: " << store.PathOf(fileName) << "\n";
@@ -388,7 +390,7 @@ namespace SaveSystem
 
 	bool LoadWorld(std::string fileName, SceneManagement::Scene& scene)
 	{
-		const FileSaveStore store(WORLD_SAVE_PATH);
+		const FileSaveStore store(WorldSaveDirectory());
 		std::cout << "[Save System] Attempt Loading World: " << store.PathOf(fileName);
 		Json save;
 		if (!store.Read(fileName, save)) { return false; }
@@ -432,7 +434,7 @@ namespace SaveSystem
 		std::vector<std::string> fileNames;
 
 		// Get All Files in Worlds Folder
-		for (const auto& entry : fs::recursive_directory_iterator(WORLD_SAVE_PATH, errorCode)) {
+		for (const auto& entry : fs::recursive_directory_iterator(WorldSaveDirectory(), errorCode)) {
 			// Check Only For Json Files
 			const std::string ext = lowerExtension(entry.path());
 			if (ext != ".json") { continue; }

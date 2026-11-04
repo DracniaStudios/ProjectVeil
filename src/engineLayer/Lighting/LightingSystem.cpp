@@ -3,6 +3,7 @@
 #include <rlgl.h>
 
 #include <AssetManager.h>
+#include <ResourcePaths.h>
 #include <SceneManager.h>
 #include <Settings.h>
 #include <Client/LocalPlayer.h>
@@ -10,11 +11,15 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <string>
 
 namespace Lighting
 {
-	constexpr const char* SHADER_VS_PATH = RESOURCES_PATH "shaders/glsl330/lighting.vs";
-	constexpr const char* SHADER_FS_PATH = RESOURCES_PATH "shaders/glsl330/lighting.fs";
+	// One of the lighting shader's files, as the C string raylib wants
+	static std::string ShaderPath(const char* fileName)
+	{
+		return (ResourcePaths::Resources() / "shaders" / "glsl330" / fileName).string();
+	}
 
 	// raylib's PixelFormat has no depth entries; 19 is UNCOMPRESSED_R32 in the
 	// public enum and is what raylib's own shadowmap sample stores for a
@@ -231,11 +236,13 @@ namespace Lighting
 			heardSettings = true;
 		}
 
-		lightShader = LoadShader(SHADER_VS_PATH, SHADER_FS_PATH);
+		const std::string vertexPath = ShaderPath("lighting.vs");
+		const std::string fragmentPath = ShaderPath("lighting.fs");
+		lightShader = LoadShader(vertexPath.c_str(), fragmentPath.c_str());
 		if (!IsShaderValid(lightShader))
 		{
-			std::cerr << "[Lighting] Failed to load lighting shader:\n  " << SHADER_VS_PATH
-				<< "\n  " << SHADER_FS_PATH << "\n[Lighting] Falling back to raylib's unlit shader\n";
+			std::cerr << "[Lighting] Failed to load lighting shader:\n  " << vertexPath
+				<< "\n  " << fragmentPath << "\n[Lighting] Falling back to raylib's unlit shader\n";
 
 			// LoadShader allocates the locs array even on failure — release it
 			UnloadShader(lightShader);

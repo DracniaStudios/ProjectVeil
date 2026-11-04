@@ -1,5 +1,6 @@
 #include "gameMain.h"
 
+#include <ResourcePaths.h>
 #include <WorldEditor.h>
 #include <Client/CommandSampler.h>
 #include <Client/LocalPlayer.h>
@@ -153,7 +154,7 @@ bool update_game()
 void close_game()
 {
 	std::cout << "Close Game \n";
-	std::ofstream f(RESOURCES_PATH "debug.log");
+	std::ofstream f(ResourcePaths::Resources() / "debug.log");
 
 
 	auto now = std::chrono::system_clock::now();

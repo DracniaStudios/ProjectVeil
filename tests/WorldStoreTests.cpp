@@ -12,6 +12,7 @@
 
 #include <raylib.h>
 
+#include <ResourcePaths.h>
 #include <Scene.h>
 #include <SaveSystem.h>
 #include <AI/Stalker.h>
@@ -43,7 +44,7 @@ static void TestFileWorldStore()
 	World::WorldState state;
 	Check(!store.ReadState(state), "nothing can be read before BeginOpen (W-6)");
 
-	const auto savesBefore = std::distance(std::filesystem::directory_iterator(RESOURCES_PATH "../saves"), std::filesystem::directory_iterator{});
+	const auto savesBefore = std::distance(std::filesystem::directory_iterator(ResourcePaths::Saves()), std::filesystem::directory_iterator{});
 
 	store.BeginOpen("chunk_1:0123456789abcdef");
 	Check(store.Status() == World::WorldStoreStatus::Ready, "opening is immediate");
@@ -67,7 +68,7 @@ static void TestFileWorldStore()
 	store.SubmitStationCompleted(1);
 	Check(!store.ReadState(state), "after Close, Submit is ignored and nothing is read");
 
-	const auto savesAfter = std::distance(std::filesystem::directory_iterator(RESOURCES_PATH "../saves"), std::filesystem::directory_iterator{});
+	const auto savesAfter = std::distance(std::filesystem::directory_iterator(ResourcePaths::Saves()), std::filesystem::directory_iterator{});
 	Check(savesBefore == savesAfter, "no new file appears in saves/");
 }
 
