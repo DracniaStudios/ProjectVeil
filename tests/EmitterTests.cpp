@@ -258,7 +258,7 @@ static void TestFastImpactIsAudible()
 	SceneManagement::Scene* scene = MakeScene();
 
 	// Overlapping boxes, the second driving into the first hard.
-	GameObject* wall = AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 800);
+	AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 800);
 	GameObject* crate = AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -10, 0, 0 }, false, 801);
 
 	scene->SolveCollisions();
@@ -283,8 +283,8 @@ static void TestRestingContactIsSilent()
 
 	// Overlapping but barely closing — a body settled against another. This is
 	// the case that decides whether walking a room floods the sound field.
-	GameObject* floor = AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 810);
-	GameObject* box = AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -0.2f, 0, 0 }, false, 811);
+	AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 810);
+	AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -0.2f, 0, 0 }, false, 811);
 
 	scene->SolveCollisions();
 
@@ -299,8 +299,8 @@ static void TestImpactScalesWithClosingSpeed()
 
 	const auto loudnessAtSpeed = [](float speed) -> float {
 		SceneManagement::Scene* scene = MakeScene();
-		GameObject* wall = AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 820);
-		GameObject* crate = AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -speed, 0, 0 }, false, 821);
+		AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 820);
+		AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -speed, 0, 0 }, false, 821);
 		scene->SolveCollisions();
 		const SoundEvent* event = FirstOfKind(scene, SOUND_IMPACT);
 		const float loudness = event != nullptr ? event->loudness : 0.0f;
@@ -321,8 +321,8 @@ static void TestImpactIsOncePerContact()
 	std::printf("one collision is one noise\n");
 	SceneManagement::Scene* scene = MakeScene();
 
-	GameObject* wall = AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 830);
-	GameObject* crate = AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -10, 0, 0 }, false, 831);
+	AddCrate(scene, Vector3{ 0, 0, 0 }, Vector3Zero(), true, 830);
+	AddCrate(scene, Vector3{ 0.5f, 0, 0 }, Vector3{ -10, 0, 0 }, false, 831);
 
 	// The solver runs eight iterations per frame over the same pair, and the pair
 	// stays in contact into the next frame. The noise belongs to the contact's
