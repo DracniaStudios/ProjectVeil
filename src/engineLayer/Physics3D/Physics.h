@@ -243,14 +243,11 @@ namespace Physics3D {
 		// Which bodies are touching which is kept by the PhysicsWorld, by id, not here
 		Vector3 lastPosition = {};
 		Vector3 appliedGravity = Vector3{ 0, 20, 0 };
-
-		float maxSpeed = 200.0f;
 		float drag = 0.9f;
 
 		bool useGravity = true;
 
 		float airTime = 0;
-		uint64_t objectID = 0;
 	public:
 
 		bool isEnabled = true;
