@@ -8,7 +8,8 @@
  *     and the rows it reads back parse (Q51's boundary test)
  *   - completed stations survive the store closing and a new one opening
  *     (a Host restart); a Full wipe deletes them
- *   - a store with another identity is not the owner and Fails
+ *   - a store with another identity takes the world over (open_world hands the
+ *     owner value over); the previous owner's next write is refused and Fails
  *   - host.lock keeps a second Host off the world
  *
  * Against a fake SpacetimeDB on 127.0.0.1:3901 (an httplib server in this test):
@@ -39,6 +40,7 @@
 #include <set>
 #include <string>
 #include <thread>
+#include <vector>
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -150,21 +152,47 @@ static void TestLive()
 		World::WorldState state;
 		store.ReadState(state);
 		Check(state.completedStations.empty(), "the Full wipe deleted the rows");
+
+		store.SubmitStationCompleted(500);
+		Check(WaitFor([&] { return store.Pending() == 0; }, 10.0), "a station is completed under the first identity");
+
+		// Another identity opens the same world (a re-minted identity file, a moved
+		// saves folder): it takes the world over, state intact. The module's
+		// open_world hands the owner value over instead of refusing.
+		std::error_code ignored;
+		std::filesystem::remove(TempDir() / "other_identity.json", ignored);
+		{
+			st::SpacetimeWorldStore successor(Config("other_identity.json"));
+			successor.BeginOpen(key);
+			Check(Opened(successor), "another identity takes the world over: " + successor.LastError());
+			World::WorldState taken;
+			Check(successor.ReadState(taken) && taken.completedStations == std::vector<std::uint64_t>{ 500 }, "and sees the world's state");
+
+			successor.SubmitStationCompleted(501);
+			Check(WaitFor([&] { return successor.Pending() == 0; }, 10.0) && successor.Status() == WorldStoreStatus::Ready, "the new owner's writes go through");
+
+			// The previous owner is no longer the owner: its next write is refused and
+			// the store Fails with the reducer's message, instead of writing silently
+			store.SubmitStationCompleted(502);
+			WaitFor([&] { return store.Status() == WorldStoreStatus::Failed; }, 10.0);
+			Check(store.Status() == WorldStoreStatus::Failed && store.LastError().find("not the owner") != std::string::npos,
+				"the previous owner's write is refused: " + store.LastError());
+			successor.Close(std::chrono::seconds(1));
+		}
 		store.Close(std::chrono::seconds(1));
 	}
 
 	{
-		// Someone else's identity: not the owner (Q49)
-		std::error_code ignored;
-		std::filesystem::remove(TempDir() / "other_identity.json", ignored);
-		st::SpacetimeWorldStore stranger(Config("other_identity.json"));
-		stranger.BeginOpen(key);
-		WaitFor([&] { return stranger.Status() != WorldStoreStatus::Opening; }, 10.0);
-		Check(stranger.Status() == WorldStoreStatus::Failed && stranger.LastError().find("not the owner") != std::string::npos,
-			"another identity can't open the world: " + stranger.LastError());
+		// The first identity opens the world again and takes it back, keeping the
+		// new owner's work (501)
+		st::SpacetimeWorldStore store(Config("host_identity.json"));
+		store.BeginOpen(key);
+		Check(Opened(store), "the first identity takes the world back: " + store.LastError());
 		World::WorldState state;
-		Check(!stranger.ReadState(state), "and reads nothing");
-		stranger.Close(std::chrono::milliseconds(0));
+		store.ReadState(state);
+		const std::set<std::uint64_t> done(state.completedStations.begin(), state.completedStations.end());
+		Check(done == std::set<std::uint64_t>{ 500, 501 }, "with both owners' stations");
+		store.Close(std::chrono::seconds(1));
 	}
 
 	{

@@ -6,6 +6,7 @@
 #include <Client/ClientWorld.h>
 #include <Client/DevOptions.h>
 #include <Client/LocalPlayer.h>
+#include <Client/OnlineWorldSync.h>
 #include <World/FileWorldStore.h>
 #include <World/WorldKey.h>
 #include <net/LoopbackTransport.h>
@@ -271,6 +272,9 @@ namespace Client {
 		case SessionPhase::LoadingWorld:
 			if (!SceneLoaded(manager, sceneBefore)) { return; }
 			sessionScene = manager.currentScene;
+			onlineWorldKey = World::MakeWorldKey(World::WorldIdFromName(sessionScene->worldName), sessionScene->contentHash);
+			onlineSynced = false;
+			onlineSyncedStations.clear();
 			clientTransport = MakeGnsTransport();
 			client = std::make_unique<ClientWorld>(*clientTransport, true);
 			if (!client->Connect(address, sessionScene->contentHash, name, sessionScene->stations.Count()))
@@ -303,6 +307,20 @@ namespace Client {
 			if (client->State() == ConnectionState::Lost) { Fail("Disconnected from the Host"); return; }
 			if (manager.currentScene != sessionScene) { Leave(); return; }
 			client->ApplySnapshots(*sessionScene, now);
+
+			// Keep the Host's World state in a temp file; rewritten only when it changes
+			if (client->NewestServerTick() > 0)
+			{
+				std::vector<std::uint64_t> completed = sessionScene->stations.CompletedInWorld();
+				if (!onlineSynced || completed != onlineSyncedStations)
+				{
+					if (SyncWorldFromServer(*client, sessionScene->stations, onlineWorldKey))
+					{
+						onlineSynced = true;
+						onlineSyncedStations = std::move(completed);
+					}
+				}
+			}
 			LogBandwidth(now);
 			return;
 
@@ -319,6 +337,8 @@ namespace Client {
 		// connection with linger and the listen socket and poll group,
 		// 3. GameNetworkingSockets_Kill. The World store closes after.
 		if (server) { server->DisconnectAll(); }
+		if (!onlineWorldKey.empty()) { DiscardOnlineWorldState(onlineWorldKey); onlineWorldKey.clear(); }
+		onlineSynced = false;
 		client.reset();
 		server.reset();
 		clientTransport.reset();

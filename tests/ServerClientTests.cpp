@@ -25,6 +25,7 @@
 #include <AI/Stalker.h>
 #include <Client/ClientWorld.h>
 #include <Client/LocalPlayer.h>
+#include <Client/OnlineWorldSync.h>
 #include <net/LoopbackTransport.h>
 #include <net/Protocol.h>
 #include <sim/FixedTick.h>
@@ -34,6 +35,8 @@
 #include <cmath>
 #include <cstdio>
 #include <deque>
+#include <filesystem>
+#include <fstream>
 #include <map>
 #include <memory>
 #include <string>
@@ -571,6 +574,67 @@ static void TestNewEpochEndsTheRound()
 	SceneManagement::Scene_delete(scene);
 }
 
+static void TestOnlineWorldSync()
+{
+	std::printf("Online world sync: the joined server's World state lands in a temp file\n");
+	const std::string key = "synctest:0123456789abcdef";
+	Client::DiscardOnlineWorldState(key);
+
+	SceneManagement::Scene* scene = StationScene();
+	Hub hub;
+	Sim::ServerWorld server(hub.server);
+	server.AttachScene(scene);
+
+	Hub::ClientEnd& end = hub.NewClient();
+	Client::ClientWorld client(end, true);
+	client.Connect("x", scene->contentHash, "Syncer", scene->stations.Count());
+
+	// Not Welcomed, no Snapshot yet: nothing is written
+	Check(!Client::SyncWorldFromServer(client, scene->stations, key), "no file before the client is Welcomed");
+	Check(!std::filesystem::exists(Client::OnlineWorldFile(key)), "and none on disk");
+
+	for (int i = 0; i < 6; ++i) { server.Tick(Sim::kTickDelta); client.Poll(scene); }
+	Check(client.State() == Client::ConnectionState::Welcomed && client.NewestServerTick() > 0, "Welcomed with a Snapshot received");
+
+	// Nothing completed through play yet: an empty list, still a valid file
+	std::filesystem::path written;
+	Check(Client::SyncWorldFromServer(client, scene->stations, key, &written), "sync writes once there is a Snapshot");
+	Check(written == Client::OnlineWorldFile(key) && std::filesystem::exists(written), "to the key's temp file");
+	World::WorldState state;
+	Check(Client::ReadOnlineWorldState(written, key, state) && state.completedStations.empty(), "it reads back empty");
+
+	// A completion on the server shows up in the next sync
+	scene->PlayerInSlot(client.Slot())->artifactUnlocked = MINI_GAME_RO_SHAM_BOO_ID;
+	scene->PlayerInSlot(client.Slot())->rigidBody3D.Teleport(Vector3(4, 1, 3));
+	Check(scene->ClaimStation(1, client.Slot()), "Slot claims station 1");
+	Check(scene->CompleteStation(1, client.Slot()), "and completes it");
+	scene->TakeEvents();
+	const std::uint64_t completedId = scene->stations.At(1).id;
+	for (int i = 0; i < 4; ++i) { server.Tick(Sim::kTickDelta); client.Poll(scene); }
+
+	Check(Client::SyncWorldFromServer(client, scene->stations, key), "sync again");
+	World::WorldState after;
+	Check(Client::ReadOnlineWorldState(written, key, after), "reads back");
+	Check(after.completedStations.size() == 1 && after.completedStations[0] == completedId, "holding exactly the completed station's id");
+	Check(!std::filesystem::exists(written.string() + ".tmp"), "no partial file is left behind");
+
+	// A file for another world, or a damaged one, is refused
+	World::WorldState foreign;
+	Check(!Client::ReadOnlineWorldState(written, "other:0000000000000000", foreign), "another world key is refused");
+	{
+		std::ofstream bad(written, std::ios::binary | std::ios::trunc);
+		bad << "{ not json";
+	}
+	Check(!Client::ReadOnlineWorldState(written, key, foreign), "a damaged file is refused");
+
+	Client::DiscardOnlineWorldState(key);
+	Check(!std::filesystem::exists(written), "Discard removes the file");
+	Client::DiscardOnlineWorldState(key); // a missing file is fine
+
+	Client::SetLocalSlot(0);
+	SceneManagement::Scene_delete(scene);
+}
+
 int main()
 {
 	SetTraceLogLevel(LOG_ERROR);
@@ -588,6 +652,7 @@ int main()
 	TestDirectorSkipsHeldStations();
 	TestDisconnectReleasesAndRequestRate();
 	TestNewEpochEndsTheRound();
+	TestOnlineWorldSync();
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 

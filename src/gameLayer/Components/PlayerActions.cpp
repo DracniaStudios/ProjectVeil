@@ -4,6 +4,7 @@
 
 void Player::Interact(SceneManagement::Scene& scene)
 {
+	std::cout << "\n[PLayer.cpp] Interacted with Object\n";
 	// Check buff for increased range
 	int interactRange = defaultInteractRange;
 	if (auto* rangeBuff = getBuff(BUFF_RANGE);
@@ -33,6 +34,7 @@ void Player::Interact(SceneManagement::Scene& scene)
 
 		if (closest == nullptr || distance < closestDistance)
 		{
+			std::cout << "\n[PlayerActions.cpp] Interaction Applied to " << obj.name << "\n";
 			closest = &obj;
 			closestDistance = distance;
 		}

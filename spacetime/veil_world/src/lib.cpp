@@ -70,8 +70,12 @@ namespace {
     }
 }
 
-// Ensures the world exists and belongs to the caller. A missing world is
-// created with the caller as its owner. Calling it again changes nothing.
+// Opens the world for the caller, who becomes its owner. A missing world is
+// created. A world another identity owned is handed over: the Host PC runs one
+// Host at a time (host.lock) and this database listens on 127.0.0.1 only, so
+// the identity that opens a world is by definition the current Host. The old
+// owner is refused from then on by complete_station and reset_world, which
+// keep checking the owner. Calling it again as the owner changes nothing.
 SPACETIMEDB_REDUCER(open_world, ReducerContext ctx, std::string world_key) {
     if (!IsValidWorldKey(world_key)) {
         return Err("invalid world key");
@@ -79,7 +83,7 @@ SPACETIMEDB_REDUCER(open_world, ReducerContext ctx, std::string world_key) {
 
     if (auto existing = ctx.db[world_world_key].find(world_key)) {
         if (existing->owner != ctx.sender()) {
-            return Err("not the owner of this world");
+            ctx.db[world_world_key].update(World{ world_key, ctx.sender() });
         }
         return Ok();
     }

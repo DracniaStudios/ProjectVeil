@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace SceneManagement { struct Scene; struct SceneManager; }
 namespace Sim { class ServerWorld; }
@@ -128,6 +129,9 @@ namespace Client {
 		std::string address;
 		std::string name = "Player";
 		std::string worldId;
+		std::string onlineWorldKey;                    // Join: names the temp file of the Host's World state
+		std::vector<std::uint64_t> onlineSyncedStations; // what that file holds, so it is rewritten only on change
+		bool onlineSynced = false;
 		std::string status;
 		std::string lastError;
 		std::chrono::steady_clock::time_point savingDeadline;

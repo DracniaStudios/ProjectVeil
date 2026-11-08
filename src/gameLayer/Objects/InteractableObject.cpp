@@ -153,7 +153,7 @@ bool InteractableObject::loadFromJson(Json& j)
 		activator = 0;
 	}
 
-	isInteractable = j.value("IsInteractable", true);
+	isInteractable = true;
 	isCompleted = j.value("IsCompleted", false);
 	minimumSeconds = j.value("MinimumSeconds", kDefaultMinimumSeconds);
 	if (!(minimumSeconds >= 0.0f)) { minimumSeconds = kDefaultMinimumSeconds; } // also rejects NaN

@@ -48,6 +48,7 @@ namespace Sim {
 			if (!worldStore->ReadState(state)) { return false; }
 
 			std::vector<std::uint64_t> unknown;
+			scene->FullWipe();
 			scene->stations.ApplyWorldState(state.completedStations, &unknown);
 			for (const std::uint64_t id : unknown)
 			{

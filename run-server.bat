@@ -1,0 +1,1 @@
+powershell -ExecutionPolicy Bypass -File spacetime\start_spacetime.ps1
