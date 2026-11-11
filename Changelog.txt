@@ -3,30 +3,41 @@
 // Due: 2026-11-6 
 // Date: 2026-10-30 (Current Development Date)
 
-[Notice] World Editor doesn't use new InputSystem.
 [Notice] Create Maze Minigame
 [Notice] Get Smaller Texture Resolutions and load them based on Settings
 [Notice] Only load Files when they're being used
 [Notice] Add Mass to Rigidbody3D
 [Concept] Load World With Chunks? | Possible Procedural Generation
-[Conecpt] AssetManager Adds Items from Item Folder To "Asset Manager" (Similar to Models and Textures)
 [Notice] Save Rigidbody Locks if locked;
 
 1. Create a player goal to load into the next scene and save current data
 
 [ Issues ]
 
+- Start Server through the real GNS path (Host plus a joining client) is still untested against the new owner handover and the online world temp file; the tests cover the world-store layer and an in-memory network only.
 
 [ Added ]
 
-- Added new Pause Overlay & Input for Player
+- Added OnlineWorldSync (Client/OnlineWorldSync.h/.cpp): a joined client writes the Host's World state (completed stations, taken from the Snapshots) to a temp file at <temp dir>/veil_online/<world key>.json. Written atomically, rewritten only when the state changes, deleted when the session ends. The Host's SpacetimeDB stays the only durable record.
+- Added SyncWorldFromServer, ReadOnlineWorldState, DiscardOnlineWorldState and OnlineWorldFile.
+- Added TestOnlineWorldSync to ServerClientTests (no file before a Snapshot, empty list, a completed station, wrong world key and damaged file refused, Discard).
+- Added HostProcessTests: separate Host processes against the live SpacetimeDB (three-process takeover, stale owner refused, host.lock across processes). Also added to run_tests.sh.
+- Added run-server.bat and publish-server.bat (start SpacetimeDB; build and publish veil_world).
 
 [ Updated ]
 
-- Updted EngineLayer to hold folders for scripts
+- Session (Join) syncs the Host's World state to the temp file once the first Snapshot arrives and on every change, and removes it when networking stops.
+- veil_world open_world now hands the world to the identity that opens it instead of refusing with "not the owner". complete_station and reset_world still check the owner, so the previous Host's later writes fail with "not the owner". The module was republished to the local SpacetimeDB without wiping data.
+- SpacetimeWorldStoreTests: the "another identity can't open the world" check is now a takeover check (new owner sees the state, previous owner's write fails, first identity takes the world back).
+- ServerWorld::ApplyWorldState wipes the scene's station state before applying the stored World state.
+- InteractableObject::loadFromJson always sets isInteractable to true instead of reading "IsInteractable".
+- Added console logging to Player::Interact (PlayerActions.cpp).
 
 [ Fixed ]
 
+- Fixed a bug where the first MiniGame Terminal wouldn't run.
+- Fixed the Host being unable to host a world whose owner was another identity (a re-minted dev_identity.json or a different PC): SpacetimeDB never updated the owner value.
+
 [ Removed ]
 
-- Removed Raylib Projects from Folder
+- Removed host.bat (replaced by run-server.bat and publish-server.bat).

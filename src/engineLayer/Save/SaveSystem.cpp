@@ -4,14 +4,16 @@
 #include <filesystem>
 #include <fstream>
 #include <LightingSystem.h>
+#include <ResourcePaths.h>
 #include <Scene.h>
 
 // 3 added the "Lighting" section. The loader only rejects files NEWER than
 // this, so version 2 saves (which have no lights) still load.
 constexpr int VERSION = 3;
 
-constexpr const char* GAME_SAVE_PATH = RESOURCES_PATH "../saves/";
-constexpr const char* WORLD_SAVE_PATH = RESOURCES_PATH "scenes/";
+// Game saves live in saves/, World saves in resources/scenes/: both beside the executable
+static const std::filesystem::path& GameSaveDirectory() { return ResourcePaths::Saves(); }
+static std::filesystem::path WorldSaveDirectory() { return ResourcePaths::Resources() / "scenes"; }
 
 namespace SaveSystem
 {
@@ -121,9 +123,10 @@ namespace SaveSystem
 
 		// Player. No 2D position: the player only has one inside a MiniGame, as that
 		// game's cursor, and a running MiniGame is never saved.
-		if (gameScope && scene.player != nullptr)
+		// A Game save is single-player's, so its player is Slot 0's
+		if (gameScope && scene.PlayerInSlot(0) != nullptr)
 		{
-			j["Player"] = scene.player->formatToJson();
+			j["Player"] = scene.PlayerInSlot(0)->formatToJson();
 		}
 
 		return j;
@@ -317,11 +320,11 @@ namespace SaveSystem
 		if (save.contains("Interactables")) { RestoreInteractables(save["Interactables"], scene.gameMap); }
 
 		// Player
-		if (gameScope && save.contains("Player") && scene.player != nullptr)
+		if (gameScope && save.contains("Player") && scene.PlayerInSlot(0) != nullptr)
 		{
 			// Older saves also carry Pos2X / Pos2Y, the 2D position the player no longer
 			// has; they are ignored.
-			if (!scene.player->loadFromJson(save["Player"]))
+			if (!scene.PlayerInSlot(0)->loadFromJson(save["Player"]))
 			{
 				std::cerr << "Failed to load Player data.\n";
 			}
@@ -354,7 +357,7 @@ namespace SaveSystem
 	{
 		if (scene == nullptr) { return false; }
 
-		FileSaveStore store(GAME_SAVE_PATH);
+		FileSaveStore store(GameSaveDirectory());
 		if (!Save(store, fileName, *scene, SaveScope::Game, { LightingParticipant() })) { return false; }
 
 		const fs::path path = store.PathOf(fileName);
@@ -365,7 +368,7 @@ namespace SaveSystem
 
 	bool LoadGame(const char* fileName, SceneManagement::Scene& scene)
 	{
-		const FileSaveStore store(GAME_SAVE_PATH);
+		const FileSaveStore store(GameSaveDirectory());
 		if (!Load(store, fileName, scene, SaveScope::Game, { LightingParticipant() })) { return false; }
 
 		const fs::path path = store.PathOf(fileName);
@@ -378,7 +381,7 @@ namespace SaveSystem
 	{
 		if (scene == nullptr) { return false; }
 
-		FileSaveStore store(WORLD_SAVE_PATH);
+		FileSaveStore store(WorldSaveDirectory());
 		if (!Save(store, fileName, *scene, SaveScope::World, { LightingParticipant() })) { return false; }
 
 		std::cout << "[Save System] Saved World: " << store.PathOf(fileName) << "\n";
@@ -387,9 +390,20 @@ namespace SaveSystem
 
 	bool LoadWorld(std::string fileName, SceneManagement::Scene& scene)
 	{
-		const FileSaveStore store(WORLD_SAVE_PATH);
+		const FileSaveStore store(WorldSaveDirectory());
 		std::cout << "[Save System] Attempt Loading World: " << store.PathOf(fileName);
-		if (!Load(store, fileName, scene, SaveScope::World, { LightingParticipant() })) { return false; }
+		Json save;
+		if (!store.Read(fileName, save)) { return false; }
+
+		// Kept as authored before Apply touches it: the Full wipe restores from it,
+		// and the content hash reads its static fields
+		Json authored = save;
+		if (!Apply(save, scene, SaveScope::World, { LightingParticipant() })) { return false; }
+		scene.authoredWorld = std::move(authored);
+		scene.worldName = fileName;
+
+		// The StationTable and the content hash, from the world exactly as loaded
+		scene.OnWorldLoaded();
 
 		std::cout << "[Save System] Loaded World: " << store.PathOf(fileName)
 			<< " (" << scene.gameMap.GameObjectCount() << " objects, "
@@ -400,12 +414,27 @@ namespace SaveSystem
 		return true;
 	}
 
+	bool RestoreAuthoredObjects(SceneManagement::Scene& scene)
+	{
+		if (!scene.authoredWorld.is_object()) { return false; }
+
+		// A copy, because loading an object reads its section non-const
+		Json world = scene.authoredWorld;
+
+		scene.ClearWorld();
+		scene.gameMap.ReserveIdsBelow(world.value("IdCounter", scene.gameMap.NextId()));
+		if (world.contains("Objects")) { RestoreGameObjects(world["Objects"], scene.gameMap); }
+		if (world.contains("Entities")) { RestoreEntities(world["Entities"], scene.gameMap); }
+		if (world.contains("Interactables")) { RestoreInteractables(world["Interactables"], scene.gameMap); }
+		return true;
+	}
+
 	std::vector<std::string> GetSaveFiles() {
 		std::error_code errorCode;
 		std::vector<std::string> fileNames;
 
 		// Get All Files in Worlds Folder
-		for (const auto& entry : fs::recursive_directory_iterator(WORLD_SAVE_PATH, errorCode)) {
+		for (const auto& entry : fs::recursive_directory_iterator(WorldSaveDirectory(), errorCode)) {
 			// Check Only For Json Files
 			const std::string ext = lowerExtension(entry.path());
 			if (ext != ".json") { continue; }

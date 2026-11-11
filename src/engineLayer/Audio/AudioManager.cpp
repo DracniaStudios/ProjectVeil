@@ -1,11 +1,13 @@
 #include "AudioManager.h"
 
 #include <fmod_errors.h>
+#include <ResourcePaths.h>
 #include <algorithm>
 #include <filesystem>
 #include <iostream>
 #include <SceneManager.h>
 #include <Settings.h>
+#include <Client/LocalPlayer.h>
 
 namespace AudioManager {
 	// FMOD uses a linear scale for volume, but the user interface uses a logarithmic scale.
@@ -100,7 +102,7 @@ namespace AudioManager {
 
 		// Load Audio File By Name
 		{
-			const fs::path audioDir = RESOURCES_PATH "audio";
+			const fs::path audioDir = ResourcePaths::Resources() / "audio";
 
 			if (!fs::exists(audioDir))
 			{
@@ -147,7 +149,7 @@ namespace AudioManager {
 
 		// Load Audio By Bank
 		{
-			const fs::path bankDir = RESOURCES_PATH "audio/banks";
+			const fs::path bankDir = ResourcePaths::Resources() / "audio" / "banks";
 
 			if (!fs::exists(bankDir)) {
 				std::cout << "[Audio Manager] No Bank Directory found at " << bankDir.string() << "\n";
@@ -216,9 +218,9 @@ namespace AudioManager {
 	{
 		if (!studioSystem) return;
 
-		if (scene && scene->player)
+		if (Player* local = scene ? Client::LocalPlayer(*scene) : nullptr)
 		{
-			FMOD_3D_ATTRIBUTES listener = scene->player->getListener();
+			FMOD_3D_ATTRIBUTES listener = local->getListener();
 			studioSystem->setListenerAttributes(0, &listener);
 		}
 		studioSystem->update();

@@ -31,8 +31,7 @@ SceneManagement::Scene* Scene_MainMenuConstruct()
 	scene->draw3D = Scene_MainMenuDraw3D;
 
 
-	scene->player->setSpawnPoint(Vector3(0, 2, 0));
-	scene->player->rigidBody3D.Teleport(Vector3(0, 2, 0));
+	scene->SetSpawnPoint(Vector3(0, 2, 0));
 
 	// The Title holds the player's input for as long as this scene lives, so the
 	// world runs behind it but the player and their camera never move.
@@ -42,7 +41,7 @@ SceneManagement::Scene* Scene_MainMenuConstruct()
 	// spawn point, looking down +Z. Without this the menu shows whatever view the
 	// previous scene left in SceneManager::camera3D.
 	constexpr float kEyeHeight = 1.0f; // Half the 2-tall body Player::update3D gives the player
-	const Vector3 eye = Vector3Add(scene->player->getSpawnPoint(), Vector3(0, kEyeHeight, 0));
+	const Vector3 eye = Vector3Add(scene->GetSpawnPoint(), Vector3(0, kEyeHeight, 0));
 	Camera3D& camera = SceneManagement::SceneManager::getInstance().camera3D;
 	camera.position = eye;
 	camera.target = Vector3Add(eye, Vector3(0, 0, 1));

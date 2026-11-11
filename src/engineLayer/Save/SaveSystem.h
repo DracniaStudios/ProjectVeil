@@ -61,6 +61,15 @@ namespace SaveSystem
 	bool SaveWorld(std::string fileName, SceneManagement::Scene* scene);
 	bool LoadWorld(std::string fileName, SceneManagement::Scene& scene);
 
+	/**
+	 * Puts every World-save object back exactly as authored, under its own id,
+	 * from the World save the scene last loaded (Scene::authoredWorld). Anything
+	 * spawned since is gone; lighting, the map size and players are left alone.
+	 * The Full wipe's world half (MultiplayerSplitPlan.md C-2). False, with
+	 * nothing changed, for a scene that loaded no World save.
+	 */
+	bool RestoreAuthoredObjects(SceneManagement::Scene& scene);
+
 	std::vector<std::string> GetSaveFiles();
 }
 #endif

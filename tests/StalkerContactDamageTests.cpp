@@ -41,10 +41,9 @@ static void CheckNear(float actual, float expected, float tolerance, const std::
 static SceneManagement::Scene* MakeScene()
 {
 	SceneManagement::Scene* scene = new SceneManagement::Scene();
-	scene->player = new Player();
-	scene->player->type = OBJECT_PLAYER;
-	scene->player->id = PLAYER_ID;
-	scene->player->onEnable();
+	scene->AddPlayer(0);
+	scene->PlayerInSlot(0)->type = OBJECT_PLAYER;
+	scene->PlayerInSlot(0)->onEnable();
 	return scene;
 }
 
@@ -69,23 +68,23 @@ static void TestStalkerContactDamagesThePlayerOnce()
 	std::printf("touching a stalker costs the player its baseDamage, once\n");
 	SceneManagement::Scene* scene = MakeScene();
 
-	scene->player->rigidBody3D.Teleport(Vector3{ 0, 0, 0 });
-	scene->player->rigidBody3D.SyncBroadPhaseBox();
+	scene->PlayerInSlot(0)->rigidBody3D.Teleport(Vector3{ 0, 0, 0 });
+	scene->PlayerInSlot(0)->rigidBody3D.SyncBroadPhaseBox();
 
 	Stalker* stalker = AddStalker(scene, Vector3{ 0, 0, 0 });
 	stalker->rigidBody3D.SyncBroadPhaseBox();
 
-	const float healthBefore = scene->player->health;
+	const float healthBefore = scene->PlayerInSlot(0)->health;
 
 	// First contact. The solver runs eight iterations over the pair this frame;
 	// the damage belongs to the contact's Enter, not to each iteration.
 	scene->SolveCollisions(8);
-	CheckNear(scene->player->health, healthBefore - stalker->baseDamage, 0.001f,
+	CheckNear(scene->PlayerInSlot(0)->health, healthBefore - stalker->baseDamage, 0.001f,
 		"first contact applies exactly the stalker's baseDamage");
 
 	// Still touching on the next frame: the same contact, no new damage.
 	scene->SolveCollisions(8);
-	CheckNear(scene->player->health, healthBefore - stalker->baseDamage, 0.001f,
+	CheckNear(scene->PlayerInSlot(0)->health, healthBefore - stalker->baseDamage, 0.001f,
 		"staying in contact the next frame does not re-apply damage");
 
 	delete scene;
@@ -96,17 +95,17 @@ static void TestNonStalkerContactDoesNotDamageThePlayer()
 	std::printf("touching an ordinary entity does not cost the player health\n");
 	SceneManagement::Scene* scene = MakeScene();
 
-	scene->player->rigidBody3D.Teleport(Vector3{ 10, 0, 0 });
-	scene->player->rigidBody3D.SyncBroadPhaseBox();
+	scene->PlayerInSlot(0)->rigidBody3D.Teleport(Vector3{ 10, 0, 0 });
+	scene->PlayerInSlot(0)->rigidBody3D.SyncBroadPhaseBox();
 
 	// A Stalker positioned so the two colliders do not overlap: no contact,
 	// so no damage at all.
 	Stalker* farStalker = AddStalker(scene, Vector3{ 1000, 1000, 1000 });
 	farStalker->rigidBody3D.SyncBroadPhaseBox();
 
-	const float healthBefore = scene->player->health;
+	const float healthBefore = scene->PlayerInSlot(0)->health;
 	scene->SolveCollisions(8);
-	CheckNear(scene->player->health, healthBefore, 0.001f,
+	CheckNear(scene->PlayerInSlot(0)->health, healthBefore, 0.001f,
 		"a stalker out of contact range leaves player health untouched");
 
 	delete scene;

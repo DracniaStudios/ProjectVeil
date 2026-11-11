@@ -46,7 +46,7 @@ namespace AssetManager {
 		std::vector<Asset> assets;
 		void loadAll();
 
-		// Loads every supported texture/model file found under RESOURCES_PATH/folder
+		// Loads every supported texture/model file found under <resources>/folder
 		void loadFolder(const char* folder);
 	};
 

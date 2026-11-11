@@ -78,6 +78,9 @@ namespace AudioManager {
 		bool Play3D(const std::string& name, GameObject& object, AudioType type = AUDIO_NONE, float volume = 1.0f);
 		bool Play3D(const std::string& name, Vector3 position, AudioType type = AUDIO_NONE, float volume = 1.0f);
 
+		// Whether a sound file with this name was loaded (no event lookup)
+		bool HasSound(const std::string& name) const { return sounds.find(name) != sounds.end(); }
+
 		// Bank Audio
 		bool PlayEvent(const std::string& eventPath, AudioType type = AUDIO_NONE, float volume = 1.0f);
 		bool PlayEvent3D(const std::string& eventPath, GameObject& object, AudioType type = AUDIO_NONE, float volume = 1.0f);

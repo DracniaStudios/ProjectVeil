@@ -136,7 +136,7 @@ void WorldEditor::ShowPlacementPanel()
 		if (stagingEntityKind == ENTITYKIND_PLAYER)
 		{
 			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
-				"Scene::player is the only player; this spawns an inert duplicate.");
+				"Players live in the Scene's Slots; this spawns an inert duplicate.");
 		}
 		ImGui::InputFloat("Max Health", &stagingMaxHealth);
 		ImGui::InputFloat("Max Stamina", &stagingMaxStamina);
@@ -146,7 +146,7 @@ void WorldEditor::ShowPlacementPanel()
 	else if (placementKind == PLACE_INTERACTABLE)
 	{
 		ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "Interactable");
-		ImGui::Combo("Interact Type", &stagingInteractType, "None\0Mini Game\0Unlock\0Item\0");
+		ImGui::Combo("Interact Type", &stagingInteractType, "None\0Mini Game\0Unlock\0Item\0Exit\0");
 
 		if (stagingInteractType == INTERACT_MINIGAME)
 		{
@@ -172,6 +172,18 @@ void WorldEditor::ShowPlacementPanel()
 		{
 			ImGui::InputInt("Item ID", &stagingInteractValue);
 		}
+		else if (stagingInteractType == INTERACT_EXIT)
+		{
+			// The Exit is a trigger volume past the exit door: escaping is walking
+			// into it once the lock (a door a station opens) is open
+			ImGui::InputScalar("Exit Lock", ImGuiDataType_U64, &stagingTargetId);
+			if (stagingTargetId == 0) { ImGui::TextDisabled("None: unlocks once every Task station is completed"); }
+			else if (GameObject* lock = editedScene->gameMap.FindWorldObject(stagingTargetId)) {
+				ImGui::TextDisabled("%s", lock->name.c_str());
+			}
+			else { ImGui::TextDisabled("Missing: nothing has this id yet"); }
+			ImGui::TextDisabled("Placed as a trigger; walking in once unlocked escapes");
+		}
 		ImGui::Separator();
 	}
 
@@ -196,11 +208,12 @@ void WorldEditor::ShowPlacementPanel()
 		placementKind == PLACE_ENTITY ? "Spawn Entity" :
 		placementKind == PLACE_INTERACTABLE ? "Spawn Interactable" : "Spawn Game Object";
 	if (ImGui::Button(spawnLabel)) { SpawnStagedObject(stagingObject.getPosition()); }
-	if (scene->player != nullptr && ImGui::Button("Spawn At Player"))
+	Player* local = Client::LocalPlayer(*scene);
+	if (local != nullptr && ImGui::Button("Spawn At Player"))
 	{
 		Vector3 position = Vector3Add(
-			scene->player->rigidBody3D.translation,
-			Vector3Scale(scene->player->camera.forward, 3.0f)
+			local->rigidBody3D.translation,
+			Vector3Scale(local->camera.forward, 3.0f)
 		);
 		SpawnStagedObject(position);
 	}
@@ -298,9 +311,15 @@ GameObject* WorldEditor::SpawnStagedObject(Vector3 position)
 		InteractableObject interactable(
 			static_cast<InteractionType>(stagingInteractType),
 			stagingInteractValue, 0);
-		if (interactable.interactType == INTERACT_MINIGAME) { interactable.targetId = stagingTargetId; }
+		if (interactable.interactType == INTERACT_MINIGAME || interactable.interactType == INTERACT_EXIT) { interactable.targetId = stagingTargetId; }
 		static_cast<GameObject&>(interactable) = object; // shared base fields
 		interactable.type = OBJECT_INTERACTABLE; // base copy overwrote the constructor's type
+		if (interactable.interactType == INTERACT_EXIT)
+		{
+			// Walked into, never pressed: a trigger that blocks nothing
+			interactable.rigidBody3D.collider.mode = COLLIDER_TRIGGER;
+			interactable.isInteractable = false;
+		}
 		spawned = scene->gameMap.SpawnInteractable(interactable);
 		break;
 	}

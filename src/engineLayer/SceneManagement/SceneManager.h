@@ -78,7 +78,7 @@ namespace SceneManagement {
 	/**
 	 * The current Scene's work for one rendered frame: the fade (which builds the
 	 * requested Scene once the screen is dark), then the Scene's camera, Back
-	 * key and World Editor (Scene_frame). Runs before the frame's tick.
+	 * key and World Editor (Scene_frame). Runs before the frame's ticks.
 	 * @param manager The SceneManager currently used in game
 	 * @param frameTime The time this frame took
 	 */
@@ -87,9 +87,10 @@ namespace SceneManagement {
 	/**
 	 * Run the current Scene's simulation for one tick (Scene_tick)
 	 * @param manager The SceneManager currently used in game
-	 * @param delta The current deltaTime
+	 * @param delta The tick's length (Sim::kTickDelta)
+	 * @param commands This tick's player commands, by Slot
 	 */
-	void SceneManager_tick(SceneManager* manager, float delta);
+	void SceneManager_tick(SceneManager* manager, float delta, std::span<const Sim::PlayerCommand> commands = {});
 
 	/**
 	 * Draw the current Scene active in SceneManager
