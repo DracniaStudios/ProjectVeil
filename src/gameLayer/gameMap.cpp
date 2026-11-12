@@ -148,7 +148,7 @@ GameObject* GameMap::RestoreGameObject(GameObject object)
 	if (IsIdInUse(id))
 	{
 		std::cerr << "[GameMap] Not restoring GameObject " << id << ": another object has that id\n";
-		object.releaseGeneratedModel(); // the model loadFromJson bound would leak with it
+		object.releaseGeneratedModel(); // nothing is bound yet; kept so a caller that bound a model first does not leak it
 		return nullptr;
 	}
 
@@ -164,7 +164,7 @@ Entity* GameMap::RestoreEntity(std::unique_ptr<Entity> entity)
 	{
 		std::cerr << "[GameMap] Not restoring Entity '" << entity->name << "': its kind ("
 		          << entityKindToString(entity->kind) << ") is not its class\n";
-		entity->releaseGeneratedModel();
+		entity->releaseGeneratedModel(); // nothing is bound yet; kept so a caller that bound a model first does not leak it
 		return nullptr;
 	}
 
@@ -172,7 +172,7 @@ Entity* GameMap::RestoreEntity(std::unique_ptr<Entity> entity)
 	if (IsIdInUse(id))
 	{
 		std::cerr << "[GameMap] Not restoring Entity " << id << ": another object has that id\n";
-		entity->releaseGeneratedModel();
+		entity->releaseGeneratedModel(); // nothing is bound yet; kept so a caller that bound a model first does not leak it
 		return nullptr;
 	}
 
@@ -188,7 +188,7 @@ InteractableObject* GameMap::RestoreInteractable(std::unique_ptr<InteractableObj
 	if (IsIdInUse(id))
 	{
 		std::cerr << "[GameMap] Not restoring Interactable " << id << ": another object has that id\n";
-		interactable->releaseGeneratedModel();
+		interactable->releaseGeneratedModel(); // nothing is bound yet; kept so a caller that bound a model first does not leak it
 		return nullptr;
 	}
 

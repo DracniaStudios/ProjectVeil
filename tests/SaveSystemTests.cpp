@@ -259,6 +259,7 @@ static void TestGameRoundTripKeepsTheMomentAndThePlayer(const Store& store)
 	Check(loaded->PlayerInSlot(0)->rigidBody3D.translation.x == -6 && loaded->PlayerInSlot(0)->rigidBody3D.translation.z == 9,
 		"the player is where they were");
 	Check(loaded->PlayerInSlot(0)->health == 2.0f, "and as hurt as they were");
+	Check(loaded->PlayerInSlot(0)->model.meshCount > 0, "the loaded player has its model bound");
 	Check(loaded->PlayerInSlot(0)->id == Sim::PlayerIdForSlot(0), "and is still the player");
 	Check(loaded->gameMap.FindEntity(Sim::PlayerIdForSlot(0)) == nullptr, "and is not also a world entity");
 

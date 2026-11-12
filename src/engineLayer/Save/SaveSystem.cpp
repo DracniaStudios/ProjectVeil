@@ -328,6 +328,11 @@ namespace SaveSystem
 			{
 				std::cerr << "Failed to load Player data.\n";
 			}
+			else
+			{
+				// loadFromJson binds nothing; this is the player's one bind
+				scene.PlayerInSlot(0)->loadVisuals();
+			}
 		}
 
 		return true;

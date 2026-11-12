@@ -78,7 +78,7 @@ void GameObject::loadVisuals()
 	}
 
 	// Every runtime model binding funnels through here — editor placement,
-	// duplication, setModel(), onEnable() and loadCommonFromJson() — which makes
+	// duplication, setModel(), onEnable() and GameMap's Restore* — which makes
 	// this the one place that guarantees new geometry is lit.
 	Lighting::LightingSystem::getInstance().ApplyToModel(model);
 
@@ -140,12 +140,6 @@ void GameObject::onDisable()
 	// Textures and named models belong to the AssetManager — only unload
 	// primitives this object generated for itself
 	releaseGeneratedModel();
-
-	if (mesh.vertexCount > 0)
-	{
-		UnloadMesh(mesh);
-		mesh = {};
-	}
 }
 
 
@@ -360,8 +354,7 @@ bool GameObject::loadCommonFromJson(Json& j)
 		modelName = j["Model"].get<std::string>();
 	}
 
-	// Rebind the runtime handles from the loaded asset names
-	loadVisuals();
+	// Visuals are bound by GameMap's Restore*, once, not here: loading makes no GPU call
 
 	return true;
 }

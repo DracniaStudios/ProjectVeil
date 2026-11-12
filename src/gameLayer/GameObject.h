@@ -67,7 +67,6 @@ struct GameObject
 	std::string modelName = "";   // empty = generated unit cube
 	std::string textureName = ""; // empty = material default
 	Model model = {};
-	Mesh mesh = {};
 	Texture texture = {};
 	Color defaultColor = WHITE;
 

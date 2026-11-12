@@ -337,6 +337,33 @@ static void TestRestoreRefusesAnIdInUse()
 	delete scene;
 }
 
+static void TestLoadingBindsNothingAndRestoreBindsOnce()
+{
+	std::printf("loadFromJson binds no model; Restore binds it once and fits the mesh collider\n");
+	SceneManagement::Scene* scene = MakeScene();
+	GameMap& map = scene->gameMap;
+
+	GameObject source{};
+	source.id = 60;
+	source.rigidBody3D.collider.shape = COLLIDER_MESH;
+	source.rigidBody3D.collider.size = Vector3{ 3, 3, 3 };
+	Json row = source.formatToJson();
+
+	GameObject loaded{};
+	loaded.id = 60;
+	Check(loaded.loadFromJson(row), "the row loads");
+	Check(loaded.model.meshCount == 0, "loading binds no model");
+	Check(!loaded.ownsModel, "and owns none");
+
+	GameObject* restored = map.RestoreGameObject(loaded);
+	Check(restored != nullptr && restored->model.meshCount > 0 && restored->ownsModel,
+		"Restore binds the model");
+	Check(restored != nullptr && restored->rigidBody3D.collider.size == Vector3{ 1, 1, 1 },
+		"and fits the mesh collider to it, once");
+
+	delete scene;
+}
+
 // ─── Destroy ───────────────────────────────────────────────────────────────
 
 static void TestDestroyIsDeferredForEveryKind()
@@ -540,6 +567,7 @@ int main()
 	TestRestoreKeepsWhatWasSaved();
 	TestRestoreRaisesTheNextId();
 	TestRestoreRefusesAnIdInUse();
+	TestLoadingBindsNothingAndRestoreBindsOnce();
 	TestDestroyIsDeferredForEveryKind();
 	TestDestroyInsideForEachIsSafe();
 	TestUnlockRemovesTheStationAtTheSweep();
