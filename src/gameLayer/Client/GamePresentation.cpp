@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include <AssetManager.h>
 #include <GameObject.h>
 #include <LightingSystem.h>
 #include <sim/Presentation.h>

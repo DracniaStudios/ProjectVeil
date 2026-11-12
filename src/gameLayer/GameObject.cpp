@@ -67,7 +67,8 @@ void GameObject::onEnable()
 	rigidBody3D.collider.canCollide = true;
 	rigidBody3D.collider.SetObjectID(id);
 
-	// Fits a mesh collider to whatever model this binds, and refreshes the box
+	// With a presentation installed, fits a mesh collider to whatever model this
+	// binds; then refreshes the box
 	loadVisuals();
 	rigidBody3D.SyncBroadPhaseBox();
 
