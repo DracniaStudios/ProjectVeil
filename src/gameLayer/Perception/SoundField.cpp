@@ -58,6 +58,9 @@ float SoundField::AudibleLoudnessAt(Vector3 listener, const SoundEvent& event, c
 {
 	if (event.loudness <= 0.0f) { return 0.0f; }
 
+	// A station starting is heard room-wide: no falloff, no occlusion (decision 15)
+	if (event.kind == SOUND_STATION_ACTIVATION) { return event.loudness; }
+
 	const float distance = Vector3Distance(listener, event.position);
 
 	// Smooth inverse-square falloff normalised so loudness is unchanged at the

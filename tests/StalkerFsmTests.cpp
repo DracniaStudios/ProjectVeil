@@ -26,6 +26,7 @@
 #include <SceneManager.h>
 #include <AI/Stalker.h>
 #include <Perception/SoundField.h>
+#include <Client/StalkerWarnings.h>
 
 #include <cmath>
 #include <cstdio>
@@ -379,6 +380,239 @@ static void TestAvoidanceIsSkippedWithoutAWorld()
 	delete scene;
 }
 
+// G1 (MultiplayerSplitPlan.md, Q32): the catch is checked outside the FSM, so
+// a player within reach is caught in every one of the four states, and the
+// FSM's own update never looks at the player at all.
+static void TestContactCatchesInEveryState()
+{
+	std::printf("contact raises a catch in every state, outside the FSM\n");
+
+	static_assert(STALKER_STATE_COUNT == 4, "the FSM is locked at four states");
+
+	for (int s = 0; s < STALKER_STATE_COUNT; ++s)
+	{
+		const StalkerState state = static_cast<StalkerState>(s);
+		const std::string name = stalkerStateToString(state);
+
+		SceneManagement::Scene* scene = MakeScene();
+		scene->AddPlayer(0);
+		scene->PlayerInSlot(0)->type = OBJECT_PLAYER;
+		scene->PlayerInSlot(0)->onEnable();
+		scene->PlayerInSlot(0)->rigidBody3D.Teleport(Vector3{ 0.5f, 0, 0 });
+
+		Stalker* stalker = AddStalker(scene, Vector3{ 0, 0, 0 });
+		stalker->state = state;
+		stalker->lastKnownPosition = Vector3{ 3, 0, 0 };
+		stalker->hasLastKnown = true;
+
+		scene->CheckCatches();
+		Check(scene->CaughtThisTick().size() == 1 && scene->CaughtThisTick()[0] == Sim::PlayerIdForSlot(0), "a player within catchRadius is caught in " + name);
+
+		scene->CheckCatches();
+		Check(scene->CaughtThisTick().size() == 1, "and checking twice in one tick is still one catch (" + name + ")");
+
+		// The FSM runs without ever reading the player: the update leaves the
+		// state where sound alone would take it, and raises nothing itself
+		SceneManagement::Scene* empty = MakeScene();
+		Stalker* alone = AddStalker(empty, Vector3{ 0, 0, 0 });
+		alone->state = state;
+		Step(empty, alone, 0.016f);
+		Check(empty->CaughtThisTick().empty(), "the FSM's update raises no catch itself (" + name + ")");
+		delete empty;
+
+		scene->RemovePlayer(0);
+		delete scene;
+	}
+
+	// Out of reach is not a catch, in any state
+	SceneManagement::Scene* scene = MakeScene();
+	scene->AddPlayer(0);
+	scene->PlayerInSlot(0)->type = OBJECT_PLAYER;
+	scene->PlayerInSlot(0)->onEnable();
+	scene->PlayerInSlot(0)->rigidBody3D.Teleport(Vector3{ 4, 0, 0 });
+	Stalker* stalker = AddStalker(scene, Vector3{ 0, 0, 0 });
+	stalker->state = STALKER_HUNT;
+	scene->CheckCatches();
+	Check(scene->CaughtThisTick().empty(), "a player out of reach is not caught");
+
+	// A disabled stalker catches nobody
+	scene->PlayerInSlot(0)->rigidBody3D.Teleport(Vector3{ 0.5f, 0, 0 });
+	stalker->isEnabled = false;
+	scene->CheckCatches();
+	Check(scene->CaughtThisTick().empty(), "a disabled stalker catches nobody");
+
+	scene->RemovePlayer(0);
+	delete scene;
+}
+
+// G2 (Stalker FSM Decisions Log 8 and 11): a search walks to the last known
+// position first and its timer starts on arrival. A position the stalker can't
+// reach is given up on where progress stops, and the search starts there.
+static void TestUnreachableLastKnownFallsBack()
+{
+	std::printf("an unreachable last known position: search from the nearest reachable point\n");
+	SceneManagement::Scene* scene = MakeScene();
+	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
+
+	// The noise is behind a wall the stalker can't get through: it is held in
+	// place by teleporting it back each step, which is what a wall does to it
+	scene->soundField.Emit(Vector3{ 3, 0, 0 }, 0.2f, SOUND_FOOTSTEP, 999);
+	Step(scene, s, 0.016f);
+	CheckState(*s, STALKER_INVESTIGATE, "investigating the noise");
+
+	const Vector3 stuckAt = Vector3{ 1, 0, 0 };
+	float waited = 0.0f;
+	for (int i = 0; i < 400 && s->state == STALKER_INVESTIGATE; ++i)
+	{
+		s->rigidBody3D.Teleport(stuckAt);
+		Step(scene, s, 0.016f);
+		waited += 0.016f;
+	}
+
+	CheckState(*s, STALKER_SEARCH_LAST_KNOWN, "a stalker that can't reach the noise starts searching");
+	Check(waited < Stalker::kStallSeconds + 1.0f, "within a couple of seconds of getting stuck (waited " + std::to_string(waited) + " s)");
+	Check(s->searchArrived, "the search counts as arrived");
+	Check(Vector3Distance(s->searchAnchor, stuckAt) < 0.5f, "anchored at the nearest point it reached, not at the noise");
+	Check(s->searchTime < 0.1f, "and the search timer starts there");
+	delete scene;
+}
+
+static void TestSearchTimerStartsOnArrival()
+{
+	std::printf("the search timer starts only on arrival at the last known position\n");
+	SceneManagement::Scene* scene = MakeScene();
+	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
+	s->rigidBody3D.isStatic = false;
+	s->rigidBody3D.SetGravity(0.0f, 0.0f, 0.0f);
+
+	s->state = STALKER_HUNT;
+	s->lastKnownPosition = Vector3{ 6, 0, 0 };
+	s->hasLastKnown = true;
+	s->lastStimulusTime = -100.0f; // the trail is already cold
+
+	Step(scene, s, 0.016f);
+	CheckState(*s, STALKER_SEARCH_LAST_KNOWN, "a cold hunt becomes a search");
+	Check(!s->searchArrived, "which first walks to the last known position");
+
+	// Walking there takes longer than nothing; the timer must not have run
+	for (int i = 0; i < 30; ++i)
+	{
+		Step(scene, s, 0.016f);
+		s->rigidBody3D.Update(0.016f);
+	}
+	Check(s->searchArrived || s->searchTime == 0.0f, "no search time passes before arrival");
+
+	for (int i = 0; i < 600 && !s->searchArrived; ++i)
+	{
+		Step(scene, s, 0.016f);
+		s->rigidBody3D.Update(0.016f);
+	}
+	Check(s->searchArrived, "it arrives");
+	Check(Vector3Distance(s->searchAnchor, Vector3{ 6, 0, 0 }) < 0.01f, "a reachable position anchors the sweep itself");
+	CheckState(*s, STALKER_SEARCH_LAST_KNOWN, "and is still searching on arrival");
+	delete scene;
+}
+
+// G2, the Director's hint: one Patrol detour to the hinted region, then back
+// to the route. Ignored in every other state, and dropped by anything heard.
+static void TestDirectorHintIsOnePatrolDetour()
+{
+	std::printf("a Director hint is one patrol detour\n");
+	SceneManagement::Scene* scene = MakeScene();
+	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
+	s->rigidBody3D.isStatic = false;
+	s->rigidBody3D.SetGravity(0.0f, 0.0f, 0.0f);
+	s->waypoints = { Vector3{ -10, 0, 0 }, Vector3{ -10, 0, 10 } };
+
+	s->ApplyDirectorHint(Vector3{ 8, 0, 0 }, 0.5f);
+	Check(s->HasHint(), "a hint is taken in patrol");
+
+	// Heads for the hint rather than waypoint 0, which lies the other way
+	const float startX = s->getPosition().x;
+	for (int i = 0; i < 20; ++i) { Step(scene, s, 0.016f); s->rigidBody3D.Update(0.016f); }
+	Check(s->getPosition().x > startX, "the patrol detours toward the hinted region");
+
+	for (int i = 0; i < 600 && s->HasHint(); ++i) { Step(scene, s, 0.016f); s->rigidBody3D.Update(0.016f); }
+	Check(!s->HasHint(), "the hint is used up on arrival");
+	CheckState(*s, STALKER_PATROL, "and the stalker is still patrolling");
+
+	// Every other state ignores a hint
+	for (const StalkerState other : { STALKER_INVESTIGATE, STALKER_HUNT, STALKER_SEARCH_LAST_KNOWN })
+	{
+		SceneManagement::Scene* scene2 = MakeScene();
+		Stalker* t = AddStalker(scene2, Vector3{ 0, 0, 0 });
+		t->state = other;
+		t->ApplyDirectorHint(Vector3{ 8, 0, 0 }, 0.5f);
+		Check(!t->HasHint(), std::string("a hint is ignored in ") + stalkerStateToString(other));
+		delete scene2;
+	}
+
+	// Hearing something mid-detour drops the hint
+	s->ApplyDirectorHint(Vector3{ 8, 0, 0 }, 0.5f);
+	scene->soundField.Emit(s->getPosition() + Vector3{ 1, 0, 0 }, 0.2f, SOUND_FOOTSTEP, 999);
+	Step(scene, s, 0.016f);
+	CheckState(*s, STALKER_INVESTIGATE, "a noise mid-detour starts an investigation");
+	Check(!s->HasHint(), "and the hint is dropped");
+	delete scene;
+}
+
+// G4 (decisions 15, 16): a station starting is heard room-wide and investigated
+// faster; it is never a reason to hunt
+static void TestStationActivationIsAFastInvestigation()
+{
+	std::printf("a station starting is heard room-wide and investigated at task speed\n");
+
+	// Far away and behind a wall: an ordinary noise wouldn't get through
+	SceneManagement::Scene* scene = MakeScene();
+	Stalker* s = AddStalker(scene, Vector3{ 0, 0, 0 });
+	AddBlock(scene, Vector3{ 30, 0, 0 }, Vector3{ 1, 5, 20 });
+	scene->soundField.Emit(Vector3{ 60, 0, 0 }, 0.8f, SOUND_STATION_ACTIVATION, 999);
+	Step(scene, s, 0.016f);
+	CheckState(*s, STALKER_INVESTIGATE, "a station 60 units away behind a wall is still heard: investigate");
+	Check(s->investigatingActivation, "as an activation");
+
+	SceneManagement::Scene* quiet = MakeScene();
+	Stalker* q = AddStalker(quiet, Vector3{ 0, 0, 0 });
+	AddBlock(quiet, Vector3{ 30, 0, 0 }, Vector3{ 1, 5, 20 });
+	quiet->soundField.Emit(Vector3{ 60, 0, 0 }, 0.8f, SOUND_FOOTSTEP, 999);
+	Step(quiet, q, 0.016f);
+	CheckState(*q, STALKER_PATROL, "the same noise as a footstep is not heard");
+	delete quiet;
+
+	Check(scene->soundField.AudibleLoudnessAt(Vector3{ 0, 0, 0 }, scene->soundField.Events().back(), &scene->gameMap) == 0.8f, "an activation reaches the stalker at full loudness");
+	delete scene;
+
+	// Investigated faster than an ordinary noise of the same loudness
+	const auto distanceAfter = [](SoundKind kind) {
+		SceneManagement::Scene* sc = MakeScene();
+		Stalker* st = AddStalker(sc, Vector3{ 0, 0, 0 });
+		st->rigidBody3D.isStatic = false;
+		st->rigidBody3D.SetGravity(0.0f, 0.0f, 0.0f);
+		sc->soundField.Emit(Vector3{ 8, 0, 0 }, kind == SOUND_FOOTSTEP ? 0.3f : 0.8f, kind, 999);
+		for (int i = 0; i < 30; ++i) { Step(sc, st, 0.016f); st->rigidBody3D.Update(0.016f); }
+		const float travelled = st->getPosition().x;
+		const bool investigating = st->state == STALKER_INVESTIGATE;
+		delete sc;
+		return investigating ? travelled : -1.0f;
+	};
+	const float normal = distanceAfter(SOUND_FOOTSTEP);
+	const float task = distanceAfter(SOUND_STATION_ACTIVATION);
+	Check(normal > 0.0f && task > normal * 1.3f, "an activation is investigated at taskSpeedMultiplier (" + std::to_string(task) + " vs " + std::to_string(normal) + ")");
+}
+
+// G4 (decision 6): warnings start at catchRadius + closingSpeed * lead
+static void TestWarningRadius()
+{
+	std::printf("the audio warnings start at the decision 6 radius\n");
+	using Client::StalkerWarning;
+	Check(Client::WarningRadius(1.0f, 4.0f, 1.5f) == 7.0f, "1 + 4 * 1.5 = 7");
+	Check(Client::WarningFor(6.9f, 4.0f, 6.0f, 1.0f, 1.5f) == StalkerWarning::Footsteps, "a moving stalker inside its radius: footsteps");
+	Check(Client::WarningFor(7.1f, 4.0f, 6.0f, 1.0f, 1.5f) == StalkerWarning::None, "just outside: nothing");
+	Check(Client::WarningFor(12.0f, 10.0f, 6.0f, 1.0f, 1.5f) == StalkerWarning::Footsteps, "a faster stalker is heard from farther away");
+	Check(Client::WarningFor(9.9f, 0.0f, 6.0f, 1.0f, 1.5f) == StalkerWarning::Breathing, "a standing stalker: breathing, at the player's walk speed");
+	Check(Client::WarningFor(10.1f, 0.0f, 6.0f, 1.0f, 1.5f) == StalkerWarning::None, "outside that: nothing");
+}
+
 int main()
 {
 	// An entity binds a model when it enters the map, so a GL context has to
@@ -400,6 +634,12 @@ int main()
 	TestSteersAsideForAnObstacle();
 	TestRoutesAroundAnObstacleWithoutEnteringIt();
 	TestAvoidanceIsSkippedWithoutAWorld();
+	TestContactCatchesInEveryState();
+	TestUnreachableLastKnownFallsBack();
+	TestSearchTimerStartsOnArrival();
+	TestDirectorHintIsOnePatrolDetour();
+	TestStationActivationIsAFastInvestigation();
+	TestWarningRadius();
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 

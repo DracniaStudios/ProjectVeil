@@ -11,6 +11,7 @@
 
 namespace SceneManagement { struct Scene; }
 struct GameMap;
+struct Player;
 
 enum ObjectType
 {
@@ -140,7 +141,11 @@ enum InteractionType
 	INTERACT_NONE = 0,
 	INTERACT_MINIGAME,
 	INTERACT_UNLOCK,
-	INTERACT_ITEM
+	INTERACT_ITEM,
+	// The room's way out (MultiplayerSplitPlan.md C-3, Q61): a volume a player
+	// escapes through once it is unlocked. targetId names its lock, a Target a
+	// station opens; with none, it unlocks once every Task station is completed.
+	INTERACT_EXIT
 };
 
 struct InteractableObject : public GameObject
@@ -162,6 +167,11 @@ public:
 	// when it has none. nullptr when the Target no longer exists.
 	GameObject* FindMiniGameTarget(GameMap& gameMap);
 
+	// An Exit's lock is open: its lock Target is gone or disabled, or, with no
+	// lock named, every Task station in the map is completed. False for anything
+	// that isn't an enabled Exit.
+	bool IsExitUnlocked(const GameMap& gameMap) const;
+
 	bool isInteractable = true;
 	bool isRunningMiniGame = false;
 
@@ -172,6 +182,12 @@ public:
 	//
 	// Distinct from isRunningMiniGame, which is only "occupied right now".
 	bool isCompleted = false;
+
+	// The shortest a real win of this station's MiniGame can take, in seconds.
+	// The server refuses a Complete that arrives sooner after its grant (rule
+	// S-3). Static data: part of the World save and of its content hash.
+	static constexpr float kDefaultMinimumSeconds = 3.0f;
+	float minimumSeconds = kDefaultMinimumSeconds;
 
 	virtual void render3D() override {
 		GameObject::render3D();
@@ -188,7 +204,8 @@ public:
 	};
 	// Plays the station's sound and does what its type says: starts its MiniGame,
 	// or unlocks the next one
-	virtual void onInteract(SceneManagement::Scene& scene);
+	// A player interacted with this (Player::Interact): `by` is who did
+	virtual void onInteract(SceneManagement::Scene& scene, Player& by);
 
 	// Save Data
 	Json formatToJson() override;
@@ -208,6 +225,7 @@ inline const char* interactTypeToString(InteractionType type) {
 		case INTERACT_MINIGAME: return "Mini Game";
 		case INTERACT_UNLOCK: return "Unlock";
 		case INTERACT_ITEM: return "Item";
+		case INTERACT_EXIT: return "Exit";
 		default: return "None";
 	}
 }

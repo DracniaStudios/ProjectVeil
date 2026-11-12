@@ -58,6 +58,8 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 		ImGui::TextDisabled("%s", miniGameIdToString(object->variation));
 		ImGui::Checkbox("MiniGame Running", &object->isRunningMiniGame);
 		ImGui::Checkbox("Completed", &object->isCompleted);
+		ImGui::DragFloat("Minimum Seconds", &object->minimumSeconds, 0.1f, 0.0f, 600.0f);
+		ImGui::TextDisabled("A win sooner than this after the claim is refused");
 		// Worth stating outright: the Director stops hinting toward a station the
 		// moment this is ticked, so it doubles as the switch for testing whether
 		// hinting moves on to the next outstanding objective.
@@ -81,6 +83,17 @@ void WorldEditor::showInteractableObject(InteractableObject* object) {
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Clear Target")) { object->targetId = 0; }
+	}
+
+	if (object->interactType == INTERACT_EXIT) {
+		ImGui::InputScalar("Exit Lock", ImGuiDataType_U64, &object->targetId);
+		if (object->targetId == 0) { ImGui::TextDisabled("None: unlocks once every Task station is completed"); }
+		else if (GameObject* lock = editedScene->gameMap.FindWorldObject(object->targetId)) { ImGui::TextDisabled("%s", lock->name.c_str()); }
+		else { ImGui::TextColored(ImVec4(1, 0.4f, 0.4f, 1), "Missing: nothing has id %llu", static_cast<unsigned long long>(object->targetId)); }
+		ImGui::Text("Unlocked: %s", object->IsExitUnlocked(editedScene->gameMap) ? "yes" : "no");
+		if (!object->rigidBody3D.collider.isTrigger()) {
+			ImGui::TextColored(ImVec4(1, 0.8f, 0.2f, 1), "Not a trigger: players can't walk into it");
+		}
 	}
 
 	if (object->interactType == INTERACT_ITEM) {
@@ -128,8 +141,8 @@ void WorldEditor::showEntity(Entity* object) {
 		ImGui::PopID();
 	}
 
-	if (ImGui::Button("Teleport To Player")) {
-		object->rigidBody3D.Teleport(editedScene->player->getPosition());
+	if (Player* local = Client::LocalPlayer(*editedScene); local != nullptr && ImGui::Button("Teleport To Player")) {
+		object->rigidBody3D.Teleport(local->getPosition());
 	}
 	if (ImGui::Button("Teleport To Camera")) {
 		object->rigidBody3D.Teleport(SceneManagement::SceneManager::getInstance().camera3D.position);

@@ -4,8 +4,7 @@
 
 void Player::Interact(SceneManagement::Scene& scene)
 {
-	const auto camera = &SceneManagement::SceneManager::getInstance().camera3D;
-
+	std::cout << "\n[PLayer.cpp] Interacted with Object\n";
 	// Check buff for increased range
 	int interactRange = defaultInteractRange;
 	if (auto* rangeBuff = getBuff(BUFF_RANGE);
@@ -13,7 +12,9 @@ void Player::Interact(SceneManagement::Scene& scene)
 		interactRange = extendedInteractRange;
 	}
 
-	const auto cameraRay = Ray(camera->position, this->camera.forward);
+	// From the player's own eye along their own look, never the client's camera:
+	// the server has no camera, and a joined player's camera is someone else's
+	const auto cameraRay = Ray(EyePosition(), this->camera.forward);
 
 	// Pick the CLOSEST candidate along the ray rather than the first one found.
 	InteractableObject* closest = nullptr;
@@ -33,6 +34,7 @@ void Player::Interact(SceneManagement::Scene& scene)
 
 		if (closest == nullptr || distance < closestDistance)
 		{
+			std::cout << "\n[PlayerActions.cpp] Interaction Applied to " << obj.name << "\n";
 			closest = &obj;
 			closestDistance = distance;
 		}
@@ -40,7 +42,7 @@ void Player::Interact(SceneManagement::Scene& scene)
 
 	if (closest != nullptr)
 	{
-		closest->onInteract(scene);
+		closest->onInteract(scene, *this);
 		return;
 	}
 

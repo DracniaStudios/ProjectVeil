@@ -86,11 +86,11 @@ namespace SceneManagement {
 			if (manager->fadeOpacity <= 0.0f) { StartFade(manager, SceneFade::None); }
 		}
 
-		if (Scene* scene = manager->currentScene) { Scene_frame(*scene, manager->camera3D); }
+		if (Scene* scene = manager->currentScene) { Scene_frame(*scene, manager->camera3D, frameTime); }
 	}
 
-	void SceneManager_tick(SceneManager* manager, float delta) {
-		if (Scene* scene = manager->currentScene) { Scene_tick(*scene, delta); }
+	void SceneManager_tick(SceneManager* manager, float delta, std::span<const Sim::PlayerCommand> commands) {
+		if (Scene* scene = manager->currentScene) { Scene_tick(*scene, delta, commands); }
 	}
 
 	void SceneManager_draw(SceneManager* manager) {

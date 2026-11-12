@@ -1,12 +1,26 @@
 #include "gameMain.h"
 
+#include <ResourcePaths.h>
 #include <WorldEditor.h>
+#include <Client/CommandSampler.h>
+#include <Client/LocalPlayer.h>
+#include <Client/RoundPresenter.h>
+#include <Client/Session.h>
+#include <Client/DevOptions.h>
+#include <sim/FixedTick.h>
 
 #include <cmath>
 #include <optional>
 
+// The rate frames are drawn at. The simulation runs at Sim::kTickRate whatever
+// this is (DedicatedServerPlan.md Step 1.2).
 constexpr int maxFrameRate = 60;
-constexpr float maxDeltaTime = 1.0f / maxFrameRate;
+
+// Turns each frame's time into whole simulation ticks
+static Sim::FixedTickClock tickClock;
+
+// Counts the ticks this client has sampled a command for
+static std::uint32_t clientTick = 0;
 
 // Set by request_exit(). update_game() reports it at the end of the frame, so
 // the main loop in ProjectVeil.cpp ends normally and close_game() runs once, in
@@ -69,6 +83,10 @@ bool init_game()
 
 	SceneManagement::SceneManager_init(&SceneManagement::SceneManager::getInstance());
 
+	// Single-player runs through the same server code as a Host, joined to this
+	// client by Loopback: no socket, no SpacetimeDB (S4, MultiplayerSplitPlan.md N2)
+	Client::Session::getInstance().StartOffline();
+
 	// Go To Main Menu
 	//SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), SCENE_MAIN_MENU);
 	
@@ -77,8 +95,10 @@ bool init_game()
 
 bool update_game()
 {
-	/// Limit Frame Rate
-	const float deltaTime = fminf(GetFrameTime(), maxDeltaTime);
+	const float frameTime = GetFrameTime();
+
+	// A scripted dev run ends cleanly, so its log is complete
+	if (Client::Dev().quitAfterSeconds > 0.0 && GetTime() >= Client::Dev().quitAfterSeconds) { request_exit(); }
 
 	// Nothing draws a sky, so the clear colour *is* the horizon. Clearing to the
 	// fog colour lets distant geometry dissolve into the background instead of
@@ -88,11 +108,38 @@ bool update_game()
 	// Update Input System
 	InputSystem::InputSystem::getInstance().Update();
 
-	/// Update and Draw Scene. The frame's work (fade, camera, editor) comes first,
-	/// so the tick simulates with the camera the player is now looking through.
 	auto* manager = &SceneManagement::SceneManager::getInstance();
-	SceneManagement::SceneManager_frame(manager, deltaTime);
-	SceneManagement::SceneManager_tick(manager, deltaTime);
+
+	// A joined client's world moves to the Host's latest Snapshots before the
+	// camera is placed in it
+	auto& session = Client::Session::getInstance();
+	session.Frame(*manager, GetTime());
+
+	// Input is sampled once per frame into the pending PlayerCommand (Step 1.3).
+	// While an overlay or the World Editor has the input, the command is empty.
+	auto& sampler = Client::CommandSampler::getInstance();
+	if (const auto scene = manager->currentScene) {
+		float yaw = 0.0f, pitch = 0.0f;
+		if (session.LocalLook(*scene, yaw, pitch)) { sampler.SetLookBase(yaw, pitch); }
+		sampler.SampleFrame(scene->overlays.GameplayHasInput() && !Editor::WorldEditor::getInstance().IsEnabled());
+	}
+
+	/// Update and Draw Scene. The frame's work (fade, camera, editor) comes first,
+	/// so the ticks simulate with the camera the player is now looking through.
+	SceneManagement::SceneManager_frame(manager, fminf(frameTime, Sim::kMaxFrameTime));
+
+	// The development multiplayer windows (Join, Network)
+	session.DrawUi();
+
+	// Simulation: zero or more fixed ticks this frame, one command each. The
+	// session sends it, runs the server's tick (single-player, Host) and reads
+	// what came back.
+	const int ticks = tickClock.Advance(frameTime);
+	for (int tick = 0; tick < ticks; ++tick) {
+		Sim::PlayerCommand command = sampler.Consume(++clientTick);
+		if (Client::Dev().bot) { command = Client::BotCommand(command.sequence, clientTick); }
+		session.Tick(*manager, command);
+	}
 
 	SceneManagement::SceneManager_draw(manager);
 
@@ -107,7 +154,7 @@ bool update_game()
 void close_game()
 {
 	std::cout << "Close Game \n";
-	std::ofstream f(RESOURCES_PATH "debug.log");
+	std::ofstream f(ResourcePaths::Resources() / "debug.log");
 
 
 	auto now = std::chrono::system_clock::now();
@@ -118,6 +165,9 @@ void close_game()
 	
 	f << "\n CLOSED\n";
 	f.close();
+
+	// Networking stops before the window and the GL context go (§5.6)
+	Client::Session::getInstance().Shutdown();
 
 	// Materials only hold a copy of the Shader struct, so every model's shader
 	// id dangles once this runs — it has to be the last engine call. ProjectVeil.cpp

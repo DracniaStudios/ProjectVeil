@@ -7,13 +7,6 @@
 #include <raymath.h>
 #include <cmath>
 
-namespace {
-	bool IsNearEntity(Vector3 entity, Vector3 position, float maxDistance) {
-		float distance = abs(Vector3Length(entity - position));
-		return distance <= maxDistance;
-	}
-}
-
 Stalker::Stalker()
 {
 	kind = ENTITYKIND_STALKER;
@@ -49,17 +42,78 @@ float Stalker::EffectiveSearchRadius()
 void Stalker::TransitionTo(StalkerState next)
 {
 	if (next == state) { return; }
+
+	// A hint is a detour for Patrol only: leaving Patrol drops it, so a stale
+	// hint never steers the patrol that follows a hunt
+	if (state == STALKER_PATROL) { hasHint = false; }
+
 	state = next;
 	timeInState = 0.0f;
+	ResetApproach();
+	if (next != STALKER_INVESTIGATE) { investigatingActivation = false; }
 
-	if (next == STALKER_SEARCH_LAST_KNOWN) { PickNextSearchTarget(); }
+	// A search walks to the last known position before it sweeps (decision 8)
+	if (next == STALKER_SEARCH_LAST_KNOWN)
+	{
+		searchArrived = false;
+		searchTime = 0.0f;
+		searchAnchor = lastKnownPosition;
+		searchTarget = lastKnownPosition;
+	}
+}
+
+bool Stalker::ApproachStalled(Vector3 target, float deltaTime)
+{
+	const float distance = PlanarDistanceTo(target);
+
+	// A new target, or the same one moved: count from here
+	if (!hasApproach || Vector2Distance(Vector2{ target.x, target.z }, Vector2{ approachTarget.x, approachTarget.z }) > 0.01f)
+	{
+		hasApproach = true;
+		approachTarget = target;
+		approachBest = distance;
+		approachStall = 0.0f;
+		return false;
+	}
+
+	if (distance < approachBest - kStallProgress)
+	{
+		approachBest = distance;
+		approachStall = 0.0f;
+		return false;
+	}
+
+	approachStall += deltaTime;
+	return approachStall >= kStallSeconds;
+}
+
+void Stalker::ArriveForSearch(Vector3 anchor)
+{
+	searchArrived = true;
+	searchAnchor = anchor;
+	searchTime = 0.0f;
+	ResetApproach();
+	PickNextSearchTarget();
+}
+
+int Stalker::NearestWaypoint() const
+{
+	int nearest = 0;
+	float best = 0.0f;
+	for (int i = 0; i < static_cast<int>(waypoints.size()); ++i)
+	{
+		const float distance = PlanarDistanceTo(waypoints[i]);
+		if (i == 0 || distance < best) { nearest = i; best = distance; }
+	}
+	return nearest;
 }
 
 void Stalker::PickNextSearchTarget()
 {
-	// Sweep points are drawn around the last known position rather than around
-	// the stalker, so the search stays anchored to where the noise was even as
-	// the stalker wanders across the room.
+	// Sweep points are drawn around the search anchor (the last known position,
+	// or the nearest point to it the stalker could reach) rather than around the
+	// stalker, so the search stays anchored to where the noise was even as the
+	// stalker wanders across the room.
 	const float radius = EffectiveSearchRadius();
 
 	// Deterministic-ish spiral rather than an RNG draw: the search reads as
@@ -67,9 +121,9 @@ void Stalker::PickNextSearchTarget()
 	// debugging a transition.
 	const float angle = timeInState * 2.4f + static_cast<float>(currentWaypoint);
 	searchTarget = Vector3{
-		lastKnownPosition.x + std::cos(angle) * radius,
-		lastKnownPosition.y,
-		lastKnownPosition.z + std::sin(angle) * radius
+		searchAnchor.x + std::cos(angle) * radius,
+		searchAnchor.y,
+		searchAnchor.z + std::sin(angle) * radius
 	};
 }
 
@@ -206,10 +260,11 @@ void Stalker::MoveToward(Vector3 target, float speed, float /*deltaTime*/, const
 
 void Stalker::ApplyDirectorHint(Vector3 region, float confidence)
 {
-	// A hint never overrides a live pursuit. The Director works from world
-	// facts and has no idea where the player is, so letting it steer a hunt
-	// would make the stalker worse, not better.
-	if (state == STALKER_HUNT) { return; }
+	// A hint is a Patrol detour and nothing else. It never overrides an
+	// investigation, a hunt or a search: the Director works from world facts and
+	// has no idea where any player is, so letting it steer a pursuit would make
+	// the stalker worse, not better.
+	if (state != STALKER_PATROL) { return; }
 
 	hintRegion = region;
 	hintConfidence = confidence;
@@ -250,7 +305,7 @@ void Stalker::render3D()
 		hasTarget = hasLastKnown;
 		break;
 	case STALKER_SEARCH_LAST_KNOWN:
-		target = searchTarget;
+		target = searchArrived ? searchTarget : searchAnchor;
 		hasTarget = true;
 		break;
 	default:
@@ -277,18 +332,6 @@ void Stalker::render3D()
 			DrawSphereWires(event.position, 0.5f, 6, 6, PINK);
 		}
 	}
-}
-
-// Shared by CHASE and KILL: contact with the player ends the run.
-static void KillPlayerOnContact(Stalker* self, SceneManagement::Scene* scene, const auto& player)
-{
-	const ContactInfo playerContact = self->rigidBody3D.getContact(player->rigidBody3D);
-	if (!playerContact.hit) { return; }
-	std::cout << "Player Takes Damage \n";
-	scene->overlays.Open(Overlay::Jumpscare);
-	SceneManagement::SceneManager_push(&SceneManagement::SceneManager::getInstance(), SCENE_TUTORIAL);
-	player->isEnabled = false;
-	self->isEnabled = false;
 }
 
 void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
@@ -319,16 +362,16 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 		lastStimulusTime = scene->soundField.Now();
 		lastHeardLoudness = heardLoudness;
 		lastHeardKind = heard.kind;
+
+		// The same event stays audible for several ticks, so hearing again is not
+		// a new target: ApproachStalled restarts on its own once the position moves
 	}
 
 	const float stimulusAge = scene->soundField.Now() - lastStimulusTime;
 
 	// --- States -----------------------------------------------------------
-	
-	const auto player = scene->player;
-	if (!player) { return; }
-
-	if (IsNearEntity(rigidBody3D.getPosition(), player->rigidBody3D.getPosition(), sightRange)) { state = STALKER_CHASE; }
+	// Sound is the only input. The stalker never reads a player, and catching
+	// one is checked outside this switch (Scene::CheckCatches).
 
 	switch (state)
 	{
@@ -339,26 +382,40 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 
 		if (didHear)
 		{
-			TransitionTo(heardLoudness >= huntThreshold ? STALKER_HUNT : STALKER_INVESTIGATE);
+			// A station starting is investigated, fast, never hunted: it is where a
+			// task is, not where anyone is known to be (decisions 15, 16)
+			const bool activation = heard.kind == SOUND_STATION_ACTIVATION;
+			TransitionTo(heardLoudness >= huntThreshold && !activation ? STALKER_HUNT : STALKER_INVESTIGATE);
+			if (activation) { investigatingActivation = true; }
 			break;
 		}
 
-		// A Director hint biases where patrolling happens, but only when there
-		// is no real route authored or the hint is confident enough to be worth
-		// a detour. It is a suggestion about the room, not about the player.
-		if (waypoints.empty())
+		// A Director hint is one detour: walk to the hinted region, or as near
+		// as the room allows, then rejoin the route where it is nearest. It is a
+		// suggestion about the room, never about a player (ApplyDirectorHint).
+		if (hasHint)
 		{
-			if (hasHint) { MoveToward(hintRegion, currentSpeed, deltaTime, &scene->gameMap); }
+			MoveToward(hintRegion, currentSpeed, deltaTime, &scene->gameMap);
+			if (PlanarDistanceTo(hintRegion) <= arriveDistance || ApproachStalled(hintRegion, deltaTime))
+			{
+				hasHint = false;
+				ResetApproach();
+				if (!waypoints.empty()) { currentWaypoint = NearestWaypoint(); }
+			}
 			break;
 		}
+
+		if (waypoints.empty()) { break; }
 
 		currentWaypoint %= static_cast<int>(waypoints.size());
 		const Vector3 target = waypoints[currentWaypoint];
 		MoveToward(target, currentSpeed, deltaTime, &scene->gameMap);
 
-		if (PlanarDistanceTo(target) <= arriveDistance)
+		// A waypoint the stalker can't reach is skipped rather than walked at forever
+		if (PlanarDistanceTo(target) <= arriveDistance || ApproachStalled(target, deltaTime))
 		{
 			currentWaypoint = (currentWaypoint + 1) % static_cast<int>(waypoints.size());
+			ResetApproach();
 		}
 		break;
 	}
@@ -368,24 +425,35 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 		isSprinting = false;
 		isCrouching = false;
 
-		// A louder noise mid-investigation escalates rather than re-targets.
-		if (didHear && heardLoudness >= huntThreshold)
+		// A louder noise mid-investigation escalates rather than re-targets. A
+		// station starting doesn't: it re-targets the investigation, at task speed.
+		if (didHear && heard.kind == SOUND_STATION_ACTIVATION) { investigatingActivation = true; }
+		else if (didHear && heardLoudness >= huntThreshold)
 		{
 			TransitionTo(STALKER_HUNT);
 			break;
 		}
+		else if (didHear) { investigatingActivation = false; }
 
 		if (!hasLastKnown) { TransitionTo(STALKER_PATROL); break; }
 
 		// Investigation moves at base pace — the stalker is curious, not
 		// alerted, and the slower approach is what gives the player room to
 		// reposition after a single noise.
-		MoveToward(lastKnownPosition, currentSpeed * 0.75f, deltaTime, &scene->gameMap);
+		MoveToward(lastKnownPosition, currentSpeed * 0.75f * (investigatingActivation ? taskSpeedMultiplier : 1.0f), deltaTime, &scene->gameMap);
 
 		if (PlanarDistanceTo(lastKnownPosition) <= arriveDistance)
 		{
 			// Arrived and found nothing: sweep the area before giving up.
 			TransitionTo(STALKER_SEARCH_LAST_KNOWN);
+			ArriveForSearch(lastKnownPosition);
+		}
+		else if (ApproachStalled(lastKnownPosition, deltaTime))
+		{
+			// The noise came from somewhere the stalker can't reach. It searches
+			// from the nearest point it got to instead (decision 11).
+			TransitionTo(STALKER_SEARCH_LAST_KNOWN);
+			ArriveForSearch(getPosition());
 		}
 		break;
 	}
@@ -411,18 +479,6 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 		}
 		break;
 	}
-	case STALKER_CHASE:
-	{
-		isSprinting = true;
-		isCrouching = false;
-		if (!IsNearEntity(rigidBody3D.getPosition(), player->getPosition(), sightRange)) { TransitionTo(STALKER_HUNT); }
-
-		MoveToward(player->getPosition(), currentSpeed, deltaTime, &scene->gameMap);
-
-		KillPlayerOnContact(this, scene, player);
-		break;
-	}
-
 	case STALKER_SEARCH_LAST_KNOWN:
 	{
 		isSprinting = false;
@@ -430,18 +486,33 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 
 		if (didHear)
 		{
-			TransitionTo(heardLoudness >= huntThreshold ? STALKER_HUNT : STALKER_INVESTIGATE);
+			const bool activation = heard.kind == SOUND_STATION_ACTIVATION;
+			TransitionTo(heardLoudness >= huntThreshold && !activation ? STALKER_HUNT : STALKER_INVESTIGATE);
+			if (activation) { investigatingActivation = true; }
+			break;
+		}
+
+		// First walk to the last known position. The timer doesn't run until the
+		// stalker is there, or as near as it can get (decisions 8 and 11).
+		if (!searchArrived)
+		{
+			MoveToward(lastKnownPosition, currentSpeed, deltaTime, &scene->gameMap);
+			if (PlanarDistanceTo(lastKnownPosition) <= arriveDistance) { ArriveForSearch(lastKnownPosition); }
+			else if (ApproachStalled(lastKnownPosition, deltaTime)) { ArriveForSearch(getPosition()); }
 			break;
 		}
 
 		MoveToward(searchTarget, currentSpeed, deltaTime, &scene->gameMap);
 
-		if (PlanarDistanceTo(searchTarget) <= arriveDistance)
+		// A sweep point inside a wall is skipped the same way
+		if (PlanarDistanceTo(searchTarget) <= arriveDistance || ApproachStalled(searchTarget, deltaTime))
 		{
 			PickNextSearchTarget();
+			ResetApproach();
 		}
 
-		if (timeInState >= searchDuration)
+		searchTime += deltaTime;
+		if (searchTime >= searchDuration)
 		{
 			// Give up. The stale position is cleared so a later state cannot
 			// act on a memory the stalker has already abandoned.
@@ -470,6 +541,9 @@ Json Stalker::formatToJson()
 	j["SearchDuration"] = searchDuration;
 	j["SearchRadius"] = searchRadius;
 	j["ArriveDistance"] = arriveDistance;
+	j["CatchRadius"] = catchRadius;
+	j["WarningLeadSeconds"] = warningLeadSeconds;
+	j["TaskSpeedMultiplier"] = taskSpeedMultiplier;
 	j["AvoidProbeDistance"] = avoidProbeDistance;
 	j["CurrentWaypoint"] = currentWaypoint;
 
@@ -501,6 +575,10 @@ bool Stalker::loadFromJson(Json& j)
 	searchDuration = j.value("SearchDuration", searchDuration);
 	searchRadius = j.value("SearchRadius", searchRadius);
 	arriveDistance = j.value("ArriveDistance", arriveDistance);
+	catchRadius = j.value("CatchRadius", catchRadius);
+	warningLeadSeconds = j.value("WarningLeadSeconds", warningLeadSeconds);
+	taskSpeedMultiplier = j.value("TaskSpeedMultiplier", taskSpeedMultiplier);
+	investigatingActivation = false;
 	avoidProbeDistance = j.value("AvoidProbeDistance", avoidProbeDistance);
 	currentWaypoint = j.value("CurrentWaypoint", currentWaypoint);
 
@@ -517,6 +595,10 @@ bool Stalker::loadFromJson(Json& j)
 	// A loaded stalker starts with no belief and no hint, whatever it was
 	// doing when the save was written.
 	hasLastKnown = false;
+	hasHint = false;
+	searchArrived = false;
+	searchTime = 0.0f;
+	ResetApproach();
 	timeInState = 0.0f;
 	lastStimulusTime = 0.0f;
 

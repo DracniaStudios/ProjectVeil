@@ -44,7 +44,7 @@ static void Check(bool condition, const std::string& what)
 	}
 }
 
-// Scene_new() (rather than a bare `new Scene`) so scene->player exists, which
+// Scene_new() (rather than a bare `new Scene`) so scene->PlayerInSlot(0) exists, which
 // item pickups and Unlock hand items and the Artifact to.
 static SceneManagement::Scene* MakeScene()
 {
@@ -363,15 +363,15 @@ static void TestUnlockRemovesTheStationAtTheSweep()
 	InteractableObject* station = map.SpawnInteractable(unlock);
 	const std::uint64_t id = station->id;
 
-	station->onInteract(*scene);
+	station->onInteract(*scene, *scene->PlayerInSlot(0));
 	Check(map.FindInteractable(id) == station, "the station is still there after its own onInteract");
-	Check(scene->player->artifact != nullptr, "the Artifact was handed over");
+	Check(scene->PlayerInSlot(0)->artifact != nullptr, "the Artifact was handed over");
 
 	map.SweepDestroyed(scene);
 	Check(map.FindInteractable(id) == nullptr, "the sweep removes the station");
 
-	delete scene->player->artifact;
-	scene->player->artifact = nullptr;
+	delete scene->PlayerInSlot(0)->artifact;
+	scene->PlayerInSlot(0)->artifact = nullptr;
 	delete scene;
 }
 

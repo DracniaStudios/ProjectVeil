@@ -1,0 +1,1 @@
+powershell -ExecutionPolicy Bypass -File spacetime\publish_veil_world.ps1

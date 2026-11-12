@@ -49,7 +49,15 @@ void GameMap::ReserveIdsBelow(std::uint64_t nextId)
 
 bool GameMap::IsIdInUse(std::uint64_t id) const
 {
-	return gameObjects.contains(id) || entities.contains(id) || interactables.contains(id);
+	return byId.contains(id);
+}
+
+void GameMap::Remove(std::uint64_t id)
+{
+	const auto it = byId.find(id);
+	if (it == byId.end()) { return; }
+	registry.destroy(it->second);
+	byId.erase(it);
 }
 
 namespace
@@ -82,7 +90,7 @@ namespace
 GameObject* GameMap::SpawnGameObject(const GameObject& prototype)
 {
 	const std::uint64_t id = instanceHolder.getIdAndIncrement();
-	GameObject& object = gameObjects.emplace(id, prototype).first->second;
+	GameObject& object = Store<GameMapStorage::Plain>(id, GameMapStorage::Plain{ prototype }).object;
 	PrepareSpawnedCopy(object, id);
 
 	/// Set GameMap Data
@@ -103,7 +111,7 @@ Entity* GameMap::SpawnEntity(const Entity& prototype)
 	// clone() keeps the prototype's dynamic type, so a Stalker stays a Stalker
 	std::unique_ptr<Entity> owned = prototype.clone();
 	Entity* entity = owned.get();
-	entities[id] = std::move(owned);
+	Store<GameMapStorage::EntityKind>(id, GameMapStorage::EntityKind{ std::move(owned) });
 	PrepareSpawnedCopy(*entity, id);
 
 	entity->onEnable();
@@ -118,7 +126,7 @@ Entity* GameMap::SpawnEntity(const Entity& prototype)
 InteractableObject* GameMap::SpawnInteractable(const InteractableObject& prototype)
 {
 	const std::uint64_t id = instanceHolder.getIdAndIncrement();
-	InteractableObject* interactable = (interactables[id] = std::make_unique<InteractableObject>(prototype)).get();
+	InteractableObject* interactable = Store<GameMapStorage::Interactable>(id, GameMapStorage::Interactable{ std::make_unique<InteractableObject>(prototype) }).interactable.get();
 	PrepareSpawnedCopy(*interactable, id);
 
 	interactable->onEnable();
@@ -138,7 +146,7 @@ GameObject* GameMap::RestoreGameObject(GameObject object)
 	}
 
 	ReserveIdsBelow(id + 1);
-	GameObject& stored = gameObjects.emplace(id, std::move(object)).first->second;
+	GameObject& stored = Store<GameMapStorage::Plain>(id, GameMapStorage::Plain{ std::move(object) }).object;
 	BindRestored(stored);
 	return &stored;
 }
@@ -154,7 +162,7 @@ Entity* GameMap::RestoreEntity(std::unique_ptr<Entity> entity)
 	}
 
 	ReserveIdsBelow(id + 1);
-	Entity* stored = (entities[id] = std::move(entity)).get();
+	Entity* stored = Store<GameMapStorage::EntityKind>(id, GameMapStorage::EntityKind{ std::move(entity) }).entity.get();
 	BindRestored(*stored);
 	return stored;
 }
@@ -170,7 +178,7 @@ InteractableObject* GameMap::RestoreInteractable(std::unique_ptr<InteractableObj
 	}
 
 	ReserveIdsBelow(id + 1);
-	InteractableObject* stored = (interactables[id] = std::move(interactable)).get();
+	InteractableObject* stored = Store<GameMapStorage::Interactable>(id, GameMapStorage::Interactable{ std::move(interactable) }).interactable.get();
 	BindRestored(*stored);
 	return stored;
 }
@@ -183,39 +191,22 @@ bool GameMap::Destroy(std::uint64_t id)
 	return true;
 }
 
-namespace
-{
-	// Erases every marked object in one container. The ids are collected first and
-	// each one is erased by key after its onDestroy, so an onDestroy that adds an
-	// object can't invalidate the traversal.
-	template <class Container, class AsObject>
-	void SweepContainer(Container& container, SceneManagement::Scene* scene, AsObject asObject)
-	{
-		std::vector<std::uint64_t> marked;
-		for (auto& [id, stored] : container)
-		{
-			if (asObject(stored).pendingDestroy) { marked.push_back(id); }
-		}
-
-		for (std::uint64_t id : marked)
-		{
-			auto it = container.find(id);
-			if (it == container.end()) { continue; }
-
-			// onDestroy() releases the object's generated model (through onDisable),
-			// which the trivial destructor never would
-			asObject(it->second).onDestroy(scene);
-			container.erase(id);
-		}
-	}
-}
-
 void GameMap::SweepDestroyed(SceneManagement::Scene* scene)
 {
-	SweepContainer(gameObjects, scene, [](GameObject& object) -> GameObject& { return object; });
-	SweepContainer(entities, scene, [](std::unique_ptr<Entity>& entity) -> GameObject& { return *entity; });
-	SweepContainer(interactables, scene,
-		[](std::unique_ptr<InteractableObject>& interactable) -> GameObject& { return *interactable; });
+	// The ids are collected first and each object is removed by id after its
+	// onDestroy, so an onDestroy that adds an object can't invalidate the
+	// traversal. onDestroy() releases the object's generated model (through
+	// onDisable), which the trivial destructor never would.
+	std::vector<std::uint64_t> marked;
+	ForEachObject([&](GameObject& object) { if (object.pendingDestroy) { marked.push_back(object.id); } });
+
+	for (const std::uint64_t id : marked)
+	{
+		GameObject* object = FindWorldObject(id);
+		if (object == nullptr) { continue; }
+		object->onDestroy(scene);
+		Remove(id);
+	}
 }
 
 void GameMap::Clear()
@@ -224,31 +215,27 @@ void GameMap::Clear()
 	// released first, or it leaks the moment its object is erased
 	ForEachObject([](GameObject& object) { object.releaseGeneratedModel(); });
 
-	gameObjects.clear();
-	entities.clear();
-	interactables.clear();
+	registry.clear();
+	byId.clear();
 	instanceHolder = InstanceID{};
 }
 
 GameObject* GameMap::FindGameObject(uint64_t id)
 {
-	auto it = gameObjects.find(id);
-	if (it == gameObjects.end()) { return nullptr; }
-	return &it->second;
+	auto* stored = Stored<GameMapStorage::Plain>(id);
+	return stored ? &stored->object : nullptr;
 }
 
 Entity* GameMap::FindEntity(uint64_t id)
 {
-	auto it = entities.find(id);
-	if (it == entities.end()) { return nullptr; }
-	return it->second.get();
+	auto* stored = Stored<GameMapStorage::EntityKind>(id);
+	return stored ? stored->entity.get() : nullptr;
 }
 
 InteractableObject* GameMap::FindInteractable(uint64_t id)
 {
-	auto it = interactables.find(id);
-	if (it == interactables.end()) { return nullptr; }
-	return it->second.get();
+	auto* stored = Stored<GameMapStorage::Interactable>(id);
+	return stored ? stored->interactable.get() : nullptr;
 }
 
 InteractableObject* GameMap::FindRunningStation()

@@ -14,6 +14,7 @@ enum class Overlay
 	MiniGame,
 	Pause,
 	Jumpscare,
+	EndCard, // The round was won: a player escaped (MultiplayerSplitPlan.md Q61)
 };
 
 // Display name, for the World Editor

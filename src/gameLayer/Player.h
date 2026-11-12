@@ -5,6 +5,7 @@
 #include <raylib.h>
 #include <Entity.h>
 #include <randomStuff.h>
+#include <sim/PlayerCommand.h>
 
 struct PlayerCamera : Camera3D
 {
@@ -15,17 +16,16 @@ struct PlayerCamera : Camera3D
 	Vector3 up = {};
 	Vector3 down = {};
 	Vector3 offset = {};
-	Vector2 sensitivity = Vector2{ 0.01f, 0.01f };
-	Vector2 lookRotation = Vector2{ 0, 0 };
-	Vector2 lean = Vector2{ 0, 0 };
-	float headLerp = {};
-	float walkLerp = {};
-	float headTimer = {};
 
-	// Follows the mouse, sits the camera at the head of `body`, and turns `body`
-	// to face where the camera looks
-	void UpdateCameraFPS(Camera3D* camera, Physics3D::RigidBody3D& body);
+	// The unit direction a yaw and pitch look along. Yaw 0 looks down +Z.
+	static Vector3 LookDirection(float yaw, float pitch);
 
+	// Simulation: the look basis (forward through down) for these angles, with
+	// `body` turned to face them on the ground plane
+	void SetLook(float yaw, float pitch, Physics3D::RigidBody3D& body);
+
+	// Client: puts a camera at `eye`, looking along (yaw, pitch)
+	static void PlaceCamera(Camera3D* camera, Vector3 eye, float yaw, float pitch);
 };
 
 struct Player : Entity
@@ -50,12 +50,35 @@ struct Player : Entity
 	// emission into the SoundField, so gait is the primary stealth control.
 	float footstepTimer = 0.0f;
 
+	// Where the player looks, in radians. Turned only by the commands a tick
+	// applies; yaw 0 looks down +Z, and pitch stays within +/- kPitchLimit.
+	float lookYaw = 0.0f;
+	float lookPitch = 0.0f;
+	static constexpr float kPitchLimit = 1.5f;
+
+	// The player's own flashlight, switched by BUTTON_FLASHLIGHT. Lighting draws
+	// the local player's; a Snapshot carries every player's.
+	bool flashlightOn = false;
+
 	// Render And Update
 	void render2D() override; // The reticle; the Scene draws it only while gameplay has input
 	void render3D() override;
 	void onEnable() override;
 	void onDisable() override;
-	void update3D(SceneManagement::Scene& scene, float deltaTime);
+
+	// One simulation tick of the player, driven by that tick's command. Reads no
+	// input device: everything the player does arrives in `command`.
+	void update3D(SceneManagement::Scene& scene, const Sim::PlayerCommand& command, float deltaTime);
+
+	// Turns the look by a command's deltas, clamped as the server clamps them
+	// (rule P-6), and points the look basis and the body along it
+	void ApplyLook(float yawDelta, float pitchDelta);
+
+	// Puts the look at these angles directly, for spawning and a Full wipe
+	void SetLookAngles(float yaw, float pitch);
+
+	// The point the player sees from: the top of the body, lower while crouching
+	Vector3 EyePosition() const;
 
 	// Audio
 	FMOD_3D_ATTRIBUTES getListener();
