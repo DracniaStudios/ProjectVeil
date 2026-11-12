@@ -145,11 +145,12 @@ echo
 echo "building $SETTINGS_BIN"
 g++ -std=c++23 -Wall \
 	-I src/engineLayer \
+	-I src/engineLayer/Save \
 	-I "$JSON_INC" \
 	tests/SettingsTests.cpp \
 	src/engineLayer/Settings.cpp \
 	src/engineLayer/ResourcePaths.cpp \
-	src/engineLayer/SaveStore.cpp \
+	src/engineLayer/Save/SaveStore.cpp \
 	-o "$SETTINGS_BIN"
 
 echo
@@ -275,7 +276,7 @@ g++ -std=c++23 -Wall \
 	-I src/engineLayer \
 	-I thirdparty/raylib-6.0/src \
 	tests/InputSystemTests.cpp \
-	src/engineLayer/InputSystem.cpp \
+	src/engineLayer/InputSystem/InputSystem.cpp \
 	-o "$INPUT_BIN" \
 	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
 
@@ -407,6 +408,8 @@ for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
 		-I thirdparty/rlImgui \
 		-I thirdparty/FastNoise2-1.1.1/include \
 		-I thirdparty/steam-1.64/public \
+		-I thirdparty/entt-4.0.0/src \
+		-I thirdparty/serialize-2.1.3 \
 		"$SRC" \
 		"${GAME_OBJECTS[@]}" \
 		"${IMGUI_LIBS[@]}" \
@@ -453,6 +456,8 @@ g++ -std=c++23 \
 	-I thirdparty/rlImgui \
 	-I thirdparty/FastNoise2-1.1.1/include \
 	-I thirdparty/steam-1.64/public \
+	-I thirdparty/entt-4.0.0/src \
+	-I thirdparty/serialize-2.1.3 \
 	tests/TriggerTests.cpp \
 	"${GAME_OBJECTS[@]}" \
 	"${IMGUI_LIBS[@]}" \
