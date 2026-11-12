@@ -10,7 +10,7 @@
  *   Destroy  marks an object; SweepDestroyed removes it at the end of the frame
  *   Clear    removes everything now and restarts the ids
  *
- * The containers are id-keyed std::unordered_maps, so element addresses
+ * Objects live in an entt::registry with in-place deletion, so element addresses
  * survive further insertions; TestFindPointerSurvivesFurtherSpawns holds the
  * line on that.
  *
@@ -24,6 +24,7 @@
 #include <Scene.h>
 #include <SceneManager.h>
 #include <gameMap.h>
+#include <AI/Stalker.h>
 
 #include <algorithm>
 #include <cstdio>
@@ -138,6 +139,50 @@ static void TestSpawnEntityKeysByNewIdAndDoesNotClobberSiblings()
 		"the original entity survives being duplicated");
 	Check(map.FindEntity(duplicate->id) == duplicate,
 		"the duplicate is reachable by its own id");
+
+	delete scene;
+}
+
+static void TestSpawnRefusesASlicedEntity()
+{
+	std::printf("Spawn refuses an Entity whose kind is not its class\n");
+	SceneManagement::Scene* scene = MakeScene();
+	GameMap& map = scene->gameMap;
+
+	Stalker stalker;
+	Entity sliced = stalker;
+	const auto next = map.NextId();
+	Check(map.SpawnEntity(sliced) == nullptr, "a Stalker copied through Entity is refused");
+	Check(map.NextId() == next, "and uses up no id");
+
+	Entity* copy = map.SpawnEntity(*stalker.clone());
+	Check(copy != nullptr && dynamic_cast<Stalker*>(copy) != nullptr, "a clone spawns as a Stalker");
+
+	delete scene;
+}
+
+// A NONE-kind subclass of Entity, as TriggerTests' probe is
+struct PlainSubclassEntity : Entity
+{
+	std::unique_ptr<Entity> clone() const override { return std::make_unique<PlainSubclassEntity>(*this); }
+};
+
+static void TestRestoreChecksKindAgainstClass()
+{
+	std::printf("Restore refuses a sliced Stalker and accepts a NONE-kind subclass\n");
+	SceneManagement::Scene* scene = MakeScene();
+	GameMap& map = scene->gameMap;
+
+	Stalker stalker;
+	auto sliced = std::make_unique<Entity>(stalker);
+	sliced->id = 70;
+	Check(map.RestoreEntity(std::move(sliced)) == nullptr, "a sliced Stalker is refused");
+	Check(map.FindEntity(70) == nullptr && map.EntityCount() == 0, "and nothing is stored under its id");
+
+	auto probe = std::make_unique<PlainSubclassEntity>();
+	probe->id = 71;
+	Entity* kept = map.RestoreEntity(std::move(probe));
+	Check(kept != nullptr && map.FindEntity(71) == kept, "a NONE-kind subclass of Entity is accepted");
 
 	delete scene;
 }
@@ -288,6 +333,33 @@ static void TestRestoreRefusesAnIdInUse()
 	Check(map.RestoreEntity(std::move(clash)) == nullptr, "a second object under the same id is refused");
 	Check(map.FindWorldObject(60) == kept && kept->name == "First", "the first one is untouched");
 	Check(map.EntityCount() == 0, "and nothing was added");
+
+	delete scene;
+}
+
+static void TestLoadingBindsNothingAndRestoreBindsOnce()
+{
+	std::printf("loadFromJson binds no model; Restore binds it once and fits the mesh collider\n");
+	SceneManagement::Scene* scene = MakeScene();
+	GameMap& map = scene->gameMap;
+
+	GameObject source{};
+	source.id = 60;
+	source.rigidBody3D.collider.shape = COLLIDER_MESH;
+	source.rigidBody3D.collider.size = Vector3{ 3, 3, 3 };
+	Json row = source.formatToJson();
+
+	GameObject loaded{};
+	loaded.id = 60;
+	Check(loaded.loadFromJson(row), "the row loads");
+	Check(loaded.model.meshCount == 0, "loading binds no model");
+	Check(!loaded.ownsModel, "and owns none");
+
+	GameObject* restored = map.RestoreGameObject(loaded);
+	Check(restored != nullptr && restored->model.meshCount > 0 && restored->ownsModel,
+		"Restore binds the model");
+	Check(restored != nullptr && restored->rigidBody3D.collider.size == Vector3{ 1, 1, 1 },
+		"and fits the mesh collider to it, once");
 
 	delete scene;
 }
@@ -487,12 +559,15 @@ int main()
 	TestIdsUniqueAcrossKinds();
 	TestFindPointerSurvivesFurtherSpawns();
 	TestSpawnEntityKeysByNewIdAndDoesNotClobberSiblings();
+	TestSpawnRefusesASlicedEntity();
+	TestRestoreChecksKindAgainstClass();
 	TestANewObjectHoldsNoModel();
 	TestSpawnLeavesThePrototypesModelAlone();
 	TestSpawnGivesEveryKindAUnitScale();
 	TestRestoreKeepsWhatWasSaved();
 	TestRestoreRaisesTheNextId();
 	TestRestoreRefusesAnIdInUse();
+	TestLoadingBindsNothingAndRestoreBindsOnce();
 	TestDestroyIsDeferredForEveryKind();
 	TestDestroyInsideForEachIsSafe();
 	TestUnlockRemovesTheStationAtTheSweep();

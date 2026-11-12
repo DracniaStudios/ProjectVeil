@@ -360,24 +360,24 @@ void WorldEditor::DuplicateSelection()
 	gizmo.Cancel();
 
 	// Copying through the GameObject base would slice off an Entity's or
-	// Interactable's extra data while leaving copy.type claiming to be one, so
-	// a later lookup by that type would index a container the copy was never
-	// inserted into. Each kind is therefore copied through its own type.
+	// Interactable's extra data while leaving the copy claiming to be one. The
+	// copy is therefore picked by where the original is stored, not by its
+	// save-controlled type, and an Entity is cloned so it keeps its class.
 	GameObject* spawned = nullptr;
 	const Vector3 offset = Vector3{ 1.0f, 0.0f, 0.0f };
 
 	//
 	// Each copy shares the original's model handle, which is safe: Spawn* never
 	// frees a prototype's model, and binds the stored copy a model of its own.
-	if (object->type == OBJECT_ENTITY)
+	if (Entity* entity = scene->gameMap.FindEntity(object->id))
 	{
-		Entity copy = *static_cast<Entity*>(object);
-		copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), offset));
-		spawned = scene->gameMap.SpawnEntity(copy);
+		std::unique_ptr<Entity> copy = entity->clone(); // keeps the class: a Stalker stays a Stalker
+		copy->rigidBody3D.Teleport(Vector3Add(copy->getPosition(), offset));
+		spawned = scene->gameMap.SpawnEntity(*copy);
 	}
-	else if (object->type == OBJECT_INTERACTABLE)
+	else if (InteractableObject* station = scene->gameMap.FindInteractable(object->id))
 	{
-		InteractableObject copy = *static_cast<InteractableObject*>(object);
+		InteractableObject copy = *station;
 		copy.rigidBody3D.Teleport(Vector3Add(copy.getPosition(), offset));
 		spawned = scene->gameMap.SpawnInteractable(copy);
 	}

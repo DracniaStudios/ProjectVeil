@@ -45,8 +45,15 @@ namespace ContactRules
 			scene.soundField.Emit(striker.getPosition(), loudness, SOUND_IMPACT, striker.id);
 		}
 
+		// The Entity a body id belongs to: a player in its Slot, or an Entity in the map
+		Entity* FindEntityFor(SceneManagement::Scene& scene, std::uint64_t id)
+		{
+			if (Player* player = scene.FindPlayer(id)) { return player; }
+			return scene.gameMap.FindEntity(id);
+		}
+
 		// Contact damage from the Stalker catching the player
-		void ApplyStalkerContactDamage(GameObject& a, GameObject& b)
+		void ApplyStalkerContactDamage(SceneManagement::Scene& scene, GameObject& a, GameObject& b)
 		{
 			GameObject* player = nullptr;
 			GameObject* stalker = nullptr;
@@ -54,17 +61,19 @@ namespace ContactRules
 			else if (b.type == OBJECT_PLAYER) { player = &b; stalker = &a; }
 			else { return; }
 
-			if (stalker->type != OBJECT_ENTITY
-				|| static_cast<Entity*>(stalker)->kind != ENTITYKIND_STALKER) {
-				return;
-			}
+			if (stalker->type != OBJECT_ENTITY) { return; }
 
-			static_cast<Entity*>(player)->applyHealthValue(stalker->baseDamage, true);
+			Entity* stalkerEntity = FindEntityFor(scene, stalker->id);
+			if (stalkerEntity == nullptr || stalkerEntity->kind != ENTITYKIND_STALKER) { return; }
+
+			Entity* playerEntity = FindEntityFor(scene, player->id);
+			if (playerEntity == nullptr) { return; }
+			playerEntity->applyHealthValue(stalker->baseDamage, true);
 		}
 
 		// Entity::Attack() spawns a physical OBJECT_PROJECTILE that flies, collides,
 		// and decays after 3s; this is what makes it hurt
-		void ApplyProjectileDamage(GameObject& a, GameObject& b)
+		void ApplyProjectileDamage(SceneManagement::Scene& scene, GameObject& a, GameObject& b)
 		{
 			GameObject* projectile = nullptr;
 			GameObject* target = nullptr;
@@ -74,7 +83,9 @@ namespace ContactRules
 
 			if (target->type != OBJECT_PLAYER && target->type != OBJECT_ENTITY) { return; }
 
-			static_cast<Entity*>(target)->applyHealthValue(projectile->baseDamage, true);
+			Entity* targetEntity = FindEntityFor(scene, target->id);
+			if (targetEntity == nullptr) { return; }
+			targetEntity->applyHealthValue(projectile->baseDamage, true);
 			projectile->Destroy();
 		}
 	}
@@ -90,8 +101,8 @@ namespace ContactRules
 			if (a == nullptr || b == nullptr) { continue; }
 
 			if (!contact.isTrigger) { EmitImpactNoise(scene, contact, *a, *b); }
-			ApplyStalkerContactDamage(*a, *b);
-			ApplyProjectileDamage(*a, *b);
+			ApplyStalkerContactDamage(scene, *a, *b);
+			ApplyProjectileDamage(scene, *a, *b);
 		}
 	}
 }
