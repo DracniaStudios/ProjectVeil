@@ -24,6 +24,7 @@
 #include <Scene.h>
 #include <SceneManager.h>
 #include <gameMap.h>
+#include <AI/Stalker.h>
 
 #include <algorithm>
 #include <cstdio>
@@ -138,6 +139,24 @@ static void TestSpawnEntityKeysByNewIdAndDoesNotClobberSiblings()
 		"the original entity survives being duplicated");
 	Check(map.FindEntity(duplicate->id) == duplicate,
 		"the duplicate is reachable by its own id");
+
+	delete scene;
+}
+
+static void TestSpawnRefusesASlicedEntity()
+{
+	std::printf("Spawn refuses an Entity whose kind is not its class\n");
+	SceneManagement::Scene* scene = MakeScene();
+	GameMap& map = scene->gameMap;
+
+	Stalker stalker;
+	Entity sliced = stalker;
+	const auto next = map.NextId();
+	Check(map.SpawnEntity(sliced) == nullptr, "a Stalker copied through Entity is refused");
+	Check(map.NextId() == next, "and uses up no id");
+
+	Entity* copy = map.SpawnEntity(*stalker.clone());
+	Check(copy != nullptr && dynamic_cast<Stalker*>(copy) != nullptr, "a clone spawns as a Stalker");
 
 	delete scene;
 }
@@ -487,6 +506,7 @@ int main()
 	TestIdsUniqueAcrossKinds();
 	TestFindPointerSurvivesFurtherSpawns();
 	TestSpawnEntityKeysByNewIdAndDoesNotClobberSiblings();
+	TestSpawnRefusesASlicedEntity();
 	TestANewObjectHoldsNoModel();
 	TestSpawnLeavesThePrototypesModelAlone();
 	TestSpawnGivesEveryKindAUnitScale();

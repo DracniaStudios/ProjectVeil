@@ -1,6 +1,7 @@
 #include "Entity.h"
 
 #include <complex>
+#include <typeinfo>
 #include <Scene.h>
 #include <helpers.h>
 #include <Player.h>
@@ -17,6 +18,17 @@ static void InstallDefaultBuffs(std::vector<CooldownTimer>& buffTimers)
 		auto buff = CooldownTimer(5); // Default Buff Time
 		buff.cooldownID = i;
 		buffTimers.push_back(buff);
+	}
+}
+
+bool Entity::KindMatchesType() const
+{
+	switch (kind)
+	{
+	case ENTITYKIND_PLAYER:  return dynamic_cast<const Player*>(this) != nullptr;
+	case ENTITYKIND_STALKER: return dynamic_cast<const Stalker*>(this) != nullptr;
+	case ENTITYKIND_NONE:    return typeid(*this) == typeid(Entity);
+	default:                 return false;
 	}
 }
 

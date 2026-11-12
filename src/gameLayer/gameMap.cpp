@@ -103,6 +103,13 @@ GameObject* GameMap::SpawnGameObject(const GameObject& prototype)
 
 Entity* GameMap::SpawnEntity(const Entity& prototype)
 {
+	if (!prototype.KindMatchesType())
+	{
+		std::cerr << "[GameMap] Not spawning Entity '" << prototype.name << "': its kind ("
+		          << entityKindToString(prototype.kind) << ") is not its class\n";
+		return nullptr;
+	}
+
 	// The id is chosen before the entity is stored, so the map key always matches
 	// entity->id, and a prototype that already carries a real id (a duplicate of
 	// a live entity) can't overwrite the entity stored under that id.
@@ -153,6 +160,14 @@ GameObject* GameMap::RestoreGameObject(GameObject object)
 
 Entity* GameMap::RestoreEntity(std::unique_ptr<Entity> entity)
 {
+	if (!entity->KindMatchesType())
+	{
+		std::cerr << "[GameMap] Not restoring Entity '" << entity->name << "': its kind ("
+		          << entityKindToString(entity->kind) << ") is not its class\n";
+		entity->releaseGeneratedModel();
+		return nullptr;
+	}
+
 	const std::uint64_t id = entity->id;
 	if (IsIdInUse(id))
 	{
