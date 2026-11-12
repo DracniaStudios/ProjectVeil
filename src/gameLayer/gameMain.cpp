@@ -137,7 +137,8 @@ bool update_game()
 	// Simulation: zero or more fixed ticks this frame, one command each. The
 	// session sends it, runs the server's tick (single-player, Host) and reads
 	// what came back.
-	// The World Editor can only change state between frames, so one read serves every tick
+	// The World Editor changes state only in Scene_frame (SceneManager_frame, above),
+	// never during a tick, so one read here serves every tick. Keep it below that call.
 	const bool editorPausesSimulation = Editor::WorldEditor::getInstance().IsEnabled() && Editor::WorldEditor::getInstance().IsSimulationPaused();
 	const int ticks = tickClock.Advance(frameTime);
 	for (int tick = 0; tick < ticks; ++tick) {
