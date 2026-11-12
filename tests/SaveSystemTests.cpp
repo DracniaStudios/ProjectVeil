@@ -245,6 +245,9 @@ static void TestGameRoundTripKeepsTheMomentAndThePlayer(const Store& store)
 	saved->limitYBounds = true;
 	saved->PlayerInSlot(0)->rigidBody3D.Teleport(Vector3{ -6, 1, 9 });
 	saved->PlayerInSlot(0)->health = 2.0f;
+	// Only loadVisuals() refits a mesh collider, so this size observes the load's rebind
+	saved->PlayerInSlot(0)->rigidBody3D.collider.shape = COLLIDER_MESH;
+	saved->PlayerInSlot(0)->rigidBody3D.collider.size = Vector3{ 3, 3, 3 };
 	Check(store.saveGame(*saved), "the game saves");
 
 	SceneManagement::Scene* loaded = MakeScene();
@@ -260,6 +263,8 @@ static void TestGameRoundTripKeepsTheMomentAndThePlayer(const Store& store)
 		"the player is where they were");
 	Check(loaded->PlayerInSlot(0)->health == 2.0f, "and as hurt as they were");
 	Check(loaded->PlayerInSlot(0)->model.meshCount > 0, "the loaded player has its model bound");
+	Check(loaded->PlayerInSlot(0)->rigidBody3D.collider.size == Vector3{ 1, 1, 1 },
+		"and its mesh collider was refitted by the load's one bind (3,3,3 saved, 1,1,1 after)");
 	Check(loaded->PlayerInSlot(0)->id == Sim::PlayerIdForSlot(0), "and is still the player");
 	Check(loaded->gameMap.FindEntity(Sim::PlayerIdForSlot(0)) == nullptr, "and is not also a world entity");
 
