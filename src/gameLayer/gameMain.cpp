@@ -80,6 +80,10 @@ bool init_game()
 	SceneManagement::SceneManager::getInstance().camera2D.offset = Vector2{ 0, 0 };
 	SceneManagement::SceneManager::getInstance().camera2D.target = Vector2{ 0, 0 };
 
+	// The client's save participants, installed BEFORE SceneManager_init: the Main
+	// Menu scene loads its world save, which restores the lighting through them.
+	SaveSystem::SetDefaultParticipants({ SaveSystem::LightingParticipant() });
+
 	SceneManagement::SceneManager_init(&SceneManagement::SceneManager::getInstance());
 
 	// Single-player runs through the same server code as a Host, joined to this

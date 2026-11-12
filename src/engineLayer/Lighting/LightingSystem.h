@@ -3,6 +3,7 @@
 #define LIGHTING_SYSTEM_H
 
 #include <raylib.h>
+#include <SaveSystem.h>
 #include <Physics.h> // Json (nlohmann) + the raymath operator overloads
 
 #include <string>
@@ -275,5 +276,12 @@ namespace Lighting {
 		bool isReady = false;
 		bool heardSettings = false; // Subscribed to Settings yet
 	};
+}
+
+namespace SaveSystem
+{
+	// The LightingSystem's lights and atmosphere. A save from before lighting
+	// existed gets the default rig, since an unlit world reads as a broken build.
+	SaveParticipant LightingParticipant();
 }
 #endif

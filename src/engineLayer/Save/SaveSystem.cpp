@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
-#include <LightingSystem.h>
 #include <ResourcePaths.h>
 #include <Scene.h>
 
@@ -47,18 +46,20 @@ namespace SaveSystem
 
 #pragma region Participants
 
-	SaveParticipant LightingParticipant()
+	static std::vector<SaveParticipant>& DefaultParticipantList()
 	{
-		return SaveParticipant{
-			"Lighting",
-			[] { return Lighting::LightingSystem::getInstance().formatToJson(); },
-			[](const Json* section)
-			{
-				Lighting::LightingSystem& lighting = Lighting::LightingSystem::getInstance();
-				if (section != nullptr) { lighting.loadFromJson(*section); }
-				else { lighting.CreateDefaultRig(); }
-			},
-		};
+		static std::vector<SaveParticipant> participants;
+		return participants;
+	}
+
+	void SetDefaultParticipants(std::vector<SaveParticipant> participants)
+	{
+		DefaultParticipantList() = std::move(participants);
+	}
+
+	const std::vector<SaveParticipant>& DefaultParticipants()
+	{
+		return DefaultParticipantList();
 	}
 
 #pragma endregion
@@ -358,7 +359,7 @@ namespace SaveSystem
 		if (scene == nullptr) { return false; }
 
 		FileSaveStore store(GameSaveDirectory());
-		if (!Save(store, fileName, *scene, SaveScope::Game, { LightingParticipant() })) { return false; }
+		if (!Save(store, fileName, *scene, SaveScope::Game, DefaultParticipants())) { return false; }
 
 		const fs::path path = store.PathOf(fileName);
 		std::cout << "[Save System] Saved Game: " << path.string() << "\n";
@@ -369,7 +370,7 @@ namespace SaveSystem
 	bool LoadGame(const char* fileName, SceneManagement::Scene& scene)
 	{
 		const FileSaveStore store(GameSaveDirectory());
-		if (!Load(store, fileName, scene, SaveScope::Game, { LightingParticipant() })) { return false; }
+		if (!Load(store, fileName, scene, SaveScope::Game, DefaultParticipants())) { return false; }
 
 		const fs::path path = store.PathOf(fileName);
 		std::cout << "[Save System] Loaded Game: " << path.string() << "\n";
@@ -382,7 +383,7 @@ namespace SaveSystem
 		if (scene == nullptr) { return false; }
 
 		FileSaveStore store(WorldSaveDirectory());
-		if (!Save(store, fileName, *scene, SaveScope::World, { LightingParticipant() })) { return false; }
+		if (!Save(store, fileName, *scene, SaveScope::World, DefaultParticipants())) { return false; }
 
 		std::cout << "[Save System] Saved World: " << store.PathOf(fileName) << "\n";
 		return true;
@@ -398,7 +399,7 @@ namespace SaveSystem
 		// Kept as authored before Apply touches it: the Full wipe restores from it,
 		// and the content hash reads its static fields
 		Json authored = save;
-		if (!Apply(save, scene, SaveScope::World, { LightingParticipant() })) { return false; }
+		if (!Apply(save, scene, SaveScope::World, DefaultParticipants())) { return false; }
 		scene.authoredWorld = std::move(authored);
 		scene.worldName = fileName;
 

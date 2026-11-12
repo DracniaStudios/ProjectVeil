@@ -1013,3 +1013,20 @@ namespace Lighting
 
 }
 #pragma endregion
+
+namespace SaveSystem
+{
+	SaveParticipant LightingParticipant()
+	{
+		return SaveParticipant{
+			"Lighting",
+			[] { return Lighting::LightingSystem::getInstance().formatToJson(); },
+			[](const Json* section)
+			{
+				Lighting::LightingSystem& lighting = Lighting::LightingSystem::getInstance();
+				if (section != nullptr) { lighting.loadFromJson(*section); }
+				else { lighting.CreateDefaultRig(); }
+			},
+		};
+	}
+}

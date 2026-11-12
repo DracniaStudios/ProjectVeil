@@ -570,6 +570,7 @@ int main()
 	// before any object enters a map — see StalkerFsmTests.cpp.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-save-system-tests");
+	SaveSystem::SetDefaultParticipants({ SaveSystem::LightingParticipant() });
 
 	std::printf("SaveSystem tests\n\n");
 	RemoveTestFiles();
