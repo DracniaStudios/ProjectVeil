@@ -150,8 +150,8 @@ namespace Client {
 
 		// The class picks the body, as the virtual call did: a Stalker and a Player
 		// draw their own, every other Entity (a plain one, a test's subclass) the
-		// GameObject's. dynamic_cast, not Entity::kind: kind is a saved field and
-		// can disagree with the class on a sliced copy.
+		// GameObject's. dynamic_cast, not Entity::kind: it is the literal equivalent
+		// of the virtual call, and the same test Entity::KindMatchesType uses.
 		scene.gameMap.ForEachEntity([&scene](Entity& entity) {
 			if (auto* stalker = dynamic_cast<Stalker*>(&entity)) { DrawStalker3D(*stalker, scene); }
 			else if (auto* player = dynamic_cast<Player*>(&entity)) { DrawPlayer3D(*player); }
