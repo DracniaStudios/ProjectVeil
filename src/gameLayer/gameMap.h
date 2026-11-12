@@ -12,6 +12,8 @@
 #include <utility>
 #include <Entity.h>
 
+struct Stalker;
+
 inline constexpr int OBJECT_LIMIT = 10000;
 
 // The first id a GameMap hands out: 0 means "no object". 1 was the single
@@ -77,6 +79,7 @@ namespace GameMapDetail
  *               storage component it carries: a plain GameObject, an Entity
  *               (player-like or the Stalker) or an InteractableObject. An id
  *               index maps the World save's stable uint64 ids (E-1) to entities.
+ *               Stalkers also carry a StalkerKind tag (C-04).
  *   Not on EnTT the objects' data and behaviour: they are still the GameObject
  *               class tree, with virtual update and render. Players live in the
  *               Scene's Slots.
@@ -241,6 +244,26 @@ struct GameMap {
 		VisitInteractablesConst(GameMapDetail::FunctionRef<bool(const InteractableObject&)>(visit));
 	}
 
+	// Every Stalker in the map, in the order ForEachEntity visits them. The visitor
+	// may return bool (false stops) or void.
+	template <class F>
+	void ForEachStalker(F&& fn)
+	{
+		auto visit = [&fn](Stalker& stalker) { return GameMapDetail::InvokeVisitor(fn, stalker); };
+		VisitStalkers(GameMapDetail::FunctionRef<bool(Stalker&)>(visit));
+	}
+
+	// const overload — see ForEachEntity's above.
+	template <class F>
+	void ForEachStalker(F&& fn) const
+	{
+		auto visit = [&fn](const Stalker& stalker) { return GameMapDetail::InvokeVisitor(fn, stalker); };
+		VisitStalkersConst(GameMapDetail::FunctionRef<bool(const Stalker&)>(visit));
+	}
+
+	// The Stalker with this id; nullptr for none, or for an id of another kind
+	Stalker* FindStalker(std::uint64_t id);
+
 	Vector3 size = {10, 10, 10};
 
 	// PLayer Spawn Point on Load Scene
@@ -278,6 +301,8 @@ private:
 	void VisitEntitiesConst(GameMapDetail::FunctionRef<bool(const Entity&)> visit) const;
 	void VisitInteractables(GameMapDetail::FunctionRef<bool(InteractableObject&)> visit);
 	void VisitInteractablesConst(GameMapDetail::FunctionRef<bool(const InteractableObject&)> visit) const;
+	void VisitStalkers(GameMapDetail::FunctionRef<bool(Stalker&)> visit);
+	void VisitStalkersConst(GameMapDetail::FunctionRef<bool(const Stalker&)> visit) const;
 };
 
 #endif

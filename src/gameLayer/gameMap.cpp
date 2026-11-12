@@ -2,6 +2,7 @@
 
 #include <asserts.h>
 #include <randomStuff.h>
+#include <AI/Stalker.h>
 
 #include <algorithm>
 #include <iostream>
@@ -31,6 +32,11 @@ namespace GameMapStorage
 		static constexpr bool in_place_delete = true;
 		std::unique_ptr<InteractableObject> interactable;
 	};
+
+	// The EntityKind object on this entity is a Stalker. Set when it is stored, from
+	// the object's class, never from Entity::kind. An empty tag: it needs no counter,
+	// and destroying the registry entity removes it.
+	struct StalkerKind {};
 }
 
 struct GameMap::Storage
@@ -64,6 +70,12 @@ namespace
 		const auto it = byId.find(id);
 		if (it == byId.end()) { return nullptr; }
 		return registry.try_get<Component>(it->second);
+	}
+
+	// Tags a just-stored Entity as a Stalker when its class is one
+	void TagStalker(entt::registry& registry, const std::unordered_map<std::uint64_t, entt::entity>& byId, std::uint64_t id, const Entity* entity)
+	{
+		if (dynamic_cast<const Stalker*>(entity) != nullptr) { registry.emplace<GameMapStorage::StalkerKind>(byId.at(id)); }
 	}
 }
 
@@ -185,6 +197,7 @@ Entity* GameMap::SpawnEntity(const Entity& prototype)
 	std::unique_ptr<Entity> owned = prototype.clone();
 	Entity* entity = owned.get();
 	Store<GameMapStorage::EntityKind>(storage->registry, storage->byId, id, GameMapStorage::EntityKind{ std::move(owned) });
+	TagStalker(storage->registry, storage->byId, id, entity);
 	++storage->entities;
 	PrepareSpawnedCopy(*entity, id);
 
@@ -247,6 +260,7 @@ Entity* GameMap::RestoreEntity(std::unique_ptr<Entity> entity)
 
 	ReserveIdsBelow(id + 1);
 	Entity* stored = Store<GameMapStorage::EntityKind>(storage->registry, storage->byId, id, GameMapStorage::EntityKind{ std::move(entity) }).entity.get();
+	TagStalker(storage->registry, storage->byId, id, stored);
 	++storage->entities;
 	BindRestored(*stored);
 	return stored;
@@ -321,6 +335,13 @@ Entity* GameMap::FindEntity(uint64_t id)
 	return stored ? stored->entity.get() : nullptr;
 }
 
+Stalker* GameMap::FindStalker(std::uint64_t id)
+{
+	const auto it = storage->byId.find(id);
+	if (it == storage->byId.end() || !storage->registry.all_of<GameMapStorage::StalkerKind>(it->second)) { return nullptr; }
+	return static_cast<Stalker*>(storage->registry.get<GameMapStorage::EntityKind>(it->second).entity.get());
+}
+
 InteractableObject* GameMap::FindInteractable(uint64_t id)
 {
 	auto* stored = Stored<GameMapStorage::Interactable>(storage->registry, storage->byId, id);
@@ -392,6 +413,27 @@ void GameMap::VisitEntitiesConst(GameMapDetail::FunctionRef<bool(const Entity&)>
 	{
 		const Entity& entity = *stored.entity;
 		if (!visit(entity)) return;
+	}
+}
+
+// Drives the EntityKind view, not a StalkerKind one, so the order is ForEachEntity's
+void GameMap::VisitStalkers(GameMapDetail::FunctionRef<bool(Stalker&)> visit)
+{
+	entt::registry& registry = storage->registry;
+	for (auto [handle, stored] : registry.view<GameMapStorage::EntityKind>().each())
+	{
+		if (!registry.all_of<GameMapStorage::StalkerKind>(handle)) { continue; }
+		if (!visit(static_cast<Stalker&>(*stored.entity))) return;
+	}
+}
+
+void GameMap::VisitStalkersConst(GameMapDetail::FunctionRef<bool(const Stalker&)> visit) const
+{
+	const entt::registry& registry = storage->registry;
+	for (auto [handle, stored] : registry.view<const GameMapStorage::EntityKind>().each())
+	{
+		if (!registry.all_of<GameMapStorage::StalkerKind>(handle)) { continue; }
+		if (!visit(static_cast<const Stalker&>(*stored.entity))) return;
 	}
 }
 

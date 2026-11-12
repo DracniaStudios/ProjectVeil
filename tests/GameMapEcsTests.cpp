@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 static int g_failures = 0;
@@ -188,6 +189,85 @@ static void TestTraversalOrderIsPinned()
 	delete scene;
 }
 
+// "Is a Stalker" is a tag GameMap sets when it stores the object; ForEachStalker is
+// ForEachEntity's order with the non-Stalkers skipped, also after a destroy and respawn.
+static void TestStalkersAreAStoredKind()
+{
+	std::printf("stalkers are a stored kind, visited in ForEachEntity's order\n");
+	SceneManagement::Scene* scene = new SceneManagement::Scene();
+	GameMap& map = scene->gameMap;
+
+	const auto restore = [&map](std::uint64_t id, bool stalker)
+	{
+		std::unique_ptr<Entity> entity = stalker ? std::make_unique<Stalker>() : std::make_unique<Entity>();
+		entity->id = id;
+		map.RestoreEntity(std::move(entity));
+	};
+	const auto stalkerOrder = [&map]
+	{
+		std::vector<std::uint64_t> ids;
+		map.ForEachStalker([&](Stalker& s) { ids.push_back(s.id); });
+		return ids;
+	};
+	const auto constStalkerOrder = [&map]
+	{
+		std::vector<std::uint64_t> ids;
+		std::as_const(map).ForEachStalker([&](const Stalker& s) { ids.push_back(s.id); });
+		return ids;
+	};
+	const auto filteredEntityOrder = [&map]
+	{
+		std::vector<std::uint64_t> ids;
+		map.ForEachEntity([&](Entity& e) { if (e.kind == ENTITYKIND_STALKER) { ids.push_back(e.id); } });
+		return ids;
+	};
+
+	restore(50, false);
+	restore(51, true);
+	restore(52, false);
+	restore(53, true);
+	CheckOrder(stalkerOrder(), filteredEntityOrder(), "ForEachStalker is ForEachEntity filtered by kind");
+	CheckOrder(stalkerOrder(), { 53, 51 }, "and visits only the Stalkers, newest slot first");
+	CheckOrder(constStalkerOrder(), { 53, 51 }, "the const overload agrees");
+	Check(map.FindStalker(51) == map.FindEntity(51) && map.FindStalker(51) != nullptr, "FindStalker finds a Stalker by id");
+	Check(map.FindStalker(50) == nullptr && map.FindStalker(999) == nullptr, "and returns nullptr for another kind or no id");
+
+	std::vector<std::uint64_t> firstOnly;
+	map.ForEachStalker([&](Stalker& s) { firstOnly.push_back(s.id); return false; });
+	CheckOrder(firstOnly, { 53 }, "a visitor returning false stops after the first Stalker");
+
+	// A refused prototype stores nothing, so it is not tagged either
+	Stalker liar;
+	liar.kind = ENTITYKIND_NONE;
+	Check(map.SpawnEntity(liar) == nullptr, "a Stalker whose kind says otherwise is refused");
+	CheckOrder(stalkerOrder(), { 53, 51 }, "and leaves the Stalkers as they were");
+
+	// Destroy one, respawn into the freed slots: the order still follows ForEachEntity
+	map.Destroy(51);
+	map.SweepDestroyed(scene);
+	CheckOrder(stalkerOrder(), { 53 }, "after Destroy(51) and the sweep only 53 is visited");
+	Check(map.FindStalker(51) == nullptr, "and 51 is no longer found");
+	Stalker again;
+	Entity plain;
+	const std::uint64_t spawnedStalker = map.SpawnEntity(again)->id;
+	map.SpawnEntity(plain);
+	Stalker last;
+	const std::uint64_t spawnedLast = map.SpawnEntity(last)->id;
+	CheckOrder(stalkerOrder(), filteredEntityOrder(), "after a respawn ForEachStalker is still ForEachEntity filtered by kind");
+	CheckOrder(stalkerOrder(), { spawnedLast, 53, spawnedStalker }, "a new slot comes first, the freed slot (reused by the first respawn) comes after 53");
+
+	// A moved map keeps its tags
+	GameMap moved(std::move(map));
+	CheckOrder([&moved] { std::vector<std::uint64_t> ids; moved.ForEachStalker([&](Stalker& s) { ids.push_back(s.id); }); return ids; }(),
+		{ spawnedLast, 53, spawnedStalker }, "a moved GameMap keeps its Stalker tags");
+	map = std::move(moved);
+
+	map.Clear();
+	CheckOrder(stalkerOrder(), {}, "after Clear no Stalker is visited");
+	Check(map.FindStalker(53) == nullptr, "and none is found");
+	delete scene;
+}
+
 int main()
 {
 	SetTraceLogLevel(LOG_ERROR);
@@ -199,6 +279,7 @@ int main()
 	TestPointersSurviveChurn();
 	TestIdsAndKinds();
 	TestTraversalOrderIsPinned();
+	TestStalkersAreAStoredKind();
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 
