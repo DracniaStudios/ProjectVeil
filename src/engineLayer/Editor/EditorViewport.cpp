@@ -2,6 +2,7 @@
 
 #include <rlgl.h>
 
+#include <Client/DebugDraw.h>
 #include <Geometry.h>
 
 #include <cmath>

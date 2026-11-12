@@ -1,5 +1,6 @@
 #include "GameObject.h"
 
+#include <Client/DebugDraw.h>
 #include <LightingSystem.h>
 #include <SceneManager.h>
 

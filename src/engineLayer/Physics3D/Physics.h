@@ -376,12 +376,6 @@ namespace Physics3D {
 
 	};
 }
-/**
- * Wireframe box that honours rotation, unlike raylib's axis-aligned
- * DrawCubeWires/DrawBoundingBox. Used by the collider debug draw and by the
- * World Editor's selection outline so both match what render3D actually draws.
- */
-void DrawOrientedBoxWires(Vector3 center, Vector3 size, Quaternion rotation, Color color);
 
 namespace Physics2D {
 
