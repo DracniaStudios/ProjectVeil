@@ -131,3 +131,15 @@ cmake --build --preset linux-debug
 Resources are copied to the build output directory automatically as a post-build step, and the `RESOURCES_PATH` macro points to the source `resources/` directory in non-production builds.
 
 GameNetworkingSockets needs protobuf. If CMake cannot find one installed, the first configure downloads protobuf 3.21.12 (about 5 MB, hash-checked) into the build directory. Configure with `-DVEIL_BUILD_GNS=OFF` to skip GameNetworkingSockets entirely, for example when offline. Include its headers as `<gns/steamnetworkingsockets.h>`: the Steamworks SDK ships same-named files under `steam/`, so the upstream `<steam/...>` spelling is deliberately not available.
+
+## Testing
+
+The test suites in `tests/` are built and run by one script, on Linux, against an already built game:
+
+```bash
+cmake --preset linux-debug
+cmake --build out/build/linux-debug
+tests/run_tests.sh            # optional argument: the build directory
+```
+
+The standalone suites (sound field, colliders, physics world, overlays, settings, UI, allocators, input, MiniGames) link raylib at most. The engine-linked suites (Stalker, GameMap, saves, Director, editor picking, lighting and others) reuse the game's compiled objects and need a display; on a headless machine the script runs them under `xvfb-run` when it is installed. CI does not run this script yet, so run it before merging.

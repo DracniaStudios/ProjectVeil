@@ -68,7 +68,7 @@ struct TempDirectory
 // The keys saves/settings.json has always been written with
 static const std::set<std::string> SHIPPED_KEYS = {
 	"AntiAliasing", "CameraShadeEffect", "CameraSmoothEffect", "CameraSpeed", "DialogueVolume",
-	"Difficulty", "DisplayMode", "Effects", "Foliage", "GameplaySFX", "HideClueVFX",
+	"Difficulty", "DisplayMode", "Effects", "Foliage", "FrameRate", "GameplaySFX", "HideClueVFX",
 	"HighContrastDisplay", "HudSize", "InvertedCameraXAxis", "InvertedCameraYAxis", "Luminosity",
 	"MasterVolume", "MonoOnly", "MusicVolume", "PostProcessing", "RenderResolution", "Resolution",
 	"SFXVolume", "Shadows", "Textures", "ViewDistance", "Vsync", "hideHUD",
