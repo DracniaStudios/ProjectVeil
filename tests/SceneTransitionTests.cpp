@@ -26,6 +26,7 @@
 
 #include <cstdio>
 #include <string>
+#include <Client/GamePresentation.h>
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -277,6 +278,7 @@ int main()
 	// exist before any scene is built.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-scene-transition-tests");
+	Client::InstallGamePresentation();
 
 	std::printf("Scene transition tests\n\n");
 

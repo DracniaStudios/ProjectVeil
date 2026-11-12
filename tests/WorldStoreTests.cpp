@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <string>
+#include <Client/GamePresentation.h>
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -167,6 +168,7 @@ int main()
 	SetTraceLogLevel(LOG_ERROR);
 	SetConfigFlags(FLAG_WINDOW_HIDDEN);
 	InitWindow(64, 64, "veil-world-store-tests");
+	Client::InstallGamePresentation();
 
 	std::printf("World store tests\n\n");
 

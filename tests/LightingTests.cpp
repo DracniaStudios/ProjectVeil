@@ -25,6 +25,7 @@
 #include <cmath>
 #include <cstdio>
 #include <string>
+#include <Client/GamePresentation.h>
 
 using Lighting::Light;
 using Lighting::LightingSystem;
@@ -375,6 +376,7 @@ int main()
 	// the window the game always has.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-lighting-tests");
+	Client::InstallGamePresentation();
 
 	std::printf("Lighting tests\n\n");
 

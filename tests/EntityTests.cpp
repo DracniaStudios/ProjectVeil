@@ -26,6 +26,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <Client/GamePresentation.h>
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -385,6 +386,7 @@ int main()
 	// A GameObject binds a model, which needs a GL context.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-entity-tests");
+	Client::InstallGamePresentation();
 
 	std::printf("Entity tests\n\n");
 

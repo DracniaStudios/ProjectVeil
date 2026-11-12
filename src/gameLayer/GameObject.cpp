@@ -1,8 +1,7 @@
 #include "GameObject.h"
 
 #include <Client/DebugDraw.h>
-#include <LightingSystem.h>
-#include <SceneManager.h>
+#include <sim/Presentation.h>
 
 // Mesh geometry reaches collision through the collider, never straight from the
 // model. 
@@ -33,7 +32,7 @@ void GameObject::releaseGeneratedModel()
 	// Only primitives this object generated for itself are unloadable.
 	if (!ownsModel) { return; }
 
-	if (model.meshCount > 0) { UnloadModel(model); }
+	Sim::CurrentPresentation().FreeGeneratedModel(*this);
 	model = {};
 	ownsModel = false;
 }
@@ -41,56 +40,7 @@ void GameObject::releaseGeneratedModel()
 /** Asset Binding **/
 void GameObject::loadVisuals()
 {
-	// Release whatever this object generated for itself before replacing it..
-	releaseGeneratedModel();
-
-	// Model: shared AssetManager handle when one is named, else a unit cube
-	AssetManager::Asset* modelAsset = modelName.empty() ? nullptr : AssetManager::GetAssetPtrByName(modelName, AssetManager::ASSET_MODEL);
-	if (modelAsset != nullptr && modelAsset->model.meshCount > 0)
-	{
-		model = modelAsset->model;
-		ownsModel = false;
-	}
-	else
-	{
-		if (!modelName.empty())
-		{
-			std::cerr << "Missing model asset '" << modelName << "' on " << name << " — using cube\n";
-		}
-		model = LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f));
-		ownsModel = true;
-	}
-
-	// Texture: only applied to owned primitives — an asset model's materials
-	// are shared by every object using it, and it brings its own .mtl textures
-	AssetManager::Asset* textureAsset = textureName.empty() ? nullptr : AssetManager::GetAssetPtrByName(textureName, AssetManager::ASSET_TEXTURE);
-	if (textureAsset != nullptr)
-	{
-		texture = textureAsset->texture;
-	}
-	else if (!textureName.empty())
-	{
-		std::cerr << "Missing texture asset '" << textureName << "' on " << name << "\n";
-	}
-
-	if (ownsModel && texture.id != 0)
-	{
-		model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
-	}
-
-	// Every runtime model binding funnels through here — editor placement,
-	// duplication, setModel(), onEnable() and GameMap's Restore* — which makes
-	// this the one place that guarantees new geometry is lit.
-	Lighting::LightingSystem::getInstance().ApplyToModel(model);
-
-	// ...and the one place a mesh collider can be kept honest. Its whole point is
-	// to match the art, so it has to be refitted whenever the art changes rather
-	// than only when the object is first built. Box and sphere colliders are
-	// authored by hand and are deliberately left alone.
-	if (rigidBody3D.collider.shape == COLLIDER_MESH)
-	{
-		rigidBody3D.collider.FitToModel(model);
-	}
+	Sim::CurrentPresentation().BindVisuals(*this);
 }
 
 void GameObject::setModel(const std::string& assetName)
@@ -103,16 +53,7 @@ void GameObject::setModel(const std::string& assetName)
 void GameObject::setTexture(const std::string& assetName)
 {
 	textureName = assetName;
-
-	// Bind without regenerating the model — safe to call every frame
-	if (AssetManager::Asset* asset = AssetManager::GetAssetPtrByName(assetName, AssetManager::ASSET_TEXTURE))
-	{
-		texture = asset->texture;
-		if (ownsModel && texture.id != 0)
-		{
-			model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
-		}
-	}
+	Sim::CurrentPresentation().BindTexture(*this);
 }
 
 /** Lifecycle **/

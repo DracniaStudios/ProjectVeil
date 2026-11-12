@@ -25,6 +25,7 @@
 #include <cstring>
 #include <memory>
 #include <string>
+#include <Client/GamePresentation.h>
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -313,6 +314,7 @@ int main()
 	// to exist before any is added.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-director-tests");
+	Client::InstallGamePresentation();
 
 	std::printf("Director tests\n\n");
 

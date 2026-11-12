@@ -25,6 +25,7 @@
 #include <cmath>
 #include <cstdio>
 #include <string>
+#include <Client/GamePresentation.h>
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -351,6 +352,7 @@ int main()
 	// to exist before any is added.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-emitter-tests");
+	Client::InstallGamePresentation();
 
 	std::printf("Perception emitter tests\n\n");
 

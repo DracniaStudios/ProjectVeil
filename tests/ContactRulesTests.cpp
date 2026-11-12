@@ -27,6 +27,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <Client/GamePresentation.h>
 
 using Physics3D::ContactEvent;
 using Physics3D::ContactPhase;
@@ -352,6 +353,7 @@ int main()
 	// An object binds a model when it enters the map, which needs a GL context.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-contact-rules-tests");
+	Client::InstallGamePresentation();
 
 	std::printf("Contact rules tests\n\n");
 

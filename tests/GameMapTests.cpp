@@ -31,6 +31,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <Client/GamePresentation.h>
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -553,6 +554,7 @@ int main()
 	// object enters a map — see StalkerFsmTests.cpp.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-gamemap-tests");
+	Client::InstallGamePresentation();
 
 	std::printf("GameMap tests\n\n");
 

@@ -28,6 +28,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <Client/GamePresentation.h>
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -199,6 +200,7 @@ int main()
 	SetTraceLogLevel(LOG_ERROR);
 	SetConfigFlags(FLAG_WINDOW_HIDDEN);
 	InitWindow(64, 64, "veil-gns-tests");
+	Client::InstallGamePresentation();
 
 	std::printf("GNS transport tests\n\n");
 

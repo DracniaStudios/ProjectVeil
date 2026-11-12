@@ -29,6 +29,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <Client/GamePresentation.h>
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -631,6 +632,7 @@ int main()
 	// before any object enters a map — see StalkerFsmTests.cpp.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-save-system-tests");
+	Client::InstallGamePresentation();
 	SaveSystem::SetDefaultParticipants({ SaveSystem::LightingParticipant() });
 
 	std::printf("SaveSystem tests\n\n");

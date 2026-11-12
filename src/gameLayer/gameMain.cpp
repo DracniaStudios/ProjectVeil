@@ -7,6 +7,7 @@
 #include <Client/RoundPresenter.h>
 #include <Client/Session.h>
 #include <Client/DevOptions.h>
+#include <Client/GamePresentation.h>
 #include <sim/FixedTick.h>
 
 #include <cmath>
@@ -54,6 +55,7 @@ static void ApplyCursorForInput()
 
 bool init_game()
 {
+	Client::InstallGamePresentation();
 	Settings::Settings::getInstance().Init();
 	AudioManager::AudioManager::getInstance().loadAll();
 	SetTargetFPS(maxFrameRate);

@@ -27,6 +27,7 @@
 #include <cstdio>
 #include <memory>
 #include <string>
+#include <Client/GamePresentation.h>
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -436,6 +437,7 @@ int main()
 	// An object binds a model when it enters the map, which needs a GL context.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-editor-picking-tests");
+	Client::InstallGamePresentation();
 
 	std::printf("Editor picking tests\n\n");
 

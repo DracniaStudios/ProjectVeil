@@ -24,6 +24,7 @@
 #include <cmath>
 #include <cstdio>
 #include <string>
+#include <Client/GamePresentation.h>
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -253,6 +254,7 @@ int main()
 	// A Player binds a model when enabled, so a GL context has to exist first
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-fixed-tick-tests");
+	Client::InstallGamePresentation();
 
 	std::printf("Fixed tick and PlayerCommand tests\n\n");
 
