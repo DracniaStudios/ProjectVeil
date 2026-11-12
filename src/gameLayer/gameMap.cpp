@@ -12,6 +12,8 @@
 
 namespace GameMapStorage
 {
+	// in_place_delete on every component: a pointer to a stored object stays valid across
+	// spawns and destroys of other objects, until that object itself is removed.
 	struct Plain
 	{
 		static constexpr bool in_place_delete = true;
@@ -367,7 +369,8 @@ void GameMap::VisitGameObjects(GameMapDetail::FunctionRef<bool(GameObject&)> vis
 
 void GameMap::VisitGameObjectsConst(GameMapDetail::FunctionRef<bool(const GameObject&)> visit) const
 {
-	for (auto [handle, stored] : storage->registry.view<const GameMapStorage::Plain>().each())
+	const entt::registry& registry = storage->registry;
+	for (auto [handle, stored] : registry.view<const GameMapStorage::Plain>().each())
 	{
 		const GameObject& object = stored.object;
 		if (!visit(object)) return;
@@ -384,7 +387,8 @@ void GameMap::VisitEntities(GameMapDetail::FunctionRef<bool(Entity&)> visit)
 
 void GameMap::VisitEntitiesConst(GameMapDetail::FunctionRef<bool(const Entity&)> visit) const
 {
-	for (auto [handle, stored] : storage->registry.view<const GameMapStorage::EntityKind>().each())
+	const entt::registry& registry = storage->registry;
+	for (auto [handle, stored] : registry.view<const GameMapStorage::EntityKind>().each())
 	{
 		const Entity& entity = *stored.entity;
 		if (!visit(entity)) return;
@@ -401,7 +405,8 @@ void GameMap::VisitInteractables(GameMapDetail::FunctionRef<bool(InteractableObj
 
 void GameMap::VisitInteractablesConst(GameMapDetail::FunctionRef<bool(const InteractableObject&)> visit) const
 {
-	for (auto [handle, stored] : storage->registry.view<const GameMapStorage::Interactable>().each())
+	const entt::registry& registry = storage->registry;
+	for (auto [handle, stored] : registry.view<const GameMapStorage::Interactable>().each())
 	{
 		const InteractableObject& interactable = *stored.interactable;
 		if (!visit(interactable)) return;
