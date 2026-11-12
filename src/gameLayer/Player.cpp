@@ -113,25 +113,6 @@ void Player::onDisable()
 	Entity::onDisable();
 }
 
-void Player::render2D()
-{
-	if (!this->isEnabled) return;
-	auto inputSystem = &InputSystem::InputSystem::getInstance();
-
-	/// Reticle
-	DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 10,
-		inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM) ? RED
-		: inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2) ? RED
-		: WHITE);
-}
-
-void Player::render3D()
-{
-	if (!this->isEnabled) { return; }
-	if (artifact) { artifact->render3D(); }
-	Entity::render3D();
-}
-
 // Footsteps, the player's loudest routine emission.
 static void EmitFootsteps(Player* player, SceneManagement::Scene& scene, float deltaTime)
 {

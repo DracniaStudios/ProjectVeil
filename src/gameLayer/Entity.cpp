@@ -80,11 +80,6 @@ void Entity::onDisable()
 	GameObject::onDisable();
 }
 
-void Entity::render3D()
-{
-	GameObject::render3D();
-}
-
 void Entity::update(SceneManagement::Scene* scene, float deltaTime)
 {
 	GameObject::update(scene, deltaTime);

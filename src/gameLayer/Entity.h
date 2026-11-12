@@ -113,7 +113,6 @@ public:
 	/** Functions **/
 	virtual void onEnable() override;
 	virtual void onDisable() override;
-	virtual void render3D() override;
 	virtual void update(SceneManagement::Scene* scene, float deltaTime) override;
 
 	Vector3 getSpawnPoint() { return spawnPoint; }

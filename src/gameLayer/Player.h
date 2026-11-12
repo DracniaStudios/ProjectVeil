@@ -60,9 +60,7 @@ struct Player : Entity
 	// the local player's; a Snapshot carries every player's.
 	bool flashlightOn = false;
 
-	// Render And Update
-	void render2D() override; // The reticle; the Scene draws it only while gameplay has input
-	void render3D() override;
+	// Update
 	void onEnable() override;
 	void onDisable() override;
 

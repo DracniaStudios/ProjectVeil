@@ -1,6 +1,5 @@
 #include "GameObject.h"
 
-#include <Client/DebugDraw.h>
 #include <sim/Presentation.h>
 
 // Mesh geometry reaches collision through the collider, never straight from the
@@ -85,65 +84,6 @@ void GameObject::onDisable()
 	releaseGeneratedModel();
 }
 
-
-void GameObject::render2D()
-{
-	if (!isEnabled) { return; }
-}
-void GameObject::render3D()
-{
-	if (!isEnabled) { return; }
-
-	if (displayCollider)
-	{
-		// Two volumes, because they are genuinely different things. White is the
-		// axis-aligned box the BROAD phase tests; the coloured one is the collider
-		// the narrow phase actually tests. They coincide exactly while the object is
-		// unrotated and its collider is the default, and every gap between them —
-		// from rotation, from a resized collider, from an offset one — is real slack
-		// worth being able to see.
-		DrawBoundingBox(rigidBody3D.broadPhaseBox, WHITE);
-
-		// Colour carries the mode. A trigger and a solid are indistinguishable on
-		// screen otherwise and behave completely differently, which is a miserable
-		// thing to debug by moving objects around until something stops falling.
-		const Collider3D& collider = rigidBody3D.collider;
-		const Color colliderColor = collider.isTrigger() ? SKYBLUE : GREEN;
-		const Vector3 colliderCenter = rigidBody3D.GetColliderCenter();
-
-		if (collider.shape == COLLIDER_SPHERE)
-		{
-			DrawSphereWires(colliderCenter, collider.GetWorldRadius(rigidBody3D.scale), 8, 8, colliderColor);
-		}
-		else
-		{
-			DrawOrientedBoxWires(colliderCenter,
-				Vector3Scale(rigidBody3D.GetLocalHalfExtents(), 2.0f),
-				rigidBody3D.rotation, colliderColor);
-		}
-	}
-
-	if (display3DModel) {
-		// Bake scale + orientation into the transform — meshes stay unit-sized,
-		// so both generated cubes and .obj models follow rigidBody3D.scale
-		Vector3 scale = rigidBody3D.scale;
-		model.transform = MatrixMultiply(
-			MatrixScale(scale.x, scale.y, scale.z),
-			QuaternionToMatrix(rigidBody3D.rotation));
-		DrawModel(model, rigidBody3D.translation, 1.0f, defaultColor);
-		DrawModelWires(model, rigidBody3D.translation, 1.0f, BLACK);
-	}
-
-	if (displayDirection) {
-		/// Show Directions
-		DrawSphere(rigidBody3D.forward + rigidBody3D.translation, 0.1f, RED);
-		DrawSphere(rigidBody3D.back + rigidBody3D.translation, 0.1f, ORANGE);
-		DrawSphere(rigidBody3D.left + rigidBody3D.translation, 0.1f, YELLOW);
-		DrawSphere(rigidBody3D.right + rigidBody3D.translation, 0.1f, GREEN);
-		DrawSphere(rigidBody3D.up + rigidBody3D.translation, 0.1f, BLUE);
-		DrawSphere(rigidBody3D.down + rigidBody3D.translation, 0.1f, PURPLE);
-	}
-}
 
 void GameObject::update(SceneManagement::Scene* scene, float deltaTime)
 {
@@ -301,10 +241,6 @@ Json GameObject::formatToJson()
 bool GameObject::loadFromJson(Json& j)
 {
 	return loadCommonFromJson(j);
-}
-
-void GameObject::DrawGizmos() {
-
 }
 
 #pragma endregion

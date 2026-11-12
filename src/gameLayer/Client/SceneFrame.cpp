@@ -9,6 +9,7 @@
 #include <Client/LocalPlayer.h>
 #include <Client/RoundPresenter.h>
 #include <Client/StalkerWarnings.h>
+#include <Client/WorldDraw.h>
 
 namespace SceneManagement {
 
@@ -86,7 +87,7 @@ namespace SceneManagement {
 
 		// Over the overlays, the reticle during gameplay. Inside a MiniGame the
 		// player is the game's own cursor, which the game draws.
-		if (Player* local = Client::LocalPlayer(scene); local != nullptr && scene.overlays.GameplayHasInput()) { local->render2D(); }
+		if (Player* local = Client::LocalPlayer(scene); local != nullptr && scene.overlays.GameplayHasInput()) { Client::DrawReticle(*local); }
 
 		UI::endFrame();
 	}
@@ -96,9 +97,9 @@ namespace SceneManagement {
 
 		if (scene.draw3D) { scene.draw3D(scene); }
 
-		scene.gameMap.ForEachObject([](GameObject& object) { object.render3D(); });
+		Client::DrawWorldObjects3D(scene);
 
-		scene.ForEachPlayer([](int, Player& player) { player.render3D(); });
+		scene.ForEachPlayer([](int, Player& player) { Client::DrawPlayer3D(player); });
 
 		// Other players are a placeholder capsule (Step 4.6); real models,
 		// animation and their flashlights are multiplayer-update work

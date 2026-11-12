@@ -114,8 +114,6 @@ struct GameObject
 	ObjectType getType() const { return type; }
 
 	virtual void update(SceneManagement::Scene* scene, float deltaTime);
-	virtual void render2D();
-	virtual void render3D();
 	virtual void onEnable();
 	virtual void onDisable();
 
@@ -128,9 +126,6 @@ struct GameObject
 	virtual bool loadFromJson(Json& j);
 	void addCommonToJson(Json& j);
 	bool loadCommonFromJson(Json& j);
-
-	// Gizmos
-	virtual void DrawGizmos();
 };
 
 /** Interfaces **/
@@ -187,9 +182,6 @@ public:
 	static constexpr float kDefaultMinimumSeconds = 3.0f;
 	float minimumSeconds = kDefaultMinimumSeconds;
 
-	virtual void render3D() override {
-		GameObject::render3D();
-	};
 	virtual void update(SceneManagement::Scene* scene, float deltaTime) override
 	{
 		GameObject::update(scene, deltaTime);
