@@ -1,5 +1,7 @@
 #include "MiniGame_FlappyBird.h"
 
+#include <Geometry.h>
+
 #include <iostream>
 
 namespace
@@ -98,7 +100,7 @@ MiniGameOutcome FlappyBird::Update(const MiniGameInput& input, float /*deltaTime
 	// Game Logic
 	// The active-goal test is part of the condition rather than an early return,
 	// so resting inside the goal that was already scored doesn't freeze the game.
-	if (isLeftGoalActive && CheckCollisionCircleRec(cursorPosition, cursorRadius, leftGoal))
+	if (isLeftGoalActive && Geometry::CheckCollisionCircleRec(cursorPosition, cursorRadius, leftGoal))
 	{
 		std::cout << "Player Inside Left Goal \n";
 		data.score++;
@@ -108,7 +110,7 @@ MiniGameOutcome FlappyBird::Update(const MiniGameInput& input, float /*deltaTime
 		GenerateObstacles(2 + data.score);
 
 	}
-	else if (isRightGoalActive && CheckCollisionCircleRec(cursorPosition, cursorRadius, rightGoal))
+	else if (isRightGoalActive && Geometry::CheckCollisionCircleRec(cursorPosition, cursorRadius, rightGoal))
 	{
 		std::cout << "Player Inside Right Goal \n";
 		data.score++;
@@ -118,7 +120,7 @@ MiniGameOutcome FlappyBird::Update(const MiniGameInput& input, float /*deltaTime
 		GenerateObstacles(2 + data.score);
 	}
 
-	if (!CheckCollisionRecs(cursor.getRectCentered(), GetGreenArea(screen))) { return MiniGameOutcome::Lost; }
+	if (!Geometry::CheckCollisionRecs(cursor.getRectCentered(), GetGreenArea(screen))) { return MiniGameOutcome::Lost; }
 
 	// Win Condition
 	if (data.score >= data.scoreGoal) { return MiniGameOutcome::Won; }
@@ -126,7 +128,7 @@ MiniGameOutcome FlappyBird::Update(const MiniGameInput& input, float /*deltaTime
 	// Lose Condition. This one used to quit the station outright; a lost round now
 	// always starts a fresh one, like every other way of losing.
 	auto cursorRect = Rectangle(cursor.translation.x, cursor.translation.y, cursor.scale.x, cursor.scale.y);
-	if (!CheckCollisionRecs(cursorRect, screen))
+	if (!Geometry::CheckCollisionRecs(cursorRect, screen))
 	{
 		std::cout << "[MiniGame/FlappyBird] Play Fail Sound\n";
 		return MiniGameOutcome::Lost;
@@ -152,7 +154,7 @@ MiniGameOutcome FlappyBird::Update(const MiniGameInput& input, float /*deltaTime
 			obj.height,
 		};
 
-		if (CheckCollisionCircleRec(cursor.getPosition(), cursor.scale.x, generateScaleRect(screen, newSize)))
+		if (Geometry::CheckCollisionCircleRec(cursor.getPosition(), cursor.scale.x, generateScaleRect(screen, newSize)))
 		{
 			return MiniGameOutcome::Lost;
 		}

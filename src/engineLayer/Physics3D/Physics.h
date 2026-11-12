@@ -11,6 +11,7 @@
 #include <nlohmann/json.hpp>
 
 #include <Collider.h>
+#include <Geometry.h>
 
 
 #if defined(RAYMATH_DISABLE_CPP_OPERATORS)
@@ -353,7 +354,7 @@ namespace Physics3D {
 		 */
 		bool OverlapsBroadPhase(const RigidBody3D& other) const
 		{
-			return CheckCollisionBoxes(broadPhaseBox, other.broadPhaseBox);
+			return Geometry::CheckCollisionBoxes(broadPhaseBox, other.broadPhaseBox);
 		}
 
 		// Convenience wrappers over getContact(). Prefer getContact() when more than
@@ -410,7 +411,7 @@ namespace Physics2D {
 			aabb.width += delta * 2;
 			aabb.height += delta * 2;
 
-			return CheckCollisionPointRec(point, aabb);
+			return Geometry::CheckCollisionPointRec(point, aabb);
 		}
 
 		bool intersectTransform(Transform2D other, float delta = 0) const
@@ -428,7 +429,7 @@ namespace Physics2D {
 			b.width += delta * 2;
 			b.height += delta * 2;
 
-			return CheckCollisionRecs(a, b);
+			return Geometry::CheckCollisionRecs(a, b);
 		}
 	};
 

@@ -2,6 +2,8 @@
 
 #include <rlgl.h>
 
+#include <Geometry.h>
+
 #include <cmath>
 #include <string>
 
@@ -591,7 +593,7 @@ void WorldEditor::DrawEditorViewport()
 		if (size == Vector3Zero()) { size = Vector3One(); }
 		size = SanitizeScale(size);
 
-		DrawCubeV(placementPreviewPosition, size, Fade(kPlacementColor, 0.30f));
+		DrawCubeV(placementPreviewPosition, size, Geometry::Fade(kPlacementColor, 0.30f));
 		DrawOrientedBoxWires(placementPreviewPosition, size, QuaternionIdentity(), kPlacementColor);
 
 		// Which way the object was pushed off the surface, so a placement onto a

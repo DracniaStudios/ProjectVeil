@@ -1,5 +1,7 @@
 #include "MiniGame_Crane.h"
 
+#include <Geometry.h>
+
 namespace {
 	// Horizontal drift per frame at 60 FPS
 	constexpr int kSpeed = 2;
@@ -94,14 +96,14 @@ MiniGameOutcome Crane::Update(const MiniGameInput& input, float deltaTime)
 
 	for (const Rectangle& obstacle : data.obstacles)
 	{
-		if (CheckCollisionCircleRec(cursor.getPosition(), cursor.scale.x, obstacle)) { return MiniGameOutcome::Lost; }
+		if (Geometry::CheckCollisionCircleRec(cursor.getPosition(), cursor.scale.x, obstacle)) { return MiniGameOutcome::Lost; }
 	}
 
 	/// Goal Logic
-	if (CheckCollisionCircleRec(cursor.getPosition(), cursor.scale.x, data.goal)) { return MiniGameOutcome::Won; }
+	if (Geometry::CheckCollisionCircleRec(cursor.getPosition(), cursor.scale.x, data.goal)) { return MiniGameOutcome::Won; }
 
 	auto cursorRect = Rectangle(cursor.translation.x, cursor.translation.y, cursor.scale.x, cursor.scale.y);
-	if (!CheckCollisionRecs(cursorRect, data.screen)) { return MiniGameOutcome::Lost; }
+	if (!Geometry::CheckCollisionRecs(cursorRect, data.screen)) { return MiniGameOutcome::Lost; }
 
 	return MiniGameOutcome::Running;
 }
