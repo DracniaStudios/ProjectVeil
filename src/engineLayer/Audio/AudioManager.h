@@ -7,6 +7,7 @@
 #include <array>
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include <raylib.h>
 
 struct GameObject;
