@@ -7,11 +7,10 @@
 #include <array>
 #include <string>
 #include <unordered_map>
-#include <GameObject.h>
+#include <raylib.h>
 
-// GameObject.h and this header include each other, so whichever is read first
-// sees the other's types only through a declaration
 struct GameObject;
+struct Player;
 namespace SceneManagement { struct Scene; }
 
 namespace AudioManager {
@@ -30,6 +29,12 @@ namespace AudioManager {
 		vec.z = vector.z;
 		return vec;
 	}
+
+	// A GameObject's 3D attributes, for the sound it carries
+	FMOD_3D_ATTRIBUTES AttributesOf(const GameObject& object);
+
+	// The listener for a player; listenerPosition is where the camera is
+	FMOD_3D_ATTRIBUTES ListenerFor(const Player& player, Vector3 listenerPosition);
 
 	enum AudioType {
 		AUDIO_NONE,

@@ -7,8 +7,8 @@
 #include <helpers.h>
 #include <Physics.h>
 #include <AssetManager.h>
-#include <AudioManager.h>
 
+namespace FMOD { namespace Studio { class EventInstance; } }
 namespace SceneManagement { struct Scene; }
 struct GameMap;
 struct Player;
@@ -106,7 +106,6 @@ struct GameObject
 	std::string soundParameterName = "Parameter";
 	int soundParameterValue = 0;
 	bool isLooping = false; // Add File Save
-	FMOD_3D_ATTRIBUTES get3DAttributes() const;
 
 	Vector3 getPosition() const { return rigidBody3D.translation; }
 	Quaternion getRotation() const { return rigidBody3D.rotation; }

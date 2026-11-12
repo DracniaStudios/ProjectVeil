@@ -166,9 +166,8 @@ void GameObject::update(SceneManagement::Scene* scene, float deltaTime)
 	}
 	// Sound Data
 	{
-		if (soundInstance != nullptr && soundInstance->isValid()) {
-			FMOD_3D_ATTRIBUTES attributes = get3DAttributes();
-			soundInstance->set3DAttributes(&attributes);
+		if (soundInstance != nullptr) {
+			Sim::CurrentPresentation().FollowObjectSound(*this);
 		}
 	}
 
@@ -207,16 +206,6 @@ void GameObject::onDestroy(SceneManagement::Scene* scene)
 	onDisable();
 }
 
-// FMOD requires forward and up to be normalized and perpendicular
-FMOD_3D_ATTRIBUTES GameObject::get3DAttributes() const
-{
-	FMOD_3D_ATTRIBUTES attributes = {};
-	attributes.position = AudioManager::Vector3ToFMOD(getPosition());
-	attributes.velocity = AudioManager::Vector3ToFMOD(getVelocity());
-	attributes.forward = AudioManager::Vector3ToFMOD(Vector3Normalize(rigidBody3D.forward));
-	attributes.up = AudioManager::Vector3ToFMOD(Vector3Normalize(rigidBody3D.up));
-	return attributes;
-}
 #pragma endregion
 
 /** GameObject Save Data **/

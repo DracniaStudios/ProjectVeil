@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include <AudioManager.h>
 #include <Client/Session.h>
 #include <LightingSystem.h>
 #include <WorldEditor.h>

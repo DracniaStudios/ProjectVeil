@@ -220,21 +220,3 @@ void Player::update3D(SceneManagement::Scene& scene, const Sim::PlayerCommand& c
 	stamina = Clamp(stamina, 0, getMaxStamina());
 	health = Clamp(health, 0, getMaxHealth());
 }
-
-FMOD_3D_ATTRIBUTES Player::getListener() {
-	const auto camera = &this->camera;
-
-	// FMOD requires forward and up to be normalized and perpendicular
-	Vector3 forward = Vector3Normalize(camera->forward);
-	if (Vector3LengthSqr(forward) < 0.0001f) { forward = Vector3(0, 0, 1); }
-	Vector3 right = Vector3CrossProduct(Vector3(0, -1, 0), forward);
-	if (Vector3LengthSqr(right) < 0.0001f) { right = Vector3(1, 0, 0); } // looking straight up/down
-	Vector3 up = Vector3Normalize(Vector3CrossProduct(forward, right));
-
-	FMOD_3D_ATTRIBUTES listenerAttributes = {};
-	listenerAttributes.position = AudioManager::Vector3ToFMOD(SceneManagement::SceneManager::getInstance().camera3D.position);
-	listenerAttributes.velocity = AudioManager::Vector3ToFMOD(getVelocity());
-	listenerAttributes.forward = AudioManager::Vector3ToFMOD(forward);
-	listenerAttributes.up = AudioManager::Vector3ToFMOD(up);
-	return listenerAttributes;
-}

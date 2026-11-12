@@ -3,6 +3,7 @@
 #include <SceneManager.h>
 #include <gameMap.h>
 #include <Player.h>
+#include <sim/Presentation.h>
 
 
 // Interacting with a Task station is a claim on it (rule S-3). The server's
@@ -100,14 +101,8 @@ InteractableObject::InteractableObject(const InteractionType interact, int varia
 
 void InteractableObject::onInteract(SceneManagement::Scene& scene, Player& by)
 {
-	AudioManager::AudioManager::getInstance().Play3D(defaultSound, *this);
+	Sim::CurrentPresentation().PlayObjectSound(*this);
 	std::cout << "[InteractObject] Interacted with " << name << "\n";
-
-	// Play3D only populates soundInstance when it falls back to the FMOD Studio event path;
-	// a plain loaded sound (the common case) leaves it null.
-	if (soundInstance != nullptr) {
-		soundInstance->setParameterByName(soundParameterName.c_str(), soundParameterValue);
-	}
 
 	// The branches stay mutually exclusive: Unlock() marks this station for
 	// removal, and none of the others may run on a station that is going away.

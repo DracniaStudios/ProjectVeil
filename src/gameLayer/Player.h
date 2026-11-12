@@ -80,9 +80,6 @@ struct Player : Entity
 	// The point the player sees from: the top of the body, lower while crouching
 	Vector3 EyePosition() const;
 
-	// Audio
-	FMOD_3D_ATTRIBUTES getListener();
-
 	// Status Functions
 	std::ranlux24_base rng;
 

@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include <AssetManager.h>
+#include <AudioManager.h>
 #include <GameObject.h>
 #include <LightingSystem.h>
 #include <sim/Presentation.h>
@@ -81,6 +82,30 @@ namespace {
 		void FreeGeneratedModel(GameObject& object) override
 		{
 			if (object.model.meshCount > 0) { UnloadModel(object.model); }
+		}
+
+		void PlayGameplaySoundAt(std::string_view name, Vector3 position, float volume) override
+		{
+			AudioManager::AudioManager::getInstance().Play3D(std::string(name), position, AudioManager::AUDIO_GAMEPLAY_SFX, volume);
+		}
+
+		void PlayObjectSound(GameObject& object) override
+		{
+			AudioManager::AudioManager::getInstance().Play3D(object.defaultSound, object);
+
+			// Play3D only populates soundInstance when it falls back to the FMOD Studio event path;
+			// a plain loaded sound (the common case) leaves it null.
+			if (object.soundInstance != nullptr) {
+				object.soundInstance->setParameterByName(object.soundParameterName.c_str(), object.soundParameterValue);
+			}
+		}
+
+		void FollowObjectSound(GameObject& object) override
+		{
+			if (object.soundInstance != nullptr && object.soundInstance->isValid()) {
+				FMOD_3D_ATTRIBUTES attributes = AudioManager::AttributesOf(object);
+				object.soundInstance->set3DAttributes(&attributes);
+			}
 		}
 	};
 }

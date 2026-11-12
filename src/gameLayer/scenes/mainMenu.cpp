@@ -1,5 +1,6 @@
 #include "mainMenu.h"
 
+#include <AudioManager.h>
 #include <SaveSystem.h>
 
 void Scene_MainMenuUpdate(SceneManagement::Scene& /*scene*/, float /*deltaTime*/)

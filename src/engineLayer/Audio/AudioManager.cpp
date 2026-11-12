@@ -8,8 +8,40 @@
 #include <SceneManager.h>
 #include <Settings.h>
 #include <Client/LocalPlayer.h>
+#include <GameObject.h>
+#include <Player.h>
 
 namespace AudioManager {
+	// FMOD requires forward and up to be normalized and perpendicular
+	FMOD_3D_ATTRIBUTES AttributesOf(const GameObject& object)
+	{
+		FMOD_3D_ATTRIBUTES attributes = {};
+		attributes.position = Vector3ToFMOD(object.getPosition());
+		attributes.velocity = Vector3ToFMOD(object.getVelocity());
+		attributes.forward = Vector3ToFMOD(Vector3Normalize(object.rigidBody3D.forward));
+		attributes.up = Vector3ToFMOD(Vector3Normalize(object.rigidBody3D.up));
+		return attributes;
+	}
+
+	FMOD_3D_ATTRIBUTES ListenerFor(const Player& player, Vector3 listenerPosition)
+	{
+		const auto camera = &player.camera;
+
+		// FMOD requires forward and up to be normalized and perpendicular
+		Vector3 forward = Vector3Normalize(camera->forward);
+		if (Vector3LengthSqr(forward) < 0.0001f) { forward = Vector3(0, 0, 1); }
+		Vector3 right = Vector3CrossProduct(Vector3(0, -1, 0), forward);
+		if (Vector3LengthSqr(right) < 0.0001f) { right = Vector3(1, 0, 0); } // looking straight up/down
+		Vector3 up = Vector3Normalize(Vector3CrossProduct(forward, right));
+
+		FMOD_3D_ATTRIBUTES listenerAttributes = {};
+		listenerAttributes.position = Vector3ToFMOD(listenerPosition);
+		listenerAttributes.velocity = Vector3ToFMOD(player.getVelocity());
+		listenerAttributes.forward = Vector3ToFMOD(forward);
+		listenerAttributes.up = Vector3ToFMOD(up);
+		return listenerAttributes;
+	}
+
 	// FMOD uses a linear scale for volume, but the user interface uses a logarithmic scale.
 	// This function converts the logarithmic scale to linear scale for FMOD.
 	// The logarithmic scale is more intuitive for users, as it better represents how humans perceive sound.
@@ -220,7 +252,7 @@ namespace AudioManager {
 
 		if (Player* local = scene ? Client::LocalPlayer(*scene) : nullptr)
 		{
-			FMOD_3D_ATTRIBUTES listener = local->getListener();
+			FMOD_3D_ATTRIBUTES listener = ListenerFor(*local, SceneManagement::SceneManager::getInstance().camera3D.position);
 			studioSystem->setListenerAttributes(0, &listener);
 		}
 		studioSystem->update();
@@ -385,7 +417,7 @@ namespace AudioManager {
 		}
 
 		// Position the event before it starts so the first frame is already spatialized
-		FMOD_3D_ATTRIBUTES attributes = object.get3DAttributes();
+		FMOD_3D_ATTRIBUTES attributes = AttributesOf(object);
 		object.soundInstance->set3DAttributes(&attributes);
 		object.soundInstance->setVolume(volume * SettingsVolume(type));
 		object.soundInstance->start();
