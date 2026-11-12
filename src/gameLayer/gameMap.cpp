@@ -7,7 +7,66 @@
 #include <iostream>
 #include <random>
 #include <vector>
+
+#include <entt/entity/registry.hpp>
+
+namespace GameMapStorage
+{
+	struct Plain
+	{
+		static constexpr bool in_place_delete = true;
+		GameObject object;
+	};
+
+	struct EntityKind
+	{
+		static constexpr bool in_place_delete = true;
+		std::unique_ptr<Entity> entity;
+	};
+
+	struct Interactable
+	{
+		static constexpr bool in_place_delete = true;
+		std::unique_ptr<InteractableObject> interactable;
+	};
+}
+
+struct GameMap::Storage
+{
+	entt::registry registry;
+	std::unordered_map<std::uint64_t, entt::entity> byId; // the World save's ids (E-1) to registry entities
+	std::size_t gameObjects = 0;
+	std::size_t entities = 0;
+	std::size_t interactables = 0;
+};
+
+GameMap::GameMap() : storage(std::make_unique<Storage>()) {}
+GameMap::~GameMap() = default;
+GameMap::GameMap(GameMap&&) noexcept = default;
+GameMap& GameMap::operator=(GameMap&&) noexcept = default;
+
+namespace
+{
+	// Stores an object under its id: a new registry entity with its kind's component
+	template <class Component, class Value>
+	Component& Store(entt::registry& registry, std::unordered_map<std::uint64_t, entt::entity>& byId, std::uint64_t id, Value&& value)
+	{
+		const entt::entity handle = registry.create();
+		byId[id] = handle;
+		return registry.emplace<Component>(handle, std::forward<Value>(value));
+	}
+
+	template <class Component>
+	Component* Stored(entt::registry& registry, const std::unordered_map<std::uint64_t, entt::entity>& byId, std::uint64_t id)
+	{
+		const auto it = byId.find(id);
+		if (it == byId.end()) { return nullptr; }
+		return registry.try_get<Component>(it->second);
+	}
+}
+
 /** Map Data **/
+
 
 // Create GameMap and Floor Space
 void GameMap::create(Vector3 size)
@@ -49,15 +108,19 @@ void GameMap::ReserveIdsBelow(std::uint64_t nextId)
 
 bool GameMap::IsIdInUse(std::uint64_t id) const
 {
-	return byId.contains(id);
+	return storage->byId.contains(id);
 }
 
 void GameMap::Remove(std::uint64_t id)
 {
-	const auto it = byId.find(id);
-	if (it == byId.end()) { return; }
+	const auto it = storage->byId.find(id);
+	if (it == storage->byId.end()) { return; }
+	entt::registry& registry = storage->registry;
+	if (registry.all_of<GameMapStorage::Plain>(it->second)) { --storage->gameObjects; }
+	if (registry.all_of<GameMapStorage::EntityKind>(it->second)) { --storage->entities; }
+	if (registry.all_of<GameMapStorage::Interactable>(it->second)) { --storage->interactables; }
 	registry.destroy(it->second);
-	byId.erase(it);
+	storage->byId.erase(it);
 }
 
 namespace
@@ -90,7 +153,8 @@ namespace
 GameObject* GameMap::SpawnGameObject(const GameObject& prototype)
 {
 	const std::uint64_t id = instanceHolder.getIdAndIncrement();
-	GameObject& object = Store<GameMapStorage::Plain>(id, GameMapStorage::Plain{ prototype }).object;
+	GameObject& object = Store<GameMapStorage::Plain>(storage->registry, storage->byId, id, GameMapStorage::Plain{ prototype }).object;
+	++storage->gameObjects;
 	PrepareSpawnedCopy(object, id);
 
 	/// Set GameMap Data
@@ -118,7 +182,8 @@ Entity* GameMap::SpawnEntity(const Entity& prototype)
 	// clone() keeps the prototype's dynamic type, so a Stalker stays a Stalker
 	std::unique_ptr<Entity> owned = prototype.clone();
 	Entity* entity = owned.get();
-	Store<GameMapStorage::EntityKind>(id, GameMapStorage::EntityKind{ std::move(owned) });
+	Store<GameMapStorage::EntityKind>(storage->registry, storage->byId, id, GameMapStorage::EntityKind{ std::move(owned) });
+	++storage->entities;
 	PrepareSpawnedCopy(*entity, id);
 
 	entity->onEnable();
@@ -133,7 +198,8 @@ Entity* GameMap::SpawnEntity(const Entity& prototype)
 InteractableObject* GameMap::SpawnInteractable(const InteractableObject& prototype)
 {
 	const std::uint64_t id = instanceHolder.getIdAndIncrement();
-	InteractableObject* interactable = Store<GameMapStorage::Interactable>(id, GameMapStorage::Interactable{ std::make_unique<InteractableObject>(prototype) }).interactable.get();
+	InteractableObject* interactable = Store<GameMapStorage::Interactable>(storage->registry, storage->byId, id, GameMapStorage::Interactable{ std::make_unique<InteractableObject>(prototype) }).interactable.get();
+	++storage->interactables;
 	PrepareSpawnedCopy(*interactable, id);
 
 	interactable->onEnable();
@@ -153,7 +219,8 @@ GameObject* GameMap::RestoreGameObject(GameObject object)
 	}
 
 	ReserveIdsBelow(id + 1);
-	GameObject& stored = Store<GameMapStorage::Plain>(id, GameMapStorage::Plain{ std::move(object) }).object;
+	GameObject& stored = Store<GameMapStorage::Plain>(storage->registry, storage->byId, id, GameMapStorage::Plain{ std::move(object) }).object;
+	++storage->gameObjects;
 	BindRestored(stored);
 	return &stored;
 }
@@ -177,7 +244,8 @@ Entity* GameMap::RestoreEntity(std::unique_ptr<Entity> entity)
 	}
 
 	ReserveIdsBelow(id + 1);
-	Entity* stored = Store<GameMapStorage::EntityKind>(id, GameMapStorage::EntityKind{ std::move(entity) }).entity.get();
+	Entity* stored = Store<GameMapStorage::EntityKind>(storage->registry, storage->byId, id, GameMapStorage::EntityKind{ std::move(entity) }).entity.get();
+	++storage->entities;
 	BindRestored(*stored);
 	return stored;
 }
@@ -193,7 +261,8 @@ InteractableObject* GameMap::RestoreInteractable(std::unique_ptr<InteractableObj
 	}
 
 	ReserveIdsBelow(id + 1);
-	InteractableObject* stored = Store<GameMapStorage::Interactable>(id, GameMapStorage::Interactable{ std::move(interactable) }).interactable.get();
+	InteractableObject* stored = Store<GameMapStorage::Interactable>(storage->registry, storage->byId, id, GameMapStorage::Interactable{ std::move(interactable) }).interactable.get();
+	++storage->interactables;
 	BindRestored(*stored);
 	return stored;
 }
@@ -230,26 +299,29 @@ void GameMap::Clear()
 	// released first, or it leaks the moment its object is erased
 	ForEachObject([](GameObject& object) { object.releaseGeneratedModel(); });
 
-	registry.clear();
-	byId.clear();
+	storage->registry.clear();
+	storage->byId.clear();
+	storage->gameObjects = 0;
+	storage->entities = 0;
+	storage->interactables = 0;
 	instanceHolder = InstanceID{};
 }
 
 GameObject* GameMap::FindGameObject(uint64_t id)
 {
-	auto* stored = Stored<GameMapStorage::Plain>(id);
+	auto* stored = Stored<GameMapStorage::Plain>(storage->registry, storage->byId, id);
 	return stored ? &stored->object : nullptr;
 }
 
 Entity* GameMap::FindEntity(uint64_t id)
 {
-	auto* stored = Stored<GameMapStorage::EntityKind>(id);
+	auto* stored = Stored<GameMapStorage::EntityKind>(storage->registry, storage->byId, id);
 	return stored ? stored->entity.get() : nullptr;
 }
 
 InteractableObject* GameMap::FindInteractable(uint64_t id)
 {
-	auto* stored = Stored<GameMapStorage::Interactable>(id);
+	auto* stored = Stored<GameMapStorage::Interactable>(storage->registry, storage->byId, id);
 	return stored ? stored->interactable.get() : nullptr;
 }
 
@@ -269,4 +341,69 @@ GameObject* GameMap::FindWorldObject(uint64_t id)
 	if (auto* interactable = FindInteractable(id)) { return interactable; }
 	if (auto* entity = FindEntity(id)) { return entity; }
 	return FindGameObject(id);
+}
+
+size_t GameMap::GameObjectCount() const { return storage->gameObjects; }
+size_t GameMap::EntityCount() const { return storage->entities; }
+size_t GameMap::InteractableCount() const { return storage->interactables; }
+
+// Each Visit* walks the registry view directly, as the ForEach templates did, so
+// the order and the behaviour when the callback spawns or destroys are unchanged.
+void GameMap::VisitAllObjects(GameMapDetail::FunctionRef<void(GameObject&)> visit)
+{
+	entt::registry& registry = storage->registry;
+	for (auto [handle, stored] : registry.view<GameMapStorage::Plain>().each()) { visit(stored.object); }
+	for (auto [handle, stored] : registry.view<GameMapStorage::EntityKind>().each()) { visit(*stored.entity); }
+	for (auto [handle, stored] : registry.view<GameMapStorage::Interactable>().each()) { visit(*stored.interactable); }
+}
+
+void GameMap::VisitGameObjects(GameMapDetail::FunctionRef<bool(GameObject&)> visit)
+{
+	for (auto [handle, stored] : storage->registry.view<GameMapStorage::Plain>().each())
+	{
+		if (!visit(stored.object)) return;
+	}
+}
+
+void GameMap::VisitGameObjectsConst(GameMapDetail::FunctionRef<bool(const GameObject&)> visit) const
+{
+	for (auto [handle, stored] : storage->registry.view<const GameMapStorage::Plain>().each())
+	{
+		const GameObject& object = stored.object;
+		if (!visit(object)) return;
+	}
+}
+
+void GameMap::VisitEntities(GameMapDetail::FunctionRef<bool(Entity&)> visit)
+{
+	for (auto [handle, stored] : storage->registry.view<GameMapStorage::EntityKind>().each())
+	{
+		if (!visit(*stored.entity)) return;
+	}
+}
+
+void GameMap::VisitEntitiesConst(GameMapDetail::FunctionRef<bool(const Entity&)> visit) const
+{
+	for (auto [handle, stored] : storage->registry.view<const GameMapStorage::EntityKind>().each())
+	{
+		const Entity& entity = *stored.entity;
+		if (!visit(entity)) return;
+	}
+}
+
+void GameMap::VisitInteractables(GameMapDetail::FunctionRef<bool(InteractableObject&)> visit)
+{
+	for (auto [handle, stored] : storage->registry.view<GameMapStorage::Interactable>().each())
+	{
+		if (!visit(*stored.interactable)) return;
+	}
+}
+
+void GameMap::VisitInteractablesConst(GameMapDetail::FunctionRef<bool(const InteractableObject&)> visit) const
+{
+	for (auto [handle, stored] : storage->registry.view<const GameMapStorage::Interactable>().each())
+	{
+		const InteractableObject& interactable = *stored.interactable;
+		if (!visit(interactable)) return;
+	}
 }
