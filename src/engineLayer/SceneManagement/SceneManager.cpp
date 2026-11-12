@@ -93,8 +93,8 @@ namespace SceneManagement {
 		if (Scene* scene = manager->currentScene) { Scene_frame(*scene, manager->camera3D, frameTime); }
 	}
 
-	void SceneManager_tick(SceneManager* manager, float delta, std::span<const Sim::PlayerCommand> commands) {
-		if (Scene* scene = manager->currentScene) { Scene_tick(*scene, delta, commands); }
+	void SceneManager_tick(SceneManager* manager, float delta, std::span<const Sim::PlayerCommand> commands, bool simulationFrozen) {
+		if (Scene* scene = manager->currentScene) { Scene_tick(*scene, delta, commands, simulationFrozen); }
 	}
 
 	void SceneManager_draw(SceneManager* manager) {

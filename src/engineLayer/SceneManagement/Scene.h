@@ -338,7 +338,8 @@ namespace SceneManagement {
 	 * @param commands This tick's command for the player; a player with none
 	 *                 is driven by an empty command
 	 */
-	void Scene_tick(Scene& scene, float delta, std::span<const Sim::PlayerCommand> commands = {});
+	void Scene_tick(Scene& scene, float delta, std::span<const Sim::PlayerCommand> commands = {},
+	                bool simulationFrozen = false);
 
 	/**
 	 * Draw a Scene: its world (3D), then its UI and overlays (2D)

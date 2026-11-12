@@ -64,7 +64,7 @@ namespace Client {
 		void Frame(SceneManagement::SceneManager& manager, double now);
 
 		// One fixed tick
-		void Tick(SceneManagement::SceneManager& manager, const Sim::PlayerCommand& command);
+		void Tick(SceneManagement::SceneManager& manager, const Sim::PlayerCommand& command, bool simulationFrozen = false);
 
 		// The development multiplayer windows: status, Join, faked network (ImGui)
 		void DrawUi();

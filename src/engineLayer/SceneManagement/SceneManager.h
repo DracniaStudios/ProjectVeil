@@ -90,7 +90,8 @@ namespace SceneManagement {
 	 * @param delta The tick's length (Sim::kTickDelta)
 	 * @param commands This tick's player commands, by Slot
 	 */
-	void SceneManager_tick(SceneManager* manager, float delta, std::span<const Sim::PlayerCommand> commands = {});
+	void SceneManager_tick(SceneManager* manager, float delta, std::span<const Sim::PlayerCommand> commands = {},
+	                       bool simulationFrozen = false);
 
 	/**
 	 * Draw the current Scene active in SceneManager

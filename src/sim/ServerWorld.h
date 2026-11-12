@@ -75,11 +75,10 @@ namespace Sim {
 		bool WorldStateApplied() const { return worldStateApplied; }
 
 		// One fixed tick: connections, commands, the simulation, events, Snapshots
-		void Tick(float deltaTime);
+		void Tick(float deltaTime, bool simulationFrozen = false);
 
 		std::uint32_t ServerTick() const { return serverTick; }
 		std::uint64_t WorldHash() const { return worldHash; }
-		const StationTable& Stations() const { return stations; }
 		const Net::Limits& WireLimits() const { return limits; }
 		int MaxPlayers() const { return config.maxPlayers; }
 
@@ -147,7 +146,6 @@ namespace Sim {
 		World::WorldStore* worldStore = nullptr;
 		SceneManagement::Scene* scene = nullptr;
 
-		StationTable stations;
 		Net::Limits limits;
 		std::uint64_t worldHash = 0;
 		bool worldStateApplied = false;

@@ -650,14 +650,13 @@ namespace SceneManagement {
 		worldEditor->update(scene);
 	}
 
-	void Scene_tick(Scene& scene, float delta, std::span<const Sim::PlayerCommand> commands) {
+	void Scene_tick(Scene& scene, float delta, std::span<const Sim::PlayerCommand> commands, bool simulationFrozen) {
 
 		++scene.simTick;
 
-		auto worldEditor = &Editor::WorldEditor::getInstance();
 		if (scene.update) { scene.update(scene, delta); }
 
-		const bool editorFrozen = worldEditor->IsEnabled() && worldEditor->IsSimulationPaused();
+		const bool editorFrozen = simulationFrozen;
 
 		auto clampObject = [](GameObject& object, bool limit) {
 
