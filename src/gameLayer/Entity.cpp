@@ -1,7 +1,6 @@
 #include "Entity.h"
 
 #include <complex>
-#include <typeinfo>
 #include <Scene.h>
 #include <helpers.h>
 #include <Player.h>
@@ -27,7 +26,7 @@ bool Entity::KindMatchesType() const
 	{
 	case ENTITYKIND_PLAYER:  return dynamic_cast<const Player*>(this) != nullptr;
 	case ENTITYKIND_STALKER: return dynamic_cast<const Stalker*>(this) != nullptr;
-	case ENTITYKIND_NONE:    return typeid(*this) == typeid(Entity);
+	case ENTITYKIND_NONE:    return dynamic_cast<const Player*>(this) == nullptr && dynamic_cast<const Stalker*>(this) == nullptr;
 	default:                 return false;
 	}
 }

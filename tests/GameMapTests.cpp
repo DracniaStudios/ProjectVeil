@@ -161,6 +161,32 @@ static void TestSpawnRefusesASlicedEntity()
 	delete scene;
 }
 
+// A NONE-kind subclass of Entity, as TriggerTests' probe is
+struct PlainSubclassEntity : Entity
+{
+	std::unique_ptr<Entity> clone() const override { return std::make_unique<PlainSubclassEntity>(*this); }
+};
+
+static void TestRestoreChecksKindAgainstClass()
+{
+	std::printf("Restore refuses a sliced Stalker and accepts a NONE-kind subclass\n");
+	SceneManagement::Scene* scene = MakeScene();
+	GameMap& map = scene->gameMap;
+
+	Stalker stalker;
+	auto sliced = std::make_unique<Entity>(stalker);
+	sliced->id = 70;
+	Check(map.RestoreEntity(std::move(sliced)) == nullptr, "a sliced Stalker is refused");
+	Check(map.FindEntity(70) == nullptr && map.EntityCount() == 0, "and nothing is stored under its id");
+
+	auto probe = std::make_unique<PlainSubclassEntity>();
+	probe->id = 71;
+	Entity* kept = map.RestoreEntity(std::move(probe));
+	Check(kept != nullptr && map.FindEntity(71) == kept, "a NONE-kind subclass of Entity is accepted");
+
+	delete scene;
+}
+
 static void TestANewObjectHoldsNoModel()
 {
 	std::printf("a new GameObject holds no GPU model until it is spawned or restored\n");
@@ -507,6 +533,7 @@ int main()
 	TestFindPointerSurvivesFurtherSpawns();
 	TestSpawnEntityKeysByNewIdAndDoesNotClobberSiblings();
 	TestSpawnRefusesASlicedEntity();
+	TestRestoreChecksKindAgainstClass();
 	TestANewObjectHoldsNoModel();
 	TestSpawnLeavesThePrototypesModelAlone();
 	TestSpawnGivesEveryKindAUnitScale();

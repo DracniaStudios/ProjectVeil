@@ -100,9 +100,10 @@ public:
 	virtual std::unique_ptr<Entity> clone() const { return std::make_unique<Entity>(*this); }
 
 	// Whether `kind` names this object's own class: ENTITYKIND_STALKER only on a
-	// Stalker, ENTITYKIND_PLAYER only on a Player, ENTITYKIND_NONE only on a plain
-	// Entity. A copy made through a base class (slicing) keeps the field but not
-	// the class, and fails this.
+	// Stalker, ENTITYKIND_PLAYER only on a Player, and ENTITYKIND_NONE on any
+	// Entity that is neither (a plain Entity or another subclass). A copy made
+	// through a base class (slicing) keeps the field but not the class, and
+	// fails this.
 	bool KindMatchesType() const;
 
 	// Builds an empty instance of the requested kind for the save loader, which

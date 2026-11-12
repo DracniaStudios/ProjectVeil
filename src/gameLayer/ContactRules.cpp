@@ -61,11 +61,10 @@ namespace ContactRules
 			else if (b.type == OBJECT_PLAYER) { player = &b; stalker = &a; }
 			else { return; }
 
+			if (stalker->type != OBJECT_ENTITY) { return; }
+
 			Entity* stalkerEntity = FindEntityFor(scene, stalker->id);
-			if (stalkerEntity == nullptr) { return; }
-			if (stalker->type != OBJECT_ENTITY || stalkerEntity->kind != ENTITYKIND_STALKER) {
-				return;
-			}
+			if (stalkerEntity == nullptr || stalkerEntity->kind != ENTITYKIND_STALKER) { return; }
 
 			Entity* playerEntity = FindEntityFor(scene, player->id);
 			if (playerEntity == nullptr) { return; }
