@@ -264,7 +264,6 @@ void WorldEditor::showGameObject(GameObject* object) {
 		// leaving the last hand-authored size sitting on screen looking authoritative
 		if (collider.shape == COLLIDER_MESH) { 
 			collider.FitToModel(object->model);
-			object->rigidBody3D.broadPhaseBox = GetModelBoundingBox(object->model);
 		}
 
 	}

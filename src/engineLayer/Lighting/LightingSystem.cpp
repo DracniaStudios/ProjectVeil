@@ -2,6 +2,8 @@
 
 #include <rlgl.h>
 
+#include <Geometry.h>
+
 #include <AssetManager.h>
 #include <ResourcePaths.h>
 #include <SceneManager.h>
@@ -742,8 +744,8 @@ namespace Lighting
 		// A disabled light still draws, greyed out, so it can be found and switched
 		// back on rather than becoming invisible level furniture.
 		const Color bodyColor = light.isEnabled ? light.color : Color{ 110, 110, 110, 255 };
-		const Color rayColor = Fade(bodyColor, light.isEnabled ? 0.85f : 0.35f);
-		const Color shapeColor = Fade(bodyColor, light.isEnabled ? 0.40f : 0.18f);
+		const Color rayColor = Geometry::Fade(bodyColor, light.isEnabled ? 0.85f : 0.35f);
+		const Color shapeColor = Geometry::Fade(bodyColor, light.isEnabled ? 0.40f : 0.18f);
 
 		const Vector3 origin = light.position;
 		const Vector3 direction = SafeNormalize(light.direction, Vector3{ 0.0f, -1.0f, 0.0f });
@@ -839,7 +841,7 @@ namespace Lighting
 			// cosines, not distances) — the usual editor shorthand, and accurate
 			// enough to aim a light with.
 			DrawCircleFacing(capCenter, direction, outerRadius, shapeColor, 32);
-			DrawCircleFacing(capCenter, direction, innerRadius, Fade(bodyColor, 0.65f), 32);
+			DrawCircleFacing(capCenter, direction, innerRadius, Geometry::Fade(bodyColor, 0.65f), 32);
 
 			// Four edge lines give the cone a readable silhouette
 			Vector3 right = {};

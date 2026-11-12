@@ -1,5 +1,6 @@
 #include "Scene.h"
 
+#include <Geometry.h>
 #include <WorldEditor.h>
 #include <AudioManager.h>
 #include <UIEngine.h>
@@ -180,7 +181,7 @@ namespace SceneManagement {
 			const BoundingBox volume = exit.rigidBody3D.broadPhaseBox;
 			ForEachPlayer([&](int, Player& player) {
 				if (!player.isEnabled) { return; }
-				const bool inside = CheckCollisionBoxes(volume, player.rigidBody3D.broadPhaseBox)
+				const bool inside = Geometry::CheckCollisionBoxes(volume, player.rigidBody3D.broadPhaseBox)
 					|| physics.IsTouching(exit.id, player.id);
 				if (inside && std::find(escapedThisTick.begin(), escapedThisTick.end(), player.id) == escapedThisTick.end())
 				{

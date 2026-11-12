@@ -92,6 +92,29 @@ echo
 COLLIDER_STATUS=$?
 
 # ---------------------------------------------------------------------------
+# Geometry tests
+#
+# Same cheap tier as the Collider suite: Geometry.h is header-only and the test
+# compares each helper with raylib's own function, so it links raylib alone and
+# needs no window.
+# ---------------------------------------------------------------------------
+GEOMETRY_BIN="$OUT_DIR/geometry_tests"
+
+echo
+echo "building $GEOMETRY_BIN"
+g++ -std=c++23 -Wall \
+	-I src/gameLayer \
+	-I src/engineLayer \
+	-I thirdparty/raylib-6.0/src \
+	tests/GeometryTests.cpp \
+	-o "$GEOMETRY_BIN" \
+	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
+
+echo
+"$GEOMETRY_BIN"
+GEOMETRY_STATUS=$?
+
+# ---------------------------------------------------------------------------
 # PhysicsWorld tests
 #
 # Same cheap tier as the Collider suite: the solver (PhysicsWorld.cpp) and the
@@ -332,7 +355,7 @@ if [[ ! -d "$OBJ_ROOT" ]]; then
 	echo
 	echo "skipping engine-linked suites: no compiled objects under '$OBJ_ROOT'." >&2
 	echo "                               build the game first: cmake --build $BUILD_DIR" >&2
-	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $RESOURCE_PATHS_STATUS -ne 0 || $UI_STATUS -ne 0 || $ALLOCATOR_STATUS -ne 0 || $COOLDOWN_STATUS -ne 0 || $RANDOM_STATUS -ne 0 || $INPUT_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 ]]; then exit 1; fi
+	if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $RESOURCE_PATHS_STATUS -ne 0 || $UI_STATUS -ne 0 || $ALLOCATOR_STATUS -ne 0 || $COOLDOWN_STATUS -ne 0 || $RANDOM_STATUS -ne 0 || $INPUT_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 || $GEOMETRY_STATUS -ne 0 ]]; then exit 1; fi
 	exit 0
 fi
 
@@ -476,4 +499,4 @@ else
 fi
 TRIGGER_STATUS=$?
 
-if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $RESOURCE_PATHS_STATUS -ne 0 || $UI_STATUS -ne 0 || $ALLOCATOR_STATUS -ne 0 || $COOLDOWN_STATUS -ne 0 || $RANDOM_STATUS -ne 0 || $INPUT_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 ]]; then exit 1; fi
+if [[ $SOUNDFIELD_STATUS -ne 0 || $COLLIDER_STATUS -ne 0 || $PHYSICS_STATUS -ne 0 || $OVERLAY_STATUS -ne 0 || $SETTINGS_STATUS -ne 0 || $RESOURCE_PATHS_STATUS -ne 0 || $UI_STATUS -ne 0 || $ALLOCATOR_STATUS -ne 0 || $COOLDOWN_STATUS -ne 0 || $RANDOM_STATUS -ne 0 || $INPUT_STATUS -ne 0 || $MINIGAME_STATUS -ne 0 || $ENGINE_STATUS -ne 0 || $TRIGGER_STATUS -ne 0 || $GEOMETRY_STATUS -ne 0 ]]; then exit 1; fi

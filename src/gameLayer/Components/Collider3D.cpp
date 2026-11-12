@@ -1,4 +1,5 @@
 #include <Collider.h>
+#include <Geometry.h>
 
 #include <raymath.h>
 #include <algorithm>
@@ -487,7 +488,7 @@ namespace
 			const Mesh& mesh = model.meshes[i];
 			if (mesh.vertexCount <= 0 || mesh.vertices == nullptr) { continue; }
 
-			const BoundingBox meshBounds = GetMeshBoundingBox(mesh);
+			const BoundingBox meshBounds = Geometry::GetMeshBoundingBox(mesh.vertices, mesh.vertexCount);
 			if (!haveBounds)
 			{
 				bounds = meshBounds;

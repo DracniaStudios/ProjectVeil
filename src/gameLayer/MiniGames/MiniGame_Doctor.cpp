@@ -1,5 +1,7 @@
 #include "MiniGame_Doctor.h"
 
+#include <Geometry.h>
+
 Doctor::Doctor(const MiniGameSetup& setup)
 {
 	name = "Doctor";
@@ -84,7 +86,7 @@ MiniGameOutcome Doctor::Update(const MiniGameInput& input, float delta)
 	auto playerRect = Rectangle{ position.x, position.y, size.x, size.y };
 	bool isMoving = !(input.held.forward && input.held.left);
 
-	if (CheckCollisionRecs(data.goal, playerRect) && isMoving == false)
+	if (Geometry::CheckCollisionRecs(data.goal, playerRect) && isMoving == false)
 	{
 		return MiniGameOutcome::Won;
 	}

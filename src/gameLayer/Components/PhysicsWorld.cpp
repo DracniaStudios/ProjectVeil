@@ -1,5 +1,7 @@
 #include "PhysicsWorld.h"
 
+#include <Geometry.h>
+
 // No engine includes, on purpose: like Collider3D.cpp and RigidBody3D.cpp this
 // links against raylib alone, which is what lets tests/PhysicsWorldTests.cpp run
 // in the cheap tier. What a contact means for the game is decided by whoever
@@ -43,7 +45,7 @@ namespace Physics3D {
 
 				// Not OverlapsBroadPhase: nearBox is this body's box inflated by the
 				// touch margin, not the box itself
-				if (!CheckCollisionBoxes(nearBox, neighbour.broadPhaseBox)) { continue; }
+				if (!Geometry::CheckCollisionBoxes(nearBox, neighbour.broadPhaseBox)) { continue; }
 				body.checkRayCollision(neighbour);
 			}
 		}
