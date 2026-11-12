@@ -107,6 +107,10 @@ namespace SceneManagement {
 	 */
 	void SceneManager_push(SceneManager* manager, int sceneID);
 
+	// Frees the current scene and empties the manager. close_game calls it once, after
+	// networking has stopped and before LightingSystem::Shutdown and CloseWindow.
+	void SceneManager_shutdown(SceneManager* manager);
+
 }
 
 #endif // SCENEMANAGER_H

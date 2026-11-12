@@ -101,12 +101,12 @@ int main(int argc, char** argv)
 		if (!gameRunning) { break; }
 	}
 
-	AudioManager::AudioManager::getInstance().shutdown();
-
 	//ImGui_ImplRaylib_Shutdown();
 	rlImGuiShutdown();
 
 	close_game();
+
+	AudioManager::AudioManager::getInstance().shutdown();
 
 	CloseWindow();
 

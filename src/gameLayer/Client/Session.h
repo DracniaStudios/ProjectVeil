@@ -74,6 +74,10 @@ namespace Client {
 		// store has flushed or 5 s passed. Called from close_game, before CloseWindow.
 		void Shutdown();
 
+		// The SceneManager is about to free `scene`: the server lets go of it, an Offline
+		// session re-attaches on its next tick, and a session still starting on it fails.
+		void ForgetScene(SceneManagement::Scene* scene);
+
 		SessionMode Mode() const { return mode; }
 		SessionPhase Phase() const { return phase; }
 		bool IsNetworked() const { return mode != SessionMode::Offline; }

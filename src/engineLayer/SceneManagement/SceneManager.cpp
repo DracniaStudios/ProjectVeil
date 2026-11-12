@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include <Client/Session.h>
 #include <LightingSystem.h>
 #include <WorldEditor.h>
 
@@ -47,7 +48,10 @@ namespace SceneManagement {
 		// Every push builds a fresh scene, so the one it replaces is freed rather
 		// than leaked. It is no longer current, and this runs from
 		// SceneManager_frame before any scene work, so nothing is iterating it.
-		if (previous != nullptr && previous != loaded) { Scene_delete(previous); }
+		if (previous != nullptr && previous != loaded) {
+			Client::Session::getInstance().ForgetScene(previous);
+			Scene_delete(previous);
+		}
 	}
 
 	// Starts one half of the fade, or ends it. In builds the requested scene first,
@@ -143,5 +147,15 @@ namespace SceneManagement {
 			StartFade(manager, manager->currentScene ? SceneFade::Out : SceneFade::In);
 			//SceneManager_transition(manager, manager->currentScene ? OUT : IN);
 		}
+	}
+
+	void SceneManager_shutdown(SceneManager* manager) {
+		if (manager->currentScene) {
+			Client::Session::getInstance().ForgetScene(manager->currentScene);
+			Scene_delete(manager->currentScene);
+		}
+		manager->currentScene = nullptr;
+		manager->nextSceneID = -1;
+		for (auto& s : manager->scenes) { s = nullptr; }
 	}
 }

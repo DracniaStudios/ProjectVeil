@@ -168,6 +168,9 @@ void close_game()
 	// Networking stops before the window and the GL context go (§5.6)
 	Client::Session::getInstance().Shutdown();
 
+	// The current scene is freed while GL (and FMOD) are still alive
+	SceneManagement::SceneManager_shutdown(&SceneManagement::SceneManager::getInstance());
+
 	// Materials only hold a copy of the Shader struct, so every model's shader
 	// id dangles once this runs — it has to be the last engine call. ProjectVeil.cpp
 	// invokes close_game() before CloseWindow(), while the GL context is alive.

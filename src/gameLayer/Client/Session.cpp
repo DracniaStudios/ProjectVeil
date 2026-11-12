@@ -207,6 +207,7 @@ namespace Client {
 
 		case SessionPhase::OpeningStore:
 		{
+			if (sessionScene == nullptr) { Fail("the world closed before the Host started"); return; }
 			const World::WorldStoreStatus storeStatus = store->Status();
 			if (storeStatus == World::WorldStoreStatus::Opening) { return; }
 			if (storeStatus == World::WorldStoreStatus::Failed)
@@ -398,6 +399,15 @@ namespace Client {
 		const bool toMenu = leaveToMenu;
 		StartOffline();
 		if (toMenu) { SceneManagement::SceneManager_push(&manager, SCENE_MAIN_MENU); }
+	}
+
+	void Session::ForgetScene(SceneManagement::Scene* scene)
+	{
+		if (!scene) { return; }
+		if (server && server->AttachedScene() == scene) { server->AttachScene(nullptr); }
+		if (attached == scene) { attached = nullptr; }
+		if (sessionScene == scene) { sessionScene = nullptr; }
+		// sceneBefore is only ever compared, never dereferenced
 	}
 
 	void Session::Shutdown()

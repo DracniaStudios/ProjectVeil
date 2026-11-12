@@ -21,6 +21,8 @@
 
 #include <Scene.h>
 #include <SceneManager.h>
+#include <Client/Session.h>
+#include <sim/ServerWorld.h>
 
 #include <cstdio>
 #include <string>
@@ -240,6 +242,35 @@ static void TestTheTickHandsOverTheSceneBeingPlayed(SceneManagement::SceneManage
 	Check(g_ticks == 1, "a frame alone runs no simulation");
 }
 
+static void TestServerLetsGoOfAFreedScene(SceneManagement::SceneManager& manager)
+{
+	std::printf("the server lets go of a scene the SceneManager freed\n");
+
+	auto& session = Client::Session::getInstance();
+	session.StartOffline();
+
+	SceneManagement::SceneManager_init(&manager, BuildTestScene);
+	FinishFade(manager);
+	SceneManagement::Scene* first = manager.currentScene;
+	Check(first != nullptr, "a scene is current");
+
+	session.Tick(manager, Sim::PlayerCommand{});
+	Check(session.Server() != nullptr && session.Server()->AttachedScene() == first, "the offline server attached to the current scene");
+
+	SceneManagement::SceneManager_push(&manager, SCENE_TUTORIAL);
+	FinishFade(manager);
+	Check(manager.currentScene != first, "the second scene replaced the first");
+	Check(session.Server()->AttachedScene() != first, "the server no longer holds the freed scene");
+	Check(session.Server()->AttachedScene() == nullptr, "it holds no scene until the next tick re-attaches");
+
+	session.Tick(manager, Sim::PlayerCommand{});
+	Check(session.Server()->AttachedScene() == manager.currentScene, "the next tick attaches the new scene");
+
+	session.Shutdown();
+	SceneManagement::SceneManager_shutdown(&manager);
+	Check(manager.currentScene == nullptr, "SceneManager_shutdown empties the manager");
+}
+
 int main()
 {
 	// A scene's player binds a model when it is enabled, so a GL context has to
@@ -259,6 +290,7 @@ int main()
 	TestOutOfRangePushIsIgnored(manager);
 	TestAFactoryThatBuildsNothingKeepsTheCurrentScene(manager);
 	TestTheTickHandsOverTheSceneBeingPlayed(manager);
+	TestServerLetsGoOfAFreedScene(manager);
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 
