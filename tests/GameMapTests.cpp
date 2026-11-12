@@ -10,7 +10,7 @@
  *   Destroy  marks an object; SweepDestroyed removes it at the end of the frame
  *   Clear    removes everything now and restarts the ids
  *
- * The containers are id-keyed std::unordered_maps, so element addresses
+ * Objects live in an entt::registry with in-place deletion, so element addresses
  * survive further insertions; TestFindPointerSurvivesFurtherSpawns holds the
  * line on that.
  *

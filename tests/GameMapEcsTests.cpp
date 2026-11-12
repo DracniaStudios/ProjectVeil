@@ -8,6 +8,7 @@
  *     above them, and every kind shares the one id space.
  *   - ForEach* sees exactly the live objects of its kind; counts agree.
  *   - Clear empties the registry and restarts the ids.
+ *   - Traversal order is pinned (ADR C item 5).
  */
 
 #include <raylib.h>
@@ -108,6 +109,85 @@ static void TestIdsAndKinds()
 	delete scene;
 }
 
+static std::string FormatIds(const std::vector<std::uint64_t>& ids)
+{
+	std::string text = "{";
+	for (std::size_t i = 0; i < ids.size(); ++i)
+	{
+		text += (i == 0 ? " " : ", ") + std::to_string(ids[i]);
+	}
+	return text + " }";
+}
+
+static void CheckOrder(const std::vector<std::uint64_t>& visited, const std::vector<std::uint64_t>& expected, const std::string& what)
+{
+	Check(visited == expected, what + " (visited " + FormatIds(visited) + ", expected " + FormatIds(expected) + ")");
+}
+
+// Traversal order is part of the contract (ADR C item 5): the newest slot of a
+// kind comes first, a freed slot is reused last-freed-first, and ForEachObject
+// goes GameObjects, then Entities, then Interactables. Derived from EnTT 4.0.0's
+// sparse_set.hpp; if one of these ever fails on unchanged code, the visited ids
+// in the message are the characterization.
+static void TestTraversalOrderIsPinned()
+{
+	std::printf("traversal order is pinned: newest slot first, freed slots reused last-freed-first\n");
+	SceneManagement::Scene* scene = new SceneManagement::Scene();
+	GameMap& map = scene->gameMap;
+
+	const auto gameObjectOrder = [&map]
+	{
+		std::vector<std::uint64_t> ids;
+		map.ForEachGameObject([&](GameObject& o) { ids.push_back(o.id); });
+		return ids;
+	};
+	const auto objectOrder = [&map]
+	{
+		std::vector<std::uint64_t> ids;
+		map.ForEachObject([&](GameObject& o) { ids.push_back(o.id); });
+		return ids;
+	};
+
+	// (a) spawn four, destroy two, spawn three into the freed slots
+	std::vector<std::uint64_t> firstIds;
+	for (int i = 0; i < 4; ++i) { GameObject o; firstIds.push_back(map.SpawnGameObject(o)->id); }
+	CheckOrder(firstIds, { 2, 3, 4, 5 }, "four plain spawns get ids 2 to 5");
+	map.Destroy(3);
+	map.Destroy(5);
+	map.SweepDestroyed(scene);
+	std::vector<std::uint64_t> laterIds;
+	for (int i = 0; i < 3; ++i) { GameObject o; laterIds.push_back(map.SpawnGameObject(o)->id); }
+	CheckOrder(laterIds, { 6, 7, 8 }, "three more spawns get ids 6 to 8");
+	CheckOrder(gameObjectOrder(), { 8, 7, 4, 6, 2 }, "(a) ForEachGameObject after destroy, sweep and respawn");
+
+	// (b) restored ids need not be ascending
+	map.Clear();
+	for (const std::uint64_t id : { 40ull, 100ull, 7ull })
+	{
+		GameObject o;
+		o.id = id;
+		map.RestoreGameObject(o);
+	}
+	CheckOrder(gameObjectOrder(), { 7, 100, 40 }, "(b) ForEachGameObject after Restore of 40, 100, 7");
+
+	// (c) one of each kind: GameObjects, then Entities, then Interactables
+	map.Clear();
+	{
+		GameObject plain;
+		Entity entity;
+		InteractableObject interactable(INTERACT_ITEM, 0);
+		std::vector<std::uint64_t> ids;
+		ids.push_back(map.SpawnGameObject(plain)->id);
+		ids.push_back(map.SpawnEntity(entity)->id);
+		ids.push_back(map.SpawnInteractable(interactable)->id);
+		ids.push_back(map.SpawnGameObject(plain)->id);
+		CheckOrder(ids, { 2, 3, 4, 5 }, "(c) the four spawns get ids 2 to 5");
+	}
+	CheckOrder(objectOrder(), { 5, 2, 3, 4 }, "(c) ForEachObject visits GameObjects, Entities, then Interactables");
+
+	delete scene;
+}
+
 int main()
 {
 	SetTraceLogLevel(LOG_ERROR);
@@ -118,6 +198,7 @@ int main()
 
 	TestPointersSurviveChurn();
 	TestIdsAndKinds();
+	TestTraversalOrderIsPinned();
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 

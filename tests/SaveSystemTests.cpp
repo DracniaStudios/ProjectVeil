@@ -21,6 +21,7 @@
 #include <SaveSystem.h>
 #include <LightingSystem.h>
 #include <gameMap.h>
+#include <World/WorldKey.h>
 
 #include <cstdio>
 #include <filesystem>
@@ -564,6 +565,60 @@ static void TestTheShippedWorldsStillLoad()
 	}
 }
 
+// The shipped chunk_1, loaded and saved twice, must stop changing after the
+// first save, and its content hash and per-object JSON must stay what they are
+// (ADR C item 7). Goldens are recorded on the unchanged code.
+static void TestTheShippedWorldSaveIsAFixedPoint()
+{
+	std::printf("the shipped chunk_1 World save is a fixed point of load and save\n");
+	const SaveSystem::FileSaveStore worlds(ResourcePaths::Resources() / "scenes");
+	using SaveSystem::SaveScope;
+
+	SceneManagement::Scene* firstScene = MakeScene();
+	Check(SaveSystem::Load(worlds, "chunk_1", *firstScene, SaveScope::World, {}), "chunk_1 loads");
+
+	SaveSystem::MemorySaveStore memory;
+	Check(SaveSystem::Save(memory, "first", *firstScene, SaveScope::World, {}), "and saves as first");
+
+	SceneManagement::Scene* secondScene = MakeScene();
+	Check(SaveSystem::Load(memory, "first", *secondScene, SaveScope::World, {}), "first loads into a second scene");
+	Check(SaveSystem::Save(memory, "second", *secondScene, SaveScope::World, {}), "and saves as second");
+
+	Json first;
+	Json second;
+	Check(memory.Read("first", first) && memory.Read("second", second), "both saves can be read back");
+	for (const char* key : { "Objects", "Entities", "Interactables", "IdCounter", "Map" })
+	{
+		Check(first.contains(key) && second.contains(key) && first[key] == second[key],
+			std::string("the second save's ") + key + " equals the first's");
+	}
+
+	// Tests load no assets, so the crane terminals' mesh colliders are cube-fitted
+	// (F3), not fitted to their models. This hash is the without-assets one.
+	constexpr std::uint64_t kChunk1ContentHashWithoutAssets = 0x007d76eaed0629fcull;
+	const std::uint64_t contentHash = World::ContentHash(*firstScene);
+	std::printf("  content hash 0x%016llx\n", static_cast<unsigned long long>(contentHash));
+	Check(contentHash == kChunk1ContentHashWithoutAssets,
+		"the content hash is unchanged (re-record only with a recorded behaviour change)");
+
+	World::Fnv1a64 sections;
+	for (const char* key : { "Objects", "Entities", "Interactables" })
+	{
+		const std::string text = first[key].dump();
+		sections.Bytes(text.data(), text.size());
+	}
+	const std::uint64_t fingerprint = sections.Value();
+	std::printf("  sections fingerprint 0x%016llx\n", static_cast<unsigned long long>(fingerprint));
+#if defined(_MSC_VER) && defined(_M_X64) && defined(_DEBUG)
+	constexpr std::uint64_t kChunk1SectionsFingerprint = 0xb6279fdf7adf9923ull;
+	Check(fingerprint == kChunk1SectionsFingerprint,
+		"the per-object JSON is unchanged (re-record only with a recorded behaviour change)");
+#endif
+
+	delete firstScene;
+	delete secondScene;
+}
+
 int main()
 {
 	// Loading Restores objects, which binds a model, so a GL context has to exist
@@ -593,6 +648,7 @@ int main()
 	TestAParticipantKeepsItsOwnSection();
 	TestTheScopeDecidesWhatASaveHolds();
 	TestTheShippedWorldsStillLoad();
+	TestTheShippedWorldSaveIsAFixedPoint();
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 
