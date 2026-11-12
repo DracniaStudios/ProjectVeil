@@ -29,7 +29,6 @@ int main(int argc, char** argv)
 	SetWindowMaxSize(3840, 2160);
 #pragma region ImGui
 	rlImGuiSetup(true);
-	ImGui_ImplRaylib_Init();
 	ImGuiIO& io = ImGui::GetIO();
 	io.FontGlobalScale = 2;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -87,9 +86,6 @@ int main(int argc, char** argv)
 
 		bool gameRunning = update_game();
 
-		ImGui::Render();
-
-		ImGui_ImplRaylib_RenderDrawData(ImGui::GetDrawData());
 		rlImGuiEnd();
 		EndDrawing();
 

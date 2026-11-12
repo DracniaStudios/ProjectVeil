@@ -56,7 +56,6 @@ bool init_game()
 {
 	Settings::Settings::getInstance().Init();
 	AudioManager::AudioManager::getInstance().loadAll();
-	InitAudioDevice();
 	SetTargetFPS(maxFrameRate);
 	AssetManager::AssetManager::getInstance().loadAll();
 
