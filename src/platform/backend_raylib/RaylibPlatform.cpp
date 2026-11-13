@@ -19,14 +19,14 @@ namespace Platform {
 
 bool Init(const WindowDesc& desc)
 {
-	int level = LOG_ALL;
+	// All leaves raylib at its own default (LOG_INFO), which is what the game logged before
+	// this interface existed; LOG_ALL would add raylib's TRACE and DEBUG lines
 	switch (desc.backendLog) {
-		case LogLevel::All: level = LOG_ALL; break;
-		case LogLevel::Warning: level = LOG_WARNING; break;
-		case LogLevel::Error: level = LOG_ERROR; break;
-		case LogLevel::Fatal: level = LOG_FATAL; break;
+		case LogLevel::All: break;
+		case LogLevel::Warning: SetTraceLogLevel(LOG_WARNING); break;
+		case LogLevel::Error: SetTraceLogLevel(LOG_ERROR); break;
+		case LogLevel::Fatal: SetTraceLogLevel(LOG_FATAL); break;
 	}
-	SetTraceLogLevel(level);
 
 	unsigned int flags = 0;
 	if (desc.resizable) { flags |= FLAG_WINDOW_RESIZABLE; }
