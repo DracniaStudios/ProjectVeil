@@ -38,6 +38,12 @@ JSON_INC="$(dirname "$(dirname "$(find thirdparty -path '*nlohmann/json.hpp' -pr
 FMOD_STUDIO_INC="$(dirname "$(find thirdparty -name fmod_studio.hpp -print -quit)")"
 FMOD_CORE_INC="$(dirname "$(find thirdparty -name fmod.hpp -print -quit)")"
 
+# engineLayer keeps each system in its own folder (Save/, InputSystem/,
+# Physics3D/, ...) and headers are included by bare name, as CMake sets it up.
+# The folders are discovered rather than listed so a new one needs no edit here.
+ENGINE_INC=(-I src/engineLayer)
+for dir in src/engineLayer/*/; do ENGINE_INC+=(-I "${dir%/}"); done
+
 OUT_DIR="$BUILD_DIR/tests"
 mkdir -p "$OUT_DIR"
 BIN="$OUT_DIR/soundfield_tests"
@@ -45,7 +51,7 @@ BIN="$OUT_DIR/soundfield_tests"
 echo "building $BIN"
 g++ -std=c++23 -Wall \
 	-I src/gameLayer \
-	-I src/engineLayer \
+	"${ENGINE_INC[@]}" \
 	-I thirdparty/raylib-6.0/src \
 	-I "$JSON_INC" \
 	-I "$FMOD_STUDIO_INC" \
@@ -74,7 +80,7 @@ echo
 echo "building $COLLIDER_BIN"
 g++ -std=c++23 -Wall \
 	-I src/gameLayer \
-	-I src/engineLayer \
+	"${ENGINE_INC[@]}" \
 	-I thirdparty/raylib-6.0/src \
 	-I "$JSON_INC" \
 	tests/ColliderTests.cpp \
@@ -99,7 +105,7 @@ PHYSICS_BIN="$OUT_DIR/physics_world_tests"
 
 echo
 echo "building $PHYSICS_BIN"
-g++ -std=c++23 -Wall 	-I src/gameLayer 	-I src/engineLayer 	-I thirdparty/raylib-6.0/src 	-I "$JSON_INC" 	tests/PhysicsWorldTests.cpp 	src/gameLayer/Components/PhysicsWorld.cpp 	src/gameLayer/Components/RigidBody3D.cpp 	src/gameLayer/Components/Collider3D.cpp 	-o "$PHYSICS_BIN" 	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
+g++ -std=c++23 -Wall 	-I src/gameLayer 	"${ENGINE_INC[@]}" 	-I thirdparty/raylib-6.0/src 	-I "$JSON_INC" 	tests/PhysicsWorldTests.cpp 	src/gameLayer/Components/PhysicsWorld.cpp 	src/gameLayer/Components/RigidBody3D.cpp 	src/gameLayer/Components/Collider3D.cpp 	-o "$PHYSICS_BIN" 	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
 
 echo
 "$PHYSICS_BIN"
@@ -139,12 +145,12 @@ SETTINGS_BIN="$OUT_DIR/settings_tests"
 echo
 echo "building $SETTINGS_BIN"
 g++ -std=c++23 -Wall \
-	-I src/engineLayer \
+	"${ENGINE_INC[@]}" \
 	-I "$JSON_INC" \
 	-DRESOURCES_PATH=\"$ROOT/resources/\" \
 	tests/SettingsTests.cpp \
 	src/engineLayer/Settings.cpp \
-	src/engineLayer/SaveStore.cpp \
+	src/engineLayer/Save/SaveStore.cpp \
 	-o "$SETTINGS_BIN"
 
 echo
@@ -189,7 +195,7 @@ ALLOCATOR_BIN="$OUT_DIR/allocator_tests"
 echo
 echo "building $ALLOCATOR_BIN"
 g++ -std=c++23 -Wall \
-	-I src/engineLayer \
+	"${ENGINE_INC[@]}" \
 	tests/AllocatorTests.cpp \
 	-o "$ALLOCATOR_BIN"
 
@@ -221,7 +227,7 @@ RANDOM_BIN="$OUT_DIR/random_tests"
 echo
 echo "building $RANDOM_BIN"
 g++ -std=c++23 -Wall \
-	-I src/engineLayer \
+	"${ENGINE_INC[@]}" \
 	-I thirdparty/raylib-6.0/src \
 	tests/RandomTests.cpp \
 	src/engineLayer/randomStuff.cpp \
@@ -244,10 +250,10 @@ INPUT_BIN="$OUT_DIR/input_system_tests"
 echo
 echo "building $INPUT_BIN"
 g++ -std=c++23 -Wall \
-	-I src/engineLayer \
+	"${ENGINE_INC[@]}" \
 	-I thirdparty/raylib-6.0/src \
 	tests/InputSystemTests.cpp \
-	src/engineLayer/InputSystem.cpp \
+	src/engineLayer/InputSystem/InputSystem.cpp \
 	-o "$INPUT_BIN" \
 	"$RAYLIB_LIB" -lX11 -lGL -lpthread -ldl -lrt -lm
 
@@ -270,7 +276,7 @@ echo
 echo "building $MINIGAME_BIN"
 g++ -std=c++23 -Wall \
 	-I src/gameLayer \
-	-I src/engineLayer \
+	"${ENGINE_INC[@]}" \
 	-I thirdparty/raylib-6.0/src \
 	-I "$JSON_INC" \
 	tests/MiniGameSessionTests.cpp \
@@ -358,7 +364,7 @@ for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
 	echo "building $TEST_BIN"
 	g++ -std=c++23 \
 		-I src/gameLayer \
-		-I src/engineLayer \
+		"${ENGINE_INC[@]}" \
 		-I src/platform \
 		-I thirdparty/raylib-6.0/src \
 		-I "$JSON_INC" \
@@ -404,7 +410,7 @@ echo
 echo "building $TRIGGER_BIN"
 g++ -std=c++23 \
 	-I src/gameLayer \
-	-I src/engineLayer \
+	"${ENGINE_INC[@]}" \
 	-I src/platform \
 	-I thirdparty/raylib-6.0/src \
 	-I "$JSON_INC" \
