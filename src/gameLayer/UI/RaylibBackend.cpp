@@ -34,9 +34,9 @@ namespace UI {
 	{
 		Input input;
 		input.screenSize = Vector2{ static_cast<float>(Platform::ScreenWidth()), static_cast<float>(Platform::ScreenHeight()) };
-		input.mouse = GetMousePosition();
-		input.mouseDown = IsMouseButtonDown(MOUSE_LEFT_BUTTON);
-		input.mouseReleased = IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
+		input.mouse = Platform::MousePosition();
+		input.mouseDown = Platform::IsMouseButtonDown(Platform::MouseButton::Left);
+		input.mouseReleased = Platform::IsMouseButtonReleased(Platform::MouseButton::Left);
 		input.mouseBlocked = mouseBlocked;
 		return input;
 	}

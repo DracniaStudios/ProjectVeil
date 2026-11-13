@@ -2,7 +2,7 @@
 #ifndef INPUT_SYSTEM_H
 #define INPUT_SYSTEM_H
 
-#include <raylib.h>
+#include <raylib.h> // not used here; tests and callers get raylib's KEY_* names through this header
 #include <cstdint>
 #include <vector>
 #include <string>
@@ -48,7 +48,7 @@ namespace InputSystem {
 		std::string name = "";
 		bool isEnabled = true;
 		int id = NO_ACTION;
-		int key = KEY_NULL;
+		int key = 0; // Platform::Key value, 0 = none
 		int button = -1; // -1 = no gamepad binding
 	};
 
@@ -89,7 +89,7 @@ namespace InputSystem {
 		// Key Functions
 		const std::vector<int>& GetPressedKeys() const { return pressedKeys; } // Keys pressed this frame
 		const std::vector<int>& GetHeldKeys() const { return heldKeys; }       // Keys currently held down
-		int GetLastPressedKey() const { return pressedKeys.empty() ? KEY_NULL : pressedKeys.back(); } // KEY_NULL if none this frame
+		int GetLastPressedKey() const { return pressedKeys.empty() ? 0 : pressedKeys.back(); } // 0 (Key::Null) if none this frame
 	};
 }
 #endif

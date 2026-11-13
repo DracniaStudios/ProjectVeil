@@ -39,6 +39,7 @@ namespace Client {
 			const bool hasValue = i + 1 < argc;
 			if (arg == "--host") { dev.host = true; }
 			else if (arg == "--bot") { dev.bot = true; }
+			else if (arg == "--log-mouse") { dev.logMouse = true; }
 			else if (arg == "--join" && hasValue) { dev.join = argv[++i]; }
 			else if (arg == "--name" && hasValue) { dev.name = argv[++i]; }
 			else if (arg == "--world-id" && hasValue) { dev.worldId = argv[++i]; }

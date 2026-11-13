@@ -16,6 +16,7 @@
 //   --bot                   this client walks a fixed pattern instead of reading input
 //   --quit-after <seconds>  exit cleanly after this long
 //   --window-x <px>         place the window (two windows side by side)
+//   --log-mouse             print the summed mouse delta once a second ([Input] mouse dx .. dy ..)
 //   --screenshot-at <s>     save a screenshot this many seconds in (veil_<name>.png)
 
 #include <sim/PlayerCommand.h>
@@ -37,6 +38,7 @@ namespace Client {
 		double quitAfterSeconds = 0.0;
 		int windowX = -1;
 		double screenshotAtSeconds = 0.0;
+		bool logMouse = false;
 	};
 
 	// The switches this run was started with

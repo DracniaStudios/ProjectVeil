@@ -107,6 +107,24 @@ bool update_game()
 	// A scripted dev run ends cleanly, so its log is complete
 	if (Client::Dev().quitAfterSeconds > 0.0 && Platform::Time() >= Client::Dev().quitAfterSeconds) { request_exit(); }
 
+	// --log-mouse: one line each time the clock crosses a whole second, sums reset after
+	if (Client::Dev().logMouse)
+	{
+		static double sumDx = 0.0, sumDy = 0.0;
+		static long long lastSecond = 0;
+		const Vector2 delta = Platform::MouseDelta();
+		sumDx += delta.x;
+		sumDy += delta.y;
+		const long long second = static_cast<long long>(Platform::Time());
+		if (second > lastSecond)
+		{
+			lastSecond = second;
+			std::cout << "[Input] mouse dx " << sumDx << " dy " << sumDy << "\n";
+			sumDx = 0.0;
+			sumDy = 0.0;
+		}
+	}
+
 	// Nothing draws a sky, so the clear colour *is* the horizon. Clearing to the
 	// fog colour lets distant geometry dissolve into the background instead of
 	// fading toward a bright wall.

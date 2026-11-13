@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 	}
 
 	Platform::FocusWindow();
-	SetExitKey(KEY_F12);
+	Platform::SetExitKey(Platform::Key::F12);
 
 	while (!Platform::ShouldClose())
 	{
@@ -65,11 +65,11 @@ int main(int argc, char** argv)
 		ImGui::PopStyleColor(2);
 #pragma endregion
 
-		if (IsKeyPressed(KEY_F11)) { Platform::ToggleFullscreen(); }
+		if (Platform::IsKeyPressed(Platform::Key::F11)) { Platform::ToggleFullscreen(); }
 		
 		// Dev override for the cursor lock. Read back from raylib rather than kept
 		// here: update_game() also locks and frees the cursor as overlays open and close.
-		if (IsKeyPressed(KEY_GRAVE))
+		if (Platform::IsKeyPressed(Platform::Key::Grave))
 		{
 			if (Platform::IsCursorLocked())
 			{
