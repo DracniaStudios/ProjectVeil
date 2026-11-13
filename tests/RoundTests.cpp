@@ -93,7 +93,7 @@ static void TestCatchFullWipesTheRealWorld()
 	Check(pickup != nullptr && pickup->interactType == INTERACT_UNLOCK, "chunk_1 has the artifact pickup");
 	if (pickup) { pickup->onInteract(*scene, *player); }
 	scene->gameMap.SweepDestroyed(scene);
-	Check(scene->gameMap.FindInteractable(311) == nullptr && player->artifact != nullptr, "the pickup is gone and the player holds the artifact");
+	Check(scene->gameMap.FindInteractable(311) == nullptr && player->artifact.has_value(), "the pickup is gone and the player holds the artifact");
 
 	// Something spawned at runtime
 	GameObject spawnedPrototype = {};
@@ -146,7 +146,7 @@ static void TestCatchFullWipesTheRealWorld()
 	Check(std::fabs(player->health - player->getMaxHealth()) < 0.01f, "at full health");
 	const CooldownTimer* buff = player->getBuff(BUFF_MOVEMENT);
 	Check(buff == nullptr || buff->remaining_time() <= 0, "with no buff running");
-	Check(player->artifact == nullptr && player->artifactUnlocked == -1, "without the artifact");
+	Check(!player->artifact.has_value() && player->artifactUnlocked == -1, "without the artifact");
 	Check(player->lookYaw == 0.0f && player->lookPitch == 0.0f && !player->flashlightOn, "looking down +Z, flashlight off");
 
 	stalker = FindStalker(*scene);

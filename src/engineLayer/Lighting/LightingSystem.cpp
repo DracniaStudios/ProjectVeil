@@ -399,7 +399,7 @@ namespace Lighting
 
 		scene->ForEachPlayer([&](int, Player& player) {
 			ApplyToModel(player.model);
-			if (player.artifact != nullptr) { ApplyToModel(player.artifact->model); }
+			if (player.artifact) { ApplyToModel(player.artifact->model); }
 		});
 	}
 #pragma endregion
@@ -649,7 +649,7 @@ namespace Lighting
 
 			// The artifact hovers a unit in front of the camera; Scene_new() clears
 			// its castsShadow flag so it cannot smear a shadow across the view.
-			if (player.artifact != nullptr) { drawCaster(*player.artifact); }
+			if (player.artifact) { drawCaster(*player.artifact); }
 		});
 	}
 

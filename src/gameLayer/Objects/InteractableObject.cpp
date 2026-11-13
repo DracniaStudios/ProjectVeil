@@ -55,10 +55,10 @@ void Unlock(SceneManagement::Scene& /*scene*/, InteractableObject* interactable,
 	player->artifactUnlocked = Clamp(player->artifactUnlocked, MINI_GAME_FLAPPY_BIRD_ID, MINI_GAME_RO_SHAM_BOO_ID);
 
 	// Check If Player Has Artifact
-	if (player->artifact == nullptr) {
+	if (!player->artifact) {
 		std::cout << "Create Artifact \n";
 		// Create Artifact
-		player->artifact = new GameObject;
+		player->artifact.emplace();
 		player->artifact->name = "Artifact";
 		player->artifact->isDestructible = false;
 		player->artifact->rigidBody3D.scale = Vector3One();

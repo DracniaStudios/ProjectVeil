@@ -46,16 +46,16 @@ namespace SceneManagement {
 	Player* Scene::AddPlayer(int slot)
 	{
 		if (!Sim::IsValidSlot(slot)) { return nullptr; }
-		if (players[slot] != nullptr) { return players[slot]; }
+		if (players[slot] != nullptr) { return players[slot].get(); }
 
-		Player* player = new Player;
+		players[slot] = std::make_unique<Player>();
+		Player* player = players[slot].get();
 		player->type = OBJECT_PLAYER;
 		player->id = Sim::PlayerIdForSlot(slot);
 		player->setSpawnPoint(SpawnPointFor(slot));
 		player->rigidBody3D.Teleport(player->getSpawnPoint());
 		player->onEnable();
 
-		players[slot] = player;
 		return player;
 	}
 
@@ -67,11 +67,9 @@ namespace SceneManagement {
 		// The artifact is created on first use (InteractableObject.cpp) and owned by the player.
 		if (player->artifact) {
 			player->artifact->releaseGeneratedModel();
-			delete player->artifact;
 		}
 		player->releaseGeneratedModel();
-		delete player;
-		players[slot] = nullptr;
+		players[slot].reset();
 	}
 
 	Player* Scene::FindPlayer(std::uint64_t id) const
@@ -84,7 +82,7 @@ namespace SceneManagement {
 	int Scene::PlayerCount() const
 	{
 		int count = 0;
-		for (const Player* player : players) { if (player != nullptr) { ++count; } }
+		for (const auto& player : players) { if (player) { ++count; } }
 		return count;
 	}
 
@@ -232,11 +230,10 @@ namespace SceneManagement {
 
 		// The artifact is what the Unlock pickups built; the pickups come back with
 		// the world, so it goes
-		if (player->artifact != nullptr)
+		if (player->artifact)
 		{
 			player->artifact->releaseGeneratedModel();
-			delete player->artifact;
-			player->artifact = nullptr;
+			player->artifact.reset();
 		}
 		player->artifactUnlocked = -1;
 		player->artifactMode = 0;

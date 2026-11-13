@@ -28,6 +28,7 @@
 #include <sim/StationTable.h>
 
 #include <array>
+#include <memory>
 
 #include <stdlib.h>
 #include <iostream>
@@ -101,7 +102,7 @@ namespace SceneManagement {
 		// built with the scene, and a Host adds the others as they join. The
 		// simulation knows players only by Slot, never as "local" (rule R2): the
 		// client's own player is Client::LocalPlayer(scene).
-		std::array<Player*, Sim::kMaxPlayers> players = {};
+		std::array<std::unique_ptr<Player>, Sim::kMaxPlayers> players = {};
 
 		// Builds the player for an empty Slot at its spawn point and enables it.
 		// Returns the player already there if the Slot is taken, or nullptr for a
@@ -112,7 +113,7 @@ namespace SceneManagement {
 		void RemovePlayer(int slot);
 
 		// The player in a Slot, or nullptr
-		Player* PlayerInSlot(int slot) const { return Sim::IsValidSlot(slot) ? players[slot] : nullptr; }
+		Player* PlayerInSlot(int slot) const { return Sim::IsValidSlot(slot) ? players[slot].get() : nullptr; }
 
 		// The player with this object id, or nullptr if no player has it
 		Player* FindPlayer(std::uint64_t id) const;
@@ -125,7 +126,7 @@ namespace SceneManagement {
 		{
 			for (int slot = 0; slot < Sim::kMaxPlayers; ++slot)
 			{
-				if (players[slot] != nullptr) { fn(slot, *players[slot]); }
+				if (players[slot]) { fn(slot, *players[slot]); }
 			}
 		}
 

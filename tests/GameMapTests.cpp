@@ -438,13 +438,12 @@ static void TestUnlockRemovesTheStationAtTheSweep()
 
 	station->onInteract(*scene, *scene->PlayerInSlot(0));
 	Check(map.FindInteractable(id) == station, "the station is still there after its own onInteract");
-	Check(scene->PlayerInSlot(0)->artifact != nullptr, "the Artifact was handed over");
+	Check(scene->PlayerInSlot(0)->artifact.has_value(), "the Artifact was handed over");
 
 	map.SweepDestroyed(scene);
 	Check(map.FindInteractable(id) == nullptr, "the sweep removes the station");
 
-	delete scene->PlayerInSlot(0)->artifact;
-	scene->PlayerInSlot(0)->artifact = nullptr;
+	scene->PlayerInSlot(0)->artifact.reset();
 	delete scene;
 }
 

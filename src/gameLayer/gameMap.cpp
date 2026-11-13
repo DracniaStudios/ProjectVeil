@@ -3,6 +3,7 @@
 #include <asserts.h>
 #include <randomStuff.h>
 #include <AI/Stalker.h>
+#include <Player.h>
 
 #include <algorithm>
 #include <iostream>
@@ -144,6 +145,8 @@ namespace
 	{
 		copy.id = id;
 		copy.disownModel();
+		// A spawned copy of a player must never share its artifact's generated model.
+		if (auto* player = dynamic_cast<Player*>(&copy); player != nullptr && player->artifact) { player->artifact->disownModel(); }
 		copy.pendingDestroy = false;
 
 		/// Set RigidBody3D Data

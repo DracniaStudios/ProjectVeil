@@ -3,6 +3,7 @@
 #define PLAYER_H
 
 #include <raylib.h>
+#include <optional>
 #include <Entity.h>
 #include <randomStuff.h>
 #include <sim/PlayerCommand.h>
@@ -37,7 +38,10 @@ struct Player : Entity
 	// Game Mechanics
 	Vector2 moveDirection = {};
 	PlayerCamera camera = {};
-	GameObject* artifact = nullptr;
+	// The artifact this player carries, once an Unlock pickup has given one. Owned
+	// by value: it is not a world object (no id, not saved, never collides), so it
+	// never enters the GameMap.
+	std::optional<GameObject> artifact;
 
 	int artifactMode = 0;
 	int artifactUnlocked = -1;
