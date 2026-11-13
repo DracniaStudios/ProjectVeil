@@ -105,6 +105,13 @@ if (VEIL_BACKEND STREQUAL "raylib")
 
 file (GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
+# One backend's files per build (B-04). Valid for every later backend work order.
+if (VEIL_BACKEND STREQUAL "raylib")
+	list(FILTER MY_SOURCES EXCLUDE REGEX "/backend_(sdl3|gl)/")
+else()
+	list(FILTER MY_SOURCES EXCLUDE REGEX "/backend_raylib/")
+endif()
+
 # The development multiplayer menu and switches: Start Server, Join, --host,
 # --join (MultiplayerSplitPlan.md N7). Never in a production build (Q5, Q12).
 option(VEIL_DEV_NET "Development multiplayer menu (Start Server / Join Server)" ON)

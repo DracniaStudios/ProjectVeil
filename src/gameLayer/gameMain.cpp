@@ -10,6 +10,7 @@
 #include <Client/DevOptions.h>
 #include <Client/GamePresentation.h>
 #include <sim/FixedTick.h>
+#include <Platform.h>
 
 #include <cmath>
 #include <optional>
@@ -50,8 +51,8 @@ static void ApplyCursorForInput()
 	if (cursorLockedForGameplay == gameplayHasInput) { return; }
 	cursorLockedForGameplay = gameplayHasInput;
 
-	if (gameplayHasInput) { DisableCursor(); }
-	else { EnableCursor(); }
+	if (gameplayHasInput) { Platform::LockCursor(); }
+	else { Platform::UnlockCursor(); }
 }
 
 bool init_game()
@@ -59,7 +60,7 @@ bool init_game()
 	Client::InstallGamePresentation();
 	Settings::Settings::getInstance().Init();
 	AudioManager::AudioManager::getInstance().loadAll();
-	SetTargetFPS(maxFrameRate);
+	Platform::SetTargetFps(maxFrameRate);
 	AssetManager::AssetManager::getInstance().loadAll();
 
 	// Lighting must come up AFTER AssetManager (so the shader can be written
@@ -101,10 +102,10 @@ bool init_game()
 
 bool update_game()
 {
-	const float frameTime = GetFrameTime();
+	const float frameTime = Platform::FrameTime();
 
 	// A scripted dev run ends cleanly, so its log is complete
-	if (Client::Dev().quitAfterSeconds > 0.0 && GetTime() >= Client::Dev().quitAfterSeconds) { request_exit(); }
+	if (Client::Dev().quitAfterSeconds > 0.0 && Platform::Time() >= Client::Dev().quitAfterSeconds) { request_exit(); }
 
 	// Nothing draws a sky, so the clear colour *is* the horizon. Clearing to the
 	// fog colour lets distant geometry dissolve into the background instead of
@@ -119,7 +120,7 @@ bool update_game()
 	// A joined client's world moves to the Host's latest Snapshots before the
 	// camera is placed in it
 	auto& session = Client::Session::getInstance();
-	session.Frame(*manager, GetTime());
+	session.Frame(*manager, Platform::Time());
 
 	// Input is sampled once per frame into the pending PlayerCommand (Step 1.3).
 	// While an overlay or the World Editor has the input, the command is empty.
@@ -185,4 +186,11 @@ void close_game()
 	// id dangles once this runs — it has to be the last engine call. ProjectVeil.cpp
 	// invokes close_game() before CloseWindow(), while the GL context is alive.
 	Lighting::LightingSystem::getInstance().Shutdown();
+
+#if PRODUCTION_BUILD != 1
+	// The frame-time baseline: work is BeginFrame to EndFrame entry, frame is the whole interval
+	const Platform::FrameStats stats = Platform::GetFrameStats();
+	std::cout << std::format("[Platform] {} frames, work mean {:.3f} ms max {:.3f} ms, frame mean {:.3f} ms max {:.3f} ms",
+		stats.frames, stats.meanWorkMs, stats.maxWorkMs, stats.meanFrameMs, stats.maxFrameMs) << std::endl;
+#endif
 }

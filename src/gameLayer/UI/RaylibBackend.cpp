@@ -1,4 +1,5 @@
 #include <UIEngine.h>
+#include <Platform.h>
 
 // Everything the UI needs from raylib, kept apart from its rules in UIEngine.cpp,
 // which calls no raylib function and so is tested without a window.
@@ -32,7 +33,7 @@ namespace UI {
 	Input ReadRaylibInput(bool mouseBlocked)
 	{
 		Input input;
-		input.screenSize = Vector2{ static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight()) };
+		input.screenSize = Vector2{ static_cast<float>(Platform::ScreenWidth()), static_cast<float>(Platform::ScreenHeight()) };
 		input.mouse = GetMousePosition();
 		input.mouseDown = IsMouseButtonDown(MOUSE_LEFT_BUTTON);
 		input.mouseReleased = IsMouseButtonReleased(MOUSE_LEFT_BUTTON);

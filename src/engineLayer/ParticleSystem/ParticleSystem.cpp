@@ -1,4 +1,5 @@
 #include "ParticleSystem.h"
+#include <Platform.h>
 
 #include <algorithm>
 #include <random>
@@ -47,8 +48,8 @@ namespace ParticleSystem {
 	void ParticleSystem::Emit(int count) {
 		for (int i = 0; i < count; i++) {
 			Particle p;
-			p.x = RandomInt(0, GetScreenWidth());
-			p.y = RandomInt(0, GetScreenHeight());
+			p.x = RandomInt(0, Platform::ScreenWidth());
+			p.y = RandomInt(0, Platform::ScreenHeight());
 			p.speedX = (float)RandomInt(-10, 10) / 10.0f;
 			p.speedY = (float)RandomInt(-10, 10) / 10.0f;
 			p.size = (float)RandomInt(1, 5);

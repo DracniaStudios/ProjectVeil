@@ -1,4 +1,5 @@
 #include <Editor/WorldEditor.h>
+#include <Platform.h>
 #include <imgui.h>
 #include <InputSystem.h>
 
@@ -24,7 +25,7 @@ namespace
 	// a shader recompile) from launching the camera across the map.
 	float FrameStep()
 	{
-		return Clamp(GetFrameTime() * 60.0f, 0.0f, 3.0f);
+		return Clamp(Platform::FrameTime() * 60.0f, 0.0f, 3.0f);
 	}
 
 	/** Rebuilds the camera basis and target from the current yaw/pitch. */

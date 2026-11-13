@@ -1,4 +1,5 @@
 #include "WorldEditor.h"
+#include <Platform.h>
 #include <imgui.h>
 
 #include <UIEngine.h>
@@ -121,7 +122,7 @@ void WorldEditor::ShowUIData()
 
 	// --- Scaling ----------------------------------------------------------
 	ImGui::TextColored(HEADER_COLOR, "Scaling");
-	ImGui::Text("Screen: %d x %d", GetScreenWidth(), GetScreenHeight());
+	ImGui::Text("Screen: %d x %d", Platform::ScreenWidth(), Platform::ScreenHeight());
 	ImGui::DragFloat2("Reference resolution", &ui.referenceResolution.x, 1.0f, 1.0f, 7680.0f, "%.0f");
 	ImGui::Text("UI scale: %.3f", lastFrame.scale);
 	ImGui::Separator();

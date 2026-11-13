@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include <Platform.h>
 
 #include <iostream>
 #include <random>
@@ -120,7 +121,7 @@ namespace SceneManagement {
 	/** The MiniGame screen: the client's half of a station's MiniGame **/
 
 	namespace {
-		Vector2 WindowSize() { return Vector2{ static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight()) }; }
+		Vector2 WindowSize() { return Vector2{ static_cast<float>(Platform::ScreenWidth()), static_cast<float>(Platform::ScreenHeight()) }; }
 
 		// The player's input this frame, as the MiniGame reads it
 		MiniGameInput ReadMiniGameInput()

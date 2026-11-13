@@ -1,4 +1,5 @@
 #include "EditorPicking.h"
+#include <Platform.h>
 
 #include <Collider.h>
 #include <Geometry.h>
@@ -73,7 +74,7 @@ Quaternion SafeRotation(Quaternion rotation)
 
 Ray GetEditorMouseRay(const Camera3D& camera)
 {
-	return Geometry::GetScreenToWorldRayEx(GetMousePosition(), camera, GetScreenWidth(), GetScreenHeight());
+	return Geometry::GetScreenToWorldRayEx(GetMousePosition(), camera, Platform::ScreenWidth(), Platform::ScreenHeight());
 }
 
 bool RayOrientedBox(const Ray& ray, Vector3 center, Vector3 size, Quaternion rotation,

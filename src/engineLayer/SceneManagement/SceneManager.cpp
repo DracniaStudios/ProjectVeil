@@ -1,4 +1,5 @@
 #include "SceneManager.h"
+#include <Platform.h>
 
 #include <iostream>
 
@@ -109,7 +110,7 @@ namespace SceneManagement {
 		//   2. Shadow  - retargets the framebuffer to render the depth map, so it
 		//                cannot happen inside BeginMode3D.
 		//   3. Bind    - binds the finished depth texture for the camera pass.
-		lighting->Update(manager->camera3D, GetFrameTime());
+		lighting->Update(manager->camera3D, Platform::FrameTime());
 		lighting->RenderShadowPass(scene);
 
 		// Draw Scene 3D
@@ -132,7 +133,7 @@ namespace SceneManagement {
 		// Draw Fade
 		if (manager->fade != SceneFade::None) {
 			const float opacity = manager->fadeOpacity < 0.0f ? 0.0f : manager->fadeOpacity > 1.0f ? 1.0f : manager->fadeOpacity;
-			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{ 0, 0, 0, static_cast<unsigned char>(opacity * 255.0f) });
+			DrawRectangle(0, 0, Platform::ScreenWidth(), Platform::ScreenHeight(), Color{ 0, 0, 0, static_cast<unsigned char>(opacity * 255.0f) });
 		}
 	}
 

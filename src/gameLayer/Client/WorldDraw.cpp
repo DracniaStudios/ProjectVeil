@@ -1,4 +1,5 @@
 #include "WorldDraw.h"
+#include <Platform.h>
 
 #include <Scene.h>
 #include <Player.h>
@@ -138,7 +139,7 @@ namespace Client {
 		auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 		/// Reticle
-		DrawCircle(GetScreenWidth() / 2, GetScreenHeight() / 2, 10,
+		DrawCircle(Platform::ScreenWidth() / 2, Platform::ScreenHeight() / 2, 10,
 			inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM) ? RED
 			: inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2) ? RED
 			: WHITE);
