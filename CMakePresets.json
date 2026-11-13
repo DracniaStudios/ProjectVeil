@@ -40,6 +40,14 @@
             }
         },
         {
+            "name": "x64-debug-sdl3gl",
+            "displayName": "x64 Debug (SDL3 + OpenGL)",
+            "inherits": "x64-debug",
+            "cacheVariables": {
+                "VEIL_BACKEND": "sdl3gl"
+            }
+        },
+        {
             "name": "x86-debug",
             "displayName": "x86 Debug",
             "inherits": "windows-base",
@@ -79,6 +87,14 @@
                 "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
                     "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
                 }
+            }
+        },
+        {
+            "name": "linux-debug-sdl3gl",
+            "displayName": "Linux Debug (SDL3 + OpenGL)",
+            "inherits": "linux-debug",
+            "cacheVariables": {
+                "VEIL_BACKEND": "sdl3gl"
             }
         },
         {

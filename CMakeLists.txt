@@ -42,9 +42,46 @@ set (BUILD_SHARED_LIBS OFF CACHE BOOL "Build Libraries As Static" FORCE)
 project ("ProjectVeil")
 
 #Add sub directories
-add_subdirectory(thirdparty/raylib-6.0)
+set(VEIL_BACKEND "raylib" CACHE STRING "Window, input and renderer backend: raylib (fallback) or sdl3gl (SDL3 + OpenGL 3.3)")
+set_property(CACHE VEIL_BACKEND PROPERTY STRINGS raylib sdl3gl)
+if (NOT VEIL_BACKEND MATCHES "^(raylib|sdl3gl)$")
+	message(FATAL_ERROR "VEIL_BACKEND must be raylib or sdl3gl, not '${VEIL_BACKEND}'")
+endif()
+
 add_subdirectory(thirdparty/imgui-docking)
-add_subdirectory(thirdparty/rlImgui)
+if (VEIL_BACKEND STREQUAL "raylib")
+	add_subdirectory(thirdparty/raylib-6.0)
+	add_subdirectory(thirdparty/rlImgui)
+else()
+	# SDL3: static only, video and input only. Every name was checked against
+	# thirdparty/SDL/CMakeLists.txt (SDL main, 3.5.0 development).
+	foreach(_off SDL_SHARED SDL_TEST_LIBRARY SDL_TESTS SDL_EXAMPLES SDL_INSTALL SDL_AUDIO SDL_CAMERA
+	             SDL_GPU SDL_RENDER SDL_VULKAN SDL_DIALOG SDL_SENSOR SDL_HAPTIC SDL_POWER)
+		set(${_off} OFF CACHE BOOL "" FORCE)
+	endforeach()
+	set(SDL_STATIC ON CACHE BOOL "" FORCE)
+	add_subdirectory(thirdparty/SDL EXCLUDE_FROM_ALL)
+
+	# raylib's headers as vocabulary types only; raylib_static is never linked here
+	add_library(raylib_headers INTERFACE)
+	target_include_directories(raylib_headers INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/raylib-6.0/src")
+	# glad 2.0.8 (<glad/gl.h>), stb_image.h, stb_image_write.h and cgltf.h from the upstream
+	# copies in thirdparty/ (ruling R-1), not raylib's bundled ones
+	add_library(veil_gl_externals INTERFACE)
+	target_include_directories(veil_gl_externals INTERFACE
+		"${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glad-2.0.8"
+		"${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/stb"
+		"${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/cgltf-1.15")
+
+	add_library(imgui_backend_sdl3gl STATIC
+		thirdparty/imgui-docking/imgui/backends/imgui_impl_sdl3.cpp
+		thirdparty/imgui-docking/imgui/backends/imgui_impl_opengl3.cpp)
+	target_include_directories(imgui_backend_sdl3gl PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/imgui-docking/imgui/backends")
+	target_link_libraries(imgui_backend_sdl3gl PUBLIC imgui SDL3::SDL3-static)
+
+	add_executable(veil_gl_probe tests/GlProbe.cpp)
+	target_link_libraries(veil_gl_probe PRIVATE SDL3::SDL3-static veil_gl_externals)
+endif()
 add_subdirectory(thirdparty/FastNoise2-1.1.1)
 add_subdirectory(thirdparty/json-3.12.0) #Soon to me Customizable
 add_subdirectory(thirdparty/fmod-2.3.14)
@@ -61,6 +98,10 @@ option(VEIL_BUILD_GNS "Build GameNetworkingSockets" ON)
 if (VEIL_BUILD_GNS)
 	add_subdirectory(thirdparty/GameNetworkingSockets-1.6.1)
 endif()
+
+# The game is only defined for the raylib backend until the SDL3 port reaches it (B-15
+# removes this wrapper)
+if (VEIL_BACKEND STREQUAL "raylib")
 
 file (GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
@@ -257,3 +298,5 @@ if (VEIL_BUILD_SIM_TESTS)
 	add_test(NAME veil_sim_headless COMMAND veil_sim_headless_tests)
 	set_tests_properties(veil_sim_headless PROPERTIES ENVIRONMENT "VEIL_RESOURCES_DIR=${CMAKE_CURRENT_SOURCE_DIR}/resources")
 endif()
+
+endif() # VEIL_BACKEND STREQUAL "raylib"
