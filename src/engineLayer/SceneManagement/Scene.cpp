@@ -144,9 +144,8 @@ namespace SceneManagement {
 		// close: a player on a ledge above the stalker is out of reach
 		constexpr float kCatchHeight = 1.5f;
 
-		gameMap.ForEachEntity([&](Entity& entity) {
-			if (entity.kind != ENTITYKIND_STALKER || !entity.isEnabled) { return; }
-			const Stalker& stalker = static_cast<const Stalker&>(entity);
+		gameMap.ForEachStalker([&](Stalker& stalker) {
+			if (!stalker.isEnabled) { return; }
 
 			const auto check = [&](Player& candidate) {
 				if (!candidate.isEnabled) { return; }
@@ -270,9 +269,7 @@ namespace SceneManagement {
 		SaveSystem::RestoreAuthoredObjects(*this);
 
 		// Stalkers go back to Patrol whatever the World save recorded
-		gameMap.ForEachEntity([](Entity& entity) {
-			if (entity.kind != ENTITYKIND_STALKER) { return; }
-			Stalker& stalker = static_cast<Stalker&>(entity);
+		gameMap.ForEachStalker([](Stalker& stalker) {
 			stalker.state = STALKER_PATROL;
 			stalker.timeInState = 0.0f;
 			stalker.hasLastKnown = false;

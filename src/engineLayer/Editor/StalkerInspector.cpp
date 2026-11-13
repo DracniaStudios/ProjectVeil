@@ -44,14 +44,13 @@ void WorldEditor::ShowStalkerData()
 
 	// --- Stalkers ---------------------------------------------------------
 	int found = 0;
-	scene->gameMap.ForEachEntity([&](Entity& entity)
+	scene->gameMap.ForEachStalker([&](Stalker& stalkerRef)
 	{
-		if (entity.kind != ENTITYKIND_STALKER) { return; }
-		auto* stalker = static_cast<Stalker*>(&entity);
+		Stalker* stalker = &stalkerRef;
 		++found;
 
-		ImGui::PushID(static_cast<int>(entity.id));
-		ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s (id %d)", stalker->name.c_str(), static_cast<int>(entity.id));
+		ImGui::PushID(static_cast<int>(stalker->id));
+		ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s (id %d)", stalker->name.c_str(), static_cast<int>(stalker->id));
 
 		ImGui::Text("State: %s", stalkerStateToString(stalker->state));
 		ImGui::Text("Time in state: %.1fs", stalker->timeInState);

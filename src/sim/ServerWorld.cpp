@@ -333,9 +333,8 @@ namespace Sim {
 			p.crouching = player.isCrouching;
 		});
 
-		scene->gameMap.ForEachEntity([&](Entity& entity) {
-			if (snapshot.hasStalker || entity.kind != ENTITYKIND_STALKER || !entity.isEnabled) { return; }
-			const Stalker& stalker = static_cast<const Stalker&>(entity);
+		scene->gameMap.ForEachStalker([&](Stalker& stalker) {
+			if (snapshot.hasStalker || !stalker.isEnabled) { return; }
 			const Vector3 at = stalker.getPosition();
 			const Vector3 velocity = stalker.getVelocity();
 			const float planarSpeed = std::sqrt(velocity.x * velocity.x + velocity.z * velocity.z);

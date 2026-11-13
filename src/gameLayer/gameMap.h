@@ -3,13 +3,16 @@
 #define GAMEMAP_H
 
 #include <raylib.h>
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <unordered_map>
 #include <vector>
 #include <type_traits>
+#include <utility>
 #include <Entity.h>
 
-#include <entt/entity/registry.hpp>
+struct Stalker;
 
 inline constexpr int OBJECT_LIMIT = 10000;
 
@@ -42,51 +45,56 @@ namespace GameMapDetail
 			return true;
 		}
 	}
+
+	// A non-owning, non-allocating reference to a callable, so a ForEach can hand
+	// its visitor to gameMap.cpp, where the registry lives. Valid only for the
+	// duration of the call it is passed to.
+	template <class Signature> class FunctionRef;
+
+	template <class R, class... Args>
+	class FunctionRef<R(Args...)>
+	{
+	public:
+		template <class F>
+			requires (!std::is_same_v<std::remove_cvref_t<F>, FunctionRef> && std::is_invocable_r_v<R, F&, Args...>)
+		FunctionRef(F& fn) noexcept
+			: object(const_cast<void*>(static_cast<const void*>(std::addressof(fn))))
+			, call([](void* target, Args... args) -> R { return (*static_cast<F*>(target))(std::forward<Args>(args)...); })
+		{}
+
+		R operator()(Args... args) const { return call(object, std::forward<Args>(args)...); }
+
+	private:
+		void* object;
+		R (*call)(void*, Args...);
+	};
 }
 
 /**
- * How the GameMap stores its objects (MultiplayerSplitPlan.md E5, the ECS
- * checkpoint; decisions Q34, Q45, Q59). Hybrid by design:
+ * How the GameMap stores its objects (MultiplayerSplitPlan.md E5; ADR C,
+ * docs/review/C-decision.md). Hybrid by design:
  *
- *   On EnTT     every world object is an entity in one entt::registry. Its kind
- *               is which of the three components below it carries: a plain
- *               GameObject, an Entity (player-like or the Stalker) or an
- *               InteractableObject. An id index maps the stable uint64 ids the
- *               World save uses (E-1) to registry entities.
- *   Not on EnTT the objects themselves are still the GameObject class tree,
- *               with their behaviour in virtual update/render. Players live in
- *               the Scene's Slots, not in the registry.
+ *   On EnTT     every world object is an entity in one entt::registry, kept in
+ *               gameMap.cpp; no other file includes EnTT. Its kind is which
+ *               storage component it carries: a plain GameObject, an Entity
+ *               (player-like or the Stalker) or an InteractableObject. An id
+ *               index maps the World save's stable uint64 ids (E-1) to entities.
+ *               Stalkers also carry a StalkerKind tag (C-04).
+ *   Not on EnTT the objects' data and behaviour: they are still the GameObject
+ *               class tree, with virtual update and render. Players live in the
+ *               Scene's Slots.
  *
- * The boundary is this header: GameMap's Spawn*, Restore*, Destroy, Find* and
- * ForEach* keep their signatures (E-2), so nothing above it knows the storage
- * changed. The next step (M-15, 2027) splits data out of the classes into
- * components of their own: transform and collider first. No EnTT type appears
- * in a src/net/ or WorldStore header (E-5).
+ * The boundary is this header: Spawn*, Restore*, Destroy, Find* and ForEach*
+ * keep their signatures (E-2). Traversal order is part of the contract, pinned
+ * by GameMapEcsTests and RenderOffTickTests: within a kind, the newest storage
+ * slot first, a freed slot reused last-freed-first; ForEachObject visits
+ * GameObjects, then Entities, then Interactables. Hold ids across ticks, never
+ * pointers: the sweep after Destroy and every Clear (a load, a Full wipe)
+ * invalidate them.
  *
- * Every component opts into in-place deletion, so a pointer to a stored object
- * stays valid until that object itself is removed, as it did with the node-based
- * maps this replaced.
+ * Next (ADR C): render runtime state leaves the classes first (C-08, C-09,
+ * after the SDL3 swap); transform and collider stay on the classes until Stage 2.
  */
-namespace GameMapStorage
-{
-	struct Plain
-	{
-		static constexpr bool in_place_delete = true;
-		GameObject object;
-	};
-
-	struct EntityKind
-	{
-		static constexpr bool in_place_delete = true;
-		std::unique_ptr<Entity> entity;
-	};
-
-	struct Interactable
-	{
-		static constexpr bool in_place_delete = true;
-		std::unique_ptr<InteractableObject> interactable;
-	};
-}
 
 /**
  * The world's objects, and the one lifecycle every kind of object goes
@@ -179,9 +187,10 @@ struct GameMap {
 	template <class F>
 	void ForEachObject(F&& fn)
 	{
-		for (auto [handle, stored] : registry.view<GameMapStorage::Plain>().each()) { fn(stored.object); }
-		for (auto [handle, stored] : registry.view<GameMapStorage::EntityKind>().each()) { fn(*stored.entity); }
-		for (auto [handle, stored] : registry.view<GameMapStorage::Interactable>().each()) { fn(*stored.interactable); }
+		// GameObjects, then Entities, then Interactables; the return value is
+		// ignored, as it always was
+		auto visit = [&fn](GameObject& object) { fn(object); };
+		VisitAllObjects(GameMapDetail::FunctionRef<void(GameObject&)>(visit));
 	}
 
 	// Typed traversal over exactly one kind. The visitor may return
@@ -189,10 +198,8 @@ struct GameMap {
 	template <class F>
 	void ForEachGameObject(F&& fn)
 	{
-		for (auto [handle, stored] : registry.view<GameMapStorage::Plain>().each())
-		{
-			if (!GameMapDetail::InvokeVisitor(fn, stored.object)) return;
-		}
+		auto visit = [&fn](GameObject& object) { return GameMapDetail::InvokeVisitor(fn, object); };
+		VisitGameObjects(GameMapDetail::FunctionRef<bool(GameObject&)>(visit));
 	}
 
 	// const overload — needed by callers that only hold a `const GameMap*`
@@ -200,20 +207,15 @@ struct GameMap {
 	template <class F>
 	void ForEachGameObject(F&& fn) const
 	{
-		for (auto [handle, stored] : registry.view<const GameMapStorage::Plain>().each())
-		{
-			const GameObject& object = stored.object;
-			if (!GameMapDetail::InvokeVisitor(fn, object)) return;
-		}
+		auto visit = [&fn](const GameObject& object) { return GameMapDetail::InvokeVisitor(fn, object); };
+		VisitGameObjectsConst(GameMapDetail::FunctionRef<bool(const GameObject&)>(visit));
 	}
 
 	template <class F>
 	void ForEachEntity(F&& fn)
 	{
-		for (auto [handle, stored] : registry.view<GameMapStorage::EntityKind>().each())
-		{
-			if (!GameMapDetail::InvokeVisitor(fn, *stored.entity)) return;
-		}
+		auto visit = [&fn](Entity& entity) { return GameMapDetail::InvokeVisitor(fn, entity); };
+		VisitEntities(GameMapDetail::FunctionRef<bool(Entity&)>(visit));
 	}
 
 	// const overload — same need as ForEachGameObject's: callers that only
@@ -223,32 +225,44 @@ struct GameMap {
 	template <class F>
 	void ForEachEntity(F&& fn) const
 	{
-		for (auto [handle, stored] : registry.view<const GameMapStorage::EntityKind>().each())
-		{
-			const Entity& entity = *stored.entity;
-			if (!GameMapDetail::InvokeVisitor(fn, entity)) return;
-		}
+		auto visit = [&fn](const Entity& entity) { return GameMapDetail::InvokeVisitor(fn, entity); };
+		VisitEntitiesConst(GameMapDetail::FunctionRef<bool(const Entity&)>(visit));
 	}
 
 	template <class F>
 	void ForEachInteractable(F&& fn)
 	{
-		for (auto [handle, stored] : registry.view<GameMapStorage::Interactable>().each())
-		{
-			if (!GameMapDetail::InvokeVisitor(fn, *stored.interactable)) return;
-		}
+		auto visit = [&fn](InteractableObject& interactable) { return GameMapDetail::InvokeVisitor(fn, interactable); };
+		VisitInteractables(GameMapDetail::FunctionRef<bool(InteractableObject&)>(visit));
 	}
 
 	// const overload — see ForEachEntity's above.
 	template <class F>
 	void ForEachInteractable(F&& fn) const
 	{
-		for (auto [handle, stored] : registry.view<const GameMapStorage::Interactable>().each())
-		{
-			const InteractableObject& interactable = *stored.interactable;
-			if (!GameMapDetail::InvokeVisitor(fn, interactable)) return;
-		}
+		auto visit = [&fn](const InteractableObject& interactable) { return GameMapDetail::InvokeVisitor(fn, interactable); };
+		VisitInteractablesConst(GameMapDetail::FunctionRef<bool(const InteractableObject&)>(visit));
 	}
+
+	// Every Stalker in the map, in the order ForEachEntity visits them. The visitor
+	// may return bool (false stops) or void.
+	template <class F>
+	void ForEachStalker(F&& fn)
+	{
+		auto visit = [&fn](Stalker& stalker) { return GameMapDetail::InvokeVisitor(fn, stalker); };
+		VisitStalkers(GameMapDetail::FunctionRef<bool(Stalker&)>(visit));
+	}
+
+	// const overload — see ForEachEntity's above.
+	template <class F>
+	void ForEachStalker(F&& fn) const
+	{
+		auto visit = [&fn](const Stalker& stalker) { return GameMapDetail::InvokeVisitor(fn, stalker); };
+		VisitStalkersConst(GameMapDetail::FunctionRef<bool(const Stalker&)>(visit));
+	}
+
+	// The Stalker with this id; nullptr for none, or for an id of another kind
+	Stalker* FindStalker(std::uint64_t id);
 
 	Vector3 size = {10, 10, 10};
 
@@ -257,53 +271,38 @@ struct GameMap {
 	//bool hasSpawnPoint = false;
 
 	// Read-only counts for editor/debug display.
-	size_t GameObjectCount() const { return CountOf<GameMapStorage::Plain>(); }
-	size_t EntityCount() const { return CountOf<GameMapStorage::EntityKind>(); }
-	size_t InteractableCount() const { return CountOf<GameMapStorage::Interactable>(); }
+	size_t GameObjectCount() const;
+	size_t EntityCount() const;
+	size_t InteractableCount() const;
 
-	GameMap() = default;
+	GameMap();
+	~GameMap();
 	GameMap(const GameMap&) = delete;
 	GameMap& operator=(const GameMap&) = delete;
-	GameMap(GameMap&&) = default;
-	GameMap& operator=(GameMap&&) = default;
+	GameMap(GameMap&&) noexcept;            // a moved-from GameMap may only be destroyed or assigned to
+	GameMap& operator=(GameMap&&) noexcept;
 
 private:
 	// Whether any object, of any kind, holds this id
 	bool IsIdInUse(std::uint64_t id) const;
 
-	InstanceID instanceHolder = {}; // All IDs Stored
-
-	// Live objects of one kind (tombstones of in-place deletion don't count)
-	template <class Component>
-	size_t CountOf() const
-	{
-		size_t count = 0;
-		for ([[maybe_unused]] auto handle : registry.view<const Component>()) { ++count; }
-		return count;
-	}
-
-	// Stores an object under its id: a new registry entity with its kind's component
-	template <class Component, class Value>
-	Component& Store(std::uint64_t id, Value&& value)
-	{
-		const entt::entity handle = registry.create();
-		byId[id] = handle;
-		return registry.emplace<Component>(handle, std::forward<Value>(value));
-	}
-
-	template <class Component>
-	Component* Stored(std::uint64_t id)
-	{
-		const auto it = byId.find(id);
-		if (it == byId.end()) { return nullptr; }
-		return registry.try_get<Component>(it->second);
-	}
-
 	// Removes the object stored under an id, whatever its kind
 	void Remove(std::uint64_t id);
 
-	entt::registry registry;
-	std::unordered_map<std::uint64_t, entt::entity> byId; // the World save's ids (E-1) to registry entities
+	InstanceID instanceHolder = {}; // All IDs Stored
+
+	struct Storage; // the entt::registry, the id index and the live count of each kind (gameMap.cpp)
+	std::unique_ptr<Storage> storage;
+
+	void VisitAllObjects(GameMapDetail::FunctionRef<void(GameObject&)> visit);
+	void VisitGameObjects(GameMapDetail::FunctionRef<bool(GameObject&)> visit);
+	void VisitGameObjectsConst(GameMapDetail::FunctionRef<bool(const GameObject&)> visit) const;
+	void VisitEntities(GameMapDetail::FunctionRef<bool(Entity&)> visit);
+	void VisitEntitiesConst(GameMapDetail::FunctionRef<bool(const Entity&)> visit) const;
+	void VisitInteractables(GameMapDetail::FunctionRef<bool(InteractableObject&)> visit);
+	void VisitInteractablesConst(GameMapDetail::FunctionRef<bool(const InteractableObject&)> visit) const;
+	void VisitStalkers(GameMapDetail::FunctionRef<bool(Stalker&)> visit);
+	void VisitStalkersConst(GameMapDetail::FunctionRef<bool(const Stalker&)> visit) const;
 };
 
 #endif
