@@ -1,4 +1,5 @@
 #include "tutorial.h"
+#include <SaveSystem.h>
 
 void Scene_TutorialUpdate(SceneManagement::Scene& /*scene*/, float /*deltaTime*/)
 {

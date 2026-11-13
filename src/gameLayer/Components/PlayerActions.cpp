@@ -1,6 +1,6 @@
 #include <Player.h>
 
-#include <SceneManager.h>
+#include <Scene.h>
 
 void Player::Interact(SceneManagement::Scene& scene)
 {

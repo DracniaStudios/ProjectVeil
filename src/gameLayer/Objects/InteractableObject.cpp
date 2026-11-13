@@ -1,6 +1,6 @@
 #include <GameObject.h>
 
-#include <SceneManager.h>
+#include <Scene.h>
 #include <gameMap.h>
 #include <Player.h>
 #include <sim/Presentation.h>

@@ -2,8 +2,8 @@
 
 #include <Geometry.h>
 #include <ContactRules.h>
+#include <SaveSystem.h>
 #include <AI/Stalker.h>
-#include <SceneManager.h>
 #include <World/WorldKey.h>
 #include <sim/FixedTick.h>
 #include <sim/Presentation.h>

@@ -1,4 +1,6 @@
 #include <WorldEditor.h>
+#include <imgui.h>
+#include <AssetManager.h>
 
 namespace Editor {
 

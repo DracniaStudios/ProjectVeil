@@ -5,6 +5,7 @@
 #define WORLD_EDITOR_H
 
 #include <SceneManager.h>
+#include <AssetManager.h>
 #include <Player.h>
 #include <helpers.h>
 
@@ -12,6 +13,8 @@
 #include <EditorPicking.h>
 
 #include <vector>
+#include <cstdint>
+#include <string>
 
 namespace Editor {
 

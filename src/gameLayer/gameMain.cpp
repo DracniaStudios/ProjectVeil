@@ -1,6 +1,7 @@
 #include "gameMain.h"
 
 #include <ResourcePaths.h>
+#include <SaveSystem.h>
 #include <WorldEditor.h>
 #include <Client/CommandSampler.h>
 #include <Client/LocalPlayer.h>

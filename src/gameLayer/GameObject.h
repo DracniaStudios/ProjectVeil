@@ -3,10 +3,10 @@
 #define GAMEOBJECT_H
 
 #include <iostream>
+#include <cstdint>
 #include <string>
 #include <helpers.h>
 #include <Physics.h>
-#include <AssetManager.h>
 
 namespace FMOD { namespace Studio { class EventInstance; } }
 namespace SceneManagement { struct Scene; }

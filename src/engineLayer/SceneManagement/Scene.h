@@ -5,21 +5,14 @@
 
 #include <raylib.h>
 #include <raymath.h>
-#include <imgui.h>
-#include <randomStuff.h>
 
 #include <gameMap.h>
 #include <PhysicsWorld.h>
-#include <InputSystem.h>
 #include <Player.h>
 #include <OverlayStack.h>
 #include <Perception/SoundField.h>
 #include <AI/Director.h>
-#include <AssetManager.h>
 #include <MiniGameSession.h>
-#include <asserts.h>
-#include <SaveSystem.h>
-#include <Settings.h>
 
 #include <sim/PlayerCommand.h>
 #include <sim/Slots.h>
@@ -28,6 +21,7 @@
 #include <sim/StationTable.h>
 
 #include <array>
+#include <cstdint>
 #include <memory>
 
 #include <stdlib.h>
@@ -35,6 +29,7 @@
 #include <span>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 
 namespace SceneManagement { struct Scene; }

@@ -1,4 +1,5 @@
 #include "WorldEditor.h"
+#include <imgui.h>
 
 #include <AI/Stalker.h>
 #include <Perception/SoundField.h>

@@ -1,9 +1,7 @@
 #include "Player.h"
 
 #include <raymath.h>
-#include <LightingSystem.h>
-#include <SceneManager.h>
-#include <WorldEditor.h>
+#include <Scene.h>
 
 #include <cmath>
 

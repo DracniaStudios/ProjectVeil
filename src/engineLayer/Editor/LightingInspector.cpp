@@ -1,4 +1,5 @@
 #include "WorldEditor.h"
+#include <imgui.h>
 
 #include <LightingSystem.h>
 
