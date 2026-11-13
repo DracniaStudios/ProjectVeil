@@ -74,6 +74,58 @@ if (NOT TARGET GameNetworkingSockets::static)
 	list(FILTER MY_SOURCES EXCLUDE REGEX "/src/net/gns/")
 endif()
 
+# Simulation library (Review A, A-11; A-decision.md D2). Explicit list: adding a file
+# to the simulation is a reviewed edit. Links no raylib, ImGui, FMOD, GNS or httplib.
+# Keep this block self-contained: a later backend option (B-02) must not add a
+# backend library, include folder or definition to veil_sim.
+set(VEIL_SIM_SOURCES
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/sim/ServerWorld.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/sim/StationTable.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/sim/Presentation.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/sim/Worlds.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/net/Protocol.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/net/LoopbackTransport.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/SceneManagement/Scene.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/Save/SaveSystem.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/Save/SaveStore.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/World/WorldKey.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/World/FileWorldStore.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/ResourcePaths.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/randomStuff.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/gameMap.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/GameObject.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/Entity.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/Player.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/ContactRules.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/OverlayStack.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/Objects/InteractableObject.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/Components/Collider3D.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/Components/RigidBody3D.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/Components/PhysicsWorld.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/Components/PlayerActions.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/Components/PlayerCamera.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/AI/Stalker.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/AI/Director.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/Perception/SoundField.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/platform/asserts.cpp")
+list(REMOVE_ITEM MY_SOURCES ${VEIL_SIM_SOURCES})
+add_library(veil_sim STATIC ${VEIL_SIM_SOURCES})
+set_property(TARGET veil_sim PROPERTY CXX_STANDARD 23)
+target_include_directories(veil_sim PUBLIC
+	"${CMAKE_CURRENT_SOURCE_DIR}/src"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/Physics3D"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/Save"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/engineLayer/SceneManagement"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer"
+	"${CMAKE_CURRENT_SOURCE_DIR}/src/platform"
+	"${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/raylib-6.0/src")   # raylib.h, raymath.h: types and inline math only
+target_link_libraries(veil_sim PUBLIC nlohmann_json EnTT::EnTT serialize::serialize)
+target_compile_definitions(veil_sim PUBLIC PRODUCTION_BUILD=$<IF:$<BOOL:${PRODUCTION_BUILD}>,1,0>)
+if (MSVC)
+	target_compile_definitions(veil_sim PUBLIC _CRT_SECURE_NO_WARNINGS)
+endif()
+
 # Add source to this project's executable.
 add_executable("${PROJECT_NAME}")
 
@@ -150,6 +202,7 @@ FMOD
 STEAM
 EnTT::EnTT
 serialize::serialize)
+target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE veil_sim)
 
 # cpp-httplib (header only, MIT): the Host's HTTP line to SpacetimeDB. Only
 # src/net/spacetime/ may include it (rule R8, MultiplayerSplitPlan.md Q54).
@@ -193,3 +246,14 @@ steam_copy_runtime_libraries("${CMAKE_PROJECT_NAME}")
 # TARGET_RUNTIME_DLLS, and on Linux they must be copied under their SONAME
 # rather than their file name for the loader to find them at startup.
 fmod_copy_runtime_libraries("${CMAKE_PROJECT_NAME}")
+
+# Headless simulation test: links veil_sim and nothing else (A-decision.md D3)
+option(VEIL_BUILD_SIM_TESTS "Build the headless simulation test (links veil_sim only)" ON)
+if (VEIL_BUILD_SIM_TESTS)
+	enable_testing()
+	add_executable(veil_sim_headless_tests "${CMAKE_CURRENT_SOURCE_DIR}/tests/HeadlessSimTests.cpp")
+	set_property(TARGET veil_sim_headless_tests PROPERTY CXX_STANDARD 23)
+	target_link_libraries(veil_sim_headless_tests PRIVATE veil_sim)
+	add_test(NAME veil_sim_headless COMMAND veil_sim_headless_tests)
+	set_tests_properties(veil_sim_headless PROPERTIES ENVIRONMENT "VEIL_RESOURCES_DIR=${CMAKE_CURRENT_SOURCE_DIR}/resources")
+endif()

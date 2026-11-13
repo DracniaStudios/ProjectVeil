@@ -436,7 +436,7 @@ for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
 		-I thirdparty/serialize-2.1.3 \
 		"$SRC" \
 		"${GAME_OBJECTS[@]}" \
-		"${IMGUI_LIBS[@]}" \
+		-Wl,--start-group "${IMGUI_LIBS[@]}" -Wl,--end-group \
 		"$RAYLIB_LIB" \
 		"$FMOD_CORE_LIB" "$FMOD_STUDIO_LIB" \
 		-o "$TEST_BIN" \
@@ -484,7 +484,7 @@ g++ -std=c++23 \
 	-I thirdparty/serialize-2.1.3 \
 	tests/TriggerTests.cpp \
 	"${GAME_OBJECTS[@]}" \
-	"${IMGUI_LIBS[@]}" \
+	-Wl,--start-group "${IMGUI_LIBS[@]}" -Wl,--end-group \
 	"$RAYLIB_LIB" \
 	"$FMOD_CORE_LIB" "$FMOD_STUDIO_LIB" \
 	-o "$TRIGGER_BIN" \
