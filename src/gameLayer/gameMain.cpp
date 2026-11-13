@@ -111,11 +111,12 @@ bool update_game()
 	if (Client::Dev().logMouse)
 	{
 		static double sumDx = 0.0, sumDy = 0.0;
-		static long long lastSecond = 0;
+		static long long lastSecond = -1; // -1: not started, so the first line covers a whole second
 		const Vector2 delta = Platform::MouseDelta();
 		sumDx += delta.x;
 		sumDy += delta.y;
 		const long long second = static_cast<long long>(Platform::Time());
+		if (lastSecond < 0) { lastSecond = second; }
 		if (second > lastSecond)
 		{
 			lastSecond = second;
