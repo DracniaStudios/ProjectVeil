@@ -21,10 +21,11 @@
 
 ## Overview
 
-Veil is organized as two layers:
+Veil is organized as three layers:
 
 - **`src/platform`** — the platform entry point and low-level bootstrapping (window/context creation, asserts).
-- **`src/gameLayer`** — the engine and game logic: entities, objects, scenes, physics, assets, saves, mini-games, and the in-game developer tools.
+- **`src/engineLayer`** — the engine systems: assets, audio, input, lighting, particles, physics world, saves, settings, scene management, memory allocators, and the World Editor with its inspectors.
+- **`src/gameLayer`** — the game logic built on them: objects, entities, the player, AI (Stalker and Director), perception, mini-games, overlays and UI, and the scene constructors.
 
 The engine favors a lightweight, data-oriented `GameObject` / `Entity` model over a full ECS, with scenes owning their own map data, physics bodies, and interactable objects. It is designed to support both 3D exploration and 2D mini-game contexts within the same scene.
 
@@ -124,8 +125,8 @@ Veil uses CMake with presets for Windows (MSVC), Linux, and macOS.
 # Configure (pick the preset matching your platform)
 cmake --preset linux-debug   # or macos-debug, x64-debug, x86-debug
 
-# Build
-cmake --build --preset linux-debug
+# Build (the presets are configure-only, so build from the preset's output directory)
+cmake --build out/build/linux-debug   # out/build/<preset-name>
 ```
 
 Resources are copied to the build output directory automatically as a post-build step, and the `RESOURCES_PATH` macro points to the source `resources/` directory in non-production builds.
