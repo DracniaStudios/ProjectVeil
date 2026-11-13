@@ -1,19 +1,18 @@
 #include "Scene.h"
 
 #include <Geometry.h>
-#include <AudioManager.h>
 #include <ContactRules.h>
 #include <AI/Stalker.h>
 #include <SceneManager.h>
 #include <World/WorldKey.h>
 #include <sim/FixedTick.h>
+#include <sim/Presentation.h>
 #include <net/Protocol.h>
 
 #include <algorithm>
 #include <cmath>
 #include <iterator>
 #include <optional>
-#include <random>
 
 namespace SceneManagement {
 
@@ -32,12 +31,10 @@ namespace SceneManagement {
 	void Scene_delete(Scene* scene) {
 		if (scene == nullptr) { return; }
 
-		scene->QuitMiniGame();
+		Sim::CurrentPresentation().OnSceneDeleting(*scene);
 
 		// Releases every generated model, which ~GameObject() never would
 		scene->gameMap.Clear();
-
-		AudioManager::AudioManager::getInstance().StopAudio();
 
 		for (int slot = 0; slot < Sim::kMaxPlayers; ++slot) { scene->RemovePlayer(slot); }
 
@@ -265,10 +262,7 @@ namespace SceneManagement {
 		std::cout << "[Round] Full wipe\n";
 
 		// Any MiniGame in progress belongs to the round that just ended
-		miniGameSession.Quit();
-		overlays.Close(Overlay::MiniGame);
-		stationRequests.clear();
-		miniGamePlayerId = 0;
+		Sim::CurrentPresentation().OnFullWipe(*this);
 		stationNoiseTimer = 0.0f;
 
 		// The world as authored, every object under its own id. Without a World
@@ -349,97 +343,6 @@ namespace SceneManagement {
 			default:                       return std::nullopt;
 			}
 		}
-
-		Vector2 WindowSize() { return Vector2{ static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight()) }; }
-
-		// The player's input this frame, as the MiniGame reads it
-		MiniGameInput ReadMiniGameInput()
-		{
-			auto& input = InputSystem::InputSystem::getInstance();
-			const auto keys = [&input](auto query) {
-				return MiniGameKeys{
-					(input.*query)(InputSystem::ACTION_MOVE_LEFT), (input.*query)(InputSystem::ACTION_MOVE_RIGHT),
-					(input.*query)(InputSystem::ACTION_MOVE_FORWARD), (input.*query)(InputSystem::ACTION_MOVE_BACKWARD),
-					(input.*query)(InputSystem::ACTION_MOVE_JUMP), (input.*query)(InputSystem::ACTION_MOVE_SPRINT) };
-			};
-
-			MiniGameInput read;
-			read.held = keys(&InputSystem::InputSystem::IsActionDown);
-			read.pressed = keys(&InputSystem::InputSystem::IsActionPressed);
-			read.screenSize = WindowSize();
-			return read;
-		}
-	}
-
-	bool Scene::StartMiniGame(int gameId, InteractableObject* station, Player* by)
-	{
-		if (by == nullptr) { by = PlayerInSlot(0); }
-
-		const std::uint64_t stationId = station != nullptr ? station->id : 0;
-		if (!miniGameSession.Start(gameId, stationId, WindowSize(), std::random_device{}()))
-		{
-			std::cout << "[Scene.cpp] Ignoring a MiniGame start with unknown id: " << gameId << "\n";
-			return false;
-		}
-
-		// The screen only: which station is held is the server's (StationTable)
-		miniGamePlayerId = by != nullptr ? by->id : 0;
-		if (by != nullptr) { by->artifactMode = gameId; }
-		overlays.Open(Overlay::MiniGame);
-		return true;
-	}
-
-	void Scene::TickMiniGame(float deltaTime)
-	{
-		// A game under another overlay waits: it can't be lost while it can't be seen
-		if (overlays.Top() != Overlay::MiniGame || !miniGameSession.IsRunning()) { return; }
-
-		const MiniGameResult result = miniGameSession.Tick(ReadMiniGameInput(), deltaTime);
-		if (result.outcome == MiniGameOutcome::Won) { FinishWonMiniGame(result); }
-	}
-
-	void Scene::QuitMiniGame()
-	{
-		const std::uint64_t stationId = miniGameSession.StationId();
-		const bool running = miniGameSession.IsRunning();
-		miniGameSession.Quit();
-		CloseMiniGame();
-
-		// Walking away from a station gives it back
-		if (running && stationId != 0)
-		{
-			const int index = stations.IndexOf(stationId);
-			if (index >= 0) { stationRequests.push_back({ Sim::StationAction::Release, index }); }
-		}
-	}
-
-	void Scene::RetryMiniGame()
-	{
-		miniGameSession.Retry(WindowSize());
-	}
-
-	void Scene::WinMiniGame()
-	{
-		const MiniGameResult won = miniGameSession.Win();
-		if (won.outcome == MiniGameOutcome::Won) { FinishWonMiniGame(won); }
-	}
-
-	void Scene::FinishWonMiniGame(const MiniGameResult& won)
-	{
-		// A Practice run stays on this client and changes nothing on the server
-		// (S-5). A station's win is the server's to judge: it asks to Complete.
-		if (won.stationId != 0)
-		{
-			const int index = stations.IndexOf(won.stationId);
-			if (index >= 0) { stationRequests.push_back({ Sim::StationAction::Complete, index }); }
-		}
-
-		CloseMiniGame();
-	}
-
-	void Scene::CloseMiniGame()
-	{
-		overlays.Close(Overlay::MiniGame);
 	}
 
 	void Scene::OnWorldLoaded()

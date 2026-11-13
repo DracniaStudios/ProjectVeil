@@ -6,6 +6,7 @@
 #include <AudioManager.h>
 #include <GameObject.h>
 #include <LightingSystem.h>
+#include <Scene.h>
 #include <sim/Presentation.h>
 
 namespace {
@@ -106,6 +107,20 @@ namespace {
 				FMOD_3D_ATTRIBUTES attributes = AudioManager::AttributesOf(object);
 				object.soundInstance->set3DAttributes(&attributes);
 			}
+		}
+
+		void OnSceneDeleting(SceneManagement::Scene& scene) override
+		{
+			scene.QuitMiniGame();
+			AudioManager::AudioManager::getInstance().StopAudio();
+		}
+
+		void OnFullWipe(SceneManagement::Scene& scene) override
+		{
+			// Any MiniGame in progress belongs to the round that just ended
+			scene.miniGameSession.Quit();
+			scene.overlays.Close(Overlay::MiniGame);
+			scene.stationRequests.clear();
 		}
 	};
 }

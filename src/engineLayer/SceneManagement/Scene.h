@@ -87,7 +87,7 @@ namespace SceneManagement {
 		// The MiniGame being played, if any, and the history of how the last ones went.
 		// Start, quit and win through the Scene's methods below, which also keep the
 		// MiniGame overlay and the Task station in step with it.
-		MiniGameSession miniGameSession = MiniGameSession(CreateMiniGame);
+		MiniGameSession miniGameSession; // no factory: the client's StartMiniGame installs one
 
 		// Perception — the only channel through which AI learns about the player.
 		// Owned by the Scene because emitters and listeners are both scene objects.
@@ -292,9 +292,6 @@ namespace SceneManagement {
 
 		// Where Slot 0 spawns; see SpawnPointFor
 		Vector3 spawnPoint = { 0, 5, 2 };
-
-		// The player the running MiniGame belongs to, by object id
-		std::uint64_t miniGamePlayerId = 0;
 
 		// Players inside an unlocked Exit this tick
 		std::vector<std::uint64_t> escapedThisTick;
