@@ -82,6 +82,12 @@ else()
 	add_executable(veil_gl_probe tests/GlProbe.cpp)
 	target_link_libraries(veil_gl_probe PRIVATE SDL3::SDL3-static veil_gl_externals)
 endif()
+
+# Parity harness: compares two PNG screenshots (B-14). Single file, stb_image from the
+# upstream copy in thirdparty/stb (ruling R-1); links nothing, so it exists for both backends.
+add_executable(veil_screenshot_diff "${CMAKE_CURRENT_SOURCE_DIR}/tests/ScreenshotDiff.cpp")
+set_property(TARGET veil_screenshot_diff PROPERTY CXX_STANDARD 23)
+target_include_directories(veil_screenshot_diff PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/stb")
 add_subdirectory(thirdparty/FastNoise2-1.1.1)
 add_subdirectory(thirdparty/json-3.12.0) #Soon to me Customizable
 add_subdirectory(thirdparty/fmod-2.3.14)

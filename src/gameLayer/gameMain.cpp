@@ -162,7 +162,7 @@ bool update_game()
 	// The World Editor changes state only in Scene_frame (SceneManager_frame, above),
 	// never during a tick, so one read here serves every tick. Keep it below that call.
 	const bool editorPausesSimulation = Editor::WorldEditor::getInstance().IsEnabled() && Editor::WorldEditor::getInstance().IsSimulationPaused();
-	const int ticks = tickClock.Advance(frameTime);
+	const int ticks = Client::Dev().freezeWorld ? 0 : tickClock.Advance(frameTime);
 	for (int tick = 0; tick < ticks; ++tick) {
 		Sim::PlayerCommand command = sampler.Consume(++clientTick);
 		if (Client::Dev().bot) { command = Client::BotCommand(command.sequence, clientTick); }
