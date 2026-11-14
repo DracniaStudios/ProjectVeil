@@ -1,6 +1,7 @@
 #include "WorldEditor.h"
 #include <imgui.h>
 #include <AssetManager.h>
+#include <Render/Render.h>
 
 namespace Editor {
 
@@ -73,7 +74,7 @@ void WorldEditor::ShowPlacementPanel()
 	if (activeTexture != nullptr)
 	{
 		ImGui::Text("Active: %s", activeTexture->name.c_str());
-		ImGui::Image((ImTextureRef)(intptr_t)activeTexture->texture.id, ImVec2(64, 64));
+		ImGui::Image((ImTextureRef)(intptr_t)Render::NativeTextureId(activeTexture->texture), ImVec2(64, 64));
 		if (ImGui::Button("Clear Texture")) { activeTextureIndex = -1; }
 	}
 	else

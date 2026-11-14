@@ -81,13 +81,13 @@ static void TestTenThousandTicksHeadless()
 	// No GPU: nothing was bound
 	int objects = 0;
 	int withMesh = 0;
-	const auto count = [&](GameObject& o) { ++objects; if (o.model.meshCount != 0) { ++withMesh; } };
+	const auto count = [&](GameObject& o) { ++objects; if (o.model) { ++withMesh; } };
 	scene->gameMap.ForEachGameObject(count);
 	scene->gameMap.ForEachEntity(count);
 	scene->gameMap.ForEachInteractable(count);
 	Check(objects > 0, "the World save made objects");
 	Check(withMesh == 0, "no object holds a mesh (" + std::to_string(withMesh) + " of " + std::to_string(objects) + ")");
-	Check(scene->PlayerInSlot(0)->model.meshCount == 0, "the Slot 0 player holds no mesh");
+	Check(!scene->PlayerInSlot(0)->model, "the Slot 0 player holds no mesh");
 
 	const Vector3 playerStart = scene->PlayerInSlot(0)->getPosition();
 	const float soundStart = scene->soundField.Now();

@@ -16,26 +16,6 @@ GameObject::GameObject()
 
 }
 
-/** Model Ownership **/
-void GameObject::disownModel()
-{
-	// Deliberately does not unload: the object this handle was copied from is
-	// still using it. Clearing `model` as well means the next loadVisuals()
-	// cannot mistake an inherited handle for one of its own.
-	model = {};
-	ownsModel = false;
-}
-
-void GameObject::releaseGeneratedModel()
-{
-	// Only primitives this object generated for itself are unloadable.
-	if (!ownsModel) { return; }
-
-	Sim::CurrentPresentation().FreeGeneratedModel(*this);
-	model = {};
-	ownsModel = false;
-}
-
 /** Asset Binding **/
 void GameObject::loadVisuals()
 {
@@ -44,7 +24,7 @@ void GameObject::loadVisuals()
 
 void GameObject::setModel(const std::string& assetName)
 {
-	if (modelName == assetName && model.meshCount > 0) { return; }
+	if (modelName == assetName && model) { return; }
 	modelName = assetName;
 	loadVisuals();
 }
@@ -79,9 +59,7 @@ void GameObject::onDisable()
 {
 	isEnabled = false;
 	rigidBody3D.collider.canCollide = false;
-	// Textures and named models belong to the AssetManager — only unload
-	// primitives this object generated for itself
-	releaseGeneratedModel();
+	// Models and textures belong to the renderer; there is nothing to release
 }
 
 
@@ -140,9 +118,6 @@ void GameObject::onDestroy(SceneManagement::Scene* scene)
 	// Called by GameMap::SweepDestroyed just before it erases this object
 	std::cout << "Destroy Object: " << name << "\n";
 
-	// The destructor is trivial and never frees GPU resources, so a generated
-	// primitive's Model/Mesh would otherwise leak the moment this object is
-	// erased. onDisable() already does exactly this release, idempotently.
 	onDisable();
 }
 

@@ -132,11 +132,6 @@ namespace Lighting {
 		// otherwise depth-tested so they read as sitting in the world.
 		bool gizmoXray = false;
 
-		/** Material Injection **/
-		void ApplyToModel(Model& model) const;
-		void ApplyToLoadedAssets() const;
-		void ApplyToScene(SceneManagement::Scene* scene) const;
-
 		/** Light Management **/
 		std::vector<Light>& GetLights() { return lights; }
 		const std::vector<Light>& GetLights() const { return lights; }

@@ -4,7 +4,7 @@
 
 #include <Geometry.h>
 
-#include <AssetManager.h>
+#include <Render/Render.h>
 #include <ResourcePaths.h>
 #include <SceneManager.h>
 #include <Settings.h>
@@ -273,10 +273,6 @@ namespace Lighting
 
 		isReady = true;
 
-		// Shared AssetManager models are bound into objects by pointer, so applying
-		// the shader here covers every object that will ever reference them.
-		ApplyToLoadedAssets();
-
 		if (lights.empty()) { CreateDefaultRig(); }
 
 		std::cout << "[Lighting] Lighting system ready (shader id " << lightShader.id
@@ -356,51 +352,6 @@ namespace Lighting
 		UnloadShadowMapTarget(shadowMap);
 		shadowMap = LoadShadowMapTarget(wanted);
 		failedShadowMapSize = shadowMap.id == 0 ? wanted : 0;
-	}
-#pragma endregion
-
-#pragma region Material Injection
-	void LightingSystem::ApplyToModel(Model& model) const
-	{
-		// A no-op before Init(): every model is rebound through
-		// GameObject::loadVisuals() anyway, and ApplyToLoadedAssets()/ApplyToScene()
-		// catch anything created earlier.
-		if (!isReady) { return; }
-		if (model.materials == nullptr) { return; }
-
-		for (int i = 0; i < model.materialCount; i++)
-		{
-			model.materials[i].shader = lightShader;
-		}
-	}
-
-	void LightingSystem::ApplyToLoadedAssets() const
-	{
-		if (!isReady) { return; }
-
-		int applied = 0;
-		for (auto& asset : AssetManager::AssetManager::getInstance().assets)
-		{
-			if (asset.type != AssetManager::ASSET_MODEL) { continue; }
-			if (asset.model.meshCount == 0) { continue; }
-
-			ApplyToModel(asset.model);
-			applied++;
-		}
-
-		std::cout << "[Lighting] Applied lighting shader to " << applied << " asset models\n";
-	}
-
-	void LightingSystem::ApplyToScene(SceneManagement::Scene* scene) const
-	{
-		if (!isReady || scene == nullptr) { return; }
-
-		scene->gameMap.ForEachObject([&](GameObject& object) { ApplyToModel(object.model); });
-
-		scene->ForEachPlayer([&](int, Player& player) {
-			ApplyToModel(player.model);
-			if (player.artifact) { ApplyToModel(player.artifact->model); }
-		});
 	}
 #pragma endregion
 
@@ -630,16 +581,10 @@ namespace Lighting
 		auto drawCaster = [](GameObject& object)
 			{
 				if (!object.isEnabled || !object.display3DModel || !object.castsShadow) { return; }
-				if (object.model.meshCount == 0) { return; }
+				if (!object.model) { return; }
 
-				// Rebuilt here rather than reused: render3D() has not run yet this
-				// frame, so model.transform still holds last frame's pose.
-				const Vector3 scale = object.rigidBody3D.scale;
-				object.model.transform = MatrixMultiply(
-					MatrixScale(scale.x, scale.y, scale.z),
-					QuaternionToMatrix(object.rigidBody3D.rotation));
-
-				DrawModel(object.model, object.rigidBody3D.translation, 1.0f, object.defaultColor);
+				// Render::DrawModel builds the transform from the object's pose as it is now
+				Render::DrawModel(object.MakeModelDraw());
 			};
 
 		scene->gameMap.ForEachObject(drawCaster);

@@ -64,11 +64,6 @@ namespace SceneManagement {
 		Player* player = PlayerInSlot(slot);
 		if (player == nullptr) { return; }
 
-		// The artifact is created on first use (InteractableObject.cpp) and owned by the player.
-		if (player->artifact) {
-			player->artifact->releaseGeneratedModel();
-		}
-		player->releaseGeneratedModel();
 		players[slot].reset();
 	}
 
@@ -232,7 +227,6 @@ namespace SceneManagement {
 		// the world, so it goes
 		if (player->artifact)
 		{
-			player->artifact->releaseGeneratedModel();
 			player->artifact.reset();
 		}
 		player->artifactUnlocked = -1;

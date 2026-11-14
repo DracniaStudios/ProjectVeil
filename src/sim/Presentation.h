@@ -20,7 +20,6 @@ namespace Sim {
 		// headless digest by fitting to a cube.
 		virtual void BindVisuals(GameObject&) {}         // was GameObject::loadVisuals' body
 		virtual void BindTexture(GameObject&) {}         // was GameObject::setTexture after textureName is set
-		virtual void FreeGeneratedModel(GameObject&) {}  // releaseGeneratedModel while ownsModel: UnloadModel when meshCount > 0
 		// Sound (A-05)
 		virtual void PlayGameplaySoundAt(std::string_view, Vector3, float) {} // ContactRules.cpp:44
 		virtual void PlayObjectSound(GameObject&) {}     // InteractableObject.cpp:103-110

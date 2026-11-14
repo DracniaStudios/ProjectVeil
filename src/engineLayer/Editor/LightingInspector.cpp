@@ -188,14 +188,6 @@ void WorldEditor::ShowLightingData()
 		selectedLightIndex = -1;
 		statusMessage = "Installed the default lighting rig";
 	}
-	ImGui::SameLine();
-	if (ImGui::Button("Reapply Shader To Scene"))
-	{
-		// Safety net: rebinds the lighting shader onto every material in the
-		// live scene, for objects created while the system was still down
-		lighting->ApplyToScene(editedScene);
-		statusMessage = "Reapplied the lighting shader";
-	}
 
 	if (static_cast<int>(lights.size()) > Lighting::LIGHT_LIMIT)
 	{

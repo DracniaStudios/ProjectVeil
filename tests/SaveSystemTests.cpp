@@ -30,6 +30,7 @@
 #include <string>
 #include <vector>
 #include <Client/GamePresentation.h>
+#include <Render/Render.h>
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -263,7 +264,7 @@ static void TestGameRoundTripKeepsTheMomentAndThePlayer(const Store& store)
 	Check(loaded->PlayerInSlot(0)->rigidBody3D.translation.x == -6 && loaded->PlayerInSlot(0)->rigidBody3D.translation.z == 9,
 		"the player is where they were");
 	Check(loaded->PlayerInSlot(0)->health == 2.0f, "and as hurt as they were");
-	Check(loaded->PlayerInSlot(0)->model.meshCount > 0, "the loaded player has its model bound");
+	Check(static_cast<bool>(loaded->PlayerInSlot(0)->model), "the loaded player has its model bound");
 	Check(loaded->PlayerInSlot(0)->rigidBody3D.collider.size == Vector3{ 1, 1, 1 },
 		"and its mesh collider was refitted by the load's one bind (3,3,3 saved, 1,1,1 after)");
 	Check(loaded->PlayerInSlot(0)->id == Sim::PlayerIdForSlot(0), "and is still the player");
@@ -632,6 +633,7 @@ int main()
 	// before any object enters a map — see StalkerFsmTests.cpp.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-save-system-tests");
+	Render::Init(); // the unit cube objects bind
 	Client::InstallGamePresentation();
 	SaveSystem::SetDefaultParticipants({ SaveSystem::LightingParticipant() });
 
@@ -662,6 +664,7 @@ int main()
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 
 	RemoveTestFiles();
+	Render::Shutdown();
 	CloseWindow();
 	return g_failures == 0 ? 0 : 1;
 }

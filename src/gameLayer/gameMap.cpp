@@ -140,13 +140,10 @@ void GameMap::Remove(std::uint64_t id)
 
 namespace
 {
-	// Readies a freshly stored copy of a prototype to be enabled. Disabling the copy's model.
+	// Readies a freshly stored copy of a prototype to be enabled.
 	void PrepareSpawnedCopy(GameObject& copy, std::uint64_t id)
 	{
 		copy.id = id;
-		copy.disownModel();
-		// A spawned copy of a player must never share its artifact's generated model.
-		if (auto* player = dynamic_cast<Player*>(&copy); player != nullptr && player->artifact) { player->artifact->disownModel(); }
 		copy.pendingDestroy = false;
 
 		/// Set RigidBody3D Data
@@ -232,7 +229,6 @@ GameObject* GameMap::RestoreGameObject(GameObject object)
 	if (IsIdInUse(id))
 	{
 		std::cerr << "[GameMap] Not restoring GameObject " << id << ": another object has that id\n";
-		object.releaseGeneratedModel(); // nothing is bound yet; kept so a caller that bound a model first does not leak it
 		return nullptr;
 	}
 
@@ -249,7 +245,6 @@ Entity* GameMap::RestoreEntity(std::unique_ptr<Entity> entity)
 	{
 		std::cerr << "[GameMap] Not restoring Entity '" << entity->name << "': its kind ("
 		          << entityKindToString(entity->kind) << ") is not its class\n";
-		entity->releaseGeneratedModel(); // nothing is bound yet; kept so a caller that bound a model first does not leak it
 		return nullptr;
 	}
 
@@ -257,7 +252,6 @@ Entity* GameMap::RestoreEntity(std::unique_ptr<Entity> entity)
 	if (IsIdInUse(id))
 	{
 		std::cerr << "[GameMap] Not restoring Entity " << id << ": another object has that id\n";
-		entity->releaseGeneratedModel(); // nothing is bound yet; kept so a caller that bound a model first does not leak it
 		return nullptr;
 	}
 
@@ -275,7 +269,6 @@ InteractableObject* GameMap::RestoreInteractable(std::unique_ptr<InteractableObj
 	if (IsIdInUse(id))
 	{
 		std::cerr << "[GameMap] Not restoring Interactable " << id << ": another object has that id\n";
-		interactable->releaseGeneratedModel(); // nothing is bound yet; kept so a caller that bound a model first does not leak it
 		return nullptr;
 	}
 
@@ -314,10 +307,6 @@ void GameMap::SweepDestroyed(SceneManagement::Scene* scene)
 
 void GameMap::Clear()
 {
-	// ~GameObject() never frees GPU resources, so every generated fallback model is
-	// released first, or it leaks the moment its object is erased
-	ForEachObject([](GameObject& object) { object.releaseGeneratedModel(); });
-
 	storage->registry.clear();
 	storage->byId.clear();
 	storage->gameObjects = 0;

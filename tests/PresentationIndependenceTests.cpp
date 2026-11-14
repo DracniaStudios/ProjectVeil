@@ -23,6 +23,7 @@
 #include "TickDigest.h"
 
 #include <AssetManager.h>
+#include <Render/Render.h>
 #include <Client/GamePresentation.h>
 #include <sim/Presentation.h>
 #include <sim/Worlds.h>
@@ -102,8 +103,8 @@ namespace {
 			m.size = o.rigidBody3D.collider.size;
 			m.offset = o.rigidBody3D.collider.offset;
 			m.radius = o.rigidBody3D.collider.radius;
-			m.meshCount = o.model.meshCount;
-			m.sharedAsset = o.model.meshCount > 0 && !o.ownsModel;
+			m.meshCount = o.model ? 1 : 0; // the handle is one model: 1 means something was bound
+			m.sharedAsset = o.model && !o.usesUnitCube;
 			r.meshColliders.push_back(m);
 		};
 		scene->gameMap.ForEachGameObject(note);
@@ -226,10 +227,11 @@ int main()
 	SetTraceLogLevel(LOG_ERROR);
 	SetConfigFlags(FLAG_WINDOW_HIDDEN);
 	InitWindow(64, 64, "veil-presentation-independence");
+	Render::Init(); // the unit cube an object with no model asset binds
 
 	// Models only (not the 4K textures). The lighting system is deliberately not
-	// initialised: ApplyToModel is a no-op before Init, and the simulation never
-	// reads the shader.
+	// initialised: the renderer binds the shader at each draw, and the simulation never
+	// reads it.
 	const auto started = std::chrono::steady_clock::now();
 	AssetManager::AssetManager::getInstance().loadFolder("models");
 	int models = 0;
@@ -246,6 +248,7 @@ int main()
 
 	Sim::InstallPresentation(nullptr);
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
+	Render::Shutdown();
 	CloseWindow();
 	return g_failures == 0 ? 0 : 1;
 }

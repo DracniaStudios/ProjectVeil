@@ -193,49 +193,47 @@ static void TestRestoreChecksKindAgainstClass()
 
 static void TestANewObjectHoldsNoModel()
 {
-	std::printf("a new GameObject holds no GPU model until it is spawned or restored\n");
+	std::printf("a new GameObject holds no model handle until it is spawned or restored\n");
 
 	GameObject fresh{};
-	Check(fresh.model.meshCount == 0, "the constructor uploads no mesh");
-	Check(!fresh.ownsModel, "so there is nothing for it to own");
+	Check(!fresh.model, "the constructor binds no model");
+	Check(!fresh.usesUnitCube, "and does not claim the unit cube");
 
 	Entity entity{};
-	Check(entity.model.meshCount == 0, "neither does an Entity's");
+	Check(!entity.model, "neither does an Entity's");
 
 	InteractableObject interactable(INTERACT_ITEM, 0);
-	Check(interactable.model.meshCount == 0, "nor an Interactable's");
+	Check(!interactable.model, "nor an Interactable's");
 }
 
-static void TestSpawnLeavesThePrototypesModelAlone()
+static void TestSpawnCopiesAndThePrototypeShareTheUnitCube()
 {
-	std::printf("Spawn binds the stored copy's own model and never frees the prototype's "
-		"(regression: Spawn enabled the prototype and then copied it, so two objects "
-		"owned one model, and the editor had to disown or release by hand)\n");
+	std::printf("Spawn copies and the prototype bind the same shared model, and destroying "
+		"a copy leaves the prototype's handle alone (nothing is owned, so nothing is released)\n");
 	SceneManagement::Scene* scene = MakeScene();
 	GameMap& map = scene->gameMap;
 
 	// A prototype that is drawn and kept, like the editor's selection when it is
-	// duplicated: it owns a generated cube of its own.
+	// duplicated: it holds the renderer's unit cube.
 	GameObject prototype{};
 	prototype.loadVisuals();
-	const Mesh* prototypeMeshes = prototype.model.meshes;
-	Check(prototype.ownsModel && prototype.model.meshCount > 0, "the prototype owns a model of its own");
+	const Render::ModelHandle prototypeModel = prototype.model;
+	Check(prototype.model && prototype.usesUnitCube, "the prototype holds the unit cube");
 
 	GameObject* first = map.SpawnGameObject(prototype);
 	GameObject* second = map.SpawnGameObject(prototype);
 
-	Check(first->ownsModel && first->model.meshCount > 0, "the stored copy has a model");
-	Check(first->model.meshes != prototypeMeshes, "and it is not the prototype's");
-	Check(first->model.meshes != second->model.meshes, "two spawns from one prototype get a model each");
-	Check(prototype.ownsModel && prototype.model.meshes == prototypeMeshes,
-		"the prototype still owns the model it had");
+	Check(first->model && first->usesUnitCube, "the stored copy holds the unit cube");
+	Check(second->model && second->usesUnitCube, "and so does the second");
+	Check(first->model == prototypeModel && second->model == prototypeModel,
+		"all three hold the same handle");
 
 	map.Destroy(first->id);
 	map.SweepDestroyed(scene);
-	Check(prototype.model.meshes == prototypeMeshes && prototype.model.meshCount > 0,
-		"destroying a spawned copy leaves the prototype's model alone");
+	Check(prototype.model == prototypeModel && prototype.usesUnitCube,
+		"destroying a spawned copy leaves the prototype's handle and flag unchanged");
+	Check(second->model == prototypeModel, "and the other copy's");
 
-	prototype.releaseGeneratedModel();
 	delete scene;
 }
 
@@ -312,7 +310,7 @@ static void TestRestoreKeepsWhatWasSaved()
 	Check(restoredDoor != nullptr && !restoredDoor->isEnabled, "a door saved disabled stays disabled");
 	Check(restoredDoor != nullptr && !restoredDoor->rigidBody3D.collider.canCollide,
 		"and doesn't block the way while it is disabled");
-	Check(restoredDoor != nullptr && restoredDoor->model.meshCount > 0, "its model is bound");
+	Check(restoredDoor != nullptr && restoredDoor->model, "its model is bound");
 
 	auto stalker = std::make_unique<Entity>();
 	stalker->id = 41;
@@ -390,11 +388,11 @@ static void TestLoadingBindsNothingAndRestoreBindsOnce()
 	GameObject loaded{};
 	loaded.id = 60;
 	Check(loaded.loadFromJson(row), "the row loads");
-	Check(loaded.model.meshCount == 0, "loading binds no model");
-	Check(!loaded.ownsModel, "and owns none");
+	Check(!loaded.model, "loading binds no model");
+	Check(!loaded.usesUnitCube, "and claims no unit cube");
 
 	GameObject* restored = map.RestoreGameObject(loaded);
-	Check(restored != nullptr && restored->model.meshCount > 0 && restored->ownsModel,
+	Check(restored != nullptr && restored->model && restored->usesUnitCube,
 		"Restore binds the model");
 	Check(restored != nullptr && restored->rigidBody3D.collider.size == Vector3{ 1, 1, 1 },
 		"and fits the mesh collider to it, once");
@@ -590,6 +588,7 @@ int main()
 	// object enters a map — see StalkerFsmTests.cpp.
 	SetTraceLogLevel(LOG_ERROR);
 	InitWindow(64, 64, "veil-gamemap-tests");
+	Render::Init(); // the unit cube objects bind
 	Client::InstallGamePresentation();
 
 	std::printf("GameMap tests\n\n");
@@ -600,7 +599,7 @@ int main()
 	TestSpawnRefusesASlicedEntity();
 	TestRestoreChecksKindAgainstClass();
 	TestANewObjectHoldsNoModel();
-	TestSpawnLeavesThePrototypesModelAlone();
+	TestSpawnCopiesAndThePrototypeShareTheUnitCube();
 	TestSpawnGivesEveryKindAUnitScale();
 	TestMeshColliderFitsTheUnitCubeWithoutAnAsset();
 	TestRestoreKeepsWhatWasSaved();
@@ -617,6 +616,7 @@ int main()
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 
+	Render::Shutdown();
 	CloseWindow();
 	return g_failures == 0 ? 0 : 1;
 }

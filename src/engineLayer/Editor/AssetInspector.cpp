@@ -1,6 +1,7 @@
 #include <WorldEditor.h>
 #include <imgui.h>
 #include <AssetManager.h>
+#include <Render/Render.h>
 
 namespace Editor {
 
@@ -39,7 +40,7 @@ namespace Editor {
 						if (isSelected) { ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f)); }
 
 						// Models have no thumbnail texture — show a labeled button instead
-						bool clicked = ImGui::ImageButton("##texture", (ImTextureRef)(intptr_t)assets[i].texture.id, ImVec2(thumbSize, thumbSize));
+						bool clicked = ImGui::ImageButton("##texture", (ImTextureRef)(intptr_t)Render::NativeTextureId(assets[i].texture), ImVec2(thumbSize, thumbSize));
 						if (clicked)
 						{
 							if (assets[i].type == AssetManager::ASSET_TEXTURE) activeTextureIndex = i;

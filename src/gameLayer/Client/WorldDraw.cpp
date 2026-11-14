@@ -6,6 +6,7 @@
 #include <AI/Stalker.h>
 #include <InputSystem.h>
 #include <Client/DebugDraw.h>
+#include <Render/Render.h>
 
 #include <raymath.h>
 
@@ -45,14 +46,13 @@ namespace Client {
 		}
 
 		if (object.display3DModel) {
-			// Bake scale + orientation into the transform — meshes stay unit-sized,
-			// so both generated cubes and .obj models follow rigidBody3D.scale
-			Vector3 scale = object.rigidBody3D.scale;
-			object.model.transform = MatrixMultiply(
-				MatrixScale(scale.x, scale.y, scale.z),
-				QuaternionToMatrix(object.rigidBody3D.rotation));
-			DrawModel(object.model, object.rigidBody3D.translation, 1.0f, object.defaultColor);
-			DrawModelWires(object.model, object.rigidBody3D.translation, 1.0f, BLACK);
+			// Scale + orientation are baked into the transform by the renderer — meshes
+			// stay unit-sized, so both the unit cube and .obj models follow rigidBody3D.scale
+			const Render::ModelDraw draw = object.MakeModelDraw();
+			Render::DrawModel(draw);
+			Render::ModelDraw wires = draw;
+			wires.tint = BLACK;
+			Render::DrawModelWires(wires);
 		}
 
 		if (object.displayDirection) {
