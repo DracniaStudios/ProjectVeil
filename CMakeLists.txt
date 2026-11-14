@@ -71,7 +71,7 @@ else()
 	target_include_directories(veil_gl_externals INTERFACE
 		"${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glad-2.0.8"
 		"${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/stb"
-		"${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/cgltf-1.15")
+		"${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/cgltf")
 
 	add_library(imgui_backend_sdl3gl STATIC
 		thirdparty/imgui-docking/imgui/backends/imgui_impl_sdl3.cpp
