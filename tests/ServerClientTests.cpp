@@ -42,6 +42,7 @@
 #include <string>
 #include <vector>
 #include <Client/GamePresentation.h>
+#include "TestWindow.h"
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -638,9 +639,7 @@ static void TestOnlineWorldSync()
 
 int main()
 {
-	SetTraceLogLevel(LOG_ERROR);
-	SetConfigFlags(FLAG_WINDOW_HIDDEN);
-	InitWindow(64, 64, "veil-server-client-tests");
+	OpenTestWindow("veil-server-client-tests", true, true);
 	Client::InstallGamePresentation();
 
 	std::printf("Server and client tests\n\n");
@@ -658,6 +657,6 @@ int main()
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 
-	CloseWindow();
+	CloseTestWindow();
 	return g_failures == 0 ? 0 : 1;
 }

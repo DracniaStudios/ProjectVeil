@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 #include <Client/GamePresentation.h>
+#include "TestWindow.h"
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -264,8 +265,7 @@ static void TestColliderSizeChangesWhatCollides()
 int main()
 {
 	// A GameObject entering the map binds a model, which needs a GL context.
-	SetTraceLogLevel(LOG_ERROR);
-	InitWindow(64, 64, "veil-trigger-tests");
+	OpenTestWindow("veil-trigger-tests", false, true);
 	Client::InstallGamePresentation();
 
 	std::printf("Collider mode tests\n\n");
@@ -278,6 +278,6 @@ int main()
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 
-	CloseWindow();
+	CloseTestWindow();
 	return g_failures == 0 ? 0 : 1;
 }

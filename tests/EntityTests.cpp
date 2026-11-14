@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include <Client/GamePresentation.h>
+#include "TestWindow.h"
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -384,8 +385,7 @@ static void TestLoadingNeverChangesTheKind()
 int main()
 {
 	// A GameObject binds a model, which needs a GL context.
-	SetTraceLogLevel(LOG_ERROR);
-	InitWindow(64, 64, "veil-entity-tests");
+	OpenTestWindow("veil-entity-tests", false, true);
 	Client::InstallGamePresentation();
 
 	std::printf("Entity tests\n\n");
@@ -414,6 +414,6 @@ int main()
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 
-	CloseWindow();
+	CloseTestWindow();
 	return g_failures == 0 ? 0 : 1;
 }

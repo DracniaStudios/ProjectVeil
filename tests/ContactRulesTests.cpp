@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 #include <Client/GamePresentation.h>
+#include "TestWindow.h"
 
 using Physics3D::ContactEvent;
 using Physics3D::ContactPhase;
@@ -351,8 +352,7 @@ static void TestATriggerIsPassedThroughSilently()
 int main()
 {
 	// An object binds a model when it enters the map, which needs a GL context.
-	SetTraceLogLevel(LOG_ERROR);
-	InitWindow(64, 64, "veil-contact-rules-tests");
+	OpenTestWindow("veil-contact-rules-tests", false, true);
 	Client::InstallGamePresentation();
 
 	std::printf("Contact rules tests\n\n");
@@ -374,6 +374,6 @@ int main()
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 
-	CloseWindow();
+	CloseTestWindow();
 	return g_failures == 0 ? 0 : 1;
 }

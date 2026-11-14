@@ -31,6 +31,7 @@
 #include <vector>
 #include <Client/GamePresentation.h>
 #include <Render/Render.h>
+#include "TestWindow.h"
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -631,8 +632,7 @@ int main()
 {
 	// Loading Restores objects, which binds a model, so a GL context has to exist
 	// before any object enters a map — see StalkerFsmTests.cpp.
-	SetTraceLogLevel(LOG_ERROR);
-	InitWindow(64, 64, "veil-save-system-tests");
+	OpenTestWindow("veil-save-system-tests", false, true);
 	Render::Init(); // the unit cube objects bind
 	Client::InstallGamePresentation();
 	SaveSystem::SetDefaultParticipants({ SaveSystem::LightingParticipant() });
@@ -665,6 +665,6 @@ int main()
 
 	RemoveTestFiles();
 	Render::Shutdown();
-	CloseWindow();
+	CloseTestWindow();
 	return g_failures == 0 ? 0 : 1;
 }

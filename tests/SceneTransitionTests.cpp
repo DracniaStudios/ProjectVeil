@@ -27,6 +27,7 @@
 #include <cstdio>
 #include <string>
 #include <Client/GamePresentation.h>
+#include "TestWindow.h"
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -276,8 +277,7 @@ int main()
 {
 	// A scene's player binds a model when it is enabled, so a GL context has to
 	// exist before any scene is built.
-	SetTraceLogLevel(LOG_ERROR);
-	InitWindow(64, 64, "veil-scene-transition-tests");
+	OpenTestWindow("veil-scene-transition-tests", false, true);
 	Client::InstallGamePresentation();
 
 	std::printf("Scene transition tests\n\n");
@@ -296,6 +296,6 @@ int main()
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 
-	CloseWindow();
+	CloseTestWindow();
 	return g_failures == 0 ? 0 : 1;
 }

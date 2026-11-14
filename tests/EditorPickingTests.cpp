@@ -28,6 +28,7 @@
 #include <memory>
 #include <string>
 #include <Client/GamePresentation.h>
+#include "TestWindow.h"
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -435,8 +436,7 @@ static void TestCancelDropsAnyGrab()
 int main()
 {
 	// An object binds a model when it enters the map, which needs a GL context.
-	SetTraceLogLevel(LOG_ERROR);
-	InitWindow(64, 64, "veil-editor-picking-tests");
+	OpenTestWindow("veil-editor-picking-tests", false, true);
 	Client::InstallGamePresentation();
 
 	std::printf("Editor picking tests\n\n");
@@ -472,6 +472,6 @@ int main()
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 
-	CloseWindow();
+	CloseTestWindow();
 	return g_failures == 0 ? 0 : 1;
 }

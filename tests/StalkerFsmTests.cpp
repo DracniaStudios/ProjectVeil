@@ -32,6 +32,7 @@
 #include <cstdio>
 #include <string>
 #include <Client/GamePresentation.h>
+#include "TestWindow.h"
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -618,8 +619,7 @@ int main()
 {
 	// An entity binds a model when it enters the map, so a GL context has to
 	// exist before any is added.
-	SetTraceLogLevel(LOG_ERROR);
-	InitWindow(64, 64, "veil-fsm-tests");
+	OpenTestWindow("veil-fsm-tests", false, true);
 	Client::InstallGamePresentation();
 
 	std::printf("Stalker FSM tests\n\n");
@@ -645,6 +645,6 @@ int main()
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 
-	CloseWindow();
+	CloseTestWindow();
 	return g_failures == 0 ? 0 : 1;
 }

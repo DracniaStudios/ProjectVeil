@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 #include <Client/GamePresentation.h>
+#include "TestWindow.h"
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -115,8 +116,7 @@ static void TestNonStalkerContactDoesNotDamageThePlayer()
 int main()
 {
 	// An entity binds a model when it enters the map, which needs a GL context.
-	SetTraceLogLevel(LOG_ERROR);
-	InitWindow(64, 64, "veil-stalker-contact-damage-tests");
+	OpenTestWindow("veil-stalker-contact-damage-tests", false, true);
 	Client::InstallGamePresentation();
 
 	std::printf("Stalker contact damage tests\n\n");
@@ -126,6 +126,6 @@ int main()
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 
-	CloseWindow();
+	CloseTestWindow();
 	return g_failures == 0 ? 0 : 1;
 }

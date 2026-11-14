@@ -1,7 +1,5 @@
 #include "LightingSystem.h"
 
-#include <rlgl.h>
-
 #include <Geometry.h>
 
 #include <Render/Render.h>

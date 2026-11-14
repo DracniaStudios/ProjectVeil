@@ -26,6 +26,7 @@
 #include <cstdio>
 #include <string>
 #include <Client/GamePresentation.h>
+#include "TestWindow.h"
 
 using Lighting::Light;
 using Lighting::LightingSystem;
@@ -374,8 +375,7 @@ int main()
 {
 	// Nothing here touches the GPU, but the engine objects this links expect
 	// the window the game always has.
-	SetTraceLogLevel(LOG_ERROR);
-	InitWindow(64, 64, "veil-lighting-tests");
+	OpenTestWindow("veil-lighting-tests", false, true);
 	Client::InstallGamePresentation();
 
 	std::printf("Lighting tests\n\n");
@@ -401,6 +401,6 @@ int main()
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 
-	CloseWindow();
+	CloseTestWindow();
 	return g_failures == 0 ? 0 : 1;
 }

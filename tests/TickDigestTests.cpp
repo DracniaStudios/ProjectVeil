@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <string>
 #include <Client/GamePresentation.h>
+#include "TestWindow.h"
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -27,9 +28,7 @@ static void Check(bool condition, const std::string& what)
 
 int main()
 {
-	SetTraceLogLevel(LOG_ERROR);
-	SetConfigFlags(FLAG_WINDOW_HIDDEN);
-	InitWindow(64, 64, "veil-tick-digest");
+	OpenTestWindow("veil-tick-digest", true, true);
 	Client::InstallGamePresentation();
 
 	constexpr int kTicks = 3000;
@@ -44,6 +43,6 @@ int main()
 	Check(first == second, "two runs in one process give the same digest");
 
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
-	CloseWindow();
+	CloseTestWindow();
 	return g_failures == 0 ? 0 : 1;
 }

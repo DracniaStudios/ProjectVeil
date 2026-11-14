@@ -35,6 +35,7 @@
 #include <Geometry.h>
 #include <Render/Render.h>
 #include <optional>
+#include "TestWindow.h"
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -586,8 +587,7 @@ int main()
 {
 	// Spawn and Restore bind a model, so a GL context has to exist before any
 	// object enters a map — see StalkerFsmTests.cpp.
-	SetTraceLogLevel(LOG_ERROR);
-	InitWindow(64, 64, "veil-gamemap-tests");
+	OpenTestWindow("veil-gamemap-tests", false, true);
 	Render::Init(); // the unit cube objects bind
 	Client::InstallGamePresentation();
 
@@ -617,6 +617,6 @@ int main()
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 
 	Render::Shutdown();
-	CloseWindow();
+	CloseTestWindow();
 	return g_failures == 0 ? 0 : 1;
 }

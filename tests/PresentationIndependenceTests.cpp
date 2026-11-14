@@ -35,6 +35,7 @@
 #include <cstdio>
 #include <string>
 #include <vector>
+#include "TestWindow.h"
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -224,9 +225,7 @@ namespace {
 
 int main()
 {
-	SetTraceLogLevel(LOG_ERROR);
-	SetConfigFlags(FLAG_WINDOW_HIDDEN);
-	InitWindow(64, 64, "veil-presentation-independence");
+	OpenTestWindow("veil-presentation-independence", true, true);
 	Render::Init(); // the unit cube an object with no model asset binds
 
 	// Models only (not the 4K textures). The lighting system is deliberately not
@@ -249,6 +248,6 @@ int main()
 	Sim::InstallPresentation(nullptr);
 	std::printf("\n%d checks, %d failures\n", g_checks, g_failures);
 	Render::Shutdown();
-	CloseWindow();
+	CloseTestWindow();
 	return g_failures == 0 ? 0 : 1;
 }
