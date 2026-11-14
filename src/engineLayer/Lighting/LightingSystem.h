@@ -167,7 +167,7 @@ namespace Lighting {
 		/** Diagnostics **/
 		int GetActiveLightCount() const { return activeLightCount; }
 		int GetShadowLightIndex() const { return shadowLightIndex; }
-		int GetShadowMapResolution() const { return shadowMap.id != 0 ? shadowMap.texture.width : 0; } // The map drawn into; 0 for none
+		int GetShadowMapResolution() const; // The map drawn into; 0 for none
 		const Shader& GetShader() const { return lightShader; }
 
 		// The world's shadow map size, kept in its World save. The map is drawn at
@@ -256,14 +256,10 @@ namespace Lighting {
 		// Called only where no pass is under way: Init and Update.
 		void RefreshShadowMap();
 
-		// Hand-built depth-only framebuffer. LoadRenderTexture() cannot be used:
-		// its depth buffer is a renderbuffer and is not sampleable.
-		RenderTexture2D shadowMap = {};
 		int shadowResolution = 2048;  // The world's, as saved
 		int failedShadowMapSize = 0;  // Last size that failed to allocate, so Update doesn't retry it every frame
 		int playerShadowLimit = 4096; // Largest map the player's Shadows setting allows; 0 is Off
 		float playerExposure = 1.0f;  // The player's Luminosity
-		Matrix lightViewProj = {};
 		int shadowLightIndex = -1; // Index into `lights`, -1 when nothing casts
 
 		int activeLightCount = 0;

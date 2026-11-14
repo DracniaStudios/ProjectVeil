@@ -23,11 +23,6 @@ namespace Lighting
 		return (ResourcePaths::Resources() / "shaders" / "glsl330" / fileName).string();
 	}
 
-	// raylib's PixelFormat has no depth entries; 19 is UNCOMPRESSED_R32 in the
-	// public enum and is what raylib's own shadowmap sample stores for a
-	// 24-bit depth attachment. Only the width/height/id fields are ever used.
-	constexpr int DEPTH_TEXTURE_FORMAT = 19;
-
 	// Normalize, falling back to `fallback` when the vector is degenerate.
 	// Light::direction is an inspector field the user can zero out, and a NaN
 	// direction poisons every fragment the light touches.
@@ -95,71 +90,6 @@ namespace Lighting
 		Render::DebugLine(origin, headBase, color);
 		Render::DebugCylinder(headBase, tip, headRadius, 0.0f, 8, color);
 	}
-
-	/**
-	 * Build a depth-only framebuffer whose depth attachment is a *texture*.
-	 *
-	 * LoadRenderTexture() cannot be used here: it attaches depth as a
-	 * renderbuffer (rlLoadTextureDepth(w, h, true)), which the GPU can render
-	 * into but a shader can never sample. Passing useRenderBuffer=false gives a
-	 * real texture instead.
-	 *
-	 * The returned RenderTexture2D is assembled by hand so BeginTextureMode()
-	 * still works — it only reads .id and .texture.width/height.
-	 */
-	RenderTexture2D LoadShadowMapTarget(int resolution)
-	{
-		RenderTexture2D target = {};
-
-		target.id = rlLoadFramebuffer();
-		if (target.id == 0)
-		{
-			std::cerr << "[Lighting] Failed to create the shadow map framebuffer\n";
-			return target;
-		}
-
-		rlEnableFramebuffer(target.id);
-
-		target.depth.id = rlLoadTextureDepth(resolution, resolution, false);
-		target.depth.width = resolution;
-		target.depth.height = resolution;
-		target.depth.format = DEPTH_TEXTURE_FORMAT;
-		target.depth.mipmaps = 1;
-
-		// BeginTextureMode() reads these to size the viewport and to give
-		// BeginMode3D() an aspect ratio (1.0 for a square map).
-		target.texture.width = resolution;
-		target.texture.height = resolution;
-
-		rlFramebufferAttach(target.id, target.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_TEXTURE2D, 0);
-
-		// No colour attachment is created on purpose — the depth pass writes
-		// nothing but depth. A depth-only FBO is complete under GL 3.3.
-		const bool complete = rlFramebufferComplete(target.id);
-		rlDisableFramebuffer();
-
-		if (!complete)
-		{
-			std::cerr << "[Lighting] Shadow map framebuffer is incomplete — shadows disabled\n";
-			rlUnloadFramebuffer(target.id);
-			return RenderTexture2D{};
-		}
-
-		std::cout << "[Lighting] Shadow map ready: " << resolution << "x" << resolution << "\n";
-		return target;
-	}
-
-	void UnloadShadowMapTarget(RenderTexture2D& target)
-	{
-		if (target.id == 0) { return; }
-
-		// rlUnloadFramebuffer queries the depth attachment and deletes the
-		// texture itself, so calling UnloadTexture(target.depth) as well would
-		// be a double free.
-		rlUnloadFramebuffer(target.id);
-		target = RenderTexture2D{};
-	}
-
 
 #pragma region Light Save Data
 	Json Light::formatToJson() const
@@ -285,7 +215,7 @@ namespace Lighting
 		// Materials hold a *copy* of the Shader struct, not ownership, so every
 		// model's material shader id dangles after this point. Shutdown must
 		// therefore be the last engine call before CloseWindow().
-		UnloadShadowMapTarget(shadowMap);
+		Render::SetShadowMapSize(0);
 
 		if (lightShader.id != 0)
 		{
@@ -326,6 +256,8 @@ namespace Lighting
 		uniforms.depthPass = GetShaderLocation(lightShader, "depthPass");
 	}
 
+	int LightingSystem::GetShadowMapResolution() const { return Render::ShadowMapSize(); }
+
 	void LightingSystem::SetShadowResolution(int resolution)
 	{
 		shadowResolution = std::clamp(resolution, 256, 8192);
@@ -343,15 +275,14 @@ namespace Lighting
 
 		if (wanted == 0)
 		{
-			UnloadShadowMapTarget(shadowMap);
+			Render::SetShadowMapSize(0);
 			failedShadowMapSize = 0;
 			return;
 		}
 		if (wanted == failedShadowMapSize) { return; }
 
-		UnloadShadowMapTarget(shadowMap);
-		shadowMap = LoadShadowMapTarget(wanted);
-		failedShadowMapSize = shadowMap.id == 0 ? wanted : 0;
+		Render::SetShadowMapSize(0);
+		failedShadowMapSize = Render::SetShadowMapSize(wanted) ? 0 : wanted;
 	}
 #pragma endregion
 
@@ -566,7 +497,7 @@ namespace Lighting
 		// sampled when they are enabled, a framebuffer exists, and a directional
 		// light actually claimed it this frame. Anything else and the shader would
 		// read a stale or never-written depth texture.
-		const int shadowGate = (ShadowsDrawn() && shadowMap.id != 0 && shadowLightIndex >= 0) ? 1 : 0;
+		const int shadowGate = (ShadowsDrawn() && Render::ShadowMapSize() > 0 && shadowLightIndex >= 0) ? 1 : 0;
 		SetShaderValue(lightShader, uniforms.shadowsEnabled, &shadowGate, SHADER_UNIFORM_INT);
 	}
 #pragma endregion
@@ -605,7 +536,7 @@ namespace Lighting
 		// Only a directional light qualifies: the map is a single orthographic
 		// depth render, which cannot represent a point light's six directions or a
 		// spot light's perspective frustum.
-		if (!ShadowsDrawn() || shadowMap.id == 0) { return; }
+		if (!ShadowsDrawn() || Render::ShadowMapSize() == 0) { return; }
 
 		for (int i = 0; i < static_cast<int>(lights.size()); i++)
 		{
@@ -651,30 +582,20 @@ namespace Lighting
 		const int depthPassOff = 0;
 		SetShaderValue(lightShader, uniforms.depthPass, &depthPassOn, SHADER_UNIFORM_INT);
 
-		BeginTextureMode(shadowMap);
-		ClearBackground(WHITE);
-		BeginMode3D(lightCamera);
-		// Captured inside BeginMode3D so rlgl holds the light's matrices.
-		// MatrixMultiply(view, projection) matches raylib's row-vector
-		// convention, so the shader can do lightVP*vec4(worldPos, 1.0).
-		lightViewProj = MatrixMultiply(rlGetMatrixModelview(), rlGetMatrixProjection());
-		DrawShadowCasters(scene);
-		EndMode3D();
-		EndTextureMode();
+		if (Render::BeginShadowPass(lightCamera))
+		{
+			DrawShadowCasters(scene);
+			Render::EndShadowPass();
+		}
 
 		SetShaderValue(lightShader, uniforms.depthPass, &depthPassOff, SHADER_UNIFORM_INT);
-		SetShaderValueMatrix(lightShader, uniforms.lightVP, lightViewProj);
+		SetShaderValueMatrix(lightShader, uniforms.lightVP, Render::ShadowViewProjection());
 	}
 
 	void LightingSystem::BindShadowMap()
 	{
 		if (!isReady || uniforms.shadowMap < 0) { return; }
-		if (shadowLightIndex < 0 || shadowMap.depth.id == 0) { return; }
-
-		// Bound to SHADOW_MAP_SLOT (15) because raylib's DrawMesh() owns slots
-		// 0..MAX_MATERIAL_MAPS-1 (12) and rebinds them on every draw call.
-		rlActiveTextureSlot(SHADOW_MAP_SLOT);
-		rlEnableTexture(shadowMap.depth.id);
+		if (shadowLightIndex < 0 || Render::ShadowMapSize() == 0) { return; }
 
 		// The sampler only needs the unit index, and it persists in the program
 		// object across raylib's own rlEnableShader/rlDisableShader calls.

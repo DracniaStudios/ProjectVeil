@@ -47,6 +47,13 @@ namespace Render {
 	void End2D();
 	void CaptureScreenshot(const std::string& fileName); // PNG of the window as drawn so far, into the working directory
 
+	// Shadow map: a depth-only target the renderer owns. Works whenever a GL context exists, with or without Init
+	bool SetShadowMapSize(int size);                    // 0 frees it; false when a map of that size could not be made (none is kept)
+	int  ShadowMapSize();                               // the map that exists now, 0 for none
+	bool BeginShadowPass(const Camera3D& lightCamera);  // false: no map, nothing to end
+	void EndShadowPass();
+	Matrix ShadowViewProjection();                      // view * projection of the last shadow pass (raylib row-vector order)
+
 	// 2D: screen coordinates, origin top-left
 	void Rect(Rectangle rect, Color color);
 	void RectOutline(Rectangle rect, float thickness, Color color);

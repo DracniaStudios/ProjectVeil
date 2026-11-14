@@ -45,6 +45,78 @@ namespace {
 		return (handle.id >= 1 && handle.id <= textures.size()) ? &textures[handle.id - 1] : nullptr;
 	}
 
+	// raylib's PixelFormat has no depth entries; 19 is UNCOMPRESSED_R32 in the
+	// public enum and is what raylib's own shadowmap sample stores for a
+	// 24-bit depth attachment. Only the width/height/id fields are ever used.
+	constexpr int DEPTH_TEXTURE_FORMAT = 19;
+
+	RenderTexture2D shadowMap = {};
+	Matrix shadowViewProjection = {};
+
+	/**
+	 * Build a depth-only framebuffer whose depth attachment is a *texture*.
+	 *
+	 * LoadRenderTexture() cannot be used here: it attaches depth as a
+	 * renderbuffer (rlLoadTextureDepth(w, h, true)), which the GPU can render
+	 * into but a shader can never sample. Passing useRenderBuffer=false gives a
+	 * real texture instead.
+	 *
+	 * The returned RenderTexture2D is assembled by hand so BeginTextureMode()
+	 * still works — it only reads .id and .texture.width/height.
+	 */
+	RenderTexture2D LoadShadowMapTarget(int resolution)
+	{
+		RenderTexture2D target = {};
+
+		target.id = rlLoadFramebuffer();
+		if (target.id == 0)
+		{
+			std::cerr << "[Lighting] Failed to create the shadow map framebuffer\n";
+			return target;
+		}
+
+		rlEnableFramebuffer(target.id);
+
+		target.depth.id = rlLoadTextureDepth(resolution, resolution, false);
+		target.depth.width = resolution;
+		target.depth.height = resolution;
+		target.depth.format = DEPTH_TEXTURE_FORMAT;
+		target.depth.mipmaps = 1;
+
+		// BeginTextureMode() reads these to size the viewport and to give
+		// BeginMode3D() an aspect ratio (1.0 for a square map).
+		target.texture.width = resolution;
+		target.texture.height = resolution;
+
+		rlFramebufferAttach(target.id, target.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_TEXTURE2D, 0);
+
+		// No colour attachment is created on purpose — the depth pass writes
+		// nothing but depth. A depth-only FBO is complete under GL 3.3.
+		const bool complete = rlFramebufferComplete(target.id);
+		rlDisableFramebuffer();
+
+		if (!complete)
+		{
+			std::cerr << "[Lighting] Shadow map framebuffer is incomplete — shadows disabled\n";
+			rlUnloadFramebuffer(target.id);
+			return RenderTexture2D{};
+		}
+
+		std::cout << "[Lighting] Shadow map ready: " << resolution << "x" << resolution << "\n";
+		return target;
+	}
+
+	void UnloadShadowMapTarget(RenderTexture2D& target)
+	{
+		if (target.id == 0) { return; }
+
+		// rlUnloadFramebuffer queries the depth attachment and deletes the
+		// texture itself, so calling UnloadTexture(target.depth) as well would
+		// be a double free.
+		rlUnloadFramebuffer(target.id);
+		target = RenderTexture2D{};
+	}
+
 	std::string LowerExtension(const std::filesystem::path& path)
 	{
 		std::string ext = path.extension().string();
@@ -143,6 +215,7 @@ void Shutdown()
 	}
 	textures.clear();
 	textureOwned.clear();
+	UnloadShadowMapTarget(shadowMap);
 	ready = false;
 }
 
@@ -238,7 +311,19 @@ void DebugGrid(int slices, float spacing) { DrawGrid(slices, spacing); }
 
 void BeginFrame(Color clear) { ClearBackground(clear); }
 void EndFrame() {}
-void BeginWorld(const Camera3D& camera) { BeginMode3D(camera); }
+void BeginWorld(const Camera3D& camera)
+{
+	BeginMode3D(camera);
+
+	if (shadowMap.depth.id != 0)
+	{
+		// Bound to SHADOW_MAP_SLOT (15) because raylib's DrawMesh() owns slots
+		// 0..MAX_MATERIAL_MAPS-1 (12) and rebinds them on every draw call.
+		rlActiveTextureSlot(Lighting::SHADOW_MAP_SLOT);
+		rlEnableTexture(shadowMap.depth.id);
+		rlActiveTextureSlot(0);
+	}
+}
 void EndWorld() { EndMode3D(); }
 void SetDebugDepthTest(bool on)
 {
@@ -261,5 +346,38 @@ void Text(const std::string& text, Vector2 topLeft, int fontSize, Color color)
 	DrawText(text.c_str(), static_cast<int>(topLeft.x), static_cast<int>(topLeft.y), fontSize, color);
 }
 int TextWidth(const std::string& text, int fontSize) { return MeasureText(text.c_str(), fontSize); }
+
+bool SetShadowMapSize(int size)
+{
+	if (size == ShadowMapSize()) { return true; }
+
+	UnloadShadowMapTarget(shadowMap);
+	if (size > 0) { shadowMap = LoadShadowMapTarget(size); }
+	return ShadowMapSize() == size;
+}
+
+int ShadowMapSize() { return shadowMap.id != 0 ? shadowMap.texture.width : 0; }
+
+bool BeginShadowPass(const Camera3D& lightCamera)
+{
+	if (shadowMap.id == 0) { return false; }
+
+	BeginTextureMode(shadowMap);
+	ClearBackground(WHITE);
+	BeginMode3D(lightCamera);
+	// Captured inside BeginMode3D so rlgl holds the light's matrices.
+	// MatrixMultiply(view, projection) matches raylib's row-vector
+	// convention, so the shader can do lightVP*vec4(worldPos, 1.0).
+	shadowViewProjection = MatrixMultiply(rlGetMatrixModelview(), rlGetMatrixProjection());
+	return true;
+}
+
+void EndShadowPass()
+{
+	EndMode3D();
+	EndTextureMode();
+}
+
+Matrix ShadowViewProjection() { return shadowViewProjection; }
 
 }
