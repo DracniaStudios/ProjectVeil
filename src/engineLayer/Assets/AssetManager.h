@@ -2,7 +2,8 @@
 #ifndef ASSET_MANAGER_H
 #define ASSET_MANAGER_H
 
-#include <raylib.h>
+#include <raylib.h> // BoundingBox
+#include <Render/RenderTypes.h>
 #include <optional>
 #include <string>
 #include <vector>
@@ -22,8 +23,8 @@ namespace AssetManager {
 		std::string folder = "";
 		AssetType type = ASSET_NONE;
 
-		Texture2D texture = {};
-		Model model = {};
+		Render::TextureHandle texture;
+		Render::ModelHandle model;
 
 		// Union of the bounds of the model's meshes that have CPU vertices; empty for
 		// a texture or a model with none. Local units, the frame a collider lives in.

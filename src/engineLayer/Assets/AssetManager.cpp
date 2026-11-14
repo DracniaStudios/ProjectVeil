@@ -1,14 +1,12 @@
 #include "AssetManager.h"
 
-#include <Geometry.h>
+#include <Render/Render.h>
 #include <ResourcePaths.h>
 
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
-#include <sstream>
 
 
 namespace AssetManager {
@@ -37,36 +35,6 @@ namespace AssetManager {
 		// Objects Don't Animate
 		const std::string ext = lowerExtension(path);
 		return ext == ".obj" || ext == ".glb" || ext == ".gltf";
-	}
-
-	// raylib's tinyobj triangulates each face into a fixed 64-index buffer
-	// (TINYOBJ_MAX_FACES_PER_F_LINE) and overflows the stack past it — reject
-	// .obj files with bigger faces instead of crashing (re-export triangulated)
-	static constexpr int MAX_OBJ_FACE_VERTS = 21; // 3 * 21 stays under the 64-index buffer
-
-	static bool objFacesFitLoader(const fs::path& path)
-	{
-		std::ifstream file(path);
-		if (!file.is_open()) { return false; }
-
-		std::string line;
-		while (std::getline(file, line))
-		{
-			if (line.size() < 2 || line[0] != 'f' || (line[1] != ' ' && line[1] != '\t')) { continue; }
-
-			std::istringstream tokens(line);
-			std::string token;
-			int vertexCount = -1; // first token is the "f" keyword
-			while (tokens >> token) { vertexCount++; }
-
-			if (vertexCount > MAX_OBJ_FACE_VERTS)
-			{
-				std::cerr << "Model has a face with " << vertexCount << " vertices (max "
-					<< MAX_OBJ_FACE_VERTS << "): " << path.string() << " — re-export triangulated\n";
-				return false;
-			}
-		}
-		return true;
 	}
 
 	// Material maps (AmbientCG naming) are named after their folder:
@@ -144,33 +112,24 @@ namespace AssetManager {
 
 			if (type == ASSET_MODEL)
 			{
-				if (lowerExtension(file) == ".obj" && !objFacesFitLoader(file)) { continue; }
+				// The renderer says why a file was refused when it was one it would not load
+				const Render::LoadedModel loaded = Render::LoadModelFile(asset.path);
+				if (loaded.rejected) { continue; }
+				asset.model = loaded.handle;
 
-				std::cout << "Load Object: " << asset.path << "\n";
-				asset.model = LoadModel(asset.path.c_str());
-
-				if (asset.model.meshCount == 0)
+				if (!asset.model)
 				{
 					std::cerr << "Failed to load model: " << asset.path << "\n";
 					continue;
 				}
-
-				// model.transform is deliberately ignored: GameObject::render3D overwrites it
-				// every frame, so the mesh's untouched local bounds are what a collider fits.
-				for (int i = 0; i < asset.model.meshCount; ++i)
-				{
-					const Mesh& mesh = asset.model.meshes[i];
-					if (mesh.vertexCount <= 0 || mesh.vertices == nullptr) { continue; }
-					Geometry::ExtendBounds(asset.localBounds, Geometry::GetMeshBoundingBox(mesh.vertices, mesh.vertexCount));
-				}
+				asset.localBounds = loaded.localBounds;
 			}
 
 			if (type == ASSET_TEXTURE)
 			{
-				std::cout << "Load Texture: " << asset.path << "\n";
-				asset.texture = LoadTexture(asset.path.c_str());
+				asset.texture = Render::LoadTextureFile(asset.path);
 
-				if (asset.texture.id == 0)
+				if (!asset.texture)
 				{
 					std::cerr << "Failed to load texture: " << asset.path << "\n";
 					continue;
