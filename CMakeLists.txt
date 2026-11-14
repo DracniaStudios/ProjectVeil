@@ -105,10 +105,6 @@ if (VEIL_BUILD_GNS)
 	add_subdirectory(thirdparty/GameNetworkingSockets-1.6.1)
 endif()
 
-# The game is only defined for the raylib backend until the SDL3 port reaches it (B-15
-# removes this wrapper)
-if (VEIL_BACKEND STREQUAL "raylib")
-
 file (GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
 # One backend's files per build (B-04). Valid for every later backend work order.
@@ -246,10 +242,21 @@ target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURC
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/gameLayer/")
 target_include_directories("${CMAKE_PROJECT_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/platform/")
 
+if (VEIL_BACKEND STREQUAL "raylib")
+	target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE
+	raylib_static
+	imgui
+	rlimgui)
+else()
+	# raylib_headers: vocabulary types only, raylib itself is not linked
+	target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE
+	SDL3::SDL3-static
+	imgui_backend_sdl3gl
+	veil_gl_externals
+	raylib_headers
+	imgui)
+endif()
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE 
-raylib_static 
-imgui 
-rlimgui 
 FastNoise2 
 nlohmann_json 
 FMOD
@@ -312,4 +319,3 @@ if (VEIL_BUILD_SIM_TESTS)
 	set_tests_properties(veil_sim_headless PROPERTIES ENVIRONMENT "VEIL_RESOURCES_DIR=${CMAKE_CURRENT_SOURCE_DIR}/resources")
 endif()
 
-endif() # VEIL_BACKEND STREQUAL "raylib"
