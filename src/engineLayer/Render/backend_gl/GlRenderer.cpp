@@ -1,7 +1,6 @@
 // Render on OpenGL 3.3 core (B-15). Every function declared in Render.h exists. The 2D
 // part is real (B-18, Gl2D.cpp and DefaultFont.cpp) and so is the lit world (B-21, GlLit.cpp).
-// The shadow map is real too (B-22, GlShadow.cpp). The debug shapes are not drawn yet: each of
-// their stubs logs one line the first time it is called and names the work order that implements it.
+// The shadow map (B-22, GlShadow.cpp) and the debug shapes (B-23, GlDebug.cpp) are real too.
 #include <Render/Render.h>
 #include "GlShared.h"
 #include "DefaultFont.h"
@@ -11,19 +10,10 @@
 #include <SDL3/SDL.h>
 
 #include <iostream>
-#include <set>
 #include <string>
 
 namespace {
 	bool ready = false;
-
-	void LogStubOnce(const char* function, const char* workOrder)
-	{
-		static std::set<std::string> logged;
-		if (logged.insert(function).second) {
-			std::cout << "[Render] " << function << " is not implemented in sdl3gl yet (" << workOrder << ")" << std::endl;
-		}
-	}
 
 #ifndef NDEBUG
 	// KHR_debug output, in debug builds only, when the context offers it
@@ -52,9 +42,6 @@ namespace {
 	}
 #endif
 }
-
-// Put first in a stub's body. The static makes the call free after the first time.
-#define VEIL_STUB(workOrder) do { static const bool logged_ = (LogStubOnce(__func__, workOrder), true); (void)logged_; } while (0)
 
 namespace Render {
 
@@ -104,12 +91,21 @@ bool Init()
 		return false;
 	}
 
+	if (!GlDebug::Init()) {
+		std::cerr << "[Render] the debug batch could not be created" << std::endl;
+		GlLit::Shutdown();
+		GlResources::Shutdown();
+		Gl2D::Shutdown();
+		return false;
+	}
+
 	ready = true;
 	return true;
 }
 
 void Shutdown()
 {
+	GlDebug::Shutdown();
 	GlShadow::Shutdown();
 	GlLit::Shutdown();
 	GlResources::Shutdown(); // before Gl2D: handle 1 is Gl2D's texture and is not deleted here
@@ -121,15 +117,15 @@ bool IsReady() { return ready; }
 void DrawModel(const ModelDraw& draw) { GlLit::DrawModel(draw, false); }
 void DrawModelWires(const ModelDraw& draw) { GlLit::DrawModel(draw, true); }
 
-void DebugLine(Vector3, Vector3, Color) { VEIL_STUB("B-23"); }
-void DebugSphere(Vector3, float, Color) { VEIL_STUB("B-23"); }
-void DebugSphere(Vector3, float, int, int, Color) { VEIL_STUB("B-23"); }
-void DebugSphereWires(Vector3, float, int, int, Color) { VEIL_STUB("B-23"); }
-void DebugCube(Vector3, Vector3, Color) { VEIL_STUB("B-23"); }
-void DebugBoundingBox(BoundingBox, Color) { VEIL_STUB("B-23"); }
-void DebugCylinder(Vector3, Vector3, float, float, int, Color) { VEIL_STUB("B-23"); }
-void DebugCapsule(Vector3, Vector3, float, int, int, Color) { VEIL_STUB("B-23"); }
-void DebugGrid(int, float) { VEIL_STUB("B-23"); }
+void DebugLine(Vector3 a, Vector3 b, Color color) { GlDebug::Line(a, b, color); }
+void DebugSphere(Vector3 center, float radius, Color color) { GlDebug::SphereEx(center, radius, 16, 16, color); }
+void DebugSphere(Vector3 center, float radius, int rings, int slices, Color color) { GlDebug::SphereEx(center, radius, rings, slices, color); }
+void DebugSphereWires(Vector3 center, float radius, int rings, int slices, Color color) { GlDebug::SphereWires(center, radius, rings, slices, color); }
+void DebugCube(Vector3 center, Vector3 size, Color color) { GlDebug::CubeV(center, size, color); }
+void DebugBoundingBox(BoundingBox box, Color color) { GlDebug::BoundingBoxWires(box, color); }
+void DebugCylinder(Vector3 start, Vector3 end, float startRadius, float endRadius, int sides, Color color) { GlDebug::CylinderEx(start, end, startRadius, endRadius, sides, color); }
+void DebugCapsule(Vector3 start, Vector3 end, float radius, int slices, int rings, Color color) { GlDebug::Capsule(start, end, radius, slices, rings, color); }
+void DebugGrid(int slices, float spacing) { GlDebug::Grid(slices, spacing); }
 
 void BeginFrame(Color clear)
 {
@@ -160,9 +156,15 @@ void BeginWorld(const Camera3D& camera)
 {
 	GlLit::BeginWorld(camera);
 	GlShadow::BindForWorld();
+	GlDebug::BeginWorld();
 }
-void EndWorld() { GlLit::EndWorld(); }
-void SetDebugDepthTest(bool) { VEIL_STUB("B-23"); }
+// EndMode3D draws the debug batch first, then leaves the state as it does
+void EndWorld()
+{
+	GlDebug::EndWorld();
+	GlLit::EndWorld();
+}
+void SetDebugDepthTest(bool on) { GlDebug::SetDepthTest(on); }
 void Begin2D(const Camera2D& camera) { Gl2D::Begin2D(camera); }
 void End2D() { Gl2D::End2D(); }
 void CaptureScreenshot(const std::string& fileName) { Gl2D::CaptureScreenshot(fileName); }

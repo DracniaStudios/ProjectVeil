@@ -114,3 +114,30 @@ void BindForWorld();
 void Shutdown();
 
 }
+
+// The debug shapes (B-23, GlDebug.cpp): raylib's rlgl batch for lines and triangles, with its
+// tessellation and flush points, drawn with the flat shader under the world pass's matrices.
+// Every call is a no-op outside the world pass (BeginWorld to EndWorld).
+namespace GlDebug {
+
+// Needs Gl2D::Init. Creates the vertex buffer.
+bool Init();
+void Shutdown();
+
+// Frame hooks of the world pass. EndWorld draws what is batched, with the depth test as it stands.
+void BeginWorld();
+void EndWorld();
+
+// Draws what is batched, then turns the depth test on or off
+void SetDepthTest(bool on);
+
+void Line(Vector3 startPos, Vector3 endPos, Color color);
+void SphereEx(Vector3 centerPos, float radius, int rings, int slices, Color color);
+void SphereWires(Vector3 centerPos, float radius, int rings, int slices, Color color);
+void CubeV(Vector3 position, Vector3 size, Color color);
+void BoundingBoxWires(BoundingBox box, Color color);
+void CylinderEx(Vector3 startPos, Vector3 endPos, float startRadius, float endRadius, int sides, Color color);
+void Capsule(Vector3 startPos, Vector3 endPos, float radius, int slices, int rings, Color color);
+void Grid(int slices, float spacing);
+
+}
