@@ -59,22 +59,23 @@ bool Init()
 		return false;
 	}
 
+	if (!GlResources::Init()) {
+		std::cerr << "[Render] the unit cube could not be created" << std::endl;
+		Gl2D::Shutdown();
+		return false;
+	}
+
 	ready = true;
 	return true;
 }
 
 void Shutdown()
 {
+	GlResources::Shutdown(); // before Gl2D: handle 1 is Gl2D's texture and is not deleted here
 	Gl2D::Shutdown();
 	ready = false;
 }
 bool IsReady() { return ready; }
-
-LoadedModel LoadModelFile(const std::string&) { VEIL_STUB("B-20"); return {}; }
-TextureHandle LoadTextureFile(const std::string&) { VEIL_STUB("B-20"); return {}; }
-ModelHandle UnitCube() { VEIL_STUB("B-20"); return {}; }
-TextureHandle DiffuseTexture(ModelHandle, int) { VEIL_STUB("B-20"); return {}; }
-std::uintptr_t NativeTextureId(TextureHandle) { VEIL_STUB("B-20"); return 0; }
 
 void DrawModel(const ModelDraw&) { VEIL_STUB("B-21"); }
 void DrawModelWires(const ModelDraw&) { VEIL_STUB("B-21"); }

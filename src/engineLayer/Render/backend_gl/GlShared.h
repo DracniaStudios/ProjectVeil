@@ -1,9 +1,11 @@
 #pragma once
 // Backend-private helpers shared by the GL backend's translation units (B-18).
 // Not included by anything outside backend_gl/.
+#include <Render/RenderTypes.h>
 #include <raylib.h> // vocabulary types only
 
 #include <string>
+#include <vector>
 
 namespace Gl2D {
 
@@ -31,5 +33,38 @@ bool CaptureScreenshot(const std::string& fileName);
 // The 1x1 RGBA 255 texture and the flat shader program, for later work orders' unlit draws
 unsigned int WhiteTexture();
 unsigned int FlatProgram();
+
+}
+
+// Textures, meshes and models (B-20, GlResources.cpp). The tables behind Render's handles;
+// B-21 draws from them. GL names are plain unsigned ints so this header needs no GL include.
+namespace GlResources {
+
+// Needs Gl2D::Init first (handle 1 is Gl2D's white texture). Builds the unit cube, model handle 1.
+bool Init();
+// Deletes every texture, buffer and VAO the tables hold and empties them. Before Gl2D::Shutdown.
+void Shutdown();
+
+struct Mesh {
+	unsigned int vao = 0;
+	unsigned int buffers[5] = {};    // position, texcoord, normal, colour, index; 0 where absent
+	int vertexCount = 0;
+	int indexCount = 0;              // 0: not indexed, draw vertexCount vertices with glDrawArrays
+	int material = 0;                // into Model::materials
+	// An absent attribute has its array disabled: set glVertexAttrib* at draw time
+	// (texcoord 0,0; normal 0,0,1; colour 1,1,1,1, as raylib's UploadMesh does)
+	bool hasTexcoords = false, hasNormals = false, hasColors = false;
+};
+struct Material {
+	Render::TextureHandle diffuse;   // handle 1 (white) when the material has no texture of its own
+	Color color = WHITE;
+};
+struct Model {
+	std::vector<Mesh> meshes;
+	std::vector<Material> materials; // [0] is the default material
+};
+
+const Model* FindModel(Render::ModelHandle handle); // null for none or unknown
+unsigned int TextureName(Render::TextureHandle handle); // GL texture name, 0 for none or unknown
 
 }
