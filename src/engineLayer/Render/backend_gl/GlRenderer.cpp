@@ -1,7 +1,10 @@
-// Render on OpenGL 3.3 core (B-15). Every function declared in Render.h exists. Apart
-// from clearing the screen in BeginFrame, none draws yet: each stub logs one line the
-// first time it is called and names the work order that implements it.
+// Render on OpenGL 3.3 core (B-15). Every function declared in Render.h exists. The 2D
+// part is real (B-18, Gl2D.cpp and DefaultFont.cpp); the world is not drawn yet: each of
+// its stubs logs one line the first time it is called and names the work order that
+// implements it.
 #include <Render/Render.h>
+#include "GlShared.h"
+#include "DefaultFont.h"
 #include <Platform.h>
 #include <raymath.h> // MatrixIdentity: inline math only
 
@@ -51,11 +54,20 @@ bool Init()
 	};
 	std::cout << "[Render] GL " << text(GL_VERSION) << " on " << text(GL_RENDERER) << std::endl;
 
+	if (!Gl2D::Init()) {
+		std::cerr << "[Render] the 2D renderer could not be created" << std::endl;
+		return false;
+	}
+
 	ready = true;
 	return true;
 }
 
-void Shutdown() { ready = false; } // nothing to free yet
+void Shutdown()
+{
+	Gl2D::Shutdown();
+	ready = false;
+}
 bool IsReady() { return ready; }
 
 LoadedModel LoadModelFile(const std::string&) { VEIL_STUB("B-20"); return {}; }
@@ -96,15 +108,18 @@ void BeginFrame(Color clear)
 	glClearColor(clear.r / 255.0f, clear.g / 255.0f, clear.b / 255.0f, clear.a / 255.0f);
 	glClearDepth(1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	Gl2D::BeginFrame();
 }
 
-void EndFrame() {} // nothing is batched yet
-void BeginWorld(const Camera3D&) { VEIL_STUB("B-21"); }
+// Nothing may stay batched: ImGui draws straight after this
+void EndFrame() { Gl2D::Flush(); }
+void BeginWorld(const Camera3D&) { Gl2D::Flush(); VEIL_STUB("B-21"); }
 void EndWorld() {}
 void SetDebugDepthTest(bool) { VEIL_STUB("B-23"); }
-void Begin2D(const Camera2D&) { VEIL_STUB("B-18"); }
-void End2D() {}
-void CaptureScreenshot(const std::string&) { VEIL_STUB("B-18"); }
+void Begin2D(const Camera2D& camera) { Gl2D::Begin2D(camera); }
+void End2D() { Gl2D::End2D(); }
+void CaptureScreenshot(const std::string& fileName) { Gl2D::CaptureScreenshot(fileName); }
 
 bool SetShadowMapSize(int size) { VEIL_STUB("B-22"); return size == 0; }
 int ShadowMapSize() { return 0; }
@@ -115,10 +130,11 @@ Matrix ShadowViewProjection() { VEIL_STUB("B-22"); return MatrixIdentity(); }
 void SetLighting(const LightingFrame&) { VEIL_STUB("B-21"); }
 unsigned int LightingShaderId() { return 0; }
 
-void Rect(Rectangle, Color) { VEIL_STUB("B-18"); }
-void RectOutline(Rectangle, float, Color) { VEIL_STUB("B-18"); }
-void Circle(Vector2, float, Color) { VEIL_STUB("B-18"); }
-void Text(const std::string&, Vector2, int, Color) { VEIL_STUB("B-18"); }
-int TextWidth(const std::string&, int) { VEIL_STUB("B-18"); return 0; }
+void Rect(Rectangle rect, Color color) { Gl2D::Rect(rect, color); }
+void RectOutline(Rectangle rect, float thickness, Color color) { Gl2D::RectOutline(rect, thickness, color); }
+void Circle(Vector2 center, float radius, Color color) { Gl2D::Circle(center, radius, color); }
+void Text(const std::string& text, Vector2 topLeft, int fontSize, Color color) { Gl2D::Text(text, topLeft, fontSize, color); }
+// CPU only, so it is right before Init too: the UI measures text while it lays out
+int TextWidth(const std::string& text, int fontSize) { return DefaultFont::TextWidth(text.c_str(), fontSize); }
 
 }
