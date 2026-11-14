@@ -88,16 +88,18 @@ int main(int argc, char** argv)
 
 		ImGui::Render();
 		EditorGui::RenderDrawData();
-		Platform::EndFrame();
 
-		// --screenshot-at: once, after a whole frame is drawn
+		// --screenshot-at: once, after a whole frame is drawn but before it is presented
+		// (after present the back buffer is undefined and the capture comes out black)
 		if (Client::Dev().screenshotAtSeconds > 0.0 && Platform::Time() >= Client::Dev().screenshotAtSeconds)
 		{
 			Client::Dev().screenshotAtSeconds = 0.0;
 			const std::string file = "veil_" + Client::Dev().name + ".png";
-			TakeScreenshot(file.c_str());
+			Render::CaptureScreenshot(file);
 			std::cout << "[Dev] Screenshot " << file << "\n";
 		}
+
+		Platform::EndFrame();
 
 		if (!gameRunning) { break; }
 	}

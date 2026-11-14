@@ -130,7 +130,7 @@ bool update_game()
 	// Nothing draws a sky, so the clear colour *is* the horizon. Clearing to the
 	// fog colour lets distant geometry dissolve into the background instead of
 	// fading toward a bright wall.
-	ClearBackground(Lighting::LightingSystem::getInstance().fogColor);
+	Render::BeginFrame(Lighting::LightingSystem::getInstance().fogColor);
 
 	// Update Input System
 	InputSystem::InputSystem::getInstance().Update();
@@ -180,6 +180,7 @@ bool update_game()
 	// raylib's DrawFPS: green, orange under 30, red under 15
 	const int fps = Platform::Fps();
 	Render::Text(std::format("{:2} FPS", fps), { 10.0f, 10.0f }, 20, fps < 15 ? RED : fps < 30 ? ORANGE : LIME);
+	Render::EndFrame();
 	return !exitRequested;
 }
 

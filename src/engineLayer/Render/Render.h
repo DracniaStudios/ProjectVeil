@@ -37,6 +37,16 @@ namespace Render {
 	void DebugCapsule(Vector3 start, Vector3 end, float radius, int slices, int rings, Color color);
 	void DebugGrid(int slices, float spacing);
 
+	// Frame and passes. The order is BeginFrame, [BeginWorld .. EndWorld], [Begin2D .. End2D], EndFrame
+	void BeginFrame(Color clear);              // window framebuffer; colour and depth cleared
+	void EndFrame();                           // everything this frame is submitted; ImGui comes after
+	void BeginWorld(const Camera3D& camera);   // depth test on; near 0.05, far 4000, aspect of the framebuffer
+	void EndWorld();
+	void SetDebugDepthTest(bool on);           // flushes batched debug geometry first
+	void Begin2D(const Camera2D& camera);
+	void End2D();
+	void CaptureScreenshot(const std::string& fileName); // PNG of the window as drawn so far, into the working directory
+
 	// 2D: screen coordinates, origin top-left
 	void Rect(Rectangle rect, Color color);
 	void RectOutline(Rectangle rect, float thickness, Color color);

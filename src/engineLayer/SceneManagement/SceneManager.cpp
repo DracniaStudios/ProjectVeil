@@ -115,7 +115,7 @@ namespace SceneManagement {
 		lighting->RenderShadowPass(scene);
 
 		// Draw Scene 3D
-		BeginMode3D(manager->camera3D);
+		Render::BeginWorld(manager->camera3D);
 		lighting->BindShadowMap();
 		if (scene) Scene_drawScene3D(*scene);
 
@@ -124,12 +124,12 @@ namespace SceneManagement {
 			lighting->DrawGizmos();
 			if (scene) Editor::WorldEditor::getInstance().DrawViewport3D(*scene);
 		}
-		EndMode3D();
+		Render::EndWorld();
 
 		// Draw Scene 2D
-		BeginMode2D(manager->camera2D);
+		Render::Begin2D(manager->camera2D);
 		if (scene) Scene_drawScene2D(*scene);
-		EndMode2D();
+		Render::End2D();
 
 		// Draw Fade
 		if (manager->fade != SceneFade::None) {

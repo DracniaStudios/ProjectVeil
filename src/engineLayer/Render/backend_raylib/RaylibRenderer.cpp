@@ -236,6 +236,23 @@ void DebugCylinder(Vector3 start, Vector3 end, float startRadius, float endRadiu
 void DebugCapsule(Vector3 start, Vector3 end, float radius, int slices, int rings, Color color) { DrawCapsule(start, end, radius, slices, rings, color); }
 void DebugGrid(int slices, float spacing) { DrawGrid(slices, spacing); }
 
+void BeginFrame(Color clear) { ClearBackground(clear); }
+void EndFrame() {}
+void BeginWorld(const Camera3D& camera) { BeginMode3D(camera); }
+void EndWorld() { EndMode3D(); }
+void SetDebugDepthTest(bool on)
+{
+	rlDrawRenderBatchActive();
+	if (on) { rlEnableDepthTest(); } else { rlDisableDepthTest(); }
+}
+void Begin2D(const Camera2D& camera) { BeginMode2D(camera); }
+void End2D() { EndMode2D(); }
+void CaptureScreenshot(const std::string& fileName)
+{
+	rlDrawRenderBatchActive();
+	TakeScreenshot(fileName.c_str());
+}
+
 void Rect(Rectangle rect, Color color) { DrawRectangleRec(rect, color); }
 void RectOutline(Rectangle rect, float thickness, Color color) { DrawRectangleLinesEx(rect, thickness, color); }
 void Circle(Vector2 center, float radius, Color color) { DrawCircleV(center, radius, color); }

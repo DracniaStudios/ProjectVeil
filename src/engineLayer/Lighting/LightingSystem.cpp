@@ -834,8 +834,7 @@ namespace Lighting
 		// rlgl batches geometry and submits it later, so the batch has to be flushed
 		// on both sides of the depth-test toggle — otherwise the state change lands
 		// on the wrong draw calls and hides scene geometry instead.
-		rlDrawRenderBatchActive();
-		rlDisableDepthTest();
+		Render::SetDebugDepthTest(false);
 
 		for (int i = 0; i < lightCount; i++)
 		{
@@ -846,8 +845,7 @@ namespace Lighting
 		// The flashlight is deliberately skipped: it rides the active camera, so its
 		// gizmo would be a solid blob jammed against the near plane every frame.
 
-		rlDrawRenderBatchActive();
-		rlEnableDepthTest();
+		Render::SetDebugDepthTest(true);
 	}
 #pragma endregion
 

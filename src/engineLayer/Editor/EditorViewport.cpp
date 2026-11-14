@@ -3,8 +3,6 @@
 #include <Render/Render.h>
 #include <imgui.h>
 
-#include <rlgl.h>
-
 #include <Client/DebugDraw.h>
 #include <Geometry.h>
 
@@ -563,8 +561,7 @@ void WorldEditor::DrawEditorViewport()
 
 	const Camera3D& camera = SceneManagement::SceneManager::getInstance().camera3D;
 
-	rlDrawRenderBatchActive();
-	rlDisableDepthTest();
+	Render::SetDebugDepthTest(false);
 
 	if (GameObject* selected = getSelectedObject())
 	{
@@ -607,8 +604,7 @@ void WorldEditor::DrawEditorViewport()
 			kPlacementColor);
 	}
 
-	rlDrawRenderBatchActive();
-	rlEnableDepthTest();
+	Render::SetDebugDepthTest(true);
 }
 
 #pragma endregion
