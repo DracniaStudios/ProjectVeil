@@ -1,5 +1,5 @@
 // Platform on SDL3 with an OpenGL 3.3 core context (B-15, B-16). Window rules, frame
-// limiter, FPS, fullscreen, focus and cursor lock follow the raylib backend; input is B-17.
+// limiter, FPS, fullscreen, focus, cursor lock and input follow the raylib backend (B-17).
 #include <Platform.h>
 #include "Sdl3Native.h"
 
@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <iterator>
 
 namespace {
 	SDL_Window* window = nullptr;
@@ -39,14 +40,280 @@ namespace {
 	// Windowed size and position, saved when entering fullscreen
 	int savedW = 0, savedH = 0, savedX = 0, savedY = 0;
 
-	// Stub state (B-17): recorded, not acted on
-	Platform::Key exitKey = Platform::Key::Null;
+	// ---- Input (B-17). The state is raylib's: current and previous arrays, copied at the start
+	// of each frame, with the events of that frame's poll applied on top. ----
+	constexpr int kMouseButtons = 8;            // raylib MAX_MOUSE_BUTTONS
+	constexpr int kMaxGamepads = 4;             // raylib MAX_GAMEPADS
+	constexpr int kGamepadButtons = 18;         // Platform::GamepadButton enumerators
+	constexpr int kKeyQueueCapacity = 16;       // raylib MAX_KEY_PRESSED_QUEUE
+	constexpr Sint16 kTriggerThreshold = 18022; // raylib's > 0.1 on GLFW's -1..1 range, as 0..32767
+
+	// raylib starts with Escape as the exit key until SetExitKey says otherwise
+	Platform::Key exitKey = Platform::Key::Escape;
+
+	bool keyDown[Platform::kKeyCount] = {};
+	bool keyWasDown[Platform::kKeyCount] = {};
+	Platform::Key keyQueue[kKeyQueueCapacity] = {};
+	int keyQueueCount = 0;
+
+	bool mouseDown[kMouseButtons] = {};
+	bool mouseWasDown[kMouseButtons] = {};
+	// Unlocked this is the cursor position in the window. Locked it is raylib's virtual position:
+	// it starts at the window centre and accumulates the relative motion, unclamped.
+	float mouseX = 0.0f, mouseY = 0.0f;
+	float mouseDeltaX = 0.0f, mouseDeltaY = 0.0f; // this frame's relative motion, in counts while locked
+
+	SDL_Gamepad* gamepads[kMaxGamepads] = {};
+	SDL_JoystickID gamepadIds[kMaxGamepads] = {};
+	bool padDown[kMaxGamepads][kGamepadButtons] = {};
+	bool padWasDown[kMaxGamepads][kGamepadButtons] = {};
+
+	// Scancode to Platform::Key by physical position. Unlisted scancodes are Key::Null.
+	Platform::Key MapScancode(SDL_Scancode sc)
+	{
+		using K = Platform::Key;
+		if (sc >= SDL_SCANCODE_A && sc <= SDL_SCANCODE_Z) {
+			return static_cast<K>(static_cast<int>(K::A) + (sc - SDL_SCANCODE_A));
+		}
+		if (sc >= SDL_SCANCODE_1 && sc <= SDL_SCANCODE_9) {
+			return static_cast<K>(static_cast<int>(K::One) + (sc - SDL_SCANCODE_1));
+		}
+		if (sc >= SDL_SCANCODE_F1 && sc <= SDL_SCANCODE_F12) {
+			return static_cast<K>(static_cast<int>(K::F1) + (sc - SDL_SCANCODE_F1));
+		}
+		if (sc >= SDL_SCANCODE_KP_1 && sc <= SDL_SCANCODE_KP_9) {
+			return static_cast<K>(static_cast<int>(K::Kp1) + (sc - SDL_SCANCODE_KP_1));
+		}
+		switch (sc) {
+			case SDL_SCANCODE_0: return K::Zero;
+			case SDL_SCANCODE_RETURN: return K::Enter;
+			case SDL_SCANCODE_ESCAPE: return K::Escape;
+			case SDL_SCANCODE_BACKSPACE: return K::Backspace;
+			case SDL_SCANCODE_TAB: return K::Tab;
+			case SDL_SCANCODE_SPACE: return K::Space;
+			case SDL_SCANCODE_MINUS: return K::Minus;
+			case SDL_SCANCODE_EQUALS: return K::Equal;
+			case SDL_SCANCODE_LEFTBRACKET: return K::LeftBracket;
+			case SDL_SCANCODE_RIGHTBRACKET: return K::RightBracket;
+			case SDL_SCANCODE_BACKSLASH: return K::Backslash;
+			case SDL_SCANCODE_SEMICOLON: return K::Semicolon;
+			case SDL_SCANCODE_APOSTROPHE: return K::Apostrophe;
+			case SDL_SCANCODE_GRAVE: return K::Grave;
+			case SDL_SCANCODE_COMMA: return K::Comma;
+			case SDL_SCANCODE_PERIOD: return K::Period;
+			case SDL_SCANCODE_SLASH: return K::Slash;
+			case SDL_SCANCODE_CAPSLOCK: return K::CapsLock;
+			case SDL_SCANCODE_PRINTSCREEN: return K::PrintScreen;
+			case SDL_SCANCODE_SCROLLLOCK: return K::ScrollLock;
+			case SDL_SCANCODE_PAUSE: return K::Pause;
+			case SDL_SCANCODE_INSERT: return K::Insert;
+			case SDL_SCANCODE_HOME: return K::Home;
+			case SDL_SCANCODE_PAGEUP: return K::PageUp;
+			case SDL_SCANCODE_DELETE: return K::Delete;
+			case SDL_SCANCODE_END: return K::End;
+			case SDL_SCANCODE_PAGEDOWN: return K::PageDown;
+			case SDL_SCANCODE_RIGHT: return K::Right;
+			case SDL_SCANCODE_LEFT: return K::Left;
+			case SDL_SCANCODE_DOWN: return K::Down;
+			case SDL_SCANCODE_UP: return K::Up;
+			case SDL_SCANCODE_NUMLOCKCLEAR: return K::NumLock;
+			case SDL_SCANCODE_KP_DIVIDE: return K::KpDivide;
+			case SDL_SCANCODE_KP_MULTIPLY: return K::KpMultiply;
+			case SDL_SCANCODE_KP_MINUS: return K::KpSubtract;
+			case SDL_SCANCODE_KP_PLUS: return K::KpAdd;
+			case SDL_SCANCODE_KP_ENTER: return K::KpEnter;
+			case SDL_SCANCODE_KP_0: return K::Kp0;
+			case SDL_SCANCODE_KP_PERIOD: return K::KpDecimal;
+			case SDL_SCANCODE_KP_EQUALS: return K::KpEqual;
+			case SDL_SCANCODE_APPLICATION: return K::KbMenu;
+			case SDL_SCANCODE_LCTRL: return K::LeftControl;
+			case SDL_SCANCODE_LSHIFT: return K::LeftShift;
+			case SDL_SCANCODE_LALT: return K::LeftAlt;
+			case SDL_SCANCODE_LGUI: return K::LeftSuper;
+			case SDL_SCANCODE_RCTRL: return K::RightControl;
+			case SDL_SCANCODE_RSHIFT: return K::RightShift;
+			case SDL_SCANCODE_RALT: return K::RightAlt;
+			case SDL_SCANCODE_RGUI: return K::RightSuper;
+			default: return K::Null;
+		}
+	}
+
+	// SDL buttons 1..5 are left, middle, right, X1, X2. GLFW (and so raylib) numbers them
+	// left 0, right 1, middle 2, then 3 and 4 for the two side buttons. -1: no equivalent.
+	int MapMouseButton(Uint8 sdlButton)
+	{
+		switch (sdlButton) {
+			case SDL_BUTTON_LEFT: return static_cast<int>(Platform::MouseButton::Left);
+			case SDL_BUTTON_RIGHT: return static_cast<int>(Platform::MouseButton::Right);
+			case SDL_BUTTON_MIDDLE: return static_cast<int>(Platform::MouseButton::Middle);
+			case SDL_BUTTON_X1: return static_cast<int>(Platform::MouseButton::Side);
+			case SDL_BUTTON_X2: return static_cast<int>(Platform::MouseButton::Extra);
+			default: return -1;
+		}
+	}
+
+	// -1: no equivalent (the extra SDL buttons: paddles, touchpad, misc)
+	int MapGamepadButton(int b)
+	{
+		using G = Platform::GamepadButton;
+		switch (b) {
+			case SDL_GAMEPAD_BUTTON_DPAD_UP: return static_cast<int>(G::LeftFaceUp);
+			case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: return static_cast<int>(G::LeftFaceRight);
+			case SDL_GAMEPAD_BUTTON_DPAD_DOWN: return static_cast<int>(G::LeftFaceDown);
+			case SDL_GAMEPAD_BUTTON_DPAD_LEFT: return static_cast<int>(G::LeftFaceLeft);
+			case SDL_GAMEPAD_BUTTON_NORTH: return static_cast<int>(G::RightFaceUp);
+			case SDL_GAMEPAD_BUTTON_EAST: return static_cast<int>(G::RightFaceRight);
+			case SDL_GAMEPAD_BUTTON_SOUTH: return static_cast<int>(G::RightFaceDown);
+			case SDL_GAMEPAD_BUTTON_WEST: return static_cast<int>(G::RightFaceLeft);
+			case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER: return static_cast<int>(G::LeftTrigger1);
+			case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: return static_cast<int>(G::RightTrigger1);
+			case SDL_GAMEPAD_BUTTON_BACK: return static_cast<int>(G::MiddleLeft);
+			case SDL_GAMEPAD_BUTTON_GUIDE: return static_cast<int>(G::Middle);
+			case SDL_GAMEPAD_BUTTON_START: return static_cast<int>(G::MiddleRight);
+			case SDL_GAMEPAD_BUTTON_LEFT_STICK: return static_cast<int>(G::LeftThumb);
+			case SDL_GAMEPAD_BUTTON_RIGHT_STICK: return static_cast<int>(G::RightThumb);
+			default: return -1;
+		}
+	}
+
+	int GamepadSlot(SDL_JoystickID id)
+	{
+		for (int i = 0; i < kMaxGamepads; ++i) {
+			if (gamepads[i] != nullptr && gamepadIds[i] == id) { return i; }
+		}
+		return -1;
+	}
+
+	void ClearGamepadSlot(int slot)
+	{
+		for (int b = 0; b < kGamepadButtons; ++b) {
+			padDown[slot][b] = false;
+			padWasDown[slot][b] = false;
+		}
+	}
+
+	// raylib reads a pad's whole state every poll, so a pad that appears with a button held
+	// reports it. SDL sends no button event for that, so read the state when the pad opens.
+	void OpenGamepadInFirstFreeSlot(SDL_JoystickID id)
+	{
+		if (GamepadSlot(id) >= 0) { return; }
+		for (int slot = 0; slot < kMaxGamepads; ++slot) {
+			if (gamepads[slot] != nullptr) { continue; }
+			SDL_Gamepad* pad = SDL_OpenGamepad(id);
+			if (pad == nullptr) {
+				std::cerr << "[Platform] SDL_OpenGamepad failed: " << SDL_GetError() << std::endl;
+				return;
+			}
+			gamepads[slot] = pad;
+			gamepadIds[slot] = id;
+			ClearGamepadSlot(slot);
+			for (int sdlButton = 0; sdlButton < SDL_GAMEPAD_BUTTON_COUNT; ++sdlButton) {
+				const int mapped = MapGamepadButton(sdlButton);
+				if (mapped >= 0 && SDL_GetGamepadButton(pad, static_cast<SDL_GamepadButton>(sdlButton))) {
+					padDown[slot][mapped] = true;
+				}
+			}
+			padDown[slot][static_cast<int>(Platform::GamepadButton::LeftTrigger2)] =
+				SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) > kTriggerThreshold;
+			padDown[slot][static_cast<int>(Platform::GamepadButton::RightTrigger2)] =
+				SDL_GetGamepadAxis(pad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > kTriggerThreshold;
+			return;
+		}
+		// All four slots are taken: the pad stays closed, as raylib ignores pads past 4
+	}
+
+	void CloseGamepad(SDL_JoystickID id)
+	{
+		const int slot = GamepadSlot(id);
+		if (slot < 0) { return; }
+		SDL_CloseGamepad(gamepads[slot]);
+		gamepads[slot] = nullptr;
+		gamepadIds[slot] = 0;
+		ClearGamepadSlot(slot); // raylib: a pad that is not ready answers false to everything
+	}
+
+	void HandleInputEvent(const SDL_Event& event)
+	{
+		switch (event.type) {
+			case SDL_EVENT_KEY_DOWN: {
+				if (event.key.repeat) { break; } // raylib records a repeat apart from the press
+				const Platform::Key key = MapScancode(event.key.scancode);
+				if (key == Platform::Key::Null) { break; }
+				keyDown[static_cast<int>(key)] = true;
+				if (keyQueueCount < kKeyQueueCapacity) { keyQueue[keyQueueCount++] = key; } // full: dropped
+				if (key == exitKey) { shouldClose = true; }
+				break;
+			}
+			case SDL_EVENT_KEY_UP: {
+				const Platform::Key key = MapScancode(event.key.scancode);
+				if (key != Platform::Key::Null) { keyDown[static_cast<int>(key)] = false; }
+				break;
+			}
+			case SDL_EVENT_MOUSE_MOTION:
+				if (SDL_GetWindowRelativeMouseMode(window)) {
+					// event.motion.x/y are clamped to the window; raylib's locked position is not
+					mouseX += event.motion.xrel;
+					mouseY += event.motion.yrel;
+				} else {
+					mouseX = event.motion.x;
+					mouseY = event.motion.y;
+				}
+				mouseDeltaX += event.motion.xrel;
+				mouseDeltaY += event.motion.yrel;
+				break;
+			case SDL_EVENT_MOUSE_BUTTON_DOWN:
+			case SDL_EVENT_MOUSE_BUTTON_UP: {
+				const int button = MapMouseButton(event.button.button);
+				if (button >= 0) { mouseDown[button] = event.button.down; }
+				break;
+			}
+			case SDL_EVENT_GAMEPAD_ADDED:
+				OpenGamepadInFirstFreeSlot(event.gdevice.which);
+				break;
+			case SDL_EVENT_GAMEPAD_REMOVED:
+				CloseGamepad(event.gdevice.which);
+				break;
+			case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+			case SDL_EVENT_GAMEPAD_BUTTON_UP: {
+				const int slot = GamepadSlot(event.gbutton.which);
+				const int button = MapGamepadButton(event.gbutton.button);
+				if (slot >= 0 && button >= 0) { padDown[slot][button] = event.gbutton.down; }
+				break;
+			}
+			case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
+				const int slot = GamepadSlot(event.gaxis.which);
+				if (slot < 0) { break; }
+				const bool over = event.gaxis.value > kTriggerThreshold;
+				if (event.gaxis.axis == SDL_GAMEPAD_AXIS_LEFT_TRIGGER) {
+					padDown[slot][static_cast<int>(Platform::GamepadButton::LeftTrigger2)] = over;
+				} else if (event.gaxis.axis == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) {
+					padDown[slot][static_cast<int>(Platform::GamepadButton::RightTrigger2)] = over;
+				}
+				break;
+			}
+			default:
+				break;
+		}
+	}
+
+	bool KeyInRange(Platform::Key k) { return static_cast<int>(k) > 0 && static_cast<int>(k) < Platform::kKeyCount; }
+	bool MouseInRange(Platform::MouseButton b) { return static_cast<int>(b) >= 0 && static_cast<int>(b) < kMouseButtons; }
+	bool PadInRange(int pad, Platform::GamepadButton b)
+	{
+		return pad >= 0 && pad < kMaxGamepads && gamepads[pad] != nullptr &&
+			static_cast<int>(b) >= 0 && static_cast<int>(b) < kGamepadButtons;
+	}
 
 	void CentreCursor()
 	{
 		int w = 0, h = 0;
 		SDL_GetWindowSize(window, &w, &h);
 		SDL_WarpMouseInWindow(window, static_cast<float>(w / 2), static_cast<float>(h / 2));
+		// raylib's SetMousePosition: the position becomes the centre and no motion is counted
+		mouseX = static_cast<float>(w / 2);
+		mouseY = static_cast<float>(h / 2);
+		mouseDeltaX = 0.0f;
+		mouseDeltaY = 0.0f;
 	}
 }
 
@@ -118,6 +385,9 @@ bool Init(const WindowDesc& desc)
 
 void Shutdown()
 {
+	for (int i = 0; i < kMaxGamepads; ++i) {
+		if (gamepads[i] != nullptr) { SDL_CloseGamepad(gamepads[i]); gamepads[i] = nullptr; }
+	}
 	if (glContext != nullptr) { SDL_GL_DestroyContext(glContext); glContext = nullptr; }
 	if (window != nullptr) { SDL_DestroyWindow(window); window = nullptr; }
 	SDL_Quit();
@@ -137,12 +407,22 @@ void BeginFrame()
 	lastBeginTime = beginTime;
 	haveBegin = true;
 
+	// As raylib's PollInputEvents: previous state, empty queue, no motion, then this frame's events
+	std::copy(std::begin(keyDown), std::end(keyDown), std::begin(keyWasDown));
+	std::copy(std::begin(mouseDown), std::end(mouseDown), std::begin(mouseWasDown));
+	for (int p = 0; p < kMaxGamepads; ++p) {
+		std::copy(std::begin(padDown[p]), std::end(padDown[p]), std::begin(padWasDown[p]));
+	}
+	keyQueueCount = 0;
+	mouseDeltaX = 0.0f;
+	mouseDeltaY = 0.0f;
+
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		if (event.type == SDL_EVENT_QUIT || event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
 			shouldClose = true;
 		}
-		// B-17: key, mouse and gamepad events update the input state here
+		HandleInputEvent(event);
 		Sdl3EditorGuiProcessEvent(event);
 	}
 }
@@ -255,19 +535,45 @@ void UnlockCursor()
 
 bool IsCursorLocked() { return SDL_GetWindowRelativeMouseMode(window); }
 
-void SetExitKey(Key key) { exitKey = key; } // B-17
-bool IsKeyDown(Key) { return false; }       // B-17
-bool IsKeyPressed(Key) { return false; }    // B-17
-bool IsKeyReleased(Key) { return false; }   // B-17
-Key  PopKeyPressed() { return Key::Null; }  // B-17
-Vector2 MousePosition() { return { 0.0f, 0.0f }; } // B-17
-Vector2 MouseDelta() { return { 0.0f, 0.0f }; }    // B-17
-bool IsMouseButtonDown(MouseButton) { return false; }     // B-17
-bool IsMouseButtonPressed(MouseButton) { return false; }  // B-17
-bool IsMouseButtonReleased(MouseButton) { return false; } // B-17
-bool IsGamepadButtonDown(int, GamepadButton) { return false; }     // B-17
-bool IsGamepadButtonPressed(int, GamepadButton) { return false; }  // B-17
-bool IsGamepadButtonReleased(int, GamepadButton) { return false; } // B-17
+void SetExitKey(Key key) { exitKey = key; }
+bool IsKeyDown(Key key) { return KeyInRange(key) && keyDown[static_cast<int>(key)]; }
+bool IsKeyPressed(Key key) { return KeyInRange(key) && keyDown[static_cast<int>(key)] && !keyWasDown[static_cast<int>(key)]; }
+bool IsKeyReleased(Key key) { return KeyInRange(key) && !keyDown[static_cast<int>(key)] && keyWasDown[static_cast<int>(key)]; }
+
+Key PopKeyPressed()
+{
+	if (keyQueueCount == 0) { return Key::Null; }
+	const Key front = keyQueue[0];
+	for (int i = 0; i < keyQueueCount - 1; ++i) { keyQueue[i] = keyQueue[i + 1]; }
+	--keyQueueCount;
+	return front;
+}
+
+Vector2 MousePosition() { return { mouseX, mouseY }; }
+Vector2 MouseDelta() { return { mouseDeltaX, mouseDeltaY }; }
+
+bool IsMouseButtonDown(MouseButton button) { return MouseInRange(button) && mouseDown[static_cast<int>(button)]; }
+bool IsMouseButtonPressed(MouseButton button)
+{
+	return MouseInRange(button) && mouseDown[static_cast<int>(button)] && !mouseWasDown[static_cast<int>(button)];
+}
+bool IsMouseButtonReleased(MouseButton button)
+{
+	return MouseInRange(button) && !mouseDown[static_cast<int>(button)] && mouseWasDown[static_cast<int>(button)];
+}
+
+bool IsGamepadButtonDown(int gamepad, GamepadButton button)
+{
+	return PadInRange(gamepad, button) && padDown[gamepad][static_cast<int>(button)];
+}
+bool IsGamepadButtonPressed(int gamepad, GamepadButton button)
+{
+	return PadInRange(gamepad, button) && padDown[gamepad][static_cast<int>(button)] && !padWasDown[gamepad][static_cast<int>(button)];
+}
+bool IsGamepadButtonReleased(int gamepad, GamepadButton button)
+{
+	return PadInRange(gamepad, button) && !padDown[gamepad][static_cast<int>(button)] && padWasDown[gamepad][static_cast<int>(button)];
+}
 
 FrameStats GetFrameStats()
 {
