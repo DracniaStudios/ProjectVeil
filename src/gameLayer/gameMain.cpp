@@ -64,11 +64,9 @@ bool init_game()
 	Platform::SetTargetFps(maxFrameRate);
 	AssetManager::AssetManager::getInstance().loadAll();
 
-	// Lighting must come up AFTER AssetManager (so the shader can be written
-	// into every shared asset model) but BEFORE SceneManager_init, which
-	// constructs the Main Menu scene and loads its save file. Objects created
-	// while the system was still down would keep raylib's unlit shader and
-	// render half-lit with no error anywhere.
+	// Lighting must come up AFTER Render::Init (which loads the lighting shader that
+	// Init checks for) but BEFORE SceneManager_init, which constructs the Main Menu
+	// scene and loads its save file.
 	Lighting::LightingSystem::getInstance().Init();
 
 	// Camera
@@ -205,9 +203,9 @@ void close_game()
 	// The current scene is freed while GL (and FMOD) are still alive
 	SceneManagement::SceneManager_shutdown(&SceneManagement::SceneManager::getInstance());
 
-	// Materials only hold a copy of the Shader struct, so every model's shader
-	// id dangles once this runs — it has to be the last engine call. ProjectVeil.cpp
-	// invokes close_game() before CloseWindow(), while the GL context is alive.
+	// Releases the shadow map. The lighting shader belongs to the renderer:
+	// ProjectVeil.cpp calls Render::Shutdown() after close_game(), while the GL
+	// context is alive, and that unloads it.
 	Lighting::LightingSystem::getInstance().Shutdown();
 
 #if PRODUCTION_BUILD != 1

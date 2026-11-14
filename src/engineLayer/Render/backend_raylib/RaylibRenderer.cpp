@@ -1,8 +1,9 @@
-// Render on raylib (B-07 lifetime, B-08 model and texture tables and model draws).
+// Render on raylib (B-07 lifetime, B-08 model and texture tables and model draws,
+// B-11 shadow map, B-12 lighting shader and uniforms).
 #include <Render/Render.h>
 
 #include <Geometry.h>
-#include <LightingSystem.h> // temporary: the shader bound at every draw; removed by B-12
+#include <ResourcePaths.h>
 
 #include <raylib.h>
 #include <raymath.h>
@@ -49,6 +50,109 @@ namespace {
 	// public enum and is what raylib's own shadowmap sample stores for a
 	// 24-bit depth attachment. Only the width/height/id fields are ever used.
 	constexpr int DEPTH_TEXTURE_FORMAT = 19;
+
+	/**
+	 * Texture unit the shadow map is bound to.
+	 * raylib's DrawMesh() binds material maps to slots 0..MAX_MATERIAL_MAPS-1 (12)
+	 * and unbinds them again afterwards, so any slot below 12 can be clobbered
+	 * mid-frame. 15 is the top of OpenGL 3.3's guaranteed 16 texture units.
+	 */
+	constexpr int SHADOW_MAP_SLOT = 15;
+
+	// The lighting shader (id 0 when it failed to load: models then draw with raylib's
+	// own shader, unlit). It is injected into every Material rather than pushed with
+	// BeginShaderMode(): raylib's DrawMesh() calls rlEnableShader(material.shader.id)
+	// itself, so BeginShaderMode() only affects the rlgl batch (DrawGrid, shapes,
+	// 2D) and would leave every model unlit. Materials hold a *copy* of the Shader
+	// struct, not ownership, so every model's material shader id dangles once
+	// Shutdown unloads it.
+	Shader lightShader = {};
+
+	// Cached uniform locations. Custom uniforms cannot live in Shader::locs —
+	// that array is exactly RL_MAX_SHADER_LOCATIONS (32) entries and is owned
+	// by raylib's own semantics.
+	struct Uniforms
+	{
+		int lightCount = -1;
+		int lightType = -1;
+		int lightPosition = -1;
+		int lightDirection = -1;
+		int lightColor = -1;
+		int lightRange = -1;
+		int lightCone = -1;
+
+		int ambient = -1;
+		int fogColor = -1;
+		int fogDensity = -1;
+		int exposure = -1;
+		int specularStrength = -1;
+		int shininess = -1;
+
+		int shadowMap = -1;
+		int lightVP = -1;
+		int shadowTexelSize = -1;
+		int shadowBias = -1;
+		int shadowSoftness = -1;
+		int shadowsEnabled = -1;
+		int shadowLightIndex = -1;
+
+		int depthPass = -1;
+	};
+	Uniforms uniforms = {};
+
+	// One of the lighting shader's files, as the C string raylib wants
+	std::string ShaderPath(const char* fileName)
+	{
+		return (ResourcePaths::Resources() / "shaders" / "glsl330" / fileName).string();
+	}
+
+	void CacheUniformLocations()
+	{
+		uniforms.lightCount = GetShaderLocation(lightShader, "lightCount");
+		uniforms.lightType = GetShaderLocation(lightShader, "lightType");
+		uniforms.lightPosition = GetShaderLocation(lightShader, "lightPosition");
+		uniforms.lightDirection = GetShaderLocation(lightShader, "lightDirection");
+		uniforms.lightColor = GetShaderLocation(lightShader, "lightColor");
+		uniforms.lightRange = GetShaderLocation(lightShader, "lightRange");
+		uniforms.lightCone = GetShaderLocation(lightShader, "lightCone");
+
+		uniforms.ambient = GetShaderLocation(lightShader, "ambient");
+		uniforms.fogColor = GetShaderLocation(lightShader, "fogColor");
+		uniforms.fogDensity = GetShaderLocation(lightShader, "fogDensity");
+		uniforms.exposure = GetShaderLocation(lightShader, "exposure");
+		uniforms.specularStrength = GetShaderLocation(lightShader, "specularStrength");
+		uniforms.shininess = GetShaderLocation(lightShader, "shininess");
+
+		uniforms.shadowMap = GetShaderLocation(lightShader, "shadowMap");
+		uniforms.lightVP = GetShaderLocation(lightShader, "lightVP");
+		uniforms.shadowTexelSize = GetShaderLocation(lightShader, "shadowTexelSize");
+		uniforms.shadowBias = GetShaderLocation(lightShader, "shadowBias");
+		uniforms.shadowSoftness = GetShaderLocation(lightShader, "shadowSoftness");
+		uniforms.shadowsEnabled = GetShaderLocation(lightShader, "shadowsEnabled");
+		uniforms.shadowLightIndex = GetShaderLocation(lightShader, "shadowLightIndex");
+
+		uniforms.depthPass = GetShaderLocation(lightShader, "depthPass");
+	}
+
+	void LoadLightingShader()
+	{
+		const std::string vertexPath = ShaderPath("lighting.vs");
+		const std::string fragmentPath = ShaderPath("lighting.fs");
+		lightShader = LoadShader(vertexPath.c_str(), fragmentPath.c_str());
+		if (!IsShaderValid(lightShader))
+		{
+			// LoadShader allocates the locs array even on failure — release it
+			UnloadShader(lightShader);
+			lightShader = Shader{};
+			return;
+		}
+
+		// raylib resolves mvp/matModel/matNormal/colDiffuse/texture0 by name, but
+		// NOT viewPos — SHADER_LOC_VECTOR_VIEW has to be wired up by hand.
+		lightShader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(lightShader, "viewPos");
+
+		CacheUniformLocations();
+	}
 
 	RenderTexture2D shadowMap = {};
 	Matrix shadowViewProjection = {};
@@ -167,10 +271,9 @@ namespace {
 
 		Model copy = *stored;
 
-		Lighting::LightingSystem& lighting = Lighting::LightingSystem::getInstance();
-		if (lighting.IsReady() && copy.materials != nullptr)
+		if (lightShader.id != 0 && copy.materials != nullptr)
 		{
-			for (int i = 0; i < copy.materialCount; i++) { copy.materials[i].shader = lighting.GetShader(); }
+			for (int i = 0; i < copy.materialCount; i++) { copy.materials[i].shader = lightShader; }
 		}
 
 		const Texture2D* overrideTexture = TextureOf(draw.diffuseOverride);
@@ -197,6 +300,7 @@ bool Init()
 {
 	if (ready) { return true; }
 	SeedTextures();
+	LoadLightingShader(); // a missing lighting shader leaves id 0 and the game draws unlit
 	models.push_back(LoadModelFromMesh(GenMeshCube(1.0f, 1.0f, 1.0f))); // the unit cube: model handle 1
 	ready = true;
 	return true;
@@ -205,8 +309,8 @@ bool Init()
 void Shutdown()
 {
 	// Reverse order of creation. UnloadModel frees meshes and the materials arrays
-	// only; a model's own textures are not in the table as owned ones, and shaders
-	// belong to whoever made them (the lighting system releases its own).
+	// only; a model's own textures are not in the table as owned ones. The lighting
+	// shader is unloaded last, below.
 	for (std::size_t i = models.size(); i > 0; --i) { UnloadModel(models[i - 1]); }
 	models.clear();
 	for (std::size_t i = textures.size(); i > 0; --i)
@@ -216,6 +320,12 @@ void Shutdown()
 	textures.clear();
 	textureOwned.clear();
 	UnloadShadowMapTarget(shadowMap);
+	if (lightShader.id != 0)
+	{
+		UnloadShader(lightShader);
+		lightShader = Shader{};
+	}
+	uniforms = Uniforms{};
 	ready = false;
 }
 
@@ -319,9 +429,17 @@ void BeginWorld(const Camera3D& camera)
 	{
 		// Bound to SHADOW_MAP_SLOT (15) because raylib's DrawMesh() owns slots
 		// 0..MAX_MATERIAL_MAPS-1 (12) and rebinds them on every draw call.
-		rlActiveTextureSlot(Lighting::SHADOW_MAP_SLOT);
+		rlActiveTextureSlot(SHADOW_MAP_SLOT);
 		rlEnableTexture(shadowMap.depth.id);
 		rlActiveTextureSlot(0);
+
+		if (lightShader.id != 0)
+		{
+			// The sampler only needs the unit index, and it persists in the program
+			// object across raylib's own rlEnableShader/rlDisableShader calls.
+			const int slot = SHADOW_MAP_SLOT;
+			SetShaderValue(lightShader, uniforms.shadowMap, &slot, SHADER_UNIFORM_INT);
+		}
 	}
 }
 void EndWorld() { EndMode3D(); }
@@ -362,6 +480,15 @@ bool BeginShadowPass(const Camera3D& lightCamera)
 {
 	if (shadowMap.id == 0) { return false; }
 
+	// depthPass makes the fragment shader return immediately. Without it the
+	// shader would sample shadowMap while that same texture is attached as the
+	// depth target — undefined behaviour in OpenGL.
+	if (lightShader.id != 0)
+	{
+		const int depthPassOn = 1;
+		SetShaderValue(lightShader, uniforms.depthPass, &depthPassOn, SHADER_UNIFORM_INT);
+	}
+
 	BeginTextureMode(shadowMap);
 	ClearBackground(WHITE);
 	BeginMode3D(lightCamera);
@@ -376,8 +503,93 @@ void EndShadowPass()
 {
 	EndMode3D();
 	EndTextureMode();
+
+	if (lightShader.id != 0)
+	{
+		const int depthPassOff = 0;
+		SetShaderValue(lightShader, uniforms.depthPass, &depthPassOff, SHADER_UNIFORM_INT);
+		SetShaderValueMatrix(lightShader, uniforms.lightVP, shadowViewProjection);
+	}
 }
 
 Matrix ShadowViewProjection() { return shadowViewProjection; }
+
+unsigned int LightingShaderId() { return lightShader.id; }
+
+void SetLighting(const LightingFrame& frame)
+{
+	if (lightShader.id == 0) { return; }
+
+	// viewPos drives both the specular term and the fog distance
+	SetShaderValue(lightShader, lightShader.locs[SHADER_LOC_VECTOR_VIEW],
+		&frame.viewPosition, SHADER_UNIFORM_VEC3);
+
+	// Always sized to kMaxLights and uploaded whole: a shrinking light list
+	// would otherwise leave last frame's values in the unused slots.
+	int types[kMaxLights] = {};
+	float positions[kMaxLights * 3] = {};
+	float directions[kMaxLights * 3] = {};
+	float colors[kMaxLights * 4] = {};
+	float ranges[kMaxLights] = {};
+	float cones[kMaxLights * 2] = {};
+
+	for (int slot = 0; slot < kMaxLights; slot++)
+	{
+		const PackedLight& light = frame.lights[slot];
+
+		types[slot] = light.type;
+
+		positions[slot * 3 + 0] = light.position.x;
+		positions[slot * 3 + 1] = light.position.y;
+		positions[slot * 3 + 2] = light.position.z;
+
+		directions[slot * 3 + 0] = light.direction.x;
+		directions[slot * 3 + 1] = light.direction.y;
+		directions[slot * 3 + 2] = light.direction.z;
+
+		colors[slot * 4 + 0] = light.color.x;
+		colors[slot * 4 + 1] = light.color.y;
+		colors[slot * 4 + 2] = light.color.z;
+		colors[slot * 4 + 3] = light.color.w;
+
+		ranges[slot] = light.range;
+
+		cones[slot * 2 + 0] = light.cone.x;
+		cones[slot * 2 + 1] = light.cone.y;
+	}
+
+	SetShaderValue(lightShader, uniforms.lightCount, &frame.lightCount, SHADER_UNIFORM_INT);
+	SetShaderValueV(lightShader, uniforms.lightType, types, SHADER_UNIFORM_INT, kMaxLights);
+	SetShaderValueV(lightShader, uniforms.lightPosition, positions, SHADER_UNIFORM_VEC3, kMaxLights);
+	SetShaderValueV(lightShader, uniforms.lightDirection, directions, SHADER_UNIFORM_VEC3, kMaxLights);
+	SetShaderValueV(lightShader, uniforms.lightColor, colors, SHADER_UNIFORM_VEC4, kMaxLights);
+	SetShaderValueV(lightShader, uniforms.lightRange, ranges, SHADER_UNIFORM_FLOAT, kMaxLights);
+	SetShaderValueV(lightShader, uniforms.lightCone, cones, SHADER_UNIFORM_VEC2, kMaxLights);
+
+	// The shader compares against the *packed* slot, not the lights[] index —
+	// disabled lights and the flashlight shift everything after them.
+	SetShaderValue(lightShader, uniforms.shadowLightIndex, &frame.shadowLightSlot, SHADER_UNIFORM_INT);
+
+	const float ambientValues[4] = { frame.ambient.x, frame.ambient.y, frame.ambient.z, frame.ambient.w };
+	SetShaderValue(lightShader, uniforms.ambient, ambientValues, SHADER_UNIFORM_VEC4);
+
+	const float fogValues[4] = { frame.fogColor.x, frame.fogColor.y, frame.fogColor.z, frame.fogColor.w };
+	SetShaderValue(lightShader, uniforms.fogColor, fogValues, SHADER_UNIFORM_VEC4);
+
+	SetShaderValue(lightShader, uniforms.fogDensity, &frame.fogDensity, SHADER_UNIFORM_FLOAT);
+	SetShaderValue(lightShader, uniforms.exposure, &frame.exposure, SHADER_UNIFORM_FLOAT);
+	SetShaderValue(lightShader, uniforms.specularStrength, &frame.specularStrength, SHADER_UNIFORM_FLOAT);
+	SetShaderValue(lightShader, uniforms.shininess, &frame.shininess, SHADER_UNIFORM_FLOAT);
+	SetShaderValue(lightShader, uniforms.shadowTexelSize, &frame.shadowTexelSize, SHADER_UNIFORM_FLOAT);
+	SetShaderValue(lightShader, uniforms.shadowBias, &frame.shadowBias, SHADER_UNIFORM_FLOAT);
+	SetShaderValue(lightShader, uniforms.shadowSoftness, &frame.shadowSoftness, SHADER_UNIFORM_FLOAT);
+
+	// Single source of truth for the shader's shadow gate: shadows are only
+	// sampled when they are enabled, a framebuffer exists, and a directional
+	// light actually claimed it this frame. Anything else and the shader would
+	// read a stale or never-written depth texture. LightingSystem resolves it.
+	const int shadowGate = frame.shadowsEnabled ? 1 : 0;
+	SetShaderValue(lightShader, uniforms.shadowsEnabled, &shadowGate, SHADER_UNIFORM_INT);
+}
 
 }

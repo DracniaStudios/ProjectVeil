@@ -2,6 +2,7 @@
 #include <imgui.h>
 
 #include <LightingSystem.h>
+#include <Render/Render.h>
 
 #include <cstdio>
 
@@ -66,7 +67,7 @@ void WorldEditor::ShowLightingData()
 		ImGui::End();
 		return;
 	}
-	ImGui::Text("Shader ID: %u", lighting->GetShader().id);
+	ImGui::Text("Shader ID: %u", Render::LightingShaderId());
 	ImGui::Text("Active Lights: %d / %d", lighting->GetActiveLightCount(), Lighting::LIGHT_LIMIT);
 	const int drawnMap = lighting->GetShadowMapResolution();
 	if (drawnMap > 0) { ImGui::Text("Shadow Map: %dx%d", drawnMap, drawnMap); }

@@ -54,6 +54,34 @@ namespace Render {
 	void EndShadowPass();
 	Matrix ShadowViewProjection();                      // view * projection of the last shadow pass (raylib row-vector order)
 
+	// Lighting: the renderer owns the lighting shader and every uniform it reads.
+	// The frame holds finished numbers; the renderer unpacks and uploads them as given.
+	inline constexpr int kMaxLights = 8; // == Lighting::LIGHT_LIMIT == MAX_LIGHTS in lighting.fs
+
+	struct PackedLight {
+		int type = 0;            // Lighting::LightType
+		Vector3 position = {};
+		Vector3 direction = {};  // normalised
+		Vector4 color = {};      // rgb 0-1, a = intensity
+		float range = 0.0f;
+		Vector2 cone = {};       // x = cos(inner), y = cos(outer)
+	};
+
+	struct LightingFrame {
+		Vector3 viewPosition = {};
+		int lightCount = 0;
+		PackedLight lights[kMaxLights] = {};
+		int shadowLightSlot = -1;   // packed slot owning the shadow map
+		Vector4 ambient = {};       // rgb 0-1, a = strength
+		Vector4 fogColor = {};      // 0-1
+		float fogDensity = 0.0f, exposure = 1.0f, specularStrength = 0.0f, shininess = 1.0f;
+		float shadowTexelSize = 1.0f, shadowBias = 0.0f, shadowSoftness = 0.0f;
+		bool shadowsEnabled = false; // the shader's gate, already resolved
+	};
+
+	void SetLighting(const LightingFrame& frame);
+	unsigned int LightingShaderId(); // 0 when the lighting shader failed to load
+
 	// 2D: screen coordinates, origin top-left
 	void Rect(Rectangle rect, Color color);
 	void RectOutline(Rectangle rect, float thickness, Color color);

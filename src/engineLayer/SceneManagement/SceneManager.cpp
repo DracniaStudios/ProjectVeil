@@ -110,13 +110,12 @@ namespace SceneManagement {
 		//                the active camera, and uploads every light/atmosphere uniform.
 		//   2. Shadow  - retargets the framebuffer to render the depth map, so it
 		//                cannot happen inside BeginMode3D.
-		//   3. Bind    - binds the finished depth texture for the camera pass.
+		//   3. Camera  - Render::BeginWorld binds the finished depth texture for the camera pass.
 		lighting->Update(manager->camera3D, Platform::FrameTime());
 		lighting->RenderShadowPass(scene);
 
 		// Draw Scene 3D
 		Render::BeginWorld(manager->camera3D);
-		lighting->BindShadowMap();
 		if (scene) Scene_drawScene3D(*scene);
 
 		if (Editor::WorldEditor::getInstance().IsEnabled())
