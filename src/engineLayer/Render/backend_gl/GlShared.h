@@ -1,7 +1,7 @@
 #pragma once
 // Backend-private helpers shared by the GL backend's translation units (B-18).
 // Not included by anything outside backend_gl/.
-#include <Render/RenderTypes.h>
+#include <Render/Render.h>
 #include <raylib.h> // vocabulary types only
 
 #include <string>
@@ -66,5 +66,27 @@ struct Model {
 
 const Model* FindModel(Render::ModelHandle handle); // null for none or unknown
 unsigned int TextureName(Render::TextureHandle handle); // GL texture name, 0 for none or unknown
+
+}
+
+// The lit world (B-21, GlLit.cpp): the lighting shader, the model draw and the world pass.
+namespace GlLit {
+
+// Needs Gl2D::Init and a current context. Compiles the lighting shader (a failure is
+// reported and leaves ShaderId() at 0) and the unlit fallback. False only when neither
+// program could be built.
+bool Init();
+void Shutdown();
+
+// The lighting shader program, 0 when it failed to load
+unsigned int ShaderId();
+
+// Flushes the 2D batch, then builds the camera matrices and sets the world pass state
+void BeginWorld(const Camera3D& camera);
+// Puts the state back as Render::BeginFrame documents it
+void EndWorld();
+
+void DrawModel(const Render::ModelDraw& draw, bool wires);
+void SetLighting(const Render::LightingFrame& frame);
 
 }

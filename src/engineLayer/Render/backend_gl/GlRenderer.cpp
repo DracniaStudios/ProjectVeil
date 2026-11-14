@@ -1,7 +1,7 @@
 // Render on OpenGL 3.3 core (B-15). Every function declared in Render.h exists. The 2D
-// part is real (B-18, Gl2D.cpp and DefaultFont.cpp); the world is not drawn yet: each of
-// its stubs logs one line the first time it is called and names the work order that
-// implements it.
+// part is real (B-18, Gl2D.cpp and DefaultFont.cpp) and so is the lit world (B-21, GlLit.cpp).
+// The shadow map and the debug shapes are not drawn yet: each of their stubs logs one line the
+// first time it is called and names the work order that implements it.
 #include <Render/Render.h>
 #include "GlShared.h"
 #include "DefaultFont.h"
@@ -25,6 +25,33 @@ namespace {
 			std::cout << "[Render] " << function << " is not implemented in sdl3gl yet (" << workOrder << ")" << std::endl;
 		}
 	}
+
+#ifndef NDEBUG
+	// KHR_debug output, in debug builds only, when the context offers it
+	void GLAD_API_PTR DebugCallback(GLenum, GLenum type, GLuint id, GLenum severity, GLsizei, const GLchar* message, const void*)
+	{
+		if (type == GL_DEBUG_TYPE_ERROR || severity == GL_DEBUG_SEVERITY_HIGH) {
+			std::cerr << "[Render] GL error " << id << ": " << message << std::endl;
+		}
+	}
+
+	// glad 2.0.8 as vendored holds no extensions, so the entry point comes from SDL
+	void InstallDebugOutput()
+	{
+		using DebugMessageCallbackFn = void (GLAD_API_PTR *)(GLDEBUGPROC callback, const void* userParam);
+		DebugMessageCallbackFn setCallback = nullptr;
+		if (SDL_GL_ExtensionSupported("GL_KHR_debug")) {
+			setCallback = reinterpret_cast<DebugMessageCallbackFn>(SDL_GL_GetProcAddress("glDebugMessageCallback"));
+		}
+		if (setCallback == nullptr) {
+			std::cout << "[Render] KHR_debug is not available; GL debug output is off" << std::endl;
+			return;
+		}
+		glEnable(GL_DEBUG_OUTPUT);
+		setCallback(DebugCallback, nullptr);
+		std::cout << "[Render] KHR_debug output on" << std::endl;
+	}
+#endif
 }
 
 // Put first in a stub's body. The static makes the call free after the first time.
@@ -54,6 +81,10 @@ bool Init()
 	};
 	std::cout << "[Render] GL " << text(GL_VERSION) << " on " << text(GL_RENDERER) << std::endl;
 
+#ifndef NDEBUG
+	InstallDebugOutput();
+#endif
+
 	if (!Gl2D::Init()) {
 		std::cerr << "[Render] the 2D renderer could not be created" << std::endl;
 		return false;
@@ -65,20 +96,30 @@ bool Init()
 		return false;
 	}
 
+	// A lighting shader that fails to load is not fatal: it is reported, LightingShaderId stays 0
+	// and models draw unlit
+	if (!GlLit::Init()) {
+		std::cerr << "[Render] no model shader could be created" << std::endl;
+		GlResources::Shutdown();
+		Gl2D::Shutdown();
+		return false;
+	}
+
 	ready = true;
 	return true;
 }
 
 void Shutdown()
 {
+	GlLit::Shutdown();
 	GlResources::Shutdown(); // before Gl2D: handle 1 is Gl2D's texture and is not deleted here
 	Gl2D::Shutdown();
 	ready = false;
 }
 bool IsReady() { return ready; }
 
-void DrawModel(const ModelDraw&) { VEIL_STUB("B-21"); }
-void DrawModelWires(const ModelDraw&) { VEIL_STUB("B-21"); }
+void DrawModel(const ModelDraw& draw) { GlLit::DrawModel(draw, false); }
+void DrawModelWires(const ModelDraw& draw) { GlLit::DrawModel(draw, true); }
 
 void DebugLine(Vector3, Vector3, Color) { VEIL_STUB("B-23"); }
 void DebugSphere(Vector3, float, Color) { VEIL_STUB("B-23"); }
@@ -115,8 +156,8 @@ void BeginFrame(Color clear)
 
 // Nothing may stay batched: ImGui draws straight after this
 void EndFrame() { Gl2D::Flush(); }
-void BeginWorld(const Camera3D&) { Gl2D::Flush(); VEIL_STUB("B-21"); }
-void EndWorld() {}
+void BeginWorld(const Camera3D& camera) { GlLit::BeginWorld(camera); }
+void EndWorld() { GlLit::EndWorld(); }
 void SetDebugDepthTest(bool) { VEIL_STUB("B-23"); }
 void Begin2D(const Camera2D& camera) { Gl2D::Begin2D(camera); }
 void End2D() { Gl2D::End2D(); }
@@ -128,8 +169,8 @@ bool BeginShadowPass(const Camera3D&) { VEIL_STUB("B-22"); return false; }
 void EndShadowPass() {}
 Matrix ShadowViewProjection() { VEIL_STUB("B-22"); return MatrixIdentity(); }
 
-void SetLighting(const LightingFrame&) { VEIL_STUB("B-21"); }
-unsigned int LightingShaderId() { return 0; }
+void SetLighting(const LightingFrame& frame) { GlLit::SetLighting(frame); }
+unsigned int LightingShaderId() { return GlLit::ShaderId(); }
 
 void Rect(Rectangle rect, Color color) { Gl2D::Rect(rect, color); }
 void RectOutline(Rectangle rect, float thickness, Color color) { Gl2D::RectOutline(rect, thickness, color); }
