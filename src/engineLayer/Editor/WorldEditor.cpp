@@ -1,4 +1,5 @@
 #include "WorldEditor.h"
+#include <Platform.h>
 #include <imgui.h>
 #include <AssetManager.h>
 
@@ -26,11 +27,11 @@ namespace Editor {
 			isEditorActive = false;
 		}
 
-		if (IsKeyPressed(KEY_F1) && Client::Session::getInstance().IsNetworked())
+		if (Platform::IsKeyPressed(Platform::Key::F1) && Client::Session::getInstance().IsNetworked())
 		{
 			std::cout << "[WorldEditor] Not while a multiplayer session is running\n";
 		}
-		else if (IsKeyPressed(KEY_F1))
+		else if (Platform::IsKeyPressed(Platform::Key::F1))
 		{
 			isEditorActive = !isEditorActive;
 

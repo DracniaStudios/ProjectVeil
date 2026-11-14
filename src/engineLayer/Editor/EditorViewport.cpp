@@ -1,4 +1,5 @@
 #include "WorldEditor.h"
+#include <Platform.h>
 #include <imgui.h>
 
 #include <rlgl.h>
@@ -54,7 +55,7 @@ void WorldEditor::UpdateViewportInput()
 	// Browser also fires a world pick through the panel, and the selection
 	// changes under the button that was just clicked.
 	const bool mouseOverViewport = !io.WantCaptureMouse;
-	const bool cameraLooking = IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
+	const bool cameraLooking = Platform::IsMouseButtonDown(Platform::MouseButton::Right);
 	const bool canGrab = mouseOverViewport && !cameraLooking;
 
 	// Step 3.
@@ -75,14 +76,14 @@ void WorldEditor::UpdateViewportInput()
 		gizmo.Cancel();
 
 		// As for placement: Escape only cancels when no widget has the keyboard
-		if (IsKeyPressed(KEY_ESCAPE) && !io.WantCaptureKeyboard)
+		if (Platform::IsKeyPressed(Platform::Key::Escape) && !io.WantCaptureKeyboard)
 		{
 			targetPickStationId = 0;
 			statusMessage = "Target pick cancelled";
 			return;
 		}
 
-		if (canGrab && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) { PickTargetUnderMouse(scene, camera); }
+		if (canGrab && Platform::IsMouseButtonPressed(Platform::MouseButton::Left)) { PickTargetUnderMouse(scene, camera); }
 		return;
 	}
 
@@ -123,7 +124,7 @@ void WorldEditor::UpdateViewportInput()
 	// Step 5. canGrab is what makes step 1 real for selection: without it a click
 	// on "Delete Object" in the Object Browser also picks through the panel and
 	// clears the selection the button was about to act on.
-	if (canGrab && gizmo.mode == GIZMO_SELECT && !gizmoOwnsMouse && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+	if (canGrab && gizmo.mode == GIZMO_SELECT && !gizmoOwnsMouse && Platform::IsMouseButtonPressed(Platform::MouseButton::Left))
 	{
 		SelectUnderMouse(scene, camera);
 	}
@@ -145,32 +146,32 @@ void WorldEditor::UpdateHotkeys()
 	// the letters are still being typed.
 	if (io.WantCaptureKeyboard) { return; }
 
-	if (IsKeyDown(KEY_LEFT_CONTROL))
+	if (Platform::IsKeyDown(Platform::Key::LeftControl))
 	{
-		if (IsKeyPressed(KEY_ONE)) { isWorldSettingsActive = !isWorldSettingsActive; }
+		if (Platform::IsKeyPressed(Platform::Key::One)) { isWorldSettingsActive = !isWorldSettingsActive; }
 		// Display order (id descending) is now the Object Browser's own concern —
 		// GameMap no longer exposes a sortable container to mutate in place here.
-		if (IsKeyPressed(KEY_TWO)) { isObjectBrowserActive = !isObjectBrowserActive; }
-		if (IsKeyPressed(KEY_THREE)) { isPlacementActive = !isPlacementActive; }
-		if (IsKeyPressed(KEY_FOUR)) { isPlayerActive = !isPlayerActive; }
-		if (IsKeyPressed(KEY_FIVE)) { isCameraActive = !isCameraActive; }
-		if (IsKeyPressed(KEY_SIX)) { isMiniGameActive = !isMiniGameActive; }
-		if (IsKeyPressed(KEY_SEVEN)) { isAssetActive = !isAssetActive; }
-		if (IsKeyPressed(KEY_EIGHT)) { isLightingActive = !isLightingActive; }
+		if (Platform::IsKeyPressed(Platform::Key::Two)) { isObjectBrowserActive = !isObjectBrowserActive; }
+		if (Platform::IsKeyPressed(Platform::Key::Three)) { isPlacementActive = !isPlacementActive; }
+		if (Platform::IsKeyPressed(Platform::Key::Four)) { isPlayerActive = !isPlayerActive; }
+		if (Platform::IsKeyPressed(Platform::Key::Five)) { isCameraActive = !isCameraActive; }
+		if (Platform::IsKeyPressed(Platform::Key::Six)) { isMiniGameActive = !isMiniGameActive; }
+		if (Platform::IsKeyPressed(Platform::Key::Seven)) { isAssetActive = !isAssetActive; }
+		if (Platform::IsKeyPressed(Platform::Key::Eight)) { isLightingActive = !isLightingActive; }
 
-		if (IsKeyPressed(KEY_Z)) { Undo(); }
-		if (IsKeyPressed(KEY_D)) { DuplicateSelection(); }
+		if (Platform::IsKeyPressed(Platform::Key::Z)) { Undo(); }
+		if (Platform::IsKeyPressed(Platform::Key::D)) { DuplicateSelection(); }
 		return;
 	}
 
 	// Tool selection. 1-4 are free as bare keys — the panel shortcuts above all
 	// require Ctrl.
-	if (IsKeyPressed(KEY_ONE)) { gizmo.mode = GIZMO_SELECT; statusMessage = "Tool: Select"; }
-	if (IsKeyPressed(KEY_TWO)) { gizmo.mode = GIZMO_TRANSLATE; statusMessage = "Tool: Move"; }
-	if (IsKeyPressed(KEY_THREE)) { gizmo.mode = GIZMO_ROTATE; statusMessage = "Tool: Rotate"; }
-	if (IsKeyPressed(KEY_FOUR)) { gizmo.mode = GIZMO_SCALE; statusMessage = "Tool: Scale"; }
+	if (Platform::IsKeyPressed(Platform::Key::One)) { gizmo.mode = GIZMO_SELECT; statusMessage = "Tool: Select"; }
+	if (Platform::IsKeyPressed(Platform::Key::Two)) { gizmo.mode = GIZMO_TRANSLATE; statusMessage = "Tool: Move"; }
+	if (Platform::IsKeyPressed(Platform::Key::Three)) { gizmo.mode = GIZMO_ROTATE; statusMessage = "Tool: Rotate"; }
+	if (Platform::IsKeyPressed(Platform::Key::Four)) { gizmo.mode = GIZMO_SCALE; statusMessage = "Tool: Scale"; }
 
-	if (IsKeyPressed(KEY_P))
+	if (Platform::IsKeyPressed(Platform::Key::P))
 	{
 		placementMode = !placementMode;
 		// Arming the tool without showing what it will spawn is a trap of its
@@ -179,20 +180,20 @@ void WorldEditor::UpdateHotkeys()
 		statusMessage = placementMode ? "Point & Place armed" : "Point & Place off";
 	}
 
-	if (IsKeyPressed(KEY_G))
+	if (Platform::IsKeyPressed(Platform::Key::G))
 	{
 		gizmo.snapEnabled = !gizmo.snapEnabled;
 		statusMessage = gizmo.snapEnabled ? "Snap on" : "Snap off";
 	}
 
-	if (IsKeyPressed(KEY_X))
+	if (Platform::IsKeyPressed(Platform::Key::X))
 	{
 		gizmo.localSpace = !gizmo.localSpace;
 		statusMessage = gizmo.localSpace ? "Space: Local" : "Space: World";
 	}
 
-	if (IsKeyPressed(KEY_DELETE)) { DeleteSelection(); }
-	if (IsKeyPressed(KEY_F)) { FocusOnSelection(); }
+	if (Platform::IsKeyPressed(Platform::Key::Delete)) { DeleteSelection(); }
+	if (Platform::IsKeyPressed(Platform::Key::F)) { FocusOnSelection(); }
 }
 
 #pragma endregion
@@ -213,7 +214,7 @@ void WorldEditor::UpdatePlacementPreview(SceneManagement::Scene* scene, const Ca
 
 	// ImGui uses Escape to revert an active text field, so it only means "cancel
 	// placement" when no widget has the keyboard.
-	if (IsKeyPressed(KEY_ESCAPE) && !ImGui::GetIO().WantCaptureKeyboard)
+	if (Platform::IsKeyPressed(Platform::Key::Escape) && !ImGui::GetIO().WantCaptureKeyboard)
 	{
 		placementMode = false;
 		statusMessage = "Point & Place cancelled";
@@ -274,7 +275,7 @@ void WorldEditor::UpdatePlacementPreview(SceneManagement::Scene* scene, const Ca
 	placementPreviewNormal = normal;
 	placementPreviewValid = true;
 
-	if (canPlace && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+	if (canPlace && Platform::IsMouseButtonPressed(Platform::MouseButton::Left))
 	{
 		if (GameObject* spawned = SpawnStagedObject(point))
 		{

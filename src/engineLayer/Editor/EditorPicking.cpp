@@ -74,7 +74,7 @@ Quaternion SafeRotation(Quaternion rotation)
 
 Ray GetEditorMouseRay(const Camera3D& camera)
 {
-	return Geometry::GetScreenToWorldRayEx(GetMousePosition(), camera, Platform::ScreenWidth(), Platform::ScreenHeight());
+	return Geometry::GetScreenToWorldRayEx(Platform::MousePosition(), camera, Platform::ScreenWidth(), Platform::ScreenHeight());
 }
 
 bool RayOrientedBox(const Ray& ray, Vector3 center, Vector3 size, Quaternion rotation,

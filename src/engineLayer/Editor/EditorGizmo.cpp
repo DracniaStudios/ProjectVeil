@@ -1,4 +1,5 @@
 #include "EditorGizmo.h"
+#include <Platform.h>
 
 #include "EditorPicking.h"
 
@@ -162,7 +163,7 @@ bool EditorGizmo::Update(const Camera3D& camera, GizmoTransform& transform, bool
 		const float length = HandleLength(camera, transform.position);
 		hoveredHandle = PickHandle(ray, transform, length);
 
-		if (canStartDrag && hoveredHandle != GIZMO_HANDLE_NONE && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+		if (canStartDrag && hoveredHandle != GIZMO_HANDLE_NONE && Platform::IsMouseButtonPressed(Platform::MouseButton::Left))
 		{
 			if (BeginDrag(camera, ray, transform, hoveredHandle)) { dragBegan = true; }
 		}
@@ -175,7 +176,7 @@ bool EditorGizmo::Update(const Camera3D& camera, GizmoTransform& transform, bool
 
 	// Escape aborts and restores the transform the drag started from. Checked
 	// before the mouse state so an abort is never mistaken for a commit.
-	if (IsKeyPressed(KEY_ESCAPE))
+	if (Platform::IsKeyPressed(Platform::Key::Escape))
 	{
 		transform = startTransform;
 		activeHandle = GIZMO_HANDLE_NONE;
@@ -190,7 +191,7 @@ bool EditorGizmo::Update(const Camera3D& camera, GizmoTransform& transform, bool
 	}
 
 	// The drag owns the mouse until the button comes up, wherever the cursor is.
-	if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+	if (!Platform::IsMouseButtonDown(Platform::MouseButton::Left))
 	{
 		activeHandle = GIZMO_HANDLE_NONE;
 		dragEnded = true;
