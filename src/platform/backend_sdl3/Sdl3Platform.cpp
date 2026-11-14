@@ -1,5 +1,5 @@
-// Platform on SDL3 with an OpenGL 3.3 core context (B-15). Window, context, quit, time
-// and size only; input, the frame limiter, cursor lock and fullscreen are B-16 and B-17.
+// Platform on SDL3 with an OpenGL 3.3 core context (B-15, B-16). Window rules, frame
+// limiter, FPS, fullscreen, focus and cursor lock follow the raylib backend; input is B-17.
 #include <Platform.h>
 #include "Sdl3Native.h"
 
@@ -9,6 +9,7 @@
 #include <SDL3/SDL_main.h>
 
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 
 namespace {
@@ -20,8 +21,14 @@ namespace {
 	double beginTime = 0.0;
 	double lastBeginTime = 0.0;
 	bool haveBegin = false;
-	float lastFrameSeconds = 0.0f;
 	bool shouldClose = false;
+
+	// Frame timing as raylib's EndDrawing keeps it: previousStamp is the end of the last
+	// EndFrame (after its wait); FrameTime is previousStamp to previousStamp, wait included
+	double previousStamp = 0.0;
+	double targetSeconds = 0.0; // 0: no limit
+	float lastFrameSeconds = 0.0f;
+	long long frameCounter = 0; // EndFrame calls, raylib's CORE.Time.frameCounter
 
 	// Frame statistics, counted as RaylibPlatform.cpp does: the game prints them at exit
 	int statFrames = 0;
@@ -29,10 +36,18 @@ namespace {
 	double sumWorkMs = 0.0, maxWorkMs = 0.0;
 	double sumFrameMs = 0.0, maxFrameMs = 0.0;
 
-	// Stub state (B-16, B-17): recorded, not acted on
-	int targetFps = 0;
-	bool cursorLocked = false;
+	// Windowed size and position, saved when entering fullscreen
+	int savedW = 0, savedH = 0, savedX = 0, savedY = 0;
+
+	// Stub state (B-17): recorded, not acted on
 	Platform::Key exitKey = Platform::Key::Null;
+
+	void CentreCursor()
+	{
+		int w = 0, h = 0;
+		SDL_GetWindowSize(window, &w, &h);
+		SDL_WarpMouseInWindow(window, static_cast<float>(w / 2), static_cast<float>(h / 2));
+	}
 }
 
 SDL_Window* Sdl3Window() { return window; }
@@ -73,15 +88,13 @@ bool Init(const WindowDesc& desc)
 		return false;
 	}
 
-	// Minimum and maximum size (desc.minWidth to desc.maxHeight): B-16
-	if (desc.x != -1 || desc.y != -1) {
-		int x = desc.x, y = desc.y;
-		int currentX = 0, currentY = 0;
-		SDL_GetWindowPosition(window, &currentX, &currentY);
-		if (x == -1) { x = currentX; }
-		if (y == -1) { y = currentY; }
-		SDL_SetWindowPosition(window, x, y);
-	}
+	// The same rules as the raylib backend; 0 is "no limit" for SDL as it is for the descriptor
+	if (desc.x >= 0) { SDL_SetWindowPosition(window, desc.x, desc.y); }
+	if (desc.minWidth != 0 || desc.minHeight != 0) { SDL_SetWindowMinimumSize(window, desc.minWidth, desc.minHeight); }
+	if (desc.maxWidth != 0 || desc.maxHeight != 0) { SDL_SetWindowMaximumSize(window, desc.maxWidth, desc.maxHeight); }
+
+	// Relative motion unscaled by the system pointer speed, as raylib's raw motion is
+	SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE, "0");
 
 	glContext = SDL_GL_CreateContext(window);
 	if (glContext == nullptr || !SDL_GL_MakeCurrent(window, glContext)) {
@@ -92,6 +105,9 @@ bool Init(const WindowDesc& desc)
 	SDL_GL_SetSwapInterval(0);
 
 	timeZeroNs = SDL_GetTicksNS();
+	previousStamp = 0.0; // raylib starts its frame clock at InitTimer, so frame 1 includes loading
+	frameCounter = 0;
+	lastFrameSeconds = 0.0f;
 
 	const int v = SDL_GetVersion();
 	const char* driver = SDL_GetCurrentVideoDriver();
@@ -113,9 +129,7 @@ void BeginFrame()
 {
 	beginTime = Time();
 	if (haveBegin) {
-		const double frameSeconds = beginTime - lastBeginTime;
-		lastFrameSeconds = static_cast<float>(frameSeconds);
-		const double frameMs = frameSeconds * 1000.0;
+		const double frameMs = (beginTime - lastBeginTime) * 1000.0;
 		sumFrameMs += frameMs;
 		maxFrameMs = std::max(maxFrameMs, frameMs);
 		++statFrameIntervals;
@@ -140,26 +154,106 @@ void EndFrame()
 	maxWorkMs = std::max(maxWorkMs, workMs);
 	++statFrames;
 	SDL_GL_SwapWindow(window);
-	// B-16: wait out the target frame time here
+
+	// As raylib's EndDrawing: the frame is previousStamp to now (after the swap); if that is
+	// under the target, wait the rest and count the wait in the frame. FrameTime is that total.
+	double now = Time();
+	double frame = now - previousStamp;
+	previousStamp = now;
+	if (frame < targetSeconds) {
+		SDL_DelayPrecise(static_cast<Uint64>((targetSeconds - frame) * 1.0e9));
+		now = Time();
+		frame += now - previousStamp;
+		previousStamp = now;
+	}
+	lastFrameSeconds = static_cast<float>(frame);
+	++frameCounter;
 }
 
 bool ShouldClose() { return shouldClose; }
-void SetTargetFps(int fps) { targetFps = fps; } // B-16
+void SetTargetFps(int fps) { targetSeconds = fps < 1 ? 0.0 : 1.0 / static_cast<double>(fps); }
 
 int ScreenWidth() { int w = 0, h = 0; SDL_GetWindowSize(window, &w, &h); return w; }
 int ScreenHeight() { int w = 0, h = 0; SDL_GetWindowSize(window, &w, &h); return h; }
 int RenderWidth() { int w = 0, h = 0; SDL_GetWindowSizeInPixels(window, &w, &h); return w; }
 int RenderHeight() { int w = 0, h = 0; SDL_GetWindowSizeInPixels(window, &w, &h); return h; }
-void ToggleFullscreen() {} // B-16
-void FocusWindow() {}      // B-16
+
+void ToggleFullscreen()
+{
+	if ((SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) == 0) {
+		SDL_GetWindowSize(window, &savedW, &savedH);
+		SDL_GetWindowPosition(window, &savedX, &savedY);
+		// Exclusive fullscreen at the desktop mode of the display the window is on
+		const SDL_DisplayMode* mode = SDL_GetDesktopDisplayMode(SDL_GetDisplayForWindow(window));
+		if (mode == nullptr) {
+			std::cerr << "[Platform] SDL_GetDesktopDisplayMode failed: " << SDL_GetError() << std::endl;
+			return;
+		}
+		if (!SDL_SetWindowFullscreenMode(window, mode) || !SDL_SetWindowFullscreen(window, true)) {
+			std::cerr << "[Platform] Enter fullscreen failed: " << SDL_GetError() << std::endl;
+		}
+		SDL_SyncWindow(window);
+	} else {
+		SDL_SetWindowFullscreen(window, false);
+		SDL_SyncWindow(window);
+		SDL_SetWindowSize(window, savedW, savedH);
+		SDL_SetWindowPosition(window, savedX, savedY);
+		SDL_SyncWindow(window);
+	}
+}
+
+void FocusWindow() { SDL_RaiseWindow(window); }
 
 float FrameTime() { return lastFrameSeconds; }
 double Time() { return static_cast<double>(SDL_GetTicksNS() - timeZeroNs) / 1.0e9; }
-int Fps() { return 0; } // B-16
 
-void LockCursor() { cursorLocked = true; }     // B-16
-void UnlockCursor() { cursorLocked = false; }  // B-16
-bool IsCursorLocked() { return cursorLocked; } // B-16
+// raylib's GetFPS: every 0.5 s / 30 = 1/60 s a frame time is written into a ring of 30 slots
+// (each as frameTime / 30) and the answer is the rounded inverse of the ring's sum, so it
+// is the mean of the last 30 samples spread over at least half a second, not of 30 frames.
+int Fps()
+{
+	constexpr int kCaptures = 30;
+	constexpr float kStep = 0.5f / kCaptures;
+	static int index = 0;
+	static float history[kCaptures] = {};
+	static float average = 0.0f, last = 0.0f;
+	const float fpsFrame = FrameTime();
+
+	if (frameCounter == 0) { // as raylib: a fresh window starts from zero
+		average = 0.0f;
+		last = 0.0f;
+		index = 0;
+		for (float& h : history) { h = 0.0f; }
+	}
+	if (fpsFrame == 0.0f) { return 0; }
+
+	if ((Time() - last) > kStep) {
+		last = static_cast<float>(Time());
+		index = (index + 1) % kCaptures;
+		average -= history[index];
+		history[index] = fpsFrame / kCaptures;
+		average += history[index];
+	}
+	// raylib casts 1/average unguarded; an empty ring would be infinity, so answer 0
+	return average > 0.0f ? static_cast<int>(std::roundf(1.0f / average)) : 0;
+}
+
+// raylib re-centres the cursor on every call, locked or not, so these do too
+void LockCursor()
+{
+	CentreCursor();
+	if (!SDL_SetWindowRelativeMouseMode(window, true)) {
+		std::cerr << "[Platform] Lock cursor failed: " << SDL_GetError() << std::endl;
+	}
+}
+
+void UnlockCursor()
+{
+	SDL_SetWindowRelativeMouseMode(window, false);
+	CentreCursor();
+}
+
+bool IsCursorLocked() { return SDL_GetWindowRelativeMouseMode(window); }
 
 void SetExitKey(Key key) { exitKey = key; } // B-17
 bool IsKeyDown(Key) { return false; }       // B-17
