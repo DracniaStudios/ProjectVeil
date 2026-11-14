@@ -414,6 +414,7 @@ for suite in "StalkerFsmTests:stalker_fsm_tests" "EmitterTests:emitter_tests" \
              "HostProcessTests:host_process_tests" \
              "GameMapEcsTests:game_map_ecs_tests" \
              "TickDigestTests:tick_digest_tests" \
+             "AssetDecodeTests:asset_decode_tests" 
              "PresentationIndependenceTests:presentation_independence_tests"; do
 	SRC="tests/${suite%%:*}.cpp"
 	TEST_BIN="$OUT_DIR/${suite##*:}"
