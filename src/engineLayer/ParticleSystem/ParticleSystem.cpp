@@ -1,5 +1,6 @@
 #include "ParticleSystem.h"
 #include <Platform.h>
+#include <Render/Render.h>
 
 #include <algorithm>
 #include <random>
@@ -40,7 +41,7 @@ namespace ParticleSystem {
 	}
 	void ParticleSystem::Draw() {
 		for (const Particle& p : particles) {
-			DrawCircleV({ p.x, p.y }, p.size, p.color);
+			Render::Circle({ p.x, p.y }, p.size, p.color);
 		}
 	}
 

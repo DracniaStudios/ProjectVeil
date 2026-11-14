@@ -1,5 +1,6 @@
 #include "SceneManager.h"
 #include <Platform.h>
+#include <Render/Render.h>
 
 #include <iostream>
 
@@ -133,7 +134,7 @@ namespace SceneManagement {
 		// Draw Fade
 		if (manager->fade != SceneFade::None) {
 			const float opacity = manager->fadeOpacity < 0.0f ? 0.0f : manager->fadeOpacity > 1.0f ? 1.0f : manager->fadeOpacity;
-			DrawRectangle(0, 0, Platform::ScreenWidth(), Platform::ScreenHeight(), Color{ 0, 0, 0, static_cast<unsigned char>(opacity * 255.0f) });
+			Render::Rect({ 0.0f, 0.0f, static_cast<float>(Platform::ScreenWidth()), static_cast<float>(Platform::ScreenHeight()) }, Color{ 0, 0, 0, static_cast<unsigned char>(opacity * 255.0f) });
 		}
 	}
 

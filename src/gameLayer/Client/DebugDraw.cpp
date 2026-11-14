@@ -2,6 +2,8 @@
 
 #include <raymath.h>
 
+#include <Render/Render.h>
+
 #include <Collider.h>
 
 	void DrawOrientedBoxWires(Vector3 center, Vector3 size, Quaternion rotation, Color color)
@@ -31,6 +33,6 @@
 
 		for (const auto& edge : edges)
 		{
-			DrawLine3D(corner[edge[0]], corner[edge[1]], color);
+			Render::DebugLine(corner[edge[0]], corner[edge[1]], color);
 		}
 	}

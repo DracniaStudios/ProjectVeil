@@ -1,4 +1,5 @@
 #include "MiniGame_Crane.h"
+#include <Render/Render.h>
 
 #include <Geometry.h>
 
@@ -63,12 +64,12 @@ Crane::Crane(const MiniGameSetup& setup)
 void Crane::DrawGame() const
 {
 	/// Draw Background Screen
-	DrawRectangleRec(data.screen, BLACK);
-	DrawRectangleRec(data.goal, BLUE);
+	Render::Rect(data.screen, BLACK);
+	Render::Rect(data.goal, BLUE);
 
 	for (auto& obj : data.obstacles)
 	{
-		DrawRectangleRec(obj, RED);
+		Render::Rect(obj, RED);
 	}
 
 }

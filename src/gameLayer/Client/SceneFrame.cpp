@@ -1,5 +1,6 @@
 #include "Scene.h"
 #include <Platform.h>
+#include <Render/Render.h>
 
 #include <iostream>
 #include <random>
@@ -83,7 +84,7 @@ namespace SceneManagement {
 		// straight to raylib in between: the dimming lands under the panels it
 		// dims, and a MiniGame and the reticle only draw when no panel does.
 		const bool editorHasMouse = Editor::WorldEditor::getInstance().CapturesMouse();
-		UI::beginFrame(UI::UIEngine::getInstance(), UI::ReadRaylibInput(editorHasMouse));
+		UI::beginFrame(UI::UIEngine::getInstance(), UI::ReadPlatformInput(editorHasMouse));
 
 		if (scene.draw2D) { scene.draw2D(scene); }
 
@@ -98,7 +99,7 @@ namespace SceneManagement {
 	}
 
 	void Scene_drawScene3D(Scene& scene) {
-		if (Editor::WorldEditor::getInstance().IsEnabled()) { DrawGrid(100.0f, 1.0f); }
+		if (Editor::WorldEditor::getInstance().IsEnabled()) { Render::DebugGrid(100, 1.0f); }
 
 		if (scene.draw3D) { scene.draw3D(scene); }
 
@@ -113,8 +114,8 @@ namespace SceneManagement {
 			const Vector3 at = player.getPosition();
 			const float half = player.isCrouching ? 0.25f : 0.5f;
 			const Color colour = player.flashlightOn ? Color{ 230, 220, 160, 255 } : Color{ 150, 160, 175, 255 };
-			DrawCapsule(Vector3{ at.x, at.y - half, at.z }, Vector3{ at.x, at.y + half, at.z }, 0.45f, 8, 6, colour);
-			DrawLine3D(Vector3{ at.x, at.y + half, at.z }, Vector3Add(Vector3{ at.x, at.y + half, at.z }, Vector3Scale(player.camera.forward, 0.8f)), BLACK);
+			Render::DebugCapsule(Vector3{ at.x, at.y - half, at.z }, Vector3{ at.x, at.y + half, at.z }, 0.45f, 8, 6, colour);
+			Render::DebugLine(Vector3{ at.x, at.y + half, at.z }, Vector3Add(Vector3{ at.x, at.y + half, at.z }, Vector3Scale(player.camera.forward, 0.8f)), BLACK);
 		});
 	}
 

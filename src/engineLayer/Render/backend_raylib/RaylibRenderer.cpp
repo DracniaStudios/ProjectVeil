@@ -226,4 +226,23 @@ void DrawModelWires(const ModelDraw& draw)
 	DrawStoredModel(draw, [&](const Model& model) { ::DrawModelWires(model, draw.translation, 1.0f, draw.tint); });
 }
 
+void DebugLine(Vector3 a, Vector3 b, Color color) { DrawLine3D(a, b, color); }
+void DebugSphere(Vector3 center, float radius, Color color) { DrawSphere(center, radius, color); }
+void DebugSphere(Vector3 center, float radius, int rings, int slices, Color color) { DrawSphereEx(center, radius, rings, slices, color); }
+void DebugSphereWires(Vector3 center, float radius, int rings, int slices, Color color) { DrawSphereWires(center, radius, rings, slices, color); }
+void DebugCube(Vector3 center, Vector3 size, Color color) { DrawCubeV(center, size, color); }
+void DebugBoundingBox(BoundingBox box, Color color) { DrawBoundingBox(box, color); }
+void DebugCylinder(Vector3 start, Vector3 end, float startRadius, float endRadius, int sides, Color color) { DrawCylinderEx(start, end, startRadius, endRadius, sides, color); }
+void DebugCapsule(Vector3 start, Vector3 end, float radius, int slices, int rings, Color color) { DrawCapsule(start, end, radius, slices, rings, color); }
+void DebugGrid(int slices, float spacing) { DrawGrid(slices, spacing); }
+
+void Rect(Rectangle rect, Color color) { DrawRectangleRec(rect, color); }
+void RectOutline(Rectangle rect, float thickness, Color color) { DrawRectangleLinesEx(rect, thickness, color); }
+void Circle(Vector2 center, float radius, Color color) { DrawCircleV(center, radius, color); }
+void Text(const std::string& text, Vector2 topLeft, int fontSize, Color color)
+{
+	DrawText(text.c_str(), static_cast<int>(topLeft.x), static_cast<int>(topLeft.y), fontSize, color);
+}
+int TextWidth(const std::string& text, int fontSize) { return MeasureText(text.c_str(), fontSize); }
+
 }

@@ -1,4 +1,5 @@
 #include "MiniGame_FlappyBird.h"
+#include <Render/Render.h>
 
 #include <Geometry.h>
 
@@ -59,12 +60,12 @@ void FlappyBird::DrawGame() const
 	/// Draw Background Screen
 	const Rectangle screen = data.screen;
 
-	DrawRectangleRec(generateScaleRect(screen, Rectangle{ 1, 1, 1, 1 }), BLACK);
-	DrawRectangleRec(GetGreenArea(screen), DARKGREEN);
+	Render::Rect(generateScaleRect(screen, Rectangle{ 1, 1, 1, 1 }), BLACK);
+	Render::Rect(GetGreenArea(screen), DARKGREEN);
 
 	/// Draw Goal Borders
-	if (isLeftGoalActive) { DrawRectangleRec(GetLeftGoal(screen), GOLD); }
-	if (isRightGoalActive) { DrawRectangleRec(GetRightGoal(screen), GOLD); }
+	if (isLeftGoalActive) { Render::Rect(GetLeftGoal(screen), GOLD); }
+	if (isRightGoalActive) { Render::Rect(GetRightGoal(screen), GOLD); }
 
 	/// Draw Enemy Tiles
 
@@ -80,11 +81,11 @@ void FlappyBird::DrawGame() const
 
 		// adjust object side accordingly
 
-		DrawRectangleRec(generateScaleRect(screen, newSize), RED);
+		Render::Rect(generateScaleRect(screen, newSize), RED);
 	}
 
-	DrawRectangleRec(generateScaleRect(screen, Rectangle{ 1, 1, 1, 0.1f }), BLACK);
-	DrawRectangleRec(generateScaleRect(screen, Rectangle{ 1, 2.5f, 1, 0.1f }), BLACK);
+	Render::Rect(generateScaleRect(screen, Rectangle{ 1, 1, 1, 0.1f }), BLACK);
+	Render::Rect(generateScaleRect(screen, Rectangle{ 1, 2.5f, 1, 0.1f }), BLACK);
 
 }
 

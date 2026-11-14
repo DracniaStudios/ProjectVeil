@@ -166,7 +166,7 @@ namespace UI {
 
 	/**
 	 * One frame's input, read before any widget is drawn. The game reads it
-	 * from raylib (ReadRaylibInput); a test writes its own.
+	 * from the platform (ReadPlatformInput); a test writes its own.
 	 */
 	struct Input
 	{
@@ -318,16 +318,16 @@ namespace UI {
 		int highlightedId = -1;
 	};
 
-	/** raylib **/
-	class RaylibBackend final : public Backend
+	/** Render and Platform **/
+	class RenderBackend final : public Backend
 	{
 	public:
 		int TextWidth(const std::string& text, int fontSize) const override;
 		void Draw(const std::vector<DrawCommand>& commands) override;
 	};
 
-	// The mouse and screen as raylib has them this frame
-	Input ReadRaylibInput(bool mouseBlocked);
+	// The mouse and screen as the platform has them this frame
+	Input ReadPlatformInput(bool mouseBlocked);
 }
 
 #endif

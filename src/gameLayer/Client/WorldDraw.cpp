@@ -24,7 +24,7 @@ namespace Client {
 			// unrotated and its collider is the default, and every gap between them —
 			// from rotation, from a resized collider, from an offset one — is real slack
 			// worth being able to see.
-			DrawBoundingBox(object.rigidBody3D.broadPhaseBox, WHITE);
+			Render::DebugBoundingBox(object.rigidBody3D.broadPhaseBox, WHITE);
 
 			// Colour carries the mode. A trigger and a solid are indistinguishable on
 			// screen otherwise and behave completely differently, which is a miserable
@@ -35,7 +35,7 @@ namespace Client {
 
 			if (collider.shape == COLLIDER_SPHERE)
 			{
-				DrawSphereWires(colliderCenter, collider.GetWorldRadius(object.rigidBody3D.scale), 8, 8, colliderColor);
+				Render::DebugSphereWires(colliderCenter, collider.GetWorldRadius(object.rigidBody3D.scale), 8, 8, colliderColor);
 			}
 			else
 			{
@@ -57,12 +57,12 @@ namespace Client {
 
 		if (object.displayDirection) {
 			/// Show Directions
-			DrawSphere(object.rigidBody3D.forward + object.rigidBody3D.translation, 0.1f, RED);
-			DrawSphere(object.rigidBody3D.back + object.rigidBody3D.translation, 0.1f, ORANGE);
-			DrawSphere(object.rigidBody3D.left + object.rigidBody3D.translation, 0.1f, YELLOW);
-			DrawSphere(object.rigidBody3D.right + object.rigidBody3D.translation, 0.1f, GREEN);
-			DrawSphere(object.rigidBody3D.up + object.rigidBody3D.translation, 0.1f, BLUE);
-			DrawSphere(object.rigidBody3D.down + object.rigidBody3D.translation, 0.1f, PURPLE);
+			Render::DebugSphere(object.rigidBody3D.forward + object.rigidBody3D.translation, 0.1f, RED);
+			Render::DebugSphere(object.rigidBody3D.back + object.rigidBody3D.translation, 0.1f, ORANGE);
+			Render::DebugSphere(object.rigidBody3D.left + object.rigidBody3D.translation, 0.1f, YELLOW);
+			Render::DebugSphere(object.rigidBody3D.right + object.rigidBody3D.translation, 0.1f, GREEN);
+			Render::DebugSphere(object.rigidBody3D.up + object.rigidBody3D.translation, 0.1f, BLUE);
+			Render::DebugSphere(object.rigidBody3D.down + object.rigidBody3D.translation, 0.1f, PURPLE);
 		}
 	}
 
@@ -77,8 +77,8 @@ namespace Client {
 		for (std::size_t i = 0; i < stalker.waypoints.size(); ++i)
 		{
 			const bool isCurrent = (static_cast<int>(i) == stalker.currentWaypoint);
-			DrawSphere(stalker.waypoints[i], isCurrent ? 0.45f : 0.3f, isCurrent ? YELLOW : SKYBLUE);
-			DrawLine3D(stalker.waypoints[i], stalker.waypoints[(i + 1) % stalker.waypoints.size()], SKYBLUE);
+			Render::DebugSphere(stalker.waypoints[i], isCurrent ? 0.45f : 0.3f, isCurrent ? YELLOW : SKYBLUE);
+			Render::DebugLine(stalker.waypoints[i], stalker.waypoints[(i + 1) % stalker.waypoints.size()], SKYBLUE);
 		}
 
 		// Where the stalker is actually heading right now, which is only the patrol
@@ -112,17 +112,17 @@ namespace Client {
 			// Red for a live pursuit, orange otherwise: the colour says which of the
 			// two kinds of target this is without reading the state text.
 			const Color colour = (stalker.state == STALKER_HUNT) ? RED : ORANGE;
-			DrawLine3D(stalker.getPosition(), target, colour);
-			DrawSphere(target, 0.25f, colour);
+			Render::DebugLine(stalker.getPosition(), target, colour);
+			Render::DebugSphere(target, 0.25f, colour);
 		}
 
 		// The belief itself, drawn even when it is not the current target, so a
 		// stale last-known position stays visible while the stalker sweeps away
 		// from it.
-		if (stalker.hasLastKnown) { DrawSphereWires(stalker.lastKnownPosition, 0.6f, 6, 6, MAROON); }
+		if (stalker.hasLastKnown) { Render::DebugSphereWires(stalker.lastKnownPosition, 0.6f, 6, 6, MAROON); }
 
 		for (const auto& event : scene.soundField.Events()) {
-			DrawSphereWires(event.position, 0.5f, 6, 6, PINK);
+			Render::DebugSphereWires(event.position, 0.5f, 6, 6, PINK);
 		}
 	}
 
@@ -139,7 +139,7 @@ namespace Client {
 		auto inputSystem = &InputSystem::InputSystem::getInstance();
 
 		/// Reticle
-		DrawCircle(Platform::ScreenWidth() / 2, Platform::ScreenHeight() / 2, 10,
+		Render::Circle({ static_cast<float>(Platform::ScreenWidth() / 2), static_cast<float>(Platform::ScreenHeight() / 2) }, 10.0f,
 			inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM) ? RED
 			: inputSystem->IsActionDown(InputSystem::ACTION_USE_ITEM2) ? RED
 			: WHITE);

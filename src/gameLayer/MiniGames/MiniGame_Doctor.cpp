@@ -1,4 +1,5 @@
 #include "MiniGame_Doctor.h"
+#include <Render/Render.h>
 
 #include <Geometry.h>
 
@@ -36,13 +37,13 @@ Doctor::Doctor(const MiniGameSetup& setup)
 
 void Doctor::DrawGame() const
 {
-	DrawRectangleRec(data.screen, BLACK);
-	DrawRectangleRec(data.goal, GREEN);
+	Render::Rect(data.screen, BLACK);
+	Render::Rect(data.goal, GREEN);
 
 	// 2 Pointer Cubes align to the cursor's X and Y
 	for (auto obj : data.obstacles)
 	{
-		DrawRectangleRec(obj, DARKBLUE);
+		Render::Rect(obj, DARKBLUE);
 	}
 }
 

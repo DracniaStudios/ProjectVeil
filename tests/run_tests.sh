@@ -209,7 +209,7 @@ echo
 # Same tier as the overlay suite: UIEngine.cpp takes its input as a snapshot
 # and records what it draws for a backend to replay, so it calls no raylib
 # function. raylib's header is included for its Rectangle, Vector2 and Color
-# types, and nothing is linked. The raylib backend (UI/RaylibBackend.cpp) is
+# types, and nothing is linked. The render backend (UI/RenderBackend.cpp) is
 # left out on purpose; if this block ever needs it, hover or drawing has
 # started calling raylib again.
 # ---------------------------------------------------------------------------

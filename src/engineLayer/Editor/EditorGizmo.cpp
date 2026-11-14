@@ -1,5 +1,6 @@
 #include "EditorGizmo.h"
 #include <Platform.h>
+#include <Render/Render.h>
 
 #include "EditorPicking.h"
 
@@ -78,8 +79,8 @@ namespace
 		const Vector3 tip = Vector3Add(origin, Vector3Scale(direction, length));
 		const Vector3 neck = Vector3Add(origin, Vector3Scale(direction, length * (1.0f - kArrowHeadLength)));
 
-		DrawLine3D(origin, neck, color);
-		DrawCylinderEx(neck, tip, length * kArrowHeadRadius, 0.0f, 10, color);
+		Render::DebugLine(origin, neck, color);
+		Render::DebugCylinder(neck, tip, length * kArrowHeadRadius, 0.0f, 10, color);
 	}
 
 	/**
@@ -103,7 +104,7 @@ namespace
 			const Vector3 point = Vector3Add(center,
 				Vector3Add(Vector3Scale(u, cosf(angle) * radius), Vector3Scale(v, sinf(angle) * radius)));
 
-			DrawLine3D(previous, point, color);
+			Render::DebugLine(previous, point, color);
 			previous = point;
 		}
 	}
@@ -392,8 +393,8 @@ void EditorGizmo::Draw(const Camera3D& camera, const GizmoTransform& transform) 
 		case GIZMO_SCALE:
 		{
 			const Vector3 tip = Vector3Add(transform.position, Vector3Scale(direction, length));
-			DrawLine3D(transform.position, tip, color);
-			DrawCubeV(tip, Vector3Scale(Vector3One(), length * kScaleBlockSize), color);
+			Render::DebugLine(transform.position, tip, color);
+			Render::DebugCube(tip, Vector3Scale(Vector3One(), length * kScaleBlockSize), color);
 			break;
 		}
 
@@ -404,7 +405,7 @@ void EditorGizmo::Draw(const Camera3D& camera, const GizmoTransform& transform) 
 
 	if (mode == GIZMO_SCALE)
 	{
-		DrawCubeV(transform.position, Vector3Scale(Vector3One(), length * kUniformBlockSize),
+		Render::DebugCube(transform.position, Vector3Scale(Vector3One(), length * kUniformBlockSize),
 			GizmoAxisColor(-1, highlight == GIZMO_HANDLE_UNIFORM));
 	}
 }

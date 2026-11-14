@@ -1,36 +1,36 @@
 #include <UIEngine.h>
 #include <Platform.h>
+#include <Render/Render.h>
 
-// Everything the UI needs from raylib, kept apart from its rules in UIEngine.cpp,
-// which calls no raylib function and so is tested without a window.
+// Everything the UI needs from the renderer and the platform, kept apart from its rules in
+// UIEngine.cpp, which calls no raylib function and so is tested without a window.
 namespace UI {
 
-	int RaylibBackend::TextWidth(const std::string& text, int fontSize) const
+	int RenderBackend::TextWidth(const std::string& text, int fontSize) const
 	{
-		return MeasureText(text.c_str(), fontSize);
+		return Render::TextWidth(text, fontSize);
 	}
 
-	void RaylibBackend::Draw(const std::vector<DrawCommand>& commands)
+	void RenderBackend::Draw(const std::vector<DrawCommand>& commands)
 	{
 		for (const DrawCommand& command : commands)
 		{
 			switch (command.kind)
 			{
 			case DrawCommand::Kind::Rect:
-				DrawRectangleRec(command.rect, command.color);
+				Render::Rect(command.rect, command.color);
 				break;
 			case DrawCommand::Kind::Outline:
-				DrawRectangleLinesEx(command.rect, command.thickness, command.color);
+				Render::RectOutline(command.rect, command.thickness, command.color);
 				break;
 			case DrawCommand::Kind::Text:
-				DrawText(command.text.c_str(), static_cast<int>(command.position.x), static_cast<int>(command.position.y),
-					command.fontSize, command.color);
+				Render::Text(command.text, command.position, command.fontSize, command.color);
 				break;
 			}
 		}
 	}
 
-	Input ReadRaylibInput(bool mouseBlocked)
+	Input ReadPlatformInput(bool mouseBlocked)
 	{
 		Input input;
 		input.screenSize = Vector2{ static_cast<float>(Platform::ScreenWidth()), static_cast<float>(Platform::ScreenHeight()) };
@@ -43,7 +43,7 @@ namespace UI {
 
 	UIEngine& UIEngine::getInstance()
 	{
-		static RaylibBackend backend;
+		static RenderBackend backend;
 		static UIEngine instance(backend); // Guaranteed to be destroyed and instantiated on first use
 		return instance;
 	}

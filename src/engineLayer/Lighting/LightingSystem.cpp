@@ -77,7 +77,7 @@ namespace Lighting
 				Vector3Add(Vector3Scale(right, cosf(angle) * radius),
 					Vector3Scale(up, sinf(angle) * radius)));
 
-			DrawLine3D(previous, point, color);
+			Render::DebugLine(previous, point, color);
 			previous = point;
 		}
 	}
@@ -92,8 +92,8 @@ namespace Lighting
 		const float headLength = fminf(headRadius * 3.0f, length * 0.5f);
 		const Vector3 headBase = Vector3Subtract(tip, Vector3Scale(direction, headLength));
 
-		DrawLine3D(origin, headBase, color);
-		DrawCylinderEx(headBase, tip, headRadius, 0.0f, 8, color);
+		Render::DebugLine(origin, headBase, color);
+		Render::DebugCylinder(headBase, tip, headRadius, 0.0f, 8, color);
 	}
 
 	/**
@@ -699,10 +699,10 @@ namespace Lighting
 		if (markers)
 		{
 			// The position marker, in the light's own colour so a rig reads at a glance
-			DrawSphereEx(origin, GIZMO_BODY_RADIUS, 6, 8, bodyColor);
+			Render::DebugSphere(origin, GIZMO_BODY_RADIUS, 6, 8, bodyColor);
 
 			// Selection halo drawn white, so it reads against any light colour
-			if (highlighted) { DrawSphereWires(origin, GIZMO_BODY_RADIUS * 2.2f, 8, 8, WHITE); }
+			if (highlighted) { Render::DebugSphereWires(origin, GIZMO_BODY_RADIUS * 2.2f, 8, 8, WHITE); }
 		}
 
 		switch (light.type)
@@ -753,7 +753,7 @@ namespace Lighting
 
 				for (const Vector3& axis : axes)
 				{
-					DrawLine3D(origin, Vector3Add(origin, Vector3Scale(axis, spikeLength)), rayColor);
+					Render::DebugLine(origin, Vector3Add(origin, Vector3Scale(axis, spikeLength)), rayColor);
 				}
 			}
 			else
@@ -800,7 +800,7 @@ namespace Lighting
 					Vector3Add(Vector3Scale(right, cosf(angle) * outerRadius),
 						Vector3Scale(up, sinf(angle) * outerRadius)));
 
-				DrawLine3D(origin, edge, shapeColor);
+				Render::DebugLine(origin, edge, shapeColor);
 			}
 			break;
 		}

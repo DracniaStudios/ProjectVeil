@@ -1,5 +1,6 @@
 #include "WorldEditor.h"
 #include <Platform.h>
+#include <Render/Render.h>
 #include <imgui.h>
 
 #include <rlgl.h>
@@ -596,12 +597,12 @@ void WorldEditor::DrawEditorViewport()
 		if (size == Vector3Zero()) { size = Vector3One(); }
 		size = SanitizeScale(size);
 
-		DrawCubeV(placementPreviewPosition, size, Geometry::Fade(kPlacementColor, 0.30f));
+		Render::DebugCube(placementPreviewPosition, size, Geometry::Fade(kPlacementColor, 0.30f));
 		DrawOrientedBoxWires(placementPreviewPosition, size, QuaternionIdentity(), kPlacementColor);
 
 		// Which way the object was pushed off the surface, so a placement onto a
 		// wall or ceiling is readable before committing to it.
-		DrawLine3D(placementPreviewPosition,
+		Render::DebugLine(placementPreviewPosition,
 			Vector3Add(placementPreviewPosition, Vector3Scale(placementPreviewNormal, 1.0f)),
 			kPlacementColor);
 	}

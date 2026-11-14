@@ -11,6 +11,7 @@
 #include <Client/GamePresentation.h>
 #include <sim/FixedTick.h>
 #include <Platform.h>
+#include <Render/Render.h>
 
 #include <cmath>
 #include <optional>
@@ -176,7 +177,9 @@ bool update_game()
 	// frame moves the cursor this frame
 	ApplyCursorForInput();
 
-	DrawFPS(10, 10);
+	// raylib's DrawFPS: green, orange under 30, red under 15
+	const int fps = Platform::Fps();
+	Render::Text(std::format("{:2} FPS", fps), { 10.0f, 10.0f }, 20, fps < 15 ? RED : fps < 30 ? ORANGE : LIME);
 	return !exitRequested;
 }
 

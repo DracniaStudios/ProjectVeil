@@ -25,5 +25,23 @@ namespace Render {
 
 	void DrawModel(const ModelDraw& draw);
 	void DrawModelWires(const ModelDraw& draw);
+
+	// Debug: unlit, batched, inside the world pass
+	void DebugLine(Vector3 a, Vector3 b, Color color);
+	void DebugSphere(Vector3 center, float radius, Color color);                 // 16 rings, 16 slices
+	void DebugSphere(Vector3 center, float radius, int rings, int slices, Color color);
+	void DebugSphereWires(Vector3 center, float radius, int rings, int slices, Color color);
+	void DebugCube(Vector3 center, Vector3 size, Color color);
+	void DebugBoundingBox(BoundingBox box, Color color);
+	void DebugCylinder(Vector3 start, Vector3 end, float startRadius, float endRadius, int sides, Color color);
+	void DebugCapsule(Vector3 start, Vector3 end, float radius, int slices, int rings, Color color);
+	void DebugGrid(int slices, float spacing);
+
+	// 2D: screen coordinates, origin top-left
+	void Rect(Rectangle rect, Color color);
+	void RectOutline(Rectangle rect, float thickness, Color color);
+	void Circle(Vector2 center, float radius, Color color);                       // 36 segments
+	void Text(const std::string& text, Vector2 topLeft, int fontSize, Color color); // position truncated to whole pixels
+	int  TextWidth(const std::string& text, int fontSize);                       // == raylib MeasureText
 }
 #endif

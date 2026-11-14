@@ -1,4 +1,5 @@
 #include "MiniGame_RoShamBoo.h"
+#include <Render/Render.h>
 
 #include <iostream>
 
@@ -22,9 +23,9 @@ void RoShamBoo::DrawGame() const
 	auto rightCard = getScreenScale(screenSize, Rectangle{ 0.7f, 0.3f, 0.2f, 0.5f });
 
 	// Highlighted from the same actions Update() selects on
-	DrawRectangleRec(leftCard, held.left ? YELLOW : RED);
-	DrawRectangleRec(middleCard, held.backward ? YELLOW : WHITE);
-	DrawRectangleRec(rightCard, held.right ? YELLOW : BLUE);
+	Render::Rect(leftCard, held.left ? YELLOW : RED);
+	Render::Rect(middleCard, held.backward ? YELLOW : WHITE);
+	Render::Rect(rightCard, held.right ? YELLOW : BLUE);
 
 }
 

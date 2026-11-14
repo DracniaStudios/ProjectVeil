@@ -1,4 +1,5 @@
 #include "MiniGame_Maze.h"
+#include <Render/Render.h>
 
 namespace {
 
@@ -45,7 +46,7 @@ namespace {
 			cellSize.width = screen.x / map.size;
 			cellSize.height = screen.y / map.size;
 
-			DrawRectangleRec(cellSize, cell->color);
+			Render::Rect(cellSize, cell->color);
 		}
 		return map;
 	}
@@ -67,7 +68,7 @@ Maze::Maze(const MiniGameSetup& setup)
 
 void Maze::DrawGame() const
 {
-	DrawRectangleRec(data.screen, DARKBLUE);
+	Render::Rect(data.screen, DARKBLUE);
 	renderMap1(data.screen);
 
 }
