@@ -345,7 +345,7 @@ namespace
 			return contact;
 		}
 
-		// COLLIDER_MESH is an ordinary box once FitToModel has sized it
+		// COLLIDER_MESH is an ordinary box once FitToBounds has sized it
 		return BoxBoxContact(a, b);
 	}
 #pragma endregion
@@ -470,41 +470,6 @@ namespace
 		// take the largest half extent rather than the smallest.
 		const Vector3 half = Vector3Scale(size, 0.5f);
 		radius = fmaxf(half.x, fmaxf(half.y, half.z));
-	}
-
-	void Collider3D::FitToModel(const Model& model)
-	{
-		if (model.meshCount <= 0 || model.meshes == nullptr) { return; }
-
-		// model.transform is deliberately ignored: GameObject::render3D overwrites it
-		// every frame with the body's own scale and rotation, so the mesh's untouched
-		// local bounds are what that transform is applied to — and local units are
-		// precisely the frame `size` and `offset` live in.
-		BoundingBox bounds = {};
-		bool haveBounds = false;
-
-		for (int i = 0; i < model.meshCount; ++i)
-		{
-			const Mesh& mesh = model.meshes[i];
-			if (mesh.vertexCount <= 0 || mesh.vertices == nullptr) { continue; }
-
-			const BoundingBox meshBounds = Geometry::GetMeshBoundingBox(mesh.vertices, mesh.vertexCount);
-			if (!haveBounds)
-			{
-				bounds = meshBounds;
-				haveBounds = true;
-				continue;
-			}
-
-			bounds.min = Vector3Min(bounds.min, meshBounds.min);
-			bounds.max = Vector3Max(bounds.max, meshBounds.max);
-		}
-
-		// Nothing to measure. Leaving the collider as it was beats collapsing it to
-		// a point, which would make the object fall through the world.
-		if (!haveBounds) { return; }
-
-		FitToBounds(bounds);
 	}
 #pragma endregion
 

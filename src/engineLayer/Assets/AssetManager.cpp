@@ -1,5 +1,6 @@
 #include "AssetManager.h"
 
+#include <Geometry.h>
 #include <ResourcePaths.h>
 
 #include <algorithm>
@@ -152,6 +153,15 @@ namespace AssetManager {
 				{
 					std::cerr << "Failed to load model: " << asset.path << "\n";
 					continue;
+				}
+
+				// model.transform is deliberately ignored: GameObject::render3D overwrites it
+				// every frame, so the mesh's untouched local bounds are what a collider fits.
+				for (int i = 0; i < asset.model.meshCount; ++i)
+				{
+					const Mesh& mesh = asset.model.meshes[i];
+					if (mesh.vertexCount <= 0 || mesh.vertices == nullptr) { continue; }
+					Geometry::ExtendBounds(asset.localBounds, Geometry::GetMeshBoundingBox(mesh.vertices, mesh.vertexCount));
 				}
 			}
 

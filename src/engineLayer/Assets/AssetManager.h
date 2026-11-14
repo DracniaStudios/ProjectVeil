@@ -3,6 +3,7 @@
 #define ASSET_MANAGER_H
 
 #include <raylib.h>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -23,6 +24,10 @@ namespace AssetManager {
 
 		Texture2D texture = {};
 		Model model = {};
+
+		// Union of the bounds of the model's meshes that have CPU vertices; empty for
+		// a texture or a model with none. Local units, the frame a collider lives in.
+		std::optional<BoundingBox> localBounds;
 	};
 
 	class AssetManager

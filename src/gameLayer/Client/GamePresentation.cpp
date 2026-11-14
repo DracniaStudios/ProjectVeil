@@ -6,8 +6,22 @@
 #include <AudioManager.h>
 #include <GameObject.h>
 #include <LightingSystem.h>
+#include <Render/Render.h>
 #include <Scene.h>
 #include <sim/Presentation.h>
+
+namespace Client {
+	std::optional<BoundingBox> LocalBounds(const GameObject& object)
+	{
+		// BindVisuals gives a model asset to an object only when it has meshes, and the
+		// generated cube otherwise; ownsModel records which of the two it did
+		if (object.ownsModel) { return Render::kUnitCubeBounds; }
+
+		const AssetManager::Asset* asset = object.modelName.empty() ? nullptr : AssetManager::GetAssetPtrByName(object.modelName, AssetManager::ASSET_MODEL);
+		if (asset != nullptr) { return asset->localBounds; }
+		return std::nullopt;
+	}
+}
 
 namespace {
 	class GamePresentation final : public Sim::Presentation
@@ -63,7 +77,7 @@ namespace {
 			// authored by hand and are deliberately left alone.
 			if (object.rigidBody3D.collider.shape == COLLIDER_MESH)
 			{
-				object.rigidBody3D.collider.FitToModel(object.model);
+				if (auto bounds = Client::LocalBounds(object)) { object.rigidBody3D.collider.FitToBounds(*bounds); }
 			}
 		}
 

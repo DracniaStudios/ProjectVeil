@@ -32,6 +32,9 @@
 #include <string>
 #include <vector>
 #include <Client/GamePresentation.h>
+#include <Geometry.h>
+#include <Render/Render.h>
+#include <optional>
 
 static int g_failures = 0;
 static int g_checks = 0;
@@ -254,6 +257,40 @@ static void TestSpawnGivesEveryKindAUnitScale()
 	Check(map.SpawnEntity(entity)->rigidBody3D.scale == Vector3One(), "an Entity");
 	Check(map.SpawnInteractable(interactable)->rigidBody3D.scale == Vector3One(), "an Interactable");
 
+	delete scene;
+}
+
+static void TestMeshColliderFitsTheUnitCubeWithoutAnAsset()
+{
+	std::printf("a mesh collider on an object whose model asset is missing fits the unit cube\n");
+
+	// The generated cube's bounds are exactly Render::kUnitCubeBounds
+	Model cube = LoadModelFromMesh(GenMeshCube(1, 1, 1));
+	std::optional<BoundingBox> cubeBounds;
+	for (int i = 0; i < cube.meshCount; ++i)
+	{
+		Geometry::ExtendBounds(cubeBounds, Geometry::GetMeshBoundingBox(cube.meshes[i].vertices, cube.meshes[i].vertexCount));
+	}
+	Check(cubeBounds.has_value(), "the generated cube has bounds");
+	if (cubeBounds.has_value())
+	{
+		const BoundingBox unit = Render::kUnitCubeBounds;
+		Check(cubeBounds->min.x == unit.min.x && cubeBounds->min.y == unit.min.y && cubeBounds->min.z == unit.min.z &&
+			cubeBounds->max.x == unit.max.x && cubeBounds->max.y == unit.max.y && cubeBounds->max.z == unit.max.z,
+			"the generated cube's bounds equal kUnitCubeBounds exactly");
+	}
+	UnloadModel(cube);
+
+	SceneManagement::Scene* scene = MakeScene();
+	GameObject prototype{};
+	prototype.modelName = "NoSuchModel";
+	prototype.rigidBody3D.collider.shape = COLLIDER_MESH;
+	prototype.rigidBody3D.collider.size = { 3, 3, 3 };
+	GameObject* spawned = scene->gameMap.SpawnGameObject(prototype);
+	const Collider3D& collider = spawned->rigidBody3D.collider;
+	Check(collider.size == Vector3{ 1, 1, 1 }, "the size is the unit cube's");
+	Check(collider.offset == Vector3{ 0, 0, 0 }, "the offset is zero");
+	Check(collider.radius == 0.5f, "the radius is half the unit cube's extent");
 	delete scene;
 }
 
@@ -565,6 +602,7 @@ int main()
 	TestANewObjectHoldsNoModel();
 	TestSpawnLeavesThePrototypesModelAlone();
 	TestSpawnGivesEveryKindAUnitScale();
+	TestMeshColliderFitsTheUnitCubeWithoutAnAsset();
 	TestRestoreKeepsWhatWasSaved();
 	TestRestoreRaisesTheNextId();
 	TestRestoreRefusesAnIdInUse();

@@ -4,6 +4,7 @@
 #include "ProjectVeil.h"
 
 #include <Client/DevOptions.h>
+#include <Render/Render.h>
 
 using namespace std;
 
@@ -26,6 +27,7 @@ int main(int argc, char** argv)
 	desc.backendLog = Platform::LogLevel::Fatal;
 #endif
 	if (!Platform::Init(desc)) { return 1; }
+	if (!Render::Init()) { return 1; }
 
 #pragma region ImGui
 	EditorGui::Init();
@@ -104,6 +106,8 @@ int main(int argc, char** argv)
 	EditorGui::Shutdown();
 
 	close_game();
+
+	Render::Shutdown();
 
 	AudioManager::AudioManager::getInstance().shutdown();
 

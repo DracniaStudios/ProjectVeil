@@ -15,11 +15,13 @@
  */
 
 #include <Collider.h>
+#include <Geometry.h>
 
 #include <raymath.h>
 
 #include <cmath>
 #include <cstdio>
+#include <optional>
 #include <string>
 
 static int g_failures = 0;
@@ -91,6 +93,25 @@ static Model ModelFromMeshes(Mesh* meshes, int count)
 	model.meshCount = count;
 	model.meshes = meshes;
 	return model;
+}
+
+// The loop AssetManager runs at load to fill Asset::localBounds
+static std::optional<BoundingBox> BoundsOf(const Model& model)
+{
+	std::optional<BoundingBox> bounds;
+	for (int i = 0; i < model.meshCount; ++i)
+	{
+		const Mesh& mesh = model.meshes[i];
+		if (mesh.vertexCount <= 0 || mesh.vertices == nullptr) { continue; }
+		Geometry::ExtendBounds(bounds, Geometry::GetMeshBoundingBox(mesh.vertices, mesh.vertexCount));
+	}
+	return bounds;
+}
+
+// Fits like the editor does: an empty optional leaves the collider as it was
+static void FitTo(Collider3D& collider, const Model& model)
+{
+	if (auto bounds = BoundsOf(model)) { collider.FitToBounds(*bounds); }
 }
 
 // ─── Tests ─────────────────────────────────────────────────────────────────
@@ -383,7 +404,7 @@ static void TestMeshFitting()
 
 	Collider3D collider = {};
 	collider.shape = COLLIDER_MESH;
-	collider.FitToModel(unitModel);
+	FitTo(collider, unitModel);
 	CheckVector(collider.size, Vector3{ 1, 1, 1 }, 0.0001f, "a unit cube fits the default size");
 	CheckVector(collider.offset, Vector3{ 0, 0, 0 }, 0.0001f, "a centred mesh needs no offset");
 
@@ -391,7 +412,7 @@ static void TestMeshFitting()
 	float oblong[6] = { -1.0f, -1.5f, -2.0f, 1.0f, 1.5f, 2.0f };
 	Mesh oblongMesh = MeshFromCorners(oblong);
 	Model oblongModel = ModelFromMeshes(&oblongMesh, 1);
-	collider.FitToModel(oblongModel);
+	FitTo(collider, oblongModel);
 	CheckVector(collider.size, Vector3{ 2, 3, 4 }, 0.0001f, "size is the mesh's own extent");
 	CheckVector(collider.offset, Vector3{ 0, 0, 0 }, 0.0001f, "a centred oblong needs no offset");
 	CheckNear(collider.radius, 2.0f, 0.0001f, "a fitted sphere radius still encloses the mesh");
@@ -400,7 +421,7 @@ static void TestMeshFitting()
 	float offCentre[6] = { 0.0f, 0.0f, 0.0f, 2.0f, 2.0f, 2.0f };
 	Mesh offCentreMesh = MeshFromCorners(offCentre);
 	Model offCentreModel = ModelFromMeshes(&offCentreMesh, 1);
-	collider.FitToModel(offCentreModel);
+	FitTo(collider, offCentreModel);
 	CheckVector(collider.size, Vector3{ 2, 2, 2 }, 0.0001f, "an off-centre mesh keeps its extent");
 	CheckVector(collider.offset, Vector3{ 1, 1, 1 }, 0.0001f,
 		"the offset recentres the collider on the geometry");
@@ -410,7 +431,7 @@ static void TestMeshFitting()
 	float upper[6] = { 0.0f, 0.0f, 0.0f, 2.0f, 2.0f, 2.0f };
 	Mesh parts[2] = { MeshFromCorners(lower), MeshFromCorners(upper) };
 	Model multiModel = ModelFromMeshes(parts, 2);
-	collider.FitToModel(multiModel);
+	FitTo(collider, multiModel);
 	CheckVector(collider.size, Vector3{ 3, 3, 3 }, 0.0001f, "every mesh in the model is unioned");
 	CheckVector(collider.offset, Vector3{ 0.5f, 0.5f, 0.5f }, 0.0001f, "the union is recentred");
 
@@ -418,8 +439,32 @@ static void TestMeshFitting()
 	// would drop the object through the world.
 	Model emptyModel = ModelFromMeshes(nullptr, 0);
 	const Vector3 sizeBefore = collider.size;
-	collider.FitToModel(emptyModel);
+	FitTo(collider, emptyModel);
 	CheckVector(collider.size, sizeBefore, 0.0001f, "a model with no meshes leaves the collider alone");
+	Check(!BoundsOf(emptyModel).has_value(), "a model with no meshes has no bounds");
+
+	// A mesh without CPU vertices is skipped, and the others are still unioned
+	float vertsA[9] = { -1, 0, 0, 2, 3, 0, 0, -4, 5 };
+	float vertsC[3] = { 10, 10, 10 };
+	Mesh threeMeshes[3] = {};
+	threeMeshes[0].vertexCount = 3; threeMeshes[0].vertices = vertsA;
+	threeMeshes[1].vertexCount = 0; threeMeshes[1].vertices = nullptr;
+	threeMeshes[2].vertexCount = 1; threeMeshes[2].vertices = vertsC;
+	Model threeModel = ModelFromMeshes(threeMeshes, 3);
+	const std::optional<BoundingBox> threeBounds = BoundsOf(threeModel);
+	Check(threeBounds.has_value(), "a three-mesh model has bounds");
+	if (threeBounds.has_value())
+	{
+		CheckVector(threeBounds->min, Vector3{ -1, -4, 0 }, 0.0f, "the union's minimum skips the vertexless mesh");
+		CheckVector(threeBounds->max, Vector3{ 10, 10, 10 }, 0.0f, "the union's maximum");
+		Collider3D direct = {};
+		direct.FitToBounds(*threeBounds);
+		Collider3D viaModel = {};
+		FitTo(viaModel, threeModel);
+		CheckVector(viaModel.size, direct.size, 0.0f, "fitting the model equals fitting its bounds: size");
+		CheckVector(viaModel.offset, direct.offset, 0.0f, "fitting the model equals fitting its bounds: offset");
+		CheckNear(viaModel.radius, direct.radius, 0.0f, "fitting the model equals fitting its bounds: radius");
+	}
 }
 
 /**

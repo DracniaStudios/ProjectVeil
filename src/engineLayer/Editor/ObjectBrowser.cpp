@@ -1,6 +1,7 @@
 #include "WorldEditor.h"
 #include <imgui.h>
 #include <AssetManager.h>
+#include <Client/GamePresentation.h>
 
 #include <algorithm>
 #include <vector>
@@ -265,7 +266,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 		// Switching to Mesh should show the fitted volume straight away rather than
 		// leaving the last hand-authored size sitting on screen looking authoritative
 		if (collider.shape == COLLIDER_MESH) { 
-			collider.FitToModel(object->model);
+			if (auto bounds = Client::LocalBounds(*object)) { collider.FitToBounds(*bounds); }
 		}
 
 	}
@@ -307,7 +308,9 @@ void WorldEditor::showGameObject(GameObject* object) {
 
 	ImGui::DragFloat3("Offset", &collider.offset.x, 0.01f);
 
-	if (ImGui::Button("Fit To Model")) { collider.FitToModel(object->model); }
+	if (ImGui::Button("Fit To Model")) {
+		if (auto bounds = Client::LocalBounds(*object)) { collider.FitToBounds(*bounds); }
+	}
 	ImGui::SameLine();
 	if (ImGui::Button("Reset Collider"))
 	{
@@ -419,7 +422,9 @@ static void ShowStateButtons(SceneManagement::Scene* scene)
 	if (ImGui::Button("Fit Model To Collider"))
 	{
 		std::cout << "[Object Browser] Fit Model To Collider\n";
-		scene->gameMap.ForEachObject([](GameObject& o) { o.rigidBody3D.collider.FitToModel(o.model); });
+		scene->gameMap.ForEachObject([](GameObject& o) {
+			if (auto bounds = Client::LocalBounds(o)) { o.rigidBody3D.collider.FitToBounds(*bounds); }
+		});
 	}
 }
 
