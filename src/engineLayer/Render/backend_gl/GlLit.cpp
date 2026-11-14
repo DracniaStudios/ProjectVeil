@@ -68,7 +68,7 @@ struct LitProgram
 	GLint lightCount = -1, lightType = -1, lightPosition = -1, lightDirection = -1, lightColor = -1, lightRange = -1, lightCone = -1;
 	GLint ambient = -1, fogColor = -1, fogDensity = -1, exposure = -1, specularStrength = -1, shininess = -1;
 	GLint shadowTexelSize = -1, shadowBias = -1, shadowSoftness = -1, shadowsEnabled = -1, shadowLightIndex = -1;
-	GLint depthPass = -1;
+	GLint depthPass = -1, shadowMap = -1, lightVP = -1;
 };
 
 struct FallbackProgram
@@ -185,6 +185,8 @@ void LoadLighting()
 	lit.shadowsEnabled = at("shadowsEnabled");
 	lit.shadowLightIndex = at("shadowLightIndex");
 	lit.depthPass = at("depthPass");
+	lit.shadowMap = at("shadowMap");
+	lit.lightVP = at("lightVP");
 }
 
 void LoadFallback()
@@ -291,12 +293,11 @@ void Shutdown()
 
 unsigned int ShaderId() { return lit.id; }
 
-// BeginMode3D
-void BeginWorld(const Camera3D& camera)
+// BeginMode3D with the aspect ratio raylib uses: the render target's width over its height, as floats
+void BeginCamera(const Camera3D& camera, float aspect)
 {
 	Gl2D::Flush();
 
-	const float aspect = static_cast<float>(Platform::RenderWidth()) / static_cast<float>(Platform::RenderHeight());
 	if (camera.projection == CAMERA_PERSPECTIVE) {
 		double top = kNear*tan(camera.fovy*0.5*DEG2RAD);
 		double right = top*aspect;
@@ -322,13 +323,41 @@ void BeginWorld(const Camera3D& camera)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBlendEquation(GL_FUNC_ADD);
+}
 
-	// The world pass reads no shadow map yet and the depth pass is never on in it
-	if (lit.id != 0) {
-		glUseProgram(lit.id);
-		glUniform1i(lit.depthPass, 0);
-		glUseProgram(0);
-	}
+void BeginWorld(const Camera3D& camera)
+{
+	BeginCamera(camera, static_cast<float>(Platform::RenderWidth()) / static_cast<float>(Platform::RenderHeight()));
+
+	// The depth pass is never on in the world pass
+	SetDepthPass(false);
+}
+
+// rlgl's matrices as BeginCamera left them, multiplied as raylib's BeginShadowPass does
+Matrix ViewProjection() { return MatrixMultiply(modelview, projection); }
+
+void SetDepthPass(bool on)
+{
+	if (lit.id == 0) { return; }
+	glUseProgram(lit.id);
+	glUniform1i(lit.depthPass, on ? 1 : 0);
+	glUseProgram(0);
+}
+
+void SetLightViewProjection(const Matrix& matrix)
+{
+	if (lit.id == 0) { return; }
+	glUseProgram(lit.id);
+	UploadMatrix(lit.lightVP, matrix);
+	glUseProgram(0);
+}
+
+void SetShadowSampler(int unit)
+{
+	if (lit.id == 0) { return; }
+	glUseProgram(lit.id);
+	glUniform1i(lit.shadowMap, unit);
+	glUseProgram(0);
 }
 
 // EndMode3D leaves the depth test off, and nothing of the world pass stays bound

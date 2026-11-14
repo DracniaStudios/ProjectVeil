@@ -81,12 +81,36 @@ void Shutdown();
 // The lighting shader program, 0 when it failed to load
 unsigned int ShaderId();
 
-// Flushes the 2D batch, then builds the camera matrices and sets the world pass state
+// Flushes the 2D batch, then builds the camera matrices and sets the world pass state.
+// aspect is the render target's width over its height; the shadow pass passes 1.
+void BeginCamera(const Camera3D& camera, float aspect);
+// BeginCamera for the window, with the depth pass off
 void BeginWorld(const Camera3D& camera);
+// The modelview times the projection BeginCamera left
+Matrix ViewProjection();
+// The lighting shader's depthPass, lightVP and shadowMap uniforms; no-ops when the shader failed to load
+void SetDepthPass(bool on);
+void SetLightViewProjection(const Matrix& matrix);
+void SetShadowSampler(int unit);
 // Puts the state back as Render::BeginFrame documents it
 void EndWorld();
 
 void DrawModel(const Render::ModelDraw& draw, bool wires);
 void SetLighting(const Render::LightingFrame& frame);
+
+}
+
+// The directional shadow map (B-22, GlShadow.cpp): a depth-only framebuffer with a depth texture
+namespace GlShadow {
+
+bool SetSize(int size);   // Render::SetShadowMapSize
+int Size();               // the map's side, 0 for none
+bool Begin(const Camera3D& lightCamera);
+void End();
+Matrix ViewProjection();
+// Binds the depth texture to unit 15 and points the sampler at it; does nothing without a map
+void BindForWorld();
+// Deletes the map. Safe to call twice.
+void Shutdown();
 
 }

@@ -1,12 +1,11 @@
 // Render on OpenGL 3.3 core (B-15). Every function declared in Render.h exists. The 2D
 // part is real (B-18, Gl2D.cpp and DefaultFont.cpp) and so is the lit world (B-21, GlLit.cpp).
-// The shadow map and the debug shapes are not drawn yet: each of their stubs logs one line the
-// first time it is called and names the work order that implements it.
+// The shadow map is real too (B-22, GlShadow.cpp). The debug shapes are not drawn yet: each of
+// their stubs logs one line the first time it is called and names the work order that implements it.
 #include <Render/Render.h>
 #include "GlShared.h"
 #include "DefaultFont.h"
 #include <Platform.h>
-#include <raymath.h> // MatrixIdentity: inline math only
 
 #include <glad/gl.h>
 #include <SDL3/SDL.h>
@@ -111,6 +110,7 @@ bool Init()
 
 void Shutdown()
 {
+	GlShadow::Shutdown();
 	GlLit::Shutdown();
 	GlResources::Shutdown(); // before Gl2D: handle 1 is Gl2D's texture and is not deleted here
 	Gl2D::Shutdown();
@@ -156,18 +156,22 @@ void BeginFrame(Color clear)
 
 // Nothing may stay batched: ImGui draws straight after this
 void EndFrame() { Gl2D::Flush(); }
-void BeginWorld(const Camera3D& camera) { GlLit::BeginWorld(camera); }
+void BeginWorld(const Camera3D& camera)
+{
+	GlLit::BeginWorld(camera);
+	GlShadow::BindForWorld();
+}
 void EndWorld() { GlLit::EndWorld(); }
 void SetDebugDepthTest(bool) { VEIL_STUB("B-23"); }
 void Begin2D(const Camera2D& camera) { Gl2D::Begin2D(camera); }
 void End2D() { Gl2D::End2D(); }
 void CaptureScreenshot(const std::string& fileName) { Gl2D::CaptureScreenshot(fileName); }
 
-bool SetShadowMapSize(int size) { VEIL_STUB("B-22"); return size == 0; }
-int ShadowMapSize() { return 0; }
-bool BeginShadowPass(const Camera3D&) { VEIL_STUB("B-22"); return false; }
-void EndShadowPass() {}
-Matrix ShadowViewProjection() { VEIL_STUB("B-22"); return MatrixIdentity(); }
+bool SetShadowMapSize(int size) { return GlShadow::SetSize(size); }
+int ShadowMapSize() { return GlShadow::Size(); }
+bool BeginShadowPass(const Camera3D& lightCamera) { return GlShadow::Begin(lightCamera); }
+void EndShadowPass() { GlShadow::End(); }
+Matrix ShadowViewProjection() { return GlShadow::ViewProjection(); }
 
 void SetLighting(const LightingFrame& frame) { GlLit::SetLighting(frame); }
 unsigned int LightingShaderId() { return GlLit::ShaderId(); }
