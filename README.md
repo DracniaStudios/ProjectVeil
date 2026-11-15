@@ -114,7 +114,7 @@ ProjectVeil/
 ├── tests/                # Unit tests
 ├── resources/            # Textures, models, icons, and shaders
 ├── saves/                # Serialized world save data
-└── thirdparty/           # Vendored dependencies (raylib, imgui, FastNoise2, json, FMOD, rlImgui, EnTT, Flecs, serialize, GameNetworkingSockets)
+└── thirdparty/           # Vendored dependencies (raylib, imgui, FastNoise2, json, FMOD, Steamworks, rlImgui, EnTT, Flecs, serialize, GameNetworkingSockets)
 ```
 
 ## Building
