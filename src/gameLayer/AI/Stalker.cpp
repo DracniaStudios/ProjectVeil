@@ -324,11 +324,13 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 	const float stimulusAge = scene->soundField.Now() - lastStimulusTime;
 
 	// --- States -----------------------------------------------------------
-	
-	const auto player = scene->player;
-	if (!player) { return; }
 
-	if (IsNearEntity(rigidBody3D.getPosition(), player->rigidBody3D.getPosition(), sightRange)) { state = STALKER_CHASE; }
+	// A scene can have no player (the World Editor, a Main Menu backdrop, the
+	// FSM tests). Only sight and CHASE need one; the sound-driven states below
+	// must keep running without it.
+	const auto player = scene->player;
+
+	if (player && IsNearEntity(rigidBody3D.getPosition(), player->rigidBody3D.getPosition(), sightRange)) { state = STALKER_CHASE; }
 
 	switch (state)
 	{
@@ -415,6 +417,8 @@ void Stalker::update(SceneManagement::Scene* scene, float deltaTime)
 	{
 		isSprinting = true;
 		isCrouching = false;
+		// Restored into CHASE in a scene with no player: nothing to chase
+		if (!player) { TransitionTo(STALKER_HUNT); break; }
 		if (!IsNearEntity(rigidBody3D.getPosition(), player->getPosition(), sightRange)) { TransitionTo(STALKER_HUNT); }
 
 		MoveToward(player->getPosition(), currentSpeed, deltaTime, &scene->gameMap);

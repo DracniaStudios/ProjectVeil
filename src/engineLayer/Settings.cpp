@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cstdio>
 #include <iostream>
-#include <raylib.h>
 
 namespace Settings {
 
