@@ -1,4 +1,8 @@
 #include "WorldEditor.h"
+#include <imgui.h>
+#include <AssetManager.h>
+#include <Render/Render.h>
+#include <Client/GamePresentation.h>
 
 #include <algorithm>
 #include <vector>
@@ -263,8 +267,7 @@ void WorldEditor::showGameObject(GameObject* object) {
 		// Switching to Mesh should show the fitted volume straight away rather than
 		// leaving the last hand-authored size sitting on screen looking authoritative
 		if (collider.shape == COLLIDER_MESH) { 
-			collider.FitToModel(object->model);
-			object->rigidBody3D.broadPhaseBox = GetModelBoundingBox(object->model);
+			if (auto bounds = Client::LocalBounds(*object)) { collider.FitToBounds(*bounds); }
 		}
 
 	}
@@ -306,7 +309,9 @@ void WorldEditor::showGameObject(GameObject* object) {
 
 	ImGui::DragFloat3("Offset", &collider.offset.x, 0.01f);
 
-	if (ImGui::Button("Fit To Model")) { collider.FitToModel(object->model); }
+	if (ImGui::Button("Fit To Model")) {
+		if (auto bounds = Client::LocalBounds(*object)) { collider.FitToBounds(*bounds); }
+	}
 	ImGui::SameLine();
 	if (ImGui::Button("Reset Collider"))
 	{
@@ -341,12 +346,15 @@ void WorldEditor::showGameObject(GameObject* object) {
 	}
 	// Texture
 	ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Texture");
-	// A model whose load failed can carry materialCount == 0 with a null
-	// materials array (see LightingSystem::ApplyToModel's same guard) —
-	// indexing materials[0] unconditionally would crash the inspector on it.
-	if (object->model.materialCount > 0 && object->model.materials != nullptr)
+	// The unit cube shows the object's own texture; an asset model, the one its
+	// first material samples. A model with no materials has nothing to show.
+	if (object->model)
 	{
-		ImGui::Image((ImTextureRef)(intptr_t)object->model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture.id, ImVec2(64, 64));
+		const Render::TextureHandle shown = (object->usesUnitCube && object->texture) ? object->texture : Render::DiffuseTexture(object->model);
+		if (const std::uintptr_t nativeId = Render::NativeTextureId(shown); nativeId != 0)
+		{
+			ImGui::Image((ImTextureRef)(intptr_t)nativeId, ImVec2(64, 64));
+		}
 	}
 	ImGui::Text("Texture: %s", object->textureName.empty() ? "None" : object->textureName.c_str());
 	AssetManager::Asset* activeTexture = getActiveTexture();
@@ -418,7 +426,9 @@ static void ShowStateButtons(SceneManagement::Scene* scene)
 	if (ImGui::Button("Fit Model To Collider"))
 	{
 		std::cout << "[Object Browser] Fit Model To Collider\n";
-		scene->gameMap.ForEachObject([](GameObject& o) { o.rigidBody3D.collider.FitToModel(o.model); });
+		scene->gameMap.ForEachObject([](GameObject& o) {
+			if (auto bounds = Client::LocalBounds(o)) { o.rigidBody3D.collider.FitToBounds(*bounds); }
+		});
 	}
 }
 

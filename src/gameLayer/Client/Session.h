@@ -64,7 +64,7 @@ namespace Client {
 		void Frame(SceneManagement::SceneManager& manager, double now);
 
 		// One fixed tick
-		void Tick(SceneManagement::SceneManager& manager, const Sim::PlayerCommand& command);
+		void Tick(SceneManagement::SceneManager& manager, const Sim::PlayerCommand& command, bool simulationFrozen = false);
 
 		// The development multiplayer windows: status, Join, faked network (ImGui)
 		void DrawUi();
@@ -73,6 +73,10 @@ namespace Client {
 		// Stops everything networked, in the §5.6 order, blocking until the World
 		// store has flushed or 5 s passed. Called from close_game, before CloseWindow.
 		void Shutdown();
+
+		// The SceneManager is about to free `scene`: the server lets go of it, an Offline
+		// session re-attaches on its next tick, and a session still starting on it fails.
+		void ForgetScene(SceneManagement::Scene* scene);
 
 		SessionMode Mode() const { return mode; }
 		SessionPhase Phase() const { return phase; }

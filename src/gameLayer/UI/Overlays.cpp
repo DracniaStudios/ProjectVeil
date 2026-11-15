@@ -1,4 +1,6 @@
 #include "Overlays.h"
+#include <Platform.h>
+#include <Render/Render.h>
 
 #include <Scene.h>
 #include <SceneManager.h>
@@ -156,7 +158,7 @@ namespace UI {
 
 		/// Background
 		if (overlays.DimsWorld()) {
-			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{ 20, 20, 20, 200 });
+			Render::Rect({ 0.0f, 0.0f, static_cast<float>(Platform::ScreenWidth()), static_cast<float>(Platform::ScreenHeight()) }, Color{ 20, 20, 20, 200 });
 		}
 
 		const std::optional<Overlay> top = overlays.Top();

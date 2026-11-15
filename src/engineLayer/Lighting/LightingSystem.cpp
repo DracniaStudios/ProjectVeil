@@ -1,8 +1,8 @@
 #include "LightingSystem.h"
 
-#include <rlgl.h>
+#include <Geometry.h>
 
-#include <AssetManager.h>
+#include <Render/Render.h>
 #include <ResourcePaths.h>
 #include <SceneManager.h>
 #include <Settings.h>
@@ -15,16 +15,13 @@
 
 namespace Lighting
 {
+	static_assert(Render::kMaxLights == LIGHT_LIMIT, "Render::kMaxLights and Lighting::LIGHT_LIMIT must match MAX_LIGHTS in lighting.fs");
+
 	// One of the lighting shader's files, as the C string raylib wants
 	static std::string ShaderPath(const char* fileName)
 	{
 		return (ResourcePaths::Resources() / "shaders" / "glsl330" / fileName).string();
 	}
-
-	// raylib's PixelFormat has no depth entries; 19 is UNCOMPRESSED_R32 in the
-	// public enum and is what raylib's own shadowmap sample stores for a
-	// 24-bit depth attachment. Only the width/height/id fields are ever used.
-	constexpr int DEPTH_TEXTURE_FORMAT = 19;
 
 	// Normalize, falling back to `fallback` when the vector is degenerate.
 	// Light::direction is an inspector field the user can zero out, and a NaN
@@ -75,7 +72,7 @@ namespace Lighting
 				Vector3Add(Vector3Scale(right, cosf(angle) * radius),
 					Vector3Scale(up, sinf(angle) * radius)));
 
-			DrawLine3D(previous, point, color);
+			Render::DebugLine(previous, point, color);
 			previous = point;
 		}
 	}
@@ -90,74 +87,9 @@ namespace Lighting
 		const float headLength = fminf(headRadius * 3.0f, length * 0.5f);
 		const Vector3 headBase = Vector3Subtract(tip, Vector3Scale(direction, headLength));
 
-		DrawLine3D(origin, headBase, color);
-		DrawCylinderEx(headBase, tip, headRadius, 0.0f, 8, color);
+		Render::DebugLine(origin, headBase, color);
+		Render::DebugCylinder(headBase, tip, headRadius, 0.0f, 8, color);
 	}
-
-	/**
-	 * Build a depth-only framebuffer whose depth attachment is a *texture*.
-	 *
-	 * LoadRenderTexture() cannot be used here: it attaches depth as a
-	 * renderbuffer (rlLoadTextureDepth(w, h, true)), which the GPU can render
-	 * into but a shader can never sample. Passing useRenderBuffer=false gives a
-	 * real texture instead.
-	 *
-	 * The returned RenderTexture2D is assembled by hand so BeginTextureMode()
-	 * still works — it only reads .id and .texture.width/height.
-	 */
-	RenderTexture2D LoadShadowMapTarget(int resolution)
-	{
-		RenderTexture2D target = {};
-
-		target.id = rlLoadFramebuffer();
-		if (target.id == 0)
-		{
-			std::cerr << "[Lighting] Failed to create the shadow map framebuffer\n";
-			return target;
-		}
-
-		rlEnableFramebuffer(target.id);
-
-		target.depth.id = rlLoadTextureDepth(resolution, resolution, false);
-		target.depth.width = resolution;
-		target.depth.height = resolution;
-		target.depth.format = DEPTH_TEXTURE_FORMAT;
-		target.depth.mipmaps = 1;
-
-		// BeginTextureMode() reads these to size the viewport and to give
-		// BeginMode3D() an aspect ratio (1.0 for a square map).
-		target.texture.width = resolution;
-		target.texture.height = resolution;
-
-		rlFramebufferAttach(target.id, target.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_TEXTURE2D, 0);
-
-		// No colour attachment is created on purpose — the depth pass writes
-		// nothing but depth. A depth-only FBO is complete under GL 3.3.
-		const bool complete = rlFramebufferComplete(target.id);
-		rlDisableFramebuffer();
-
-		if (!complete)
-		{
-			std::cerr << "[Lighting] Shadow map framebuffer is incomplete — shadows disabled\n";
-			rlUnloadFramebuffer(target.id);
-			return RenderTexture2D{};
-		}
-
-		std::cout << "[Lighting] Shadow map ready: " << resolution << "x" << resolution << "\n";
-		return target;
-	}
-
-	void UnloadShadowMapTarget(RenderTexture2D& target)
-	{
-		if (target.id == 0) { return; }
-
-		// rlUnloadFramebuffer queries the depth attachment and deletes the
-		// texture itself, so calling UnloadTexture(target.depth) as well would
-		// be a double free.
-		rlUnloadFramebuffer(target.id);
-		target = RenderTexture2D{};
-	}
-
 
 #pragma region Light Save Data
 	Json Light::formatToJson() const
@@ -236,26 +168,14 @@ namespace Lighting
 			heardSettings = true;
 		}
 
-		const std::string vertexPath = ShaderPath("lighting.vs");
-		const std::string fragmentPath = ShaderPath("lighting.fs");
-		lightShader = LoadShader(vertexPath.c_str(), fragmentPath.c_str());
-		if (!IsShaderValid(lightShader))
+		// The renderer loads the lighting shader in Render::Init
+		if (Render::LightingShaderId() == 0)
 		{
-			std::cerr << "[Lighting] Failed to load lighting shader:\n  " << vertexPath
-				<< "\n  " << fragmentPath << "\n[Lighting] Falling back to raylib's unlit shader\n";
-
-			// LoadShader allocates the locs array even on failure — release it
-			UnloadShader(lightShader);
-			lightShader = Shader{};
+			std::cerr << "[Lighting] Failed to load lighting shader:\n  " << ShaderPath("lighting.vs")
+				<< "\n  " << ShaderPath("lighting.fs") << "\n[Lighting] Falling back to raylib's unlit shader\n";
 			isReady = false;
 			return false;
 		}
-
-		// raylib resolves mvp/matModel/matNormal/colDiffuse/texture0 by name, but
-		// NOT viewPos — SHADER_LOC_VECTOR_VIEW has to be wired up by hand.
-		lightShader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(lightShader, "viewPos");
-
-		CacheUniformLocations();
 
 		RefreshShadowMap();
 
@@ -271,62 +191,24 @@ namespace Lighting
 
 		isReady = true;
 
-		// Shared AssetManager models are bound into objects by pointer, so applying
-		// the shader here covers every object that will ever reference them.
-		ApplyToLoadedAssets();
-
 		if (lights.empty()) { CreateDefaultRig(); }
 
-		std::cout << "[Lighting] Lighting system ready (shader id " << lightShader.id
+		std::cout << "[Lighting] Lighting system ready (shader id " << Render::LightingShaderId()
 			<< ", " << lights.size() << " lights)\n";
 		return true;
 	}
 
 	void LightingSystem::Shutdown()
 	{
-		// Materials hold a *copy* of the Shader struct, not ownership, so every
-		// model's material shader id dangles after this point. Shutdown must
-		// therefore be the last engine call before CloseWindow().
-		UnloadShadowMapTarget(shadowMap);
+		// The shader belongs to the renderer and goes with Render::Shutdown; only the
+		// shadow map is released here
+		Render::SetShadowMapSize(0);
 
-		if (lightShader.id != 0)
-		{
-			UnloadShader(lightShader);
-			lightShader = Shader{};
-		}
-
-		uniforms = Uniforms{};
 		isReady = false;
 		std::cout << "[Lighting] Shutdown complete\n";
 	}
 
-	void LightingSystem::CacheUniformLocations()
-	{
-		uniforms.lightCount = GetShaderLocation(lightShader, "lightCount");
-		uniforms.lightType = GetShaderLocation(lightShader, "lightType");
-		uniforms.lightPosition = GetShaderLocation(lightShader, "lightPosition");
-		uniforms.lightDirection = GetShaderLocation(lightShader, "lightDirection");
-		uniforms.lightColor = GetShaderLocation(lightShader, "lightColor");
-		uniforms.lightRange = GetShaderLocation(lightShader, "lightRange");
-		uniforms.lightCone = GetShaderLocation(lightShader, "lightCone");
-
-		uniforms.ambient = GetShaderLocation(lightShader, "ambient");
-		uniforms.fogColor = GetShaderLocation(lightShader, "fogColor");
-		uniforms.fogDensity = GetShaderLocation(lightShader, "fogDensity");
-		uniforms.exposure = GetShaderLocation(lightShader, "exposure");
-		uniforms.specularStrength = GetShaderLocation(lightShader, "specularStrength");
-		uniforms.shininess = GetShaderLocation(lightShader, "shininess");
-
-		uniforms.shadowMap = GetShaderLocation(lightShader, "shadowMap");
-		uniforms.lightVP = GetShaderLocation(lightShader, "lightVP");
-		uniforms.shadowTexelSize = GetShaderLocation(lightShader, "shadowTexelSize");
-		uniforms.shadowBias = GetShaderLocation(lightShader, "shadowBias");
-		uniforms.shadowSoftness = GetShaderLocation(lightShader, "shadowSoftness");
-		uniforms.shadowsEnabled = GetShaderLocation(lightShader, "shadowsEnabled");
-		uniforms.shadowLightIndex = GetShaderLocation(lightShader, "shadowLightIndex");
-
-		uniforms.depthPass = GetShaderLocation(lightShader, "depthPass");
-	}
+	int LightingSystem::GetShadowMapResolution() const { return Render::ShadowMapSize(); }
 
 	void LightingSystem::SetShadowResolution(int resolution)
 	{
@@ -345,60 +227,14 @@ namespace Lighting
 
 		if (wanted == 0)
 		{
-			UnloadShadowMapTarget(shadowMap);
+			Render::SetShadowMapSize(0);
 			failedShadowMapSize = 0;
 			return;
 		}
 		if (wanted == failedShadowMapSize) { return; }
 
-		UnloadShadowMapTarget(shadowMap);
-		shadowMap = LoadShadowMapTarget(wanted);
-		failedShadowMapSize = shadowMap.id == 0 ? wanted : 0;
-	}
-#pragma endregion
-
-#pragma region Material Injection
-	void LightingSystem::ApplyToModel(Model& model) const
-	{
-		// A no-op before Init(): every model is rebound through
-		// GameObject::loadVisuals() anyway, and ApplyToLoadedAssets()/ApplyToScene()
-		// catch anything created earlier.
-		if (!isReady) { return; }
-		if (model.materials == nullptr) { return; }
-
-		for (int i = 0; i < model.materialCount; i++)
-		{
-			model.materials[i].shader = lightShader;
-		}
-	}
-
-	void LightingSystem::ApplyToLoadedAssets() const
-	{
-		if (!isReady) { return; }
-
-		int applied = 0;
-		for (auto& asset : AssetManager::AssetManager::getInstance().assets)
-		{
-			if (asset.type != AssetManager::ASSET_MODEL) { continue; }
-			if (asset.model.meshCount == 0) { continue; }
-
-			ApplyToModel(asset.model);
-			applied++;
-		}
-
-		std::cout << "[Lighting] Applied lighting shader to " << applied << " asset models\n";
-	}
-
-	void LightingSystem::ApplyToScene(SceneManagement::Scene* scene) const
-	{
-		if (!isReady || scene == nullptr) { return; }
-
-		scene->gameMap.ForEachObject([&](GameObject& object) { ApplyToModel(object.model); });
-
-		scene->ForEachPlayer([&](int, Player& player) {
-			ApplyToModel(player.model);
-			if (player.artifact != nullptr) { ApplyToModel(player.artifact->model); }
-		});
+		Render::SetShadowMapSize(0);
+		failedShadowMapSize = Render::SetShadowMapSize(wanted) ? 0 : wanted;
 	}
 #pragma endregion
 
@@ -457,7 +293,7 @@ namespace Lighting
 	}
 #pragma endregion
 
-#pragma region Per-Frame Upload
+#pragma region Per-Frame Packing
 	void LightingSystem::Update(const Camera3D& camera, float deltaTime)
 	{
 		(void)deltaTime; // No animated lights yet; kept for flicker/pulse support
@@ -469,7 +305,7 @@ namespace Lighting
 		// and none of them can reallocate mid-pass themselves.
 		RefreshShadowMap();
 
-		// Resolve the shadow owner before packing, so UploadLights() can map it to
+		// Resolve the shadow owner before packing, so SubmitLighting() can map it to
 		// the packed slot the shader will actually compare against.
 		SelectShadowLight();
 
@@ -482,25 +318,19 @@ namespace Lighting
 				Vector3{ 0.0f, 0.0f, -1.0f });
 		}
 
-		// viewPos drives both the specular term and the fog distance
-		SetShaderValue(lightShader, lightShader.locs[SHADER_LOC_VECTOR_VIEW],
-			&camera.position, SHADER_UNIFORM_VEC3);
-
-		UploadLights();
-		UploadAtmosphere();
+		SubmitLighting(camera);
 	}
 
-	void LightingSystem::UploadLights()
+	void LightingSystem::SubmitLighting(const Camera3D& camera)
 	{
-		// Always sized to LIGHT_LIMIT and uploaded whole: a shrinking light list
-		// would otherwise leave last frame's values in the unused slots.
-		int types[LIGHT_LIMIT] = {};
-		float positions[LIGHT_LIMIT * 3] = {};
-		float directions[LIGHT_LIMIT * 3] = {};
-		float colors[LIGHT_LIMIT * 4] = {};
-		float ranges[LIGHT_LIMIT] = {};
-		float cones[LIGHT_LIMIT * 2] = {};
+		Render::LightingFrame frame;
 
+		// viewPos drives both the specular term and the fog distance
+		frame.viewPosition = camera.position;
+
+		// The frame's light arrays are always kMaxLights long and are uploaded whole:
+		// a shrinking light list would otherwise leave last frame's values in the
+		// unused slots, which stay zero here.
 		int count = 0;
 		int packedShadowIndex = -1;
 
@@ -509,24 +339,22 @@ namespace Lighting
 				if (count >= LIGHT_LIMIT || !light.isEnabled) { return; }
 
 				const int slot = count;
+				Render::PackedLight& packed = frame.lights[slot];
 
-				types[slot] = static_cast<int>(light.type);
+				packed.type = static_cast<int>(light.type);
 
-				positions[slot * 3 + 0] = light.position.x;
-				positions[slot * 3 + 1] = light.position.y;
-				positions[slot * 3 + 2] = light.position.z;
+				packed.position = light.position;
 
-				const Vector3 direction = SafeNormalize(light.direction, Vector3{ 0.0f, -1.0f, 0.0f });
-				directions[slot * 3 + 0] = direction.x;
-				directions[slot * 3 + 1] = direction.y;
-				directions[slot * 3 + 2] = direction.z;
+				packed.direction = SafeNormalize(light.direction, Vector3{ 0.0f, -1.0f, 0.0f });
 
-				colors[slot * 4 + 0] = light.color.r / 255.0f;
-				colors[slot * 4 + 1] = light.color.g / 255.0f;
-				colors[slot * 4 + 2] = light.color.b / 255.0f;
-				colors[slot * 4 + 3] = fmaxf(light.intensity, 0.0f);
+				packed.color = Vector4{
+					light.color.r / 255.0f,
+					light.color.g / 255.0f,
+					light.color.b / 255.0f,
+					fmaxf(light.intensity, 0.0f)
+				};
 
-				ranges[slot] = fmaxf(light.range, 0.0001f);
+				packed.range = fmaxf(light.range, 0.0001f);
 
 				// cos() shrinks as the angle grows, so cos(inner) must stay strictly
 				// above cos(outer) or the shader's smoothstep divides by zero.
@@ -536,8 +364,7 @@ namespace Lighting
 				float cosInner = cosf(inner * DEG2RAD);
 				if (cosInner <= cosOuter) { cosInner = cosOuter + 0.001f; }
 
-				cones[slot * 2 + 0] = cosInner;
-				cones[slot * 2 + 1] = cosOuter;
+				packed.cone = Vector2{ cosInner, cosOuter };
 
 				// Only a directional light can drive the single shadow map
 				if (sourceIndex >= 0 && sourceIndex == shadowLightIndex)
@@ -555,66 +382,44 @@ namespace Lighting
 		for (int i = 0; i < static_cast<int>(lights.size()); i++) { pack(lights[i], i); }
 
 		activeLightCount = count;
-
-		SetShaderValue(lightShader, uniforms.lightCount, &count, SHADER_UNIFORM_INT);
-		SetShaderValueV(lightShader, uniforms.lightType, types, SHADER_UNIFORM_INT, LIGHT_LIMIT);
-		SetShaderValueV(lightShader, uniforms.lightPosition, positions, SHADER_UNIFORM_VEC3, LIGHT_LIMIT);
-		SetShaderValueV(lightShader, uniforms.lightDirection, directions, SHADER_UNIFORM_VEC3, LIGHT_LIMIT);
-		SetShaderValueV(lightShader, uniforms.lightColor, colors, SHADER_UNIFORM_VEC4, LIGHT_LIMIT);
-		SetShaderValueV(lightShader, uniforms.lightRange, ranges, SHADER_UNIFORM_FLOAT, LIGHT_LIMIT);
-		SetShaderValueV(lightShader, uniforms.lightCone, cones, SHADER_UNIFORM_VEC2, LIGHT_LIMIT);
+		frame.lightCount = count;
 
 		// The shader compares against the *packed* slot, not the lights[] index —
 		// disabled lights and the flashlight shift everything after them.
-		SetShaderValue(lightShader, uniforms.shadowLightIndex, &packedShadowIndex, SHADER_UNIFORM_INT);
-	}
+		frame.shadowLightSlot = packedShadowIndex;
 
-	void LightingSystem::UploadAtmosphere()
-	{
-		const float ambientValues[4] = {
+		frame.ambient = Vector4{
 			ambientColor.r / 255.0f,
 			ambientColor.g / 255.0f,
 			ambientColor.b / 255.0f,
 			fmaxf(ambientStrength, 0.0f)
 		};
-		SetShaderValue(lightShader, uniforms.ambient, ambientValues, SHADER_UNIFORM_VEC4);
 
-		const float fogValues[4] = {
+		frame.fogColor = Vector4{
 			fogColor.r / 255.0f,
 			fogColor.g / 255.0f,
 			fogColor.b / 255.0f,
 			fogColor.a / 255.0f
 		};
-		SetShaderValue(lightShader, uniforms.fogColor, fogValues, SHADER_UNIFORM_VEC4);
 
-		const float density = fmaxf(fogDensity, 0.0f);
-		SetShaderValue(lightShader, uniforms.fogDensity, &density, SHADER_UNIFORM_FLOAT);
-
-		const float clampedExposure = fmaxf(DrawnExposure(), 0.0f);
-		SetShaderValue(lightShader, uniforms.exposure, &clampedExposure, SHADER_UNIFORM_FLOAT);
-
-		const float specular = fmaxf(specularStrength, 0.0f);
-		SetShaderValue(lightShader, uniforms.specularStrength, &specular, SHADER_UNIFORM_FLOAT);
-
-		const float gloss = fmaxf(shininess, 1.0f);
-		SetShaderValue(lightShader, uniforms.shininess, &gloss, SHADER_UNIFORM_FLOAT);
+		frame.fogDensity = fmaxf(fogDensity, 0.0f);
+		frame.exposure = fmaxf(DrawnExposure(), 0.0f);
+		frame.specularStrength = fmaxf(specularStrength, 0.0f);
+		frame.shininess = fmaxf(shininess, 1.0f);
 
 		const int mapSize = GetShadowMapResolution();
-		const float texelSize = 1.0f / static_cast<float>(mapSize > 0 ? mapSize : 1);
-		SetShaderValue(lightShader, uniforms.shadowTexelSize, &texelSize, SHADER_UNIFORM_FLOAT);
+		frame.shadowTexelSize = 1.0f / static_cast<float>(mapSize > 0 ? mapSize : 1);
 
-		const float bias = fmaxf(shadowBias, 0.0f);
-		SetShaderValue(lightShader, uniforms.shadowBias, &bias, SHADER_UNIFORM_FLOAT);
-
-		const float softness = fmaxf(shadowSoftness, 0.0f);
-		SetShaderValue(lightShader, uniforms.shadowSoftness, &softness, SHADER_UNIFORM_FLOAT);
+		frame.shadowBias = fmaxf(shadowBias, 0.0f);
+		frame.shadowSoftness = fmaxf(shadowSoftness, 0.0f);
 
 		// Single source of truth for the shader's shadow gate: shadows are only
 		// sampled when they are enabled, a framebuffer exists, and a directional
 		// light actually claimed it this frame. Anything else and the shader would
 		// read a stale or never-written depth texture.
-		const int shadowGate = (ShadowsDrawn() && shadowMap.id != 0 && shadowLightIndex >= 0) ? 1 : 0;
-		SetShaderValue(lightShader, uniforms.shadowsEnabled, &shadowGate, SHADER_UNIFORM_INT);
+		frame.shadowsEnabled = ShadowsDrawn() && Render::ShadowMapSize() > 0 && shadowLightIndex >= 0;
+
+		Render::SetLighting(frame);
 	}
 #pragma endregion
 
@@ -628,16 +433,10 @@ namespace Lighting
 		auto drawCaster = [](GameObject& object)
 			{
 				if (!object.isEnabled || !object.display3DModel || !object.castsShadow) { return; }
-				if (object.model.meshCount == 0) { return; }
+				if (!object.model) { return; }
 
-				// Rebuilt here rather than reused: render3D() has not run yet this
-				// frame, so model.transform still holds last frame's pose.
-				const Vector3 scale = object.rigidBody3D.scale;
-				object.model.transform = MatrixMultiply(
-					MatrixScale(scale.x, scale.y, scale.z),
-					QuaternionToMatrix(object.rigidBody3D.rotation));
-
-				DrawModel(object.model, object.rigidBody3D.translation, 1.0f, object.defaultColor);
+				// Render::DrawModel builds the transform from the object's pose as it is now
+				Render::DrawModel(object.MakeModelDraw());
 			};
 
 		scene->gameMap.ForEachObject(drawCaster);
@@ -647,7 +446,7 @@ namespace Lighting
 
 			// The artifact hovers a unit in front of the camera; Scene_new() clears
 			// its castsShadow flag so it cannot smear a shadow across the view.
-			if (player.artifact != nullptr) { drawCaster(*player.artifact); }
+			if (player.artifact) { drawCaster(*player.artifact); }
 		});
 	}
 
@@ -658,7 +457,7 @@ namespace Lighting
 		// Only a directional light qualifies: the map is a single orthographic
 		// depth render, which cannot represent a point light's six directions or a
 		// spot light's perspective frustum.
-		if (!ShadowsDrawn() || shadowMap.id == 0) { return; }
+		if (!ShadowsDrawn() || Render::ShadowMapSize() == 0) { return; }
 
 		for (int i = 0; i < static_cast<int>(lights.size()); i++)
 		{
@@ -697,42 +496,11 @@ namespace Lighting
 			? Vector3{ 0.0f, 0.0f, 1.0f }
 		: Vector3{ 0.0f, 1.0f, 0.0f };
 
-		// depthPass makes the fragment shader return immediately. Without it the
-		// shader would sample shadowMap while that same texture is attached as the
-		// depth target — undefined behaviour in OpenGL.
-		const int depthPassOn = 1;
-		const int depthPassOff = 0;
-		SetShaderValue(lightShader, uniforms.depthPass, &depthPassOn, SHADER_UNIFORM_INT);
-
-		BeginTextureMode(shadowMap);
-		ClearBackground(WHITE);
-		BeginMode3D(lightCamera);
-		// Captured inside BeginMode3D so rlgl holds the light's matrices.
-		// MatrixMultiply(view, projection) matches raylib's row-vector
-		// convention, so the shader can do lightVP*vec4(worldPos, 1.0).
-		lightViewProj = MatrixMultiply(rlGetMatrixModelview(), rlGetMatrixProjection());
-		DrawShadowCasters(scene);
-		EndMode3D();
-		EndTextureMode();
-
-		SetShaderValue(lightShader, uniforms.depthPass, &depthPassOff, SHADER_UNIFORM_INT);
-		SetShaderValueMatrix(lightShader, uniforms.lightVP, lightViewProj);
-	}
-
-	void LightingSystem::BindShadowMap()
-	{
-		if (!isReady || uniforms.shadowMap < 0) { return; }
-		if (shadowLightIndex < 0 || shadowMap.depth.id == 0) { return; }
-
-		// Bound to SHADOW_MAP_SLOT (15) because raylib's DrawMesh() owns slots
-		// 0..MAX_MATERIAL_MAPS-1 (12) and rebinds them on every draw call.
-		rlActiveTextureSlot(SHADOW_MAP_SLOT);
-		rlEnableTexture(shadowMap.depth.id);
-
-		// The sampler only needs the unit index, and it persists in the program
-		// object across raylib's own rlEnableShader/rlDisableShader calls.
-		const int slot = SHADOW_MAP_SLOT;
-		SetShaderValue(lightShader, uniforms.shadowMap, &slot, SHADER_UNIFORM_INT);
+		if (Render::BeginShadowPass(lightCamera))
+		{
+			DrawShadowCasters(scene);
+			Render::EndShadowPass();
+		}
 	}
 #pragma endregion
 
@@ -742,8 +510,8 @@ namespace Lighting
 		// A disabled light still draws, greyed out, so it can be found and switched
 		// back on rather than becoming invisible level furniture.
 		const Color bodyColor = light.isEnabled ? light.color : Color{ 110, 110, 110, 255 };
-		const Color rayColor = Fade(bodyColor, light.isEnabled ? 0.85f : 0.35f);
-		const Color shapeColor = Fade(bodyColor, light.isEnabled ? 0.40f : 0.18f);
+		const Color rayColor = Geometry::Fade(bodyColor, light.isEnabled ? 0.85f : 0.35f);
+		const Color shapeColor = Geometry::Fade(bodyColor, light.isEnabled ? 0.40f : 0.18f);
 
 		const Vector3 origin = light.position;
 		const Vector3 direction = SafeNormalize(light.direction, Vector3{ 0.0f, -1.0f, 0.0f });
@@ -752,10 +520,10 @@ namespace Lighting
 		if (markers)
 		{
 			// The position marker, in the light's own colour so a rig reads at a glance
-			DrawSphereEx(origin, GIZMO_BODY_RADIUS, 6, 8, bodyColor);
+			Render::DebugSphere(origin, GIZMO_BODY_RADIUS, 6, 8, bodyColor);
 
 			// Selection halo drawn white, so it reads against any light colour
-			if (highlighted) { DrawSphereWires(origin, GIZMO_BODY_RADIUS * 2.2f, 8, 8, WHITE); }
+			if (highlighted) { Render::DebugSphereWires(origin, GIZMO_BODY_RADIUS * 2.2f, 8, 8, WHITE); }
 		}
 
 		switch (light.type)
@@ -806,7 +574,7 @@ namespace Lighting
 
 				for (const Vector3& axis : axes)
 				{
-					DrawLine3D(origin, Vector3Add(origin, Vector3Scale(axis, spikeLength)), rayColor);
+					Render::DebugLine(origin, Vector3Add(origin, Vector3Scale(axis, spikeLength)), rayColor);
 				}
 			}
 			else
@@ -839,7 +607,7 @@ namespace Lighting
 			// cosines, not distances) — the usual editor shorthand, and accurate
 			// enough to aim a light with.
 			DrawCircleFacing(capCenter, direction, outerRadius, shapeColor, 32);
-			DrawCircleFacing(capCenter, direction, innerRadius, Fade(bodyColor, 0.65f), 32);
+			DrawCircleFacing(capCenter, direction, innerRadius, Geometry::Fade(bodyColor, 0.65f), 32);
 
 			// Four edge lines give the cone a readable silhouette
 			Vector3 right = {};
@@ -853,7 +621,7 @@ namespace Lighting
 					Vector3Add(Vector3Scale(right, cosf(angle) * outerRadius),
 						Vector3Scale(up, sinf(angle) * outerRadius)));
 
-				DrawLine3D(origin, edge, shapeColor);
+				Render::DebugLine(origin, edge, shapeColor);
 			}
 			break;
 		}
@@ -887,8 +655,7 @@ namespace Lighting
 		// rlgl batches geometry and submits it later, so the batch has to be flushed
 		// on both sides of the depth-test toggle — otherwise the state change lands
 		// on the wrong draw calls and hides scene geometry instead.
-		rlDrawRenderBatchActive();
-		rlDisableDepthTest();
+		Render::SetDebugDepthTest(false);
 
 		for (int i = 0; i < lightCount; i++)
 		{
@@ -899,8 +666,7 @@ namespace Lighting
 		// The flashlight is deliberately skipped: it rides the active camera, so its
 		// gizmo would be a solid blob jammed against the near plane every frame.
 
-		rlDrawRenderBatchActive();
-		rlEnableDepthTest();
+		Render::SetDebugDepthTest(true);
 	}
 #pragma endregion
 
@@ -1013,3 +779,20 @@ namespace Lighting
 
 }
 #pragma endregion
+
+namespace SaveSystem
+{
+	SaveParticipant LightingParticipant()
+	{
+		return SaveParticipant{
+			"Lighting",
+			[] { return Lighting::LightingSystem::getInstance().formatToJson(); },
+			[](const Json* section)
+			{
+				Lighting::LightingSystem& lighting = Lighting::LightingSystem::getInstance();
+				if (section != nullptr) { lighting.loadFromJson(*section); }
+				else { lighting.CreateDefaultRig(); }
+			},
+		};
+	}
+}

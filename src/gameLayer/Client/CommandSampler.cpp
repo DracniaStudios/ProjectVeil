@@ -2,7 +2,7 @@
 
 #include <InputSystem.h>
 
-#include <raylib.h>
+#include <Platform.h>
 
 #include <algorithm>
 
@@ -47,7 +47,7 @@ namespace Client {
 			| Bit(input.IsActionPressed(ACTION_USE_ARTIFACT_RIGHT), Sim::BUTTON_ARTIFACT_R)
 			| Bit(input.IsActionPressed(ACTION_USE_ARTIFACT_LEFT), Sim::BUTTON_ARTIFACT_L));
 
-		const Vector2 mouse = GetMouseDelta();
+		const Vector2 mouse = Platform::MouseDelta();
 		Record(x, y, down, pressed, mouse.x, mouse.y);
 	}
 

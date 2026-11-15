@@ -1,13 +1,17 @@
 #include "gameMain.h"
 
 #include <ResourcePaths.h>
+#include <SaveSystem.h>
 #include <WorldEditor.h>
 #include <Client/CommandSampler.h>
 #include <Client/LocalPlayer.h>
 #include <Client/RoundPresenter.h>
 #include <Client/Session.h>
 #include <Client/DevOptions.h>
+#include <Client/GamePresentation.h>
 #include <sim/FixedTick.h>
+#include <Platform.h>
+#include <Render/Render.h>
 
 #include <cmath>
 #include <optional>
@@ -48,23 +52,21 @@ static void ApplyCursorForInput()
 	if (cursorLockedForGameplay == gameplayHasInput) { return; }
 	cursorLockedForGameplay = gameplayHasInput;
 
-	if (gameplayHasInput) { DisableCursor(); }
-	else { EnableCursor(); }
+	if (gameplayHasInput) { Platform::LockCursor(); }
+	else { Platform::UnlockCursor(); }
 }
 
 bool init_game()
 {
+	Client::InstallGamePresentation();
 	Settings::Settings::getInstance().Init();
 	AudioManager::AudioManager::getInstance().loadAll();
-	InitAudioDevice();
-	SetTargetFPS(maxFrameRate);
+	Platform::SetTargetFps(maxFrameRate);
 	AssetManager::AssetManager::getInstance().loadAll();
 
-	// Lighting must come up AFTER AssetManager (so the shader can be written
-	// into every shared asset model) but BEFORE SceneManager_init, which
-	// constructs the Main Menu scene and loads its save file. Objects created
-	// while the system was still down would keep raylib's unlit shader and
-	// render half-lit with no error anywhere.
+	// Lighting must come up AFTER Render::Init (which loads the lighting shader that
+	// Init checks for) but BEFORE SceneManager_init, which constructs the Main Menu
+	// scene and loads its save file.
 	Lighting::LightingSystem::getInstance().Init();
 
 	// Camera
@@ -81,6 +83,10 @@ bool init_game()
 	SceneManagement::SceneManager::getInstance().camera2D.offset = Vector2{ 0, 0 };
 	SceneManagement::SceneManager::getInstance().camera2D.target = Vector2{ 0, 0 };
 
+	// The client's save participants, installed BEFORE SceneManager_init: the Main
+	// Menu scene loads its world save, which restores the lighting through them.
+	SaveSystem::SetDefaultParticipants({ SaveSystem::LightingParticipant() });
+
 	SceneManagement::SceneManager_init(&SceneManagement::SceneManager::getInstance());
 
 	// Single-player runs through the same server code as a Host, joined to this
@@ -95,15 +101,34 @@ bool init_game()
 
 bool update_game()
 {
-	const float frameTime = GetFrameTime();
+	const float frameTime = Platform::FrameTime();
 
 	// A scripted dev run ends cleanly, so its log is complete
-	if (Client::Dev().quitAfterSeconds > 0.0 && GetTime() >= Client::Dev().quitAfterSeconds) { request_exit(); }
+	if (Client::Dev().quitAfterSeconds > 0.0 && Platform::Time() >= Client::Dev().quitAfterSeconds) { request_exit(); }
+
+	// --log-mouse: one line each time the clock crosses a whole second, sums reset after
+	if (Client::Dev().logMouse)
+	{
+		static double sumDx = 0.0, sumDy = 0.0;
+		static long long lastSecond = -1; // -1: not started, so the first line covers a whole second
+		const Vector2 delta = Platform::MouseDelta();
+		sumDx += delta.x;
+		sumDy += delta.y;
+		const long long second = static_cast<long long>(Platform::Time());
+		if (lastSecond < 0) { lastSecond = second; }
+		if (second > lastSecond)
+		{
+			lastSecond = second;
+			std::cout << "[Input] mouse dx " << sumDx << " dy " << sumDy << "\n";
+			sumDx = 0.0;
+			sumDy = 0.0;
+		}
+	}
 
 	// Nothing draws a sky, so the clear colour *is* the horizon. Clearing to the
 	// fog colour lets distant geometry dissolve into the background instead of
 	// fading toward a bright wall.
-	ClearBackground(Lighting::LightingSystem::getInstance().fogColor);
+	Render::BeginFrame(Lighting::LightingSystem::getInstance().fogColor);
 
 	// Update Input System
 	InputSystem::InputSystem::getInstance().Update();
@@ -113,7 +138,7 @@ bool update_game()
 	// A joined client's world moves to the Host's latest Snapshots before the
 	// camera is placed in it
 	auto& session = Client::Session::getInstance();
-	session.Frame(*manager, GetTime());
+	session.Frame(*manager, Platform::Time());
 
 	// Input is sampled once per frame into the pending PlayerCommand (Step 1.3).
 	// While an overlay or the World Editor has the input, the command is empty.
@@ -134,11 +159,14 @@ bool update_game()
 	// Simulation: zero or more fixed ticks this frame, one command each. The
 	// session sends it, runs the server's tick (single-player, Host) and reads
 	// what came back.
-	const int ticks = tickClock.Advance(frameTime);
+	// The World Editor changes state only in Scene_frame (SceneManager_frame, above),
+	// never during a tick, so one read here serves every tick. Keep it below that call.
+	const bool editorPausesSimulation = Editor::WorldEditor::getInstance().IsEnabled() && Editor::WorldEditor::getInstance().IsSimulationPaused();
+	const int ticks = Client::Dev().freezeWorld ? 0 : tickClock.Advance(frameTime);
 	for (int tick = 0; tick < ticks; ++tick) {
 		Sim::PlayerCommand command = sampler.Consume(++clientTick);
 		if (Client::Dev().bot) { command = Client::BotCommand(command.sequence, clientTick); }
-		session.Tick(*manager, command);
+		session.Tick(*manager, command, editorPausesSimulation);
 	}
 
 	SceneManagement::SceneManager_draw(manager);
@@ -147,7 +175,10 @@ bool update_game()
 	// frame moves the cursor this frame
 	ApplyCursorForInput();
 
-	DrawFPS(10, 10);
+	// raylib's DrawFPS: green, orange under 30, red under 15
+	const int fps = Platform::Fps();
+	Render::Text(std::format("{:2} FPS", fps), { 10.0f, 10.0f }, 20, fps < 15 ? RED : fps < 30 ? ORANGE : LIME);
+	Render::EndFrame();
 	return !exitRequested;
 }
 
@@ -169,8 +200,18 @@ void close_game()
 	// Networking stops before the window and the GL context go (§5.6)
 	Client::Session::getInstance().Shutdown();
 
-	// Materials only hold a copy of the Shader struct, so every model's shader
-	// id dangles once this runs — it has to be the last engine call. ProjectVeil.cpp
-	// invokes close_game() before CloseWindow(), while the GL context is alive.
+	// The current scene is freed while GL (and FMOD) are still alive
+	SceneManagement::SceneManager_shutdown(&SceneManagement::SceneManager::getInstance());
+
+	// Releases the shadow map. The lighting shader belongs to the renderer:
+	// ProjectVeil.cpp calls Render::Shutdown() after close_game(), while the GL
+	// context is alive, and that unloads it.
 	Lighting::LightingSystem::getInstance().Shutdown();
+
+#if PRODUCTION_BUILD != 1
+	// The frame-time baseline: work is BeginFrame to EndFrame entry, frame is the whole interval
+	const Platform::FrameStats stats = Platform::GetFrameStats();
+	std::cout << std::format("[Platform] {} frames, work mean {:.3f} ms max {:.3f} ms, frame mean {:.3f} ms max {:.3f} ms",
+		stats.frames, stats.meanWorkMs, stats.maxWorkMs, stats.meanFrameMs, stats.maxFrameMs) << std::endl;
+#endif
 }

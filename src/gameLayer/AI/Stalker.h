@@ -121,7 +121,6 @@ struct Stalker : Entity
 
 	/** Functions **/
 	void update(SceneManagement::Scene* scene, float deltaTime) override;
-	void render3D() override;
 
 	/**
 	 * Applies a Director hint: the stalker's one sound-only hint.

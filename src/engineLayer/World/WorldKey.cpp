@@ -154,9 +154,7 @@ namespace World {
 
 		// Patrol routes, by stalker id
 		std::vector<const Stalker*> stalkers;
-		map.ForEachEntity([&](const Entity& entity) {
-			if (entity.kind == ENTITYKIND_STALKER) { stalkers.push_back(static_cast<const Stalker*>(&entity)); }
-		});
+		map.ForEachStalker([&](const Stalker& stalker) { stalkers.push_back(&stalker); });
 		std::sort(stalkers.begin(), stalkers.end(), [](const Stalker* a, const Stalker* b) { return a->id < b->id; });
 
 		h.U32(kWaypoints);

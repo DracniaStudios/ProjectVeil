@@ -29,14 +29,10 @@ void Director::Update(SceneManagement::Scene* scene, float deltaTime)
 	// Find a stalker to advise. The slice has exactly one; the loop is here so
 	// that stops being an assumption baked into the Director.
 	Stalker* stalker = nullptr;
-	scene->gameMap.ForEachEntity([&](Entity& entity)
+	scene->gameMap.ForEachStalker([&](Stalker& found)
 	{
-		if (entity.kind == ENTITYKIND_STALKER)
-		{
-			stalker = static_cast<Stalker*>(&entity);
-			return false;
-		}
-		return true;
+		stalker = &found;
+		return false;
 	});
 	if (stalker == nullptr) { return; }
 

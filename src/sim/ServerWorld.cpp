@@ -64,7 +64,7 @@ namespace Sim {
 
 	// ---- The tick -----------------------------------------------------------
 
-	void ServerWorld::Tick(float deltaTime)
+	void ServerWorld::Tick(float deltaTime, bool simulationFrozen)
 	{
 		++serverTick;
 		for (Peer& peer : peers) { peer.messagesThisTick = 0; }
@@ -75,7 +75,7 @@ namespace Sim {
 		if (scene != nullptr)
 		{
 			const std::array<PlayerCommand, kMaxPlayers> commands = TakeCommands();
-			SceneManagement::Scene_tick(*scene, deltaTime, std::span<const PlayerCommand>(commands.data(), commands.size()));
+			SceneManagement::Scene_tick(*scene, deltaTime, std::span<const PlayerCommand>(commands.data(), commands.size()), simulationFrozen);
 			SendEvents();
 			if (serverTick % static_cast<std::uint32_t>(config.snapshotEveryTicks) == 0) { SendSnapshots(); }
 		}
@@ -333,9 +333,8 @@ namespace Sim {
 			p.crouching = player.isCrouching;
 		});
 
-		scene->gameMap.ForEachEntity([&](Entity& entity) {
-			if (snapshot.hasStalker || entity.kind != ENTITYKIND_STALKER || !entity.isEnabled) { return; }
-			const Stalker& stalker = static_cast<const Stalker&>(entity);
+		scene->gameMap.ForEachStalker([&](Stalker& stalker) {
+			if (snapshot.hasStalker || !stalker.isEnabled) { return; }
 			const Vector3 at = stalker.getPosition();
 			const Vector3 velocity = stalker.getVelocity();
 			const float planarSpeed = std::sqrt(velocity.x * velocity.x + velocity.z * velocity.z);

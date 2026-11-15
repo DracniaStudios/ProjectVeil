@@ -41,9 +41,10 @@ namespace Client {
 		Stalker* FindStalker(SceneManagement::Scene& scene)
 		{
 			Stalker* found = nullptr;
-			scene.gameMap.ForEachEntity([&](Entity& entity) {
-				if (entity.kind == ENTITYKIND_STALKER && entity.isEnabled) { found = static_cast<Stalker*>(&entity); return false; }
-				return true;
+			scene.gameMap.ForEachStalker([&](Stalker& s) {
+				if (!s.isEnabled) { return true; }
+				found = &s;
+				return false;
 			});
 			return found;
 		}

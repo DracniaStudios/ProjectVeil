@@ -20,6 +20,17 @@ static void InstallDefaultBuffs(std::vector<CooldownTimer>& buffTimers)
 	}
 }
 
+bool Entity::KindMatchesType() const
+{
+	switch (kind)
+	{
+	case ENTITYKIND_PLAYER:  return dynamic_cast<const Player*>(this) != nullptr;
+	case ENTITYKIND_STALKER: return dynamic_cast<const Stalker*>(this) != nullptr;
+	case ENTITYKIND_NONE:    return dynamic_cast<const Player*>(this) == nullptr && dynamic_cast<const Stalker*>(this) == nullptr;
+	default:                 return false;
+	}
+}
+
 std::unique_ptr<Entity> Entity::createByKind(EntityKind kind)
 {
 	switch (kind)
@@ -67,11 +78,6 @@ void Entity::onEnable()
 void Entity::onDisable()
 {
 	GameObject::onDisable();
-}
-
-void Entity::render3D()
-{
-	GameObject::render3D();
 }
 
 void Entity::update(SceneManagement::Scene* scene, float deltaTime)

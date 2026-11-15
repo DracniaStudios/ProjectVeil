@@ -8,6 +8,7 @@
 #include <functional>
 #include <memory>
 #include <random>
+#include <utility>
 
 /**
  * Two-deep history of MiniGame progress, kept by value.
@@ -52,6 +53,11 @@ public:
 	using Factory = std::function<std::unique_ptr<MiniGame>(int gameId, const MiniGameSetup& setup)>;
 
 	explicit MiniGameSession(Factory factory);
+
+	// No factory: Start needs one, set before the first game (SetFactory)
+	MiniGameSession() = default;
+	void SetFactory(Factory newFactory) { factory = std::move(newFactory); }
+	bool HasFactory() const { return static_cast<bool>(factory); }
 
 	/** Commands **/
 	// Starts a game for a station (0 for a Practice run), replacing any running

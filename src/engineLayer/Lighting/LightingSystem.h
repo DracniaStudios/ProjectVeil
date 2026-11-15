@@ -3,6 +3,7 @@
 #define LIGHTING_SYSTEM_H
 
 #include <raylib.h>
+#include <SaveSystem.h>
 #include <Physics.h> // Json (nlohmann) + the raymath operator overloads
 
 #include <string>
@@ -19,14 +20,6 @@ namespace Lighting {
 	 * MUST stay equal to MAX_LIGHTS in resources/shaders/glsl330/lighting.fs.
 	 */
 	inline constexpr int LIGHT_LIMIT = 8;
-
-	/**
-	 * Texture unit the shadow map is bound to.
-	 * raylib's DrawMesh() binds material maps to slots 0..MAX_MATERIAL_MAPS-1 (12)
-	 * and unbinds them again afterwards, so any slot below 12 can be clobbered
-	 * mid-frame. 15 is the top of OpenGL 3.3's guaranteed 16 texture units.
-	 */
-	inline constexpr int SHADOW_MAP_SLOT = 15;
 
 	// Must match the LIGHT_* defines in lighting.fs
 	enum LightType : int
@@ -70,7 +63,7 @@ namespace Lighting {
 		float intensity = 1.0f;
 		float range = 20.0f; // World units; attenuation is exactly 0 at this distance
 
-		// Authored in degrees and converted to cosines only at upload time — the
+		// Authored in degrees and converted to cosines only when the frame is packed — the
 		// inspector would be unusable with raw cosines.
 		float innerConeDegrees = 20.0f;
 		float outerConeDegrees = 35.0f;
@@ -82,10 +75,9 @@ namespace Lighting {
 	/**
 	 * Forward lighting, shadow mapping and atmosphere for the 3D scene.
 	 *
-	 * The shader is injected into every Material rather than pushed with
-	 * BeginShaderMode(): raylib's DrawMesh() calls rlEnableShader(material.shader.id)
-	 * itself, so BeginShaderMode() only affects the rlgl batch (DrawGrid, shapes,
-	 * 2D) and would leave every model unlit.
+	 * This class holds the lights and the atmosphere and decides what is drawn.
+	 * Each Update() packs them into a Render::LightingFrame and hands it to
+	 * Render::SetLighting; the renderer owns the lighting shader and every uniform.
 	 */
 	class LightingSystem
 	{
@@ -105,8 +97,8 @@ namespace Lighting {
 		}
 
 		/** Lifecycle **/
-		// Requires a live GL context (InitWindow) and must run BEFORE any scene is
-		// constructed, so objects built during scene construction get the shader.
+		// Requires Render::Init to have run (it loads the lighting shader; Init fails
+		// when that did not load) and must run BEFORE any scene is constructed.
 		bool Init();
 		void Shutdown();
 		bool IsReady() const { return isReady; }
@@ -114,7 +106,6 @@ namespace Lighting {
 		/** Per-Frame **/
 		void Update(const Camera3D& camera, float deltaTime);
 		void RenderShadowPass(SceneManagement::Scene* scene);
-		void BindShadowMap();
 
 		/** Editor Gizmos **/
 		// Debug geometry marking each light's position and the direction it throws
@@ -130,11 +121,6 @@ namespace Lighting {
 		// This extends that to the influence volumes (ranges and cones), which are
 		// otherwise depth-tested so they read as sitting in the world.
 		bool gizmoXray = false;
-
-		/** Material Injection **/
-		void ApplyToModel(Model& model) const;
-		void ApplyToLoadedAssets() const;
-		void ApplyToScene(SceneManagement::Scene* scene) const;
 
 		/** Light Management **/
 		std::vector<Light>& GetLights() { return lights; }
@@ -171,8 +157,7 @@ namespace Lighting {
 		/** Diagnostics **/
 		int GetActiveLightCount() const { return activeLightCount; }
 		int GetShadowLightIndex() const { return shadowLightIndex; }
-		int GetShadowMapResolution() const { return shadowMap.id != 0 ? shadowMap.texture.width : 0; } // The map drawn into; 0 for none
-		const Shader& GetShader() const { return lightShader; }
+		int GetShadowMapResolution() const; // The map drawn into; 0 for none
 
 		// The world's shadow map size, kept in its World save. The map is drawn at
 		// this size, or smaller if the player's Shadows setting caps it, and is
@@ -202,54 +187,20 @@ namespace Lighting {
 		bool loadFromJson(const Json& j);
 
 	private:
-		// Cached uniform locations. Custom uniforms cannot live in Shader::locs —
-		// that array is exactly RL_MAX_SHADER_LOCATIONS (32) entries and is owned
-		// by raylib's own semantics.
-		struct Uniforms
-		{
-			int lightCount = -1;
-			int lightType = -1;
-			int lightPosition = -1;
-			int lightDirection = -1;
-			int lightColor = -1;
-			int lightRange = -1;
-			int lightCone = -1;
-
-			int ambient = -1;
-			int fogColor = -1;
-			int fogDensity = -1;
-			int exposure = -1;
-			int specularStrength = -1;
-			int shininess = -1;
-
-			int shadowMap = -1;
-			int lightVP = -1;
-			int shadowTexelSize = -1;
-			int shadowBias = -1;
-			int shadowSoftness = -1;
-			int shadowsEnabled = -1;
-			int shadowLightIndex = -1;
-
-			int depthPass = -1;
-		};
-
-		void CacheUniformLocations();
 		// Chooses which lights[] entry owns the shadow map. Runs at the top of
-		// Update() so UploadLights() can translate it into a packed slot in the
+		// Update() so SubmitLighting() can translate it into a packed slot in the
 		// same frame — selecting it inside RenderShadowPass() instead would leave
 		// the shader comparing against last frame's index.
 		void SelectShadowLight();
-		void UploadLights();
-		void UploadAtmosphere();
+		// Packs the lights and atmosphere into a Render::LightingFrame, with every
+		// clamp and conversion applied, and hands it to Render::SetLighting
+		void SubmitLighting(const Camera3D& camera);
 		void DrawShadowCasters(SceneManagement::Scene* scene) const;
 
 		// Gizmos are drawn in two layers so a light buried inside geometry can still
 		// be found and aimed: InfluenceShapes is depth-tested, Markers is not.
 		enum class GizmoLayer { InfluenceShapes, Markers };
 		void DrawLightGizmo(const Light& light, bool highlighted, GizmoLayer layer) const;
-
-		Shader lightShader = {};
-		Uniforms uniforms = {};
 
 		std::vector<Light> lights = {};
 
@@ -260,14 +211,10 @@ namespace Lighting {
 		// Called only where no pass is under way: Init and Update.
 		void RefreshShadowMap();
 
-		// Hand-built depth-only framebuffer. LoadRenderTexture() cannot be used:
-		// its depth buffer is a renderbuffer and is not sampleable.
-		RenderTexture2D shadowMap = {};
 		int shadowResolution = 2048;  // The world's, as saved
 		int failedShadowMapSize = 0;  // Last size that failed to allocate, so Update doesn't retry it every frame
 		int playerShadowLimit = 4096; // Largest map the player's Shadows setting allows; 0 is Off
 		float playerExposure = 1.0f;  // The player's Luminosity
-		Matrix lightViewProj = {};
 		int shadowLightIndex = -1; // Index into `lights`, -1 when nothing casts
 
 		int activeLightCount = 0;
@@ -275,5 +222,12 @@ namespace Lighting {
 		bool isReady = false;
 		bool heardSettings = false; // Subscribed to Settings yet
 	};
+}
+
+namespace SaveSystem
+{
+	// The LightingSystem's lights and atmosphere. A save from before lighting
+	// existed gets the default rig, since an unlit world reads as a broken build.
+	SaveParticipant LightingParticipant();
 }
 #endif

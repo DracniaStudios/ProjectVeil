@@ -207,6 +207,7 @@ namespace Client {
 
 		case SessionPhase::OpeningStore:
 		{
+			if (sessionScene == nullptr) { Fail("the world closed before the Host started"); return; }
 			const World::WorldStoreStatus storeStatus = store->Status();
 			if (storeStatus == World::WorldStoreStatus::Opening) { return; }
 			if (storeStatus == World::WorldStoreStatus::Failed)
@@ -400,6 +401,15 @@ namespace Client {
 		if (toMenu) { SceneManagement::SceneManager_push(&manager, SCENE_MAIN_MENU); }
 	}
 
+	void Session::ForgetScene(SceneManagement::Scene* scene)
+	{
+		if (!scene) { return; }
+		if (server && server->AttachedScene() == scene) { server->AttachScene(nullptr); }
+		if (attached == scene) { attached = nullptr; }
+		if (sessionScene == scene) { sessionScene = nullptr; }
+		// sceneBefore is only ever compared, never dereferenced
+	}
+
 	void Session::Shutdown()
 	{
 		StopNetworking();
@@ -460,7 +470,7 @@ namespace Client {
 		return false;
 	}
 
-	void Session::Tick(SceneManagement::SceneManager& manager, const Sim::PlayerCommand& command)
+	void Session::Tick(SceneManagement::SceneManager& manager, const Sim::PlayerCommand& command, bool simulationFrozen)
 	{
 		SceneManagement::Scene* scene = manager.currentScene;
 		if (scene == nullptr || !client) { return; }
@@ -471,7 +481,7 @@ namespace Client {
 			if (Frozen(*scene)) { return; } // paused: nothing is sent and nothing moves
 			client->SendCommand(command);
 			client->SendStationRequests(*scene);
-			server->Tick(Sim::kTickDelta);
+			server->Tick(Sim::kTickDelta, simulationFrozen);
 			client->Poll(scene);
 			return;
 		}
@@ -480,7 +490,7 @@ namespace Client {
 
 		client->SendCommand(command);
 		client->SendStationRequests(*scene);
-		if (server) { server->Tick(Sim::kTickDelta); } // the Host's own, in-process
+		if (server) { server->Tick(Sim::kTickDelta, simulationFrozen); } // the Host's own, in-process
 		client->Poll(scene);
 	}
 

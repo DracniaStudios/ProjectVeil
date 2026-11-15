@@ -3,12 +3,13 @@
 #define GAMEOBJECT_H
 
 #include <iostream>
+#include <cstdint>
 #include <string>
 #include <helpers.h>
 #include <Physics.h>
-#include <AssetManager.h>
-#include <AudioManager.h>
+#include <Render/RenderTypes.h> // handles only: the simulation never includes Render.h
 
+namespace FMOD { namespace Studio { class EventInstance; } }
 namespace SceneManagement { struct Scene; }
 struct GameMap;
 struct Player;
@@ -51,7 +52,6 @@ struct GameObject
 	/// Lifetime
 	bool isAlive = true;
 	bool pendingDestroy = false; // removal is deferred to the end of the frame
-	bool ownsModel = false; // generated primitive (unloadable) vs shared AssetManager model
 
 	/// Status
 	float lifeSpan = 0;
@@ -66,10 +66,21 @@ struct GameObject
 	/// Renderer
 	std::string modelName = "";   // empty = generated unit cube
 	std::string textureName = ""; // empty = material default
-	Model model = {};
-	Mesh mesh = {};
-	Texture texture = {};
+	// Handles into the renderer, which owns what they name. None until loadVisuals()
+	// binds them (and for good with no presentation installed, as in a headless run);
+	// copying an object copies the handles, and nothing is released by destroying it.
+	Render::ModelHandle model;
+	Render::TextureHandle texture;
+	bool usesUnitCube = false; // `model` is the renderer's shared unit cube, not a model asset
 	Color defaultColor = WHITE;
+
+	// What the renderer needs to draw this object. A shared unit cube shows the object's
+	// texture; an asset model keeps its own materials.
+	Render::ModelDraw MakeModelDraw() const
+	{
+		return { model, usesUnitCube ? texture : Render::TextureHandle{},
+			rigidBody3D.translation, rigidBody3D.rotation, rigidBody3D.scale, defaultColor };
+	}
 
 
 	// Record the asset by name and rebind the runtime handle
@@ -78,36 +89,12 @@ struct GameObject
 	// Rebind model + texture handles from modelName/textureName
 	void loadVisuals();
 
-	/**
-	 * Model ownership.
-	 *
-	 * `ownsModel` means "this object generated this model and is its sole owner".
-	 * The implicit copy constructor copies both `model` and `ownsModel`, so a
-	 * copy would otherwise claim a handle its source is still using. The
-	 * invariant that keeps releasing safe is therefore:
-	 *
-	 *   no two *live* objects may hold the same handle with ownsModel == true
-	 *
-	 * Copies are the only way to break it. GameMap's Spawn* is where a copy enters
-	 * the world, and it disowns the copy before binding a model of its own, so
-	 * callers spawning from a prototype don't have to. A new object owns no model
-	 * until loadVisuals() binds one.
-	 */
-
-	// Drops an inherited handle without freeing it — the original still owns it
-	void disownModel();
-
-	// Frees a model this object generated for itself. A no-op on a shared
-	// AssetManager model, which this object does not own.
-	void releaseGeneratedModel();
-
 	// Audio
 	FMOD::Studio::EventInstance* soundInstance = nullptr;
 	std::string defaultSound = "test_beep";
 	std::string soundParameterName = "Parameter";
 	int soundParameterValue = 0;
 	bool isLooping = false; // Add File Save
-	FMOD_3D_ATTRIBUTES get3DAttributes() const;
 
 	Vector3 getPosition() const { return rigidBody3D.translation; }
 	Quaternion getRotation() const { return rigidBody3D.rotation; }
@@ -116,8 +103,6 @@ struct GameObject
 	ObjectType getType() const { return type; }
 
 	virtual void update(SceneManagement::Scene* scene, float deltaTime);
-	virtual void render2D();
-	virtual void render3D();
 	virtual void onEnable();
 	virtual void onDisable();
 
@@ -130,9 +115,6 @@ struct GameObject
 	virtual bool loadFromJson(Json& j);
 	void addCommonToJson(Json& j);
 	bool loadCommonFromJson(Json& j);
-
-	// Gizmos
-	virtual void DrawGizmos();
 };
 
 /** Interfaces **/
@@ -189,9 +171,6 @@ public:
 	static constexpr float kDefaultMinimumSeconds = 3.0f;
 	float minimumSeconds = kDefaultMinimumSeconds;
 
-	virtual void render3D() override {
-		GameObject::render3D();
-	};
 	virtual void update(SceneManagement::Scene* scene, float deltaTime) override
 	{
 		GameObject::update(scene, deltaTime);

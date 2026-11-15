@@ -1,6 +1,8 @@
 #include "WorldEditor.h"
+#include <imgui.h>
 
 #include <LightingSystem.h>
+#include <Render/Render.h>
 
 #include <cstdio>
 
@@ -65,7 +67,7 @@ void WorldEditor::ShowLightingData()
 		ImGui::End();
 		return;
 	}
-	ImGui::Text("Shader ID: %u", lighting->GetShader().id);
+	ImGui::Text("Shader ID: %u", Render::LightingShaderId());
 	ImGui::Text("Active Lights: %d / %d", lighting->GetActiveLightCount(), Lighting::LIGHT_LIMIT);
 	const int drawnMap = lighting->GetShadowMapResolution();
 	if (drawnMap > 0) { ImGui::Text("Shadow Map: %dx%d", drawnMap, drawnMap); }
@@ -186,14 +188,6 @@ void WorldEditor::ShowLightingData()
 		lighting->CreateDefaultRig();
 		selectedLightIndex = -1;
 		statusMessage = "Installed the default lighting rig";
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Reapply Shader To Scene"))
-	{
-		// Safety net: rebinds the lighting shader onto every material in the
-		// live scene, for objects created while the system was still down
-		lighting->ApplyToScene(editedScene);
-		statusMessage = "Reapplied the lighting shader";
 	}
 
 	if (static_cast<int>(lights.size()) > Lighting::LIGHT_LIMIT)

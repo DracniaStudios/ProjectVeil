@@ -1,7 +1,6 @@
 #include <AI/Stalker.h>
 
 #include <Scene.h>
-#include <SceneManager.h>
 #include <Perception/SoundField.h>
 
 #include <raymath.h>
@@ -269,69 +268,6 @@ void Stalker::ApplyDirectorHint(Vector3 region, float confidence)
 	hintRegion = region;
 	hintConfidence = confidence;
 	hasHint = true;
-}
-
-void Stalker::render3D()
-{
-	Entity::render3D();
-
-	if (!displayRoute || !isEnabled) { return; }
-
-	// Patrol route: a node per waypoint and the loop that joins them, drawn
-	// closed because PATROL wraps back to index 0 rather than reversing.
-	for (std::size_t i = 0; i < waypoints.size(); ++i)
-	{
-		const bool isCurrent = (static_cast<int>(i) == currentWaypoint);
-		DrawSphere(waypoints[i], isCurrent ? 0.45f : 0.3f, isCurrent ? YELLOW : SKYBLUE);
-		DrawLine3D(waypoints[i], waypoints[(i + 1) % waypoints.size()], SKYBLUE);
-	}
-
-	// Where the stalker is actually heading right now, which is only the patrol
-	// route while it is patrolling — the other three states steer off belief.
-	Vector3 target = {};
-	bool hasTarget = false;
-	switch (state)
-	{
-	case STALKER_PATROL:
-		if (!waypoints.empty() && currentWaypoint < static_cast<int>(waypoints.size()))
-		{
-			target = waypoints[currentWaypoint];
-			hasTarget = true;
-		}
-		break;
-	case STALKER_INVESTIGATE:
-	case STALKER_HUNT:
-		target = lastKnownPosition;
-		hasTarget = hasLastKnown;
-		break;
-	case STALKER_SEARCH_LAST_KNOWN:
-		target = searchArrived ? searchTarget : searchAnchor;
-		hasTarget = true;
-		break;
-	default:
-		break;
-	}
-
-	if (hasTarget)
-	{
-		// Red for a live pursuit, orange otherwise: the colour says which of the
-		// two kinds of target this is without reading the state text.
-		const Color colour = (state == STALKER_HUNT) ? RED : ORANGE;
-		DrawLine3D(getPosition(), target, colour);
-		DrawSphere(target, 0.25f, colour);
-	}
-
-	// The belief itself, drawn even when it is not the current target, so a
-	// stale last-known position stays visible while the stalker sweeps away
-	// from it.
-	if (hasLastKnown) { DrawSphereWires(lastKnownPosition, 0.6f, 6, 6, MAROON); }
-
-	if (const auto* currentScene = SceneManagement::SceneManager::getInstance().currentScene)
-	{
-		for (const auto& event : currentScene->soundField.Events()) {
-			DrawSphereWires(event.position, 0.5f, 6, 6, PINK);
-		}
-	}
 }
 
 void Stalker::update(SceneManagement::Scene* scene, float deltaTime)

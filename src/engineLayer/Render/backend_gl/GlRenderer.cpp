@@ -1,0 +1,188 @@
+// Render on OpenGL 3.3 core (B-15). Every function declared in Render.h exists. The 2D
+// part is real (B-18, Gl2D.cpp and DefaultFont.cpp) and so is the lit world (B-21, GlLit.cpp).
+// The shadow map (B-22, GlShadow.cpp) and the debug shapes (B-23, GlDebug.cpp) are real too.
+#include <Render/Render.h>
+#include "GlShared.h"
+#include "DefaultFont.h"
+#include <Platform.h>
+
+#include <glad/gl.h>
+#include <SDL3/SDL.h>
+
+#include <iostream>
+#include <string>
+
+namespace {
+	bool ready = false;
+
+#ifndef NDEBUG
+	// KHR_debug output, in debug builds only, when the context offers it
+	void GLAD_API_PTR DebugCallback(GLenum, GLenum type, GLuint id, GLenum severity, GLsizei, const GLchar* message, const void*)
+	{
+		if (type == GL_DEBUG_TYPE_ERROR || severity == GL_DEBUG_SEVERITY_HIGH) {
+			std::cerr << "[Render] GL error " << id << ": " << message << std::endl;
+		}
+	}
+
+	// glad 2.0.8 as vendored holds no extensions, so the entry point comes from SDL
+	void InstallDebugOutput()
+	{
+		using DebugMessageCallbackFn = void (GLAD_API_PTR *)(GLDEBUGPROC callback, const void* userParam);
+		DebugMessageCallbackFn setCallback = nullptr;
+		if (SDL_GL_ExtensionSupported("GL_KHR_debug")) {
+			setCallback = reinterpret_cast<DebugMessageCallbackFn>(SDL_GL_GetProcAddress("glDebugMessageCallback"));
+		}
+		if (setCallback == nullptr) {
+			std::cout << "[Render] KHR_debug is not available; GL debug output is off" << std::endl;
+			return;
+		}
+		glEnable(GL_DEBUG_OUTPUT);
+		setCallback(DebugCallback, nullptr);
+		std::cout << "[Render] KHR_debug output on" << std::endl;
+	}
+#endif
+}
+
+namespace Render {
+
+bool Init()
+{
+	if (ready) { return true; }
+
+	const int version = gladLoadGL(reinterpret_cast<GLADloadfunc>(SDL_GL_GetProcAddress));
+	if (version == 0) {
+		std::cerr << "[Render] gladLoadGL failed: no OpenGL functions could be loaded" << std::endl;
+		return false;
+	}
+	const int major = GLAD_VERSION_MAJOR(version);
+	const int minor = GLAD_VERSION_MINOR(version);
+	if (major < 3 || (major == 3 && minor < 3)) {
+		std::cerr << "[Render] OpenGL " << major << "." << minor << " is too old, 3.3 is required" << std::endl;
+		return false;
+	}
+
+	const auto text = [](GLenum name) {
+		const GLubyte* s = glGetString(name);
+		return s != nullptr ? reinterpret_cast<const char*>(s) : "(null)";
+	};
+	std::cout << "[Render] GL " << text(GL_VERSION) << " on " << text(GL_RENDERER) << std::endl;
+
+#ifndef NDEBUG
+	InstallDebugOutput();
+#endif
+
+	if (!Gl2D::Init()) {
+		std::cerr << "[Render] the 2D renderer could not be created" << std::endl;
+		return false;
+	}
+
+	if (!GlResources::Init()) {
+		std::cerr << "[Render] the unit cube could not be created" << std::endl;
+		Gl2D::Shutdown();
+		return false;
+	}
+
+	// A lighting shader that fails to load is not fatal: it is reported, LightingShaderId stays 0
+	// and models draw unlit
+	if (!GlLit::Init()) {
+		std::cerr << "[Render] no model shader could be created" << std::endl;
+		GlResources::Shutdown();
+		Gl2D::Shutdown();
+		return false;
+	}
+
+	if (!GlDebug::Init()) {
+		std::cerr << "[Render] the debug batch could not be created" << std::endl;
+		GlLit::Shutdown();
+		GlResources::Shutdown();
+		Gl2D::Shutdown();
+		return false;
+	}
+
+	ready = true;
+	return true;
+}
+
+void Shutdown()
+{
+	GlDebug::Shutdown();
+	GlShadow::Shutdown();
+	GlLit::Shutdown();
+	GlResources::Shutdown(); // before Gl2D: handle 1 is Gl2D's texture and is not deleted here
+	Gl2D::Shutdown();
+	ready = false;
+}
+bool IsReady() { return ready; }
+
+void DrawModel(const ModelDraw& draw) { GlLit::DrawModel(draw, false); }
+void DrawModelWires(const ModelDraw& draw) { GlLit::DrawModel(draw, true); }
+
+void DebugLine(Vector3 a, Vector3 b, Color color) { GlDebug::Line(a, b, color); }
+void DebugSphere(Vector3 center, float radius, Color color) { GlDebug::SphereEx(center, radius, 16, 16, color); }
+void DebugSphere(Vector3 center, float radius, int rings, int slices, Color color) { GlDebug::SphereEx(center, radius, rings, slices, color); }
+void DebugSphereWires(Vector3 center, float radius, int rings, int slices, Color color) { GlDebug::SphereWires(center, radius, rings, slices, color); }
+void DebugCube(Vector3 center, Vector3 size, Color color) { GlDebug::CubeV(center, size, color); }
+void DebugBoundingBox(BoundingBox box, Color color) { GlDebug::BoundingBoxWires(box, color); }
+void DebugCylinder(Vector3 start, Vector3 end, float startRadius, float endRadius, int sides, Color color) { GlDebug::CylinderEx(start, end, startRadius, endRadius, sides, color); }
+void DebugCapsule(Vector3 start, Vector3 end, float radius, int slices, int rings, Color color) { GlDebug::Capsule(start, end, radius, slices, rings, color); }
+void DebugGrid(int slices, float spacing) { GlDebug::Grid(slices, spacing); }
+
+void BeginFrame(Color clear)
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, Platform::RenderWidth(), Platform::RenderHeight());
+
+	// The state the raylib build draws with
+	glDepthFunc(GL_LEQUAL);
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// The depth write mask must be on, or the clear below leaves the old depth
+	glDepthMask(GL_TRUE);
+	glClearColor(clear.r / 255.0f, clear.g / 255.0f, clear.b / 255.0f, clear.a / 255.0f);
+	glClearDepth(1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	Gl2D::BeginFrame();
+}
+
+// Nothing may stay batched: ImGui draws straight after this
+void EndFrame() { Gl2D::Flush(); }
+void BeginWorld(const Camera3D& camera)
+{
+	GlLit::BeginWorld(camera);
+	GlShadow::BindForWorld();
+	GlDebug::BeginWorld();
+}
+// EndMode3D draws the debug batch first, then leaves the state as it does
+void EndWorld()
+{
+	GlDebug::EndWorld();
+	GlLit::EndWorld();
+}
+void SetDebugDepthTest(bool on) { GlDebug::SetDepthTest(on); }
+void Begin2D(const Camera2D& camera) { Gl2D::Begin2D(camera); }
+void End2D() { Gl2D::End2D(); }
+void CaptureScreenshot(const std::string& fileName) { Gl2D::CaptureScreenshot(fileName); }
+
+bool SetShadowMapSize(int size) { return GlShadow::SetSize(size); }
+int ShadowMapSize() { return GlShadow::Size(); }
+bool BeginShadowPass(const Camera3D& lightCamera) { return GlShadow::Begin(lightCamera); }
+void EndShadowPass() { GlShadow::End(); }
+Matrix ShadowViewProjection() { return GlShadow::ViewProjection(); }
+
+void SetLighting(const LightingFrame& frame) { GlLit::SetLighting(frame); }
+unsigned int LightingShaderId() { return GlLit::ShaderId(); }
+
+void Rect(Rectangle rect, Color color) { Gl2D::Rect(rect, color); }
+void RectOutline(Rectangle rect, float thickness, Color color) { Gl2D::RectOutline(rect, thickness, color); }
+void Circle(Vector2 center, float radius, Color color) { Gl2D::Circle(center, radius, color); }
+void Text(const std::string& text, Vector2 topLeft, int fontSize, Color color) { Gl2D::Text(text, topLeft, fontSize, color); }
+// CPU only, so it is right before Init too: the UI measures text while it lays out
+int TextWidth(const std::string& text, int fontSize) { return DefaultFont::TextWidth(text.c_str(), fontSize); }
+
+}

@@ -4,6 +4,7 @@
 #include "ProjectVeil.h"
 
 #include <Client/DevOptions.h>
+#include <Render/Render.h>
 
 using namespace std;
 
@@ -14,28 +15,25 @@ int main(int argc, char** argv)
 
 #if PRODUCTION_BUILD == 1
 	std::cout << "Production Build \n";
-	SetTraceLogLevel(LOG_FATAL);
 #endif
 
 	// Init Settings and Load Data
 
-	//SetConfigFlags(FLAG_WINDOW_MAXIMIZED);
-	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	Platform::WindowDesc desc; // 1600x900, resizable; the size is meant to come from settings
+	desc.minWidth = 1280; desc.minHeight = 720;
+	desc.maxWidth = 3840; desc.maxHeight = 2160;
+	if (Client::Dev().windowX >= 0) { desc.x = Client::Dev().windowX; desc.y = 60; }
+#if PRODUCTION_BUILD == 1
+	desc.backendLog = Platform::LogLevel::Fatal;
+#endif
+	if (!Platform::Init(desc)) { return 1; }
+	if (!Render::Init()) { return 1; }
 
-	InitWindow(1600, 900, "Project: Veil"); // set in settings
-	if (Client::Dev().windowX >= 0) { SetWindowPosition(Client::Dev().windowX, 60); }
-
-	SetWindowMinSize(1280, 720);
-	SetWindowMaxSize(3840, 2160);
 #pragma region ImGui
-	rlImGuiSetup(true);
-	ImGui_ImplRaylib_Init();
+	EditorGui::Init();
 	ImGuiIO& io = ImGui::GetIO();
 	io.FontGlobalScale = 2;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	io.AddMousePosEvent(GetMousePosition().x, GetMousePosition().y);
-	io.AddMouseButtonEvent(MOUSE_BUTTON_LEFT, IsMouseButtonDown(MOUSE_BUTTON_LEFT));
-	io.AddMouseButtonEvent(MOUSE_BUTTON_RIGHT, IsMouseButtonDown(MOUSE_BUTTON_RIGHT));
 
 	ImGui::StyleColorsDark();
 #pragma endregion
@@ -52,13 +50,15 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	SetWindowFocused();
-	SetExitKey(KEY_F12);
+	Platform::FocusWindow();
+	Platform::SetExitKey(Platform::Key::F12);
 
-	while (!WindowShouldClose())
+	while (!Platform::ShouldClose())
 	{
+		Platform::BeginFrame();
+
 #pragma region ImGui
-		rlImGuiBegin();
+		EditorGui::NewFrame();
 
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, {});
 		ImGui::PushStyleColor(ImGuiCol_DockingEmptyBg, {});
@@ -66,21 +66,20 @@ int main(int argc, char** argv)
 		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID, nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
 		ImGui::PopStyleColor(2);
 #pragma endregion
-		BeginDrawing();
 
-		if (IsKeyPressed(KEY_F11)) { ToggleFullscreen(); }
+		if (Platform::IsKeyPressed(Platform::Key::F11)) { Platform::ToggleFullscreen(); }
 		
 		// Dev override for the cursor lock. Read back from raylib rather than kept
 		// here: update_game() also locks and frees the cursor as overlays open and close.
-		if (IsKeyPressed(KEY_GRAVE))
+		if (Platform::IsKeyPressed(Platform::Key::Grave))
 		{
-			if (IsCursorHidden())
+			if (Platform::IsCursorLocked())
 			{
-				EnableCursor();
+				Platform::UnlockCursor();
 			}
 			else
 			{
-				DisableCursor();
+				Platform::LockCursor();
 			}
 		}
 		AudioManager::AudioManager::getInstance().update(SceneManagement::SceneManager::getInstance().currentScene);
@@ -88,31 +87,33 @@ int main(int argc, char** argv)
 		bool gameRunning = update_game();
 
 		ImGui::Render();
+		EditorGui::RenderDrawData();
 
-		ImGui_ImplRaylib_RenderDrawData(ImGui::GetDrawData());
-		rlImGuiEnd();
-		EndDrawing();
-
-		// --screenshot-at: once, after a whole frame is drawn
-		if (Client::Dev().screenshotAtSeconds > 0.0 && GetTime() >= Client::Dev().screenshotAtSeconds)
+		// --screenshot-at: once, after a whole frame is drawn but before it is presented
+		// (after present the back buffer is undefined and the capture comes out black)
+		if (Client::Dev().screenshotAtSeconds > 0.0 && Platform::Time() >= Client::Dev().screenshotAtSeconds)
 		{
 			Client::Dev().screenshotAtSeconds = 0.0;
 			const std::string file = "veil_" + Client::Dev().name + ".png";
-			TakeScreenshot(file.c_str());
+			Render::CaptureScreenshot(file);
 			std::cout << "[Dev] Screenshot " << file << "\n";
 		}
+
+		Platform::EndFrame();
 
 		if (!gameRunning) { break; }
 	}
 
-	AudioManager::AudioManager::getInstance().shutdown();
-
 	//ImGui_ImplRaylib_Shutdown();
-	rlImGuiShutdown();
+	EditorGui::Shutdown();
 
 	close_game();
 
-	CloseWindow();
+	Render::Shutdown();
+
+	AudioManager::AudioManager::getInstance().shutdown();
+
+	Platform::Shutdown();
 
 	return 0;
 }

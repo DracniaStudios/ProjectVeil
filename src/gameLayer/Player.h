@@ -3,6 +3,7 @@
 #define PLAYER_H
 
 #include <raylib.h>
+#include <optional>
 #include <Entity.h>
 #include <randomStuff.h>
 #include <sim/PlayerCommand.h>
@@ -37,7 +38,10 @@ struct Player : Entity
 	// Game Mechanics
 	Vector2 moveDirection = {};
 	PlayerCamera camera = {};
-	GameObject* artifact = nullptr;
+	// The artifact this player carries, once an Unlock pickup has given one. Owned
+	// by value: it is not a world object (no id, not saved, never collides), so it
+	// never enters the GameMap.
+	std::optional<GameObject> artifact;
 
 	int artifactMode = 0;
 	int artifactUnlocked = -1;
@@ -60,9 +64,7 @@ struct Player : Entity
 	// the local player's; a Snapshot carries every player's.
 	bool flashlightOn = false;
 
-	// Render And Update
-	void render2D() override; // The reticle; the Scene draws it only while gameplay has input
-	void render3D() override;
+	// Update
 	void onEnable() override;
 	void onDisable() override;
 
@@ -79,9 +81,6 @@ struct Player : Entity
 
 	// The point the player sees from: the top of the body, lower while crouching
 	Vector3 EyePosition() const;
-
-	// Audio
-	FMOD_3D_ATTRIBUTES getListener();
 
 	// Status Functions
 	std::ranlux24_base rng;

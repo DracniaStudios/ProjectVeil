@@ -1,4 +1,5 @@
 #include "tutorial.h"
+#include <sim/Worlds.h>
 
 void Scene_TutorialUpdate(SceneManagement::Scene& /*scene*/, float /*deltaTime*/)
 {
@@ -24,9 +25,7 @@ SceneManagement::Scene* Scene_TutorialConstruct()
 	scene->draw2D = Scene_TutorialDraw2D;
 	scene->draw3D = Scene_TutorialDraw3D;
 
-	scene->SetSpawnPoint(Vector3(20, 2, 0));
-
-	if (!SaveSystem::LoadWorld("chunk_1", *scene)) {
+	if (!Sim::LoadTutorialWorld(*scene)) {
 		std::cerr << "[Tutorial] Failed to load world \"chunk_1\"\n";
 	}
 

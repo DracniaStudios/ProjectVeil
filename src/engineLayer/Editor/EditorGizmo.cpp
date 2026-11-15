@@ -1,4 +1,6 @@
 #include "EditorGizmo.h"
+#include <Platform.h>
+#include <Render/Render.h>
 
 #include "EditorPicking.h"
 
@@ -77,8 +79,8 @@ namespace
 		const Vector3 tip = Vector3Add(origin, Vector3Scale(direction, length));
 		const Vector3 neck = Vector3Add(origin, Vector3Scale(direction, length * (1.0f - kArrowHeadLength)));
 
-		DrawLine3D(origin, neck, color);
-		DrawCylinderEx(neck, tip, length * kArrowHeadRadius, 0.0f, 10, color);
+		Render::DebugLine(origin, neck, color);
+		Render::DebugCylinder(neck, tip, length * kArrowHeadRadius, 0.0f, 10, color);
 	}
 
 	/**
@@ -102,7 +104,7 @@ namespace
 			const Vector3 point = Vector3Add(center,
 				Vector3Add(Vector3Scale(u, cosf(angle) * radius), Vector3Scale(v, sinf(angle) * radius)));
 
-			DrawLine3D(previous, point, color);
+			Render::DebugLine(previous, point, color);
 			previous = point;
 		}
 	}
@@ -162,7 +164,7 @@ bool EditorGizmo::Update(const Camera3D& camera, GizmoTransform& transform, bool
 		const float length = HandleLength(camera, transform.position);
 		hoveredHandle = PickHandle(ray, transform, length);
 
-		if (canStartDrag && hoveredHandle != GIZMO_HANDLE_NONE && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+		if (canStartDrag && hoveredHandle != GIZMO_HANDLE_NONE && Platform::IsMouseButtonPressed(Platform::MouseButton::Left))
 		{
 			if (BeginDrag(camera, ray, transform, hoveredHandle)) { dragBegan = true; }
 		}
@@ -175,7 +177,7 @@ bool EditorGizmo::Update(const Camera3D& camera, GizmoTransform& transform, bool
 
 	// Escape aborts and restores the transform the drag started from. Checked
 	// before the mouse state so an abort is never mistaken for a commit.
-	if (IsKeyPressed(KEY_ESCAPE))
+	if (Platform::IsKeyPressed(Platform::Key::Escape))
 	{
 		transform = startTransform;
 		activeHandle = GIZMO_HANDLE_NONE;
@@ -190,7 +192,7 @@ bool EditorGizmo::Update(const Camera3D& camera, GizmoTransform& transform, bool
 	}
 
 	// The drag owns the mouse until the button comes up, wherever the cursor is.
-	if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+	if (!Platform::IsMouseButtonDown(Platform::MouseButton::Left))
 	{
 		activeHandle = GIZMO_HANDLE_NONE;
 		dragEnded = true;
@@ -391,8 +393,8 @@ void EditorGizmo::Draw(const Camera3D& camera, const GizmoTransform& transform) 
 		case GIZMO_SCALE:
 		{
 			const Vector3 tip = Vector3Add(transform.position, Vector3Scale(direction, length));
-			DrawLine3D(transform.position, tip, color);
-			DrawCubeV(tip, Vector3Scale(Vector3One(), length * kScaleBlockSize), color);
+			Render::DebugLine(transform.position, tip, color);
+			Render::DebugCube(tip, Vector3Scale(Vector3One(), length * kScaleBlockSize), color);
 			break;
 		}
 
@@ -403,7 +405,7 @@ void EditorGizmo::Draw(const Camera3D& camera, const GizmoTransform& transform) 
 
 	if (mode == GIZMO_SCALE)
 	{
-		DrawCubeV(transform.position, Vector3Scale(Vector3One(), length * kUniformBlockSize),
+		Render::DebugCube(transform.position, Vector3Scale(Vector3One(), length * kUniformBlockSize),
 			GizmoAxisColor(-1, highlight == GIZMO_HANDLE_UNIFORM));
 	}
 }

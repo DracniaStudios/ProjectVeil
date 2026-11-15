@@ -1,4 +1,7 @@
 #include <Editor/WorldEditor.h>
+#include <Platform.h>
+#include <imgui.h>
+#include <InputSystem.h>
 
 #include <cmath>
 
@@ -22,7 +25,7 @@ namespace
 	// a shader recompile) from launching the camera across the map.
 	float FrameStep()
 	{
-		return Clamp(GetFrameTime() * 60.0f, 0.0f, 3.0f);
+		return Clamp(Platform::FrameTime() * 60.0f, 0.0f, 3.0f);
 	}
 
 	/** Rebuilds the camera basis and target from the current yaw/pitch. */
@@ -54,7 +57,7 @@ namespace
 
 	void UpdateLook(EditorCamera* editor)
 	{
-		const Vector2 mouseDelta = GetMouseDelta();
+		const Vector2 mouseDelta = Platform::MouseDelta();
 
 		editor->yaw += mouseDelta.x * kLookSensitivity;
 		editor->pitch += mouseDelta.y * kLookSensitivity;
@@ -118,7 +121,7 @@ void EditorCamera::Update(Camera3D* camera)
 	// Dragging inside an ImGui window must not also spin the camera, and typing
 	// into a text field must not fly it: WASD are movement bindings, so naming
 	// an object would otherwise send the viewport across the map.
-	if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT) && !io.WantCaptureMouse) { UpdateLook(this); }
+	if (Platform::IsMouseButtonDown(Platform::MouseButton::Right) && !io.WantCaptureMouse) { UpdateLook(this); }
 	if (!io.WantCaptureKeyboard) { UpdateMovement(this); }
 
 	// Orientation is applied unconditionally so the target tracks the position

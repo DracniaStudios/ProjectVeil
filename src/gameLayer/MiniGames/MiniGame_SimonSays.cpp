@@ -1,4 +1,5 @@
 #include "MiniGame_SimonSays.h"
+#include <Render/Render.h>
 
 #include <string>
 
@@ -31,9 +32,9 @@ void SimonSays::DrawGame() const
 		auto rect = getScreenScale(screenSize, Rectangle{ 0.025f * i, 0.45f, 0.01f, 0.01f });
 		rect.x += 300;
 
-		DrawRectangleRec(rect, data.score == static_cast<int>(i) ? LIGHTGRAY : BLUE);
+		Render::Rect(rect, data.score == static_cast<int>(i) ? LIGHTGRAY : BLUE);
 
-		DrawText(std::to_string(static_cast<int>(data.obstacles[i].y)).c_str(), rect.x, rect.y, 20, WHITE);
+		Render::Text(std::to_string(static_cast<int>(data.obstacles[i].y)), { rect.x, rect.y }, 20, WHITE);
 		// Show Icon based On Selection
 	}
 

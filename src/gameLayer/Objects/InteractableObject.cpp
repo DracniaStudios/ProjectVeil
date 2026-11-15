@@ -1,8 +1,9 @@
 #include <GameObject.h>
 
-#include <SceneManager.h>
+#include <Scene.h>
 #include <gameMap.h>
 #include <Player.h>
+#include <sim/Presentation.h>
 
 
 // Interacting with a Task station is a claim on it (rule S-3). The server's
@@ -54,10 +55,10 @@ void Unlock(SceneManagement::Scene& /*scene*/, InteractableObject* interactable,
 	player->artifactUnlocked = Clamp(player->artifactUnlocked, MINI_GAME_FLAPPY_BIRD_ID, MINI_GAME_RO_SHAM_BOO_ID);
 
 	// Check If Player Has Artifact
-	if (player->artifact == nullptr) {
+	if (!player->artifact) {
 		std::cout << "Create Artifact \n";
 		// Create Artifact
-		player->artifact = new GameObject;
+		player->artifact.emplace();
 		player->artifact->name = "Artifact";
 		player->artifact->isDestructible = false;
 		player->artifact->rigidBody3D.scale = Vector3One();
@@ -100,14 +101,8 @@ InteractableObject::InteractableObject(const InteractionType interact, int varia
 
 void InteractableObject::onInteract(SceneManagement::Scene& scene, Player& by)
 {
-	AudioManager::AudioManager::getInstance().Play3D(defaultSound, *this);
+	Sim::CurrentPresentation().PlayObjectSound(*this);
 	std::cout << "[InteractObject] Interacted with " << name << "\n";
-
-	// Play3D only populates soundInstance when it falls back to the FMOD Studio event path;
-	// a plain loaded sound (the common case) leaves it null.
-	if (soundInstance != nullptr) {
-		soundInstance->setParameterByName(soundParameterName.c_str(), soundParameterValue);
-	}
 
 	// The branches stay mutually exclusive: Unlock() marks this station for
 	// removal, and none of the others may run on a station that is going away.

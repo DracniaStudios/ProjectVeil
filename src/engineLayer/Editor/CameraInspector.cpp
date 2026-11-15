@@ -1,4 +1,6 @@
+#include <Platform.h>
 #include "WorldEditor.h"
+#include <imgui.h>
 
 namespace Editor {
 
@@ -15,8 +17,8 @@ void WorldEditor::ShowCameraData(Player* player)
 	ImGui::Text("Camera Projection: %d", camera->projection);
 	ImGui::Separator();
 
-	ImGui::Text("Mouse Position: (%.2f, %.2f)", GetMousePosition().x, GetMousePosition().y);
-	ImGui::Text("Mouse Delta: (%.2f, %.2f)", GetMouseDelta().x, GetMouseDelta().y);
+	ImGui::Text("Mouse Position: (%.2f, %.2f)", Platform::MousePosition().x, Platform::MousePosition().y);
+	ImGui::Text("Mouse Delta: (%.2f, %.2f)", Platform::MouseDelta().x, Platform::MouseDelta().y);
 	ImGui::Separator();
 
 	ImGui::End();

@@ -40,9 +40,11 @@ namespace SaveSystem
 		std::function<void(const Json* section)> apply;
 	};
 
-	// The LightingSystem's lights and atmosphere. A save from before lighting
-	// existed gets the default rig, since an unlit world reads as a broken build.
-	SaveParticipant LightingParticipant();
+	// The participants SaveGame, LoadGame, SaveWorld and LoadWorld use. Empty until the
+	// client installs its own in init_game; a headless build installs none, so loading a
+	// World save touches nothing outside the Scene.
+	void SetDefaultParticipants(std::vector<SaveParticipant> participants);
+	const std::vector<SaveParticipant>& DefaultParticipants();
 
 	// Writes the scene to the store under `name`. False, with nothing written,
 	// when the world holds more than OBJECT_LIMIT objects or the store can't keep it.
@@ -54,7 +56,7 @@ namespace SaveSystem
 	bool Load(const SaveStore& store, const std::string& name, SceneManagement::Scene& scene,
 		SaveScope scope, const std::vector<SaveParticipant>& participants);
 
-	// The game's own saves, lit by the LightingSystem: Game saves under saves/,
+	// The game's own saves, with the default participants: Game saves under saves/,
 	// World saves under resources/scenes/
 	bool SaveGame(const char* fileName, SceneManagement::Scene* scene);
 	bool LoadGame(const char* fileName, SceneManagement::Scene& scene);

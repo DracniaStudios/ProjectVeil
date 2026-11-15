@@ -1,4 +1,5 @@
 #include "MiniGame.h"
+#include <Render/Render.h>
 
 MiniGameOutcome MiniGame::Tick(const MiniGameInput& input, float deltaTime)
 {
@@ -11,5 +12,5 @@ MiniGameOutcome MiniGame::Tick(const MiniGameInput& input, float deltaTime)
 void MiniGame::Draw() const
 {
 	DrawGame();
-	DrawCircle(static_cast<int>(cursor.translation.x), static_cast<int>(cursor.translation.y), cursor.scale.x, WHITE);
+	Render::Circle({ static_cast<float>(static_cast<int>(cursor.translation.x)), static_cast<float>(static_cast<int>(cursor.translation.y)) }, cursor.scale.x, WHITE);
 }

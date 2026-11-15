@@ -1,7 +1,11 @@
 #include "SceneManager.h"
+#include <Platform.h>
+#include <Render/Render.h>
 
 #include <iostream>
 
+#include <AudioManager.h>
+#include <Client/Session.h>
 #include <LightingSystem.h>
 #include <WorldEditor.h>
 
@@ -47,7 +51,10 @@ namespace SceneManagement {
 		// Every push builds a fresh scene, so the one it replaces is freed rather
 		// than leaked. It is no longer current, and this runs from
 		// SceneManager_frame before any scene work, so nothing is iterating it.
-		if (previous != nullptr && previous != loaded) { Scene_delete(previous); }
+		if (previous != nullptr && previous != loaded) {
+			Client::Session::getInstance().ForgetScene(previous);
+			Scene_delete(previous);
+		}
 	}
 
 	// Starts one half of the fade, or ends it. In builds the requested scene first,
@@ -89,8 +96,8 @@ namespace SceneManagement {
 		if (Scene* scene = manager->currentScene) { Scene_frame(*scene, manager->camera3D, frameTime); }
 	}
 
-	void SceneManager_tick(SceneManager* manager, float delta, std::span<const Sim::PlayerCommand> commands) {
-		if (Scene* scene = manager->currentScene) { Scene_tick(*scene, delta, commands); }
+	void SceneManager_tick(SceneManager* manager, float delta, std::span<const Sim::PlayerCommand> commands, bool simulationFrozen) {
+		if (Scene* scene = manager->currentScene) { Scene_tick(*scene, delta, commands, simulationFrozen); }
 	}
 
 	void SceneManager_draw(SceneManager* manager) {
@@ -103,13 +110,12 @@ namespace SceneManagement {
 		//                the active camera, and uploads every light/atmosphere uniform.
 		//   2. Shadow  - retargets the framebuffer to render the depth map, so it
 		//                cannot happen inside BeginMode3D.
-		//   3. Bind    - binds the finished depth texture for the camera pass.
-		lighting->Update(manager->camera3D, GetFrameTime());
+		//   3. Camera  - Render::BeginWorld binds the finished depth texture for the camera pass.
+		lighting->Update(manager->camera3D, Platform::FrameTime());
 		lighting->RenderShadowPass(scene);
 
 		// Draw Scene 3D
-		BeginMode3D(manager->camera3D);
-		lighting->BindShadowMap();
+		Render::BeginWorld(manager->camera3D);
 		if (scene) Scene_drawScene3D(*scene);
 
 		if (Editor::WorldEditor::getInstance().IsEnabled())
@@ -117,17 +123,17 @@ namespace SceneManagement {
 			lighting->DrawGizmos();
 			if (scene) Editor::WorldEditor::getInstance().DrawViewport3D(*scene);
 		}
-		EndMode3D();
+		Render::EndWorld();
 
 		// Draw Scene 2D
-		BeginMode2D(manager->camera2D);
+		Render::Begin2D(manager->camera2D);
 		if (scene) Scene_drawScene2D(*scene);
-		EndMode2D();
+		Render::End2D();
 
 		// Draw Fade
 		if (manager->fade != SceneFade::None) {
 			const float opacity = manager->fadeOpacity < 0.0f ? 0.0f : manager->fadeOpacity > 1.0f ? 1.0f : manager->fadeOpacity;
-			DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Color{ 0, 0, 0, static_cast<unsigned char>(opacity * 255.0f) });
+			Render::Rect({ 0.0f, 0.0f, static_cast<float>(Platform::ScreenWidth()), static_cast<float>(Platform::ScreenHeight()) }, Color{ 0, 0, 0, static_cast<unsigned char>(opacity * 255.0f) });
 		}
 	}
 
@@ -143,5 +149,15 @@ namespace SceneManagement {
 			StartFade(manager, manager->currentScene ? SceneFade::Out : SceneFade::In);
 			//SceneManager_transition(manager, manager->currentScene ? OUT : IN);
 		}
+	}
+
+	void SceneManager_shutdown(SceneManager* manager) {
+		if (manager->currentScene) {
+			Client::Session::getInstance().ForgetScene(manager->currentScene);
+			Scene_delete(manager->currentScene);
+		}
+		manager->currentScene = nullptr;
+		manager->nextSceneID = -1;
+		for (auto& s : manager->scenes) { s = nullptr; }
 	}
 }

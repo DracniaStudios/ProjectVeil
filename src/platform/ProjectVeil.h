@@ -8,9 +8,9 @@
 // TODO: Reference additional headers your program requires here.
 #include <raylib.h>
 #include <imgui.h>
-#include <rlImGui.h>
 #include <fmod.h>
 #include <gameMain.h>
 #include <SceneManager.h>
 #include <AudioManager.h>
-#include <imgui_impl_raylib.h>
+#include <Platform.h>
+#include <EditorGui.h>

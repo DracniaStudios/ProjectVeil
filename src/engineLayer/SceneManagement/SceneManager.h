@@ -90,7 +90,8 @@ namespace SceneManagement {
 	 * @param delta The tick's length (Sim::kTickDelta)
 	 * @param commands This tick's player commands, by Slot
 	 */
-	void SceneManager_tick(SceneManager* manager, float delta, std::span<const Sim::PlayerCommand> commands = {});
+	void SceneManager_tick(SceneManager* manager, float delta, std::span<const Sim::PlayerCommand> commands = {},
+	                       bool simulationFrozen = false);
 
 	/**
 	 * Draw the current Scene active in SceneManager
@@ -106,6 +107,10 @@ namespace SceneManagement {
 	 * @param sceneID The Scene to push
 	 */
 	void SceneManager_push(SceneManager* manager, int sceneID);
+
+	// Frees the current scene and empties the manager. close_game calls it once, after
+	// networking has stopped and before LightingSystem::Shutdown and CloseWindow.
+	void SceneManager_shutdown(SceneManager* manager);
 
 }
 

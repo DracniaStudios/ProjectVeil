@@ -1,4 +1,6 @@
 #include "WorldEditor.h"
+#include <Platform.h>
+#include <imgui.h>
 
 #include <SaveSystem.h>
 
@@ -16,7 +18,7 @@ void WorldEditor::ShowWorldSettings()
 
 	/// Show World Settings Window
 	ImGui::Begin("World Settings");
-	ImGui::TextDisabled("%s", std::to_string(GetFrameTime()).c_str());
+	ImGui::TextDisabled("%s", std::to_string(Platform::FrameTime()).c_str());
 
 	/// Show Scene Data
 	ImGui::TextColored(ImVec4(1, 0, 1, 1), "Scene Data");

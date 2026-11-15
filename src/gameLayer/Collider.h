@@ -169,9 +169,8 @@ public:
 	float GetWorldRadius(Vector3 bodyScale) const;
 
 	/**
-	 * Fits `size` and `offset` to the model's own geometry.
+	 * Fits `size` and `offset` to a mesh's local bounds.
 	 */
-	void FitToModel(const Model& model);
 	void FitToBounds(BoundingBox bounds);
 
 	// Save & Load Data

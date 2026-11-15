@@ -5,21 +5,14 @@
 
 #include <raylib.h>
 #include <raymath.h>
-#include <imgui.h>
-#include <randomStuff.h>
 
 #include <gameMap.h>
 #include <PhysicsWorld.h>
-#include <InputSystem.h>
 #include <Player.h>
 #include <OverlayStack.h>
 #include <Perception/SoundField.h>
 #include <AI/Director.h>
-#include <AssetManager.h>
 #include <MiniGameSession.h>
-#include <asserts.h>
-#include <SaveSystem.h>
-#include <Settings.h>
 
 #include <sim/PlayerCommand.h>
 #include <sim/Slots.h>
@@ -28,12 +21,15 @@
 #include <sim/StationTable.h>
 
 #include <array>
+#include <cstdint>
+#include <memory>
 
 #include <stdlib.h>
 #include <iostream>
 #include <span>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 
 namespace SceneManagement { struct Scene; }
@@ -87,7 +83,7 @@ namespace SceneManagement {
 		// The MiniGame being played, if any, and the history of how the last ones went.
 		// Start, quit and win through the Scene's methods below, which also keep the
 		// MiniGame overlay and the Task station in step with it.
-		MiniGameSession miniGameSession = MiniGameSession(CreateMiniGame);
+		MiniGameSession miniGameSession; // no factory: the client's StartMiniGame installs one
 
 		// Perception — the only channel through which AI learns about the player.
 		// Owned by the Scene because emitters and listeners are both scene objects.
@@ -101,7 +97,7 @@ namespace SceneManagement {
 		// built with the scene, and a Host adds the others as they join. The
 		// simulation knows players only by Slot, never as "local" (rule R2): the
 		// client's own player is Client::LocalPlayer(scene).
-		std::array<Player*, Sim::kMaxPlayers> players = {};
+		std::array<std::unique_ptr<Player>, Sim::kMaxPlayers> players = {};
 
 		// Builds the player for an empty Slot at its spawn point and enables it.
 		// Returns the player already there if the Slot is taken, or nullptr for a
@@ -112,7 +108,7 @@ namespace SceneManagement {
 		void RemovePlayer(int slot);
 
 		// The player in a Slot, or nullptr
-		Player* PlayerInSlot(int slot) const { return Sim::IsValidSlot(slot) ? players[slot] : nullptr; }
+		Player* PlayerInSlot(int slot) const { return Sim::IsValidSlot(slot) ? players[slot].get() : nullptr; }
 
 		// The player with this object id, or nullptr if no player has it
 		Player* FindPlayer(std::uint64_t id) const;
@@ -125,7 +121,7 @@ namespace SceneManagement {
 		{
 			for (int slot = 0; slot < Sim::kMaxPlayers; ++slot)
 			{
-				if (players[slot] != nullptr) { fn(slot, *players[slot]); }
+				if (players[slot]) { fn(slot, *players[slot]); }
 			}
 		}
 
@@ -293,9 +289,6 @@ namespace SceneManagement {
 		// Where Slot 0 spawns; see SpawnPointFor
 		Vector3 spawnPoint = { 0, 5, 2 };
 
-		// The player the running MiniGame belongs to, by object id
-		std::uint64_t miniGamePlayerId = 0;
-
 		// Players inside an unlocked Exit this tick
 		std::vector<std::uint64_t> escapedThisTick;
 
@@ -338,7 +331,8 @@ namespace SceneManagement {
 	 * @param commands This tick's command for the player; a player with none
 	 *                 is driven by an empty command
 	 */
-	void Scene_tick(Scene& scene, float delta, std::span<const Sim::PlayerCommand> commands = {});
+	void Scene_tick(Scene& scene, float delta, std::span<const Sim::PlayerCommand> commands = {},
+	                bool simulationFrozen = false);
 
 	/**
 	 * Draw a Scene: its world (3D), then its UI and overlays (2D)
