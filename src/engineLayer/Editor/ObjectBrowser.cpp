@@ -319,11 +319,16 @@ void WorldEditor::showGameObject(GameObject* object) {
 	// ImVec4 color channels are normalized 0-1, unlike the 0-255 Color/Vector4 above.
 	ImGui::TextColored(ImVec4(color.x / 255.0f, color.y / 255.0f, color.z / 255.0f, color.w / 255.0f), "Color");
 	if (ImGui::InputFloat4("Color", &color.x)) {
+		// The field takes any float, and converting one outside 0-255 to an
+		// unsigned char is undefined rather than saturating.
+		const auto channel = [](float value) {
+			return static_cast<unsigned char>(value > 0.0f ? (value > 255.0f ? 255.0f : value) : 0.0f); // NaN falls to 0
+		};
 		object->defaultColor = Color(
-			color.x,
-			color.y,
-			color.z,
-			color.w
+			channel(color.x),
+			channel(color.y),
+			channel(color.z),
+			channel(color.w)
 		);
 	}
 	// Texture
