@@ -71,7 +71,13 @@ set(GNS_PROTOBUF_SHIM_DIR "${CMAKE_CURRENT_BINARY_DIR}/protobuf-shim")
 
 # A previous configure leaves Protobuf_DIR cached pointing at the shim below. That
 # is not an installed protobuf; forget it so the probe only sees real ones.
-if(Protobuf_DIR STREQUAL GNS_PROTOBUF_SHIM_DIR)
+# Compared case-insensitively: on Windows the same build folder is reached as both
+# out/build/x64-debug (CMakePresets.json) and out/build/x64-Debug (CMakeSettings.json),
+# and with a case-sensitive compare the stale shim survives, find_package finds it,
+# the protobuf fetch below is skipped and src/ fails with "No usable protoc found".
+string(TOLOWER "${Protobuf_DIR}" GNS_CACHED_PROTOBUF_DIR_LC)
+string(TOLOWER "${GNS_PROTOBUF_SHIM_DIR}" GNS_PROTOBUF_SHIM_DIR_LC)
+if(GNS_CACHED_PROTOBUF_DIR_LC STREQUAL GNS_PROTOBUF_SHIM_DIR_LC)
 	unset(Protobuf_DIR CACHE)
 endif()
 

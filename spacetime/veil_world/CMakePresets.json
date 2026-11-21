@@ -7,10 +7,18 @@
       "description": "Builds lib.wasm with the Emscripten toolchain. SpacetimeDB modules cannot be built with MSVC.",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/out/build/${presetName}",
-      "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+      "environment": {
+        "EMSDK": "${sourceDir}/../../thirdparty/emsdk",
+        "EMSDK_NODE": "${sourceDir}/../../thirdparty/emsdk/node/24.19.0_64bit/node.exe",
+        "EMSDK_PYTHON": "${sourceDir}/../../thirdparty/emsdk/python/3.13.3_64bit/python.exe",
+        "EM_CONFIG": "${sourceDir}/../../thirdparty/emsdk/.emscripten"
+      },
+      "toolchainFile": "${sourceDir}/../../thirdparty/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_CROSSCOMPILING_EMULATOR": "$env{EMSDK_NODE}"
+        "CMAKE_C_COMPILER": "${sourceDir}/../../thirdparty/emsdk/upstream/emscripten/emcc.bat",
+        "CMAKE_CXX_COMPILER": "${sourceDir}/../../thirdparty/emsdk/upstream/emscripten/em++.bat",
+        "CMAKE_CROSSCOMPILING_EMULATOR": "${sourceDir}/../../thirdparty/emsdk/node/24.19.0_64bit/node.exe"
       },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {

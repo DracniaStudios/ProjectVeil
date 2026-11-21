@@ -4,19 +4,25 @@
 #
 #   powershell -ExecutionPolicy Bypass -File spacetime\publish_veil_world.ps1 [-Fresh]
 #
-# Needs spacetime\start_spacetime.ps1 running and Emscripten (emcc) on PATH or
-# under $env:EMSDK. -Fresh deletes the database's data first (every world).
+# Needs spacetime\start_spacetime.ps1 running. Emscripten comes from the repo's
+# own thirdparty\emsdk (activated here; no global install or PATH needed).
+# -Fresh deletes the database's data first (every world).
 
 param([switch]$Fresh, [string]$Database = "veil-world")
 $ErrorActionPreference = "Stop"
 $cli = Join-Path $env:LOCALAPPDATA "SpacetimeDB\bin\2.14.0\spacetimedb-cli.exe"
 $module = Join-Path $PSScriptRoot "veil_world"
 
-if ($env:EMSDK -and (Test-Path (Join-Path $env:EMSDK "emsdk_env.ps1"))) {
-	& (Join-Path $env:EMSDK "emsdk_env.ps1") | Out-Null
+$emsdk = Join-Path $PSScriptRoot "..\thirdparty\emsdk" | Resolve-Path -ErrorAction SilentlyContinue
+if (-not $emsdk -or -not (Test-Path (Join-Path $emsdk "emsdk_env.ps1"))) {
+	Write-Error "emsdk not found at thirdparty\emsdk. Download it into the repo first (git clone https://github.com/emscripten-core/emsdk thirdparty\emsdk; then emsdk install latest; emsdk activate latest)."
 }
+# Always the repo's own copy, never a global EMSDK or whatever emcc is on PATH.
+$env:EMSDK = $emsdk.Path
+$env:EMSDK_QUIET = "1"
+& (Join-Path $emsdk "emsdk_env.ps1") | Out-Null
 if (-not (Get-Command emcc -ErrorAction SilentlyContinue)) {
-	Write-Error "emcc not found. Put Emscripten on PATH, or set EMSDK to your emsdk folder."
+	Write-Error "emcc not found after activating $emsdk. Run: thirdparty\emsdk\emsdk install latest; thirdparty\emsdk\emsdk activate latest"
 }
 
 & $cli server ping local | Out-Null
