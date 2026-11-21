@@ -15,14 +15,14 @@ $module = Join-Path $PSScriptRoot "veil_world"
 
 $emsdk = Join-Path $PSScriptRoot "..\thirdparty\emsdk" | Resolve-Path -ErrorAction SilentlyContinue
 if (-not $emsdk -or -not (Test-Path (Join-Path $emsdk "emsdk_env.ps1"))) {
-	Write-Error "emsdk not found at thirdparty\emsdk. Download it into the repo first (git clone https://github.com/emscripten-core/emsdk thirdparty\emsdk; then emsdk install latest; emsdk activate latest)."
+	Write-Error "emsdk not found at thirdparty\emsdk. It is committed to the repo (trimmed, Windows x64); restore it with: git checkout -- thirdparty/emsdk"
 }
 # Always the repo's own copy, never a global EMSDK or whatever emcc is on PATH.
 $env:EMSDK = $emsdk.Path
 $env:EMSDK_QUIET = "1"
 & (Join-Path $emsdk "emsdk_env.ps1") | Out-Null
 if (-not (Get-Command emcc -ErrorAction SilentlyContinue)) {
-	Write-Error "emcc not found after activating $emsdk. Run: thirdparty\emsdk\emsdk install latest; thirdparty\emsdk\emsdk activate latest"
+	Write-Error "emcc not found after activating $emsdk. The committed toolchain is incomplete; restore it with: git checkout -- thirdparty/emsdk"
 }
 
 & $cli server ping local | Out-Null
